@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.UnitTest", "test\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.IntegrationTest", "test\SugarChat.IntegrationTest\SugarChat.IntegrationTest.csproj", "{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.WebApi", "src\SugarChat.WebApi\SugarChat.WebApi.csproj", "{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,10 +30,15 @@ Global
 		{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{31A5A2AB-B657-491F-8260-F4378AD8864C} = {646031C8-9701-473A-B858-4BCE64C96A60}
 		{692DBD44-28F0-4221-9831-DB3BE7D01DB9} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
 		{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
+		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C} = {646031C8-9701-473A-B858-4BCE64C96A60}
 	EndGlobalSection
 EndGlobal

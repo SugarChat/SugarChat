@@ -258,3 +258,4 @@ src/Meikyo.Website.IdentityServer/Logs/*
 src/Meikyo.Website.HttpApi.Host/Logs/*
 src/Meikyo.Website.HttpApi.Host/Logs/*
 src/Meikyo.Website.DbMigrator/Logs/*
+/src/SugarChat.WebApi/Logs

@@ -251,10 +251,4 @@ paket-files/
 .idea/
 *.sln.iml
 
-# Website
-src/Meikyo.Website.Web/Logs/*
-src/Meikyo.Website.Web.Host/Logs/*
-src/Meikyo.Website.IdentityServer/Logs/*
-src/Meikyo.Website.HttpApi.Host/Logs/*
-src/Meikyo.Website.HttpApi.Host/Logs/*
-src/Meikyo.Website.DbMigrator/Logs/*
+src/SugarChat.WebApi/Logs

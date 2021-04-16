@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace SugarChat.WebApi
 {
@@ -21,7 +17,25 @@ namespace SugarChat.WebApi
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                }).UseServiceProviderFactory(new AutofacServiceProviderFactory());
+                    webBuilder.ConfigureAppConfiguration((hostingContext, builder) =>
+                    {
+                        var env = hostingContext.HostingEnvironment;
+                        builder.SetBasePath(env.ContentRootPath)
+                               .AddJsonFile("appsettings.json", false, true)
+                               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true, true)
+                               .AddEnvironmentVariables();
+
+                    });
+
+                    webBuilder.UseSerilog((hostingContext, loggerConfiguration) =>
+                                    loggerConfiguration
+                                    .ReadFrom
+                                    .Configuration(hostingContext.Configuration)
+                                    .Enrich
+                                    .WithProperty("ReleaseVersion", hostingContext.Configuration.GetValue<string>("ReleaseVersion")))
+                              .UseStartup<Startup>();
+                })
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory());
+
     }
 }

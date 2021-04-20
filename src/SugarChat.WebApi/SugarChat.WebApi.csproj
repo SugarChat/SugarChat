@@ -7,6 +7,7 @@
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.1.0" />
+      <PackageReference Include="Autofac.Configuration" Version="6.0.0" />
       <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.12.2" />
       <PackageReference Include="Serilog" Version="2.10.0" />
@@ -16,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\SugarChat.Infrastructure\SugarChat.Infrastructure.csproj" />
       <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
     </ItemGroup>
 

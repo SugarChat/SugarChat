@@ -16,6 +16,8 @@ jobs:
         dotnet-version: ['5.0.x' ]
         mongodb-version: [ 4.4 ]
     steps:
+      - name: Prepare Environment
+        run: echo "127.0.0.1      mongoserver" >> /etc/hosts
       - uses: actions/checkout@v2
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.3.0

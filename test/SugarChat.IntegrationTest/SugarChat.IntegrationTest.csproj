@@ -33,5 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
+    <ProjectReference Include="..\..\SugarChat.Infrastructure\SugarChat.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

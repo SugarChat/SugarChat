@@ -1,26 +1,42 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Bson.Serialization;
+using SugarChat.Core.Settings;
+using SugarChat.Core.Tools;
 
 namespace SugarChat.WebApi
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; set; }
+        public Startup(IConfiguration configuration)
+        {
+            BsonSerializer.RegisterSerializationProvider(new LocalDateTimeSerializationProvider());
+            Configuration = configuration;
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddOptions();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            var mongoSeting = new MongoDbSettings();
+            Configuration.GetSection("MongoDb")
+                         .Bind(mongoSeting);
+
+            builder.RegisterInstance(mongoSeting)
+                   .SingleInstance();
+
+            builder.RegisterModule<RepositoriesModule>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,7 +51,10 @@ namespace SugarChat.WebApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context => { await context.Response.WriteAsync("Hello World!"); });
+                endpoints.MapGet("/", async context =>
+                {
+                    await context.Response.WriteAsync("Hello World!");
+                });
             });
         }
     }

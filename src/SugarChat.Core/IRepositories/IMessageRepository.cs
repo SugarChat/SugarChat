@@ -2,7 +2,7 @@
 
 namespace SugarChat.Core.IRepositories
 {
-    public interface IUserRepository : IRepositoryBase<User>
+    public interface IMessageRepository : IRepositoryBase<Message>
     {
     }
 }

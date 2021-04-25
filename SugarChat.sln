@@ -1,16 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Core", "src\SugarChat.Core\SugarChat.Core.csproj", "{31A5A2AB-B657-491F-8260-F4378AD8864C}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Core", "src\SugarChat.Core\SugarChat.Core.csproj", "{31A5A2AB-B657-491F-8260-F4378AD8864C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{646031C8-9701-473A-B858-4BCE64C96A60}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.UnitTest", "test\SugarChat.UnitTest\SugarChat.UnitTest.csproj", "{692DBD44-28F0-4221-9831-DB3BE7D01DB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.UnitTest", "test\SugarChat.UnitTest\SugarChat.UnitTest.csproj", "{692DBD44-28F0-4221-9831-DB3BE7D01DB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.IntegrationTest", "test\SugarChat.IntegrationTest\SugarChat.IntegrationTest.csproj", "{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.IntegrationTest", "test\SugarChat.IntegrationTest\SugarChat.IntegrationTest.csproj", "{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.WebApi", "src\SugarChat.WebApi\SugarChat.WebApi.csproj", "{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.WebApi", "src\SugarChat.WebApi\SugarChat.WebApi.csproj", "{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Infrastructure", "src\SugarChat.Infrastructure\SugarChat.Infrastructure.csproj", "{7CFAB410-867E-47F0-A820-CF1F39F710D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,11 +39,22 @@ Global
 		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CFAB410-867E-47F0-A820-CF1F39F710D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CFAB410-867E-47F0-A820-CF1F39F710D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CFAB410-867E-47F0-A820-CF1F39F710D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CFAB410-867E-47F0-A820-CF1F39F710D7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{31A5A2AB-B657-491F-8260-F4378AD8864C} = {646031C8-9701-473A-B858-4BCE64C96A60}
 		{692DBD44-28F0-4221-9831-DB3BE7D01DB9} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
 		{F677FE36-4A74-4AF0-B8B5-E49B89AD57A4} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
 		{C8A270E6-CBC4-413F-9F04-4A0987C25F0C} = {646031C8-9701-473A-B858-4BCE64C96A60}
+		{7CFAB410-867E-47F0-A820-CF1F39F710D7} = {646031C8-9701-473A-B858-4BCE64C96A60}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {18893F6A-7736-476C-90CF-A0257C41D831}
 	EndGlobalSection
 EndGlobal

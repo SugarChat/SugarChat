@@ -1,30 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SugarChat.Core.Common;
 using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Domain
 {
-    public class Message : Entity
+    public class BaseMessage : Entity
     {
         public string Content { get; private set; }
         public DateTime PublishDateTime { get; private set; }
         public Guid From { get; private set; }
         public Guid To { get; private set; }
         public MessageStatus Status { get; private set; }
-        public Guid ParentId { get; private set; }
-        public IEnumerable<Message> Children { get; private set; }
+        public Guid? ParentId { get; private set; }
+        public List<BaseMessage> Children { get; private set; }
         public int Order { get; private set; }
         public MessageType Type { get; }
 
-        public Message(Guid id,
+        public BaseMessage(Guid id,
             string content,
             DateTime publishDateTime,
             Guid from,
             Guid to,
             MessageStatus status,
             int order,
-            Guid parentId
+            Guid? parentId
         )
         {
             Id = CheckId(id);
@@ -48,7 +49,7 @@ namespace SugarChat.Core.Domain
             return order;
         }
 
-        private Guid CheckParentId(Guid parentId)
+        private Guid? CheckParentId(Guid? parentId)
         {
             return parentId;
         }
@@ -81,6 +82,44 @@ namespace SugarChat.Core.Domain
         private Guid CheckId(Guid id)
         {
             return id;
+        }
+
+        public void CheckChildrenOrders()
+        {
+            if (Children is not null)
+            {
+                if (Children.Select(o=>o.Order).Distinct().Count() < Children.Count())
+                {
+                    throw new BusinessException("ChildrenOrderShouldNotDuplicate");
+                }
+            }
+        }
+
+        public void AppendChild(BaseMessage message)
+        {
+            if (Children is null)
+            {
+                Children = new();
+            }
+
+            message.SetOrder(Children.Max(o => o.Order)+1);
+            Children.Add(message);
+        }
+        
+        public void PrependChild(BaseMessage message)
+        {
+            if (Children is null)
+            {
+                Children = new();
+            }
+
+            message.SetOrder(Children.Min(o => o.Order)-1);
+            Children.Add(message);
+        }
+
+        private void SetOrder(int order)
+        {
+            Order = CheckOrder(order);
         }
     }
 }

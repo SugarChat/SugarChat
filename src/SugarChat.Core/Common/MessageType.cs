@@ -3,7 +3,8 @@
     public enum MessageType
     {
         Undefined = -1,
-        Text = 0,
+        Base = 0,
+        Text,
         Url,
         Image,
         Voice,

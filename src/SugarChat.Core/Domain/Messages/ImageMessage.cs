@@ -3,7 +3,7 @@ using SugarChat.Core.Common;
 
 namespace SugarChat.Core.Domain.Messages
 {
-    public class ImageMessage : Message
+    public class ImageMessage : BaseMessage
     {
         public ImageFormat Format { get; private set; }
         public ImageMessage(Guid id, string content, DateTime publishDateTime, Guid @from, Guid to,

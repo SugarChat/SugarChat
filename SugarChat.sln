@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.IntegrationTest",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.WebApi", "src\SugarChat.WebApi\SugarChat.WebApi.csproj", "{C8A270E6-CBC4-413F-9F04-4A0987C25F0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Infrastructure", "SugarChat.Infrastructure\SugarChat.Infrastructure.csproj", "{7CFAB410-867E-47F0-A820-CF1F39F710D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Infrastructure", "src\SugarChat.Infrastructure\SugarChat.Infrastructure.csproj", "{7CFAB410-867E-47F0-A820-CF1F39F710D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

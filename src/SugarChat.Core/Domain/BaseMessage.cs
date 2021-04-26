@@ -6,7 +6,7 @@ using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Domain
 {
-    public class BaseMessage : Entity
+    public abstract class BaseMessage : Entity
     {
         public string Content { get; private set; }
         public DateTime PublishDateTime { get; private set; }
@@ -17,6 +17,7 @@ namespace SugarChat.Core.Domain
         public List<BaseMessage> Children { get; private set; }
         public int Order { get; private set; }
         public MessageType Type { get; }
+        public object ExtraInfo { get; private set; }
 
         public BaseMessage(Guid id,
             string content,
@@ -88,7 +89,7 @@ namespace SugarChat.Core.Domain
         {
             if (Children is not null)
             {
-                if (Children.Select(o=>o.Order).Distinct().Count() < Children.Count())
+                if (Children.Select(o => o.Order).Distinct().Count() < Children.Count())
                 {
                     throw new BusinessException("ChildrenOrderShouldNotDuplicate");
                 }
@@ -102,10 +103,10 @@ namespace SugarChat.Core.Domain
                 Children = new();
             }
 
-            message.SetOrder(Children.Max(o => o.Order)+1);
+            message.SetOrder(Children.Max(o => o.Order) + 1);
             Children.Add(message);
         }
-        
+
         public void PrependChild(BaseMessage message)
         {
             if (Children is null)
@@ -113,13 +114,23 @@ namespace SugarChat.Core.Domain
                 Children = new();
             }
 
-            message.SetOrder(Children.Min(o => o.Order)-1);
+            message.SetOrder(Children.Min(o => o.Order) - 1);
             Children.Add(message);
         }
 
         private void SetOrder(int order)
         {
             Order = CheckOrder(order);
+        }
+
+        public void SetExtraInfo(object extraInfo)
+        {
+            ExtraInfo = CheckExtraInfo(extraInfo);
+        }
+
+        private object CheckExtraInfo(object extraInfo)
+        {
+            return extraInfo;
         }
     }
 }

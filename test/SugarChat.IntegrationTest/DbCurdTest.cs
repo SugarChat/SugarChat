@@ -34,12 +34,12 @@ namespace SugarChat.IntegrationTest
         [Fact]
         public async Task Should_Add_New_Message()
         {
-            var messages = _database.GetCollection<Message>("Message");
+            var messages = _database.GetCollection<BaseMessage>("Message");
             Guid id = Guid.NewGuid();
             string content = "TestContent";
             
-            await messages.InsertOneAsync(new Message(id, content, DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
-                MessageStatus.Arrived));
+            await messages.InsertOneAsync(new BaseMessage(id, content, DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
+                MessageStatus.Arrived, 1, null));
             var message = (await messages.FindAsync(o => o.Id == id)).FirstOrDefault();
 
             message.Id.ShouldBe(id);
@@ -51,11 +51,11 @@ namespace SugarChat.IntegrationTest
         [Fact]
         public async Task Should_Delete_Message()
         {
-            var messages = _database.GetCollection<Message>("Message");
+            var messages = _database.GetCollection<BaseMessage>("Message");
             Guid id = Guid.NewGuid();
             
-            await messages.InsertOneAsync(new Message(id, "", DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
-                MessageStatus.Arrived));
+            await messages.InsertOneAsync(new BaseMessage(id, "", DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
+                MessageStatus.Arrived, 1, null));
             var message = (await messages.FindAsync(o => o.Id == id)).FirstOrDefault();
 
             message.Id.ShouldBe(id);

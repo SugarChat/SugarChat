@@ -7,7 +7,7 @@ namespace SugarChat.Core.Domain.Messages
     {
         public Uri Uri { get; private set; }
         public UrlMessage(Guid id, string content, DateTime publishDateTime, Guid @from, Guid to, MessageStatus status,
-            int order, Guid parentId, Uri uri) : base(id, content, publishDateTime, @from, to, status, order, parentId)
+            int order, Guid? parentId, Uri uri) : base(id, content, publishDateTime, @from, to, status, order, parentId)
         {
             Uri = CheckUri(uri);
 

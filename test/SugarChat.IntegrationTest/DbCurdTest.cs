@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using Shouldly;
 using SugarChat.Core.Common;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Domain.Messages;
 using Xunit;
 
 namespace SugarChat.IntegrationTest
@@ -38,7 +39,7 @@ namespace SugarChat.IntegrationTest
             Guid id = Guid.NewGuid();
             string content = "TestContent";
             
-            await messages.InsertOneAsync(new BaseMessage(id, content, DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
+            await messages.InsertOneAsync(new TextMessage(id, content, DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
                 MessageStatus.Arrived, 1, null));
             var message = (await messages.FindAsync(o => o.Id == id)).FirstOrDefault();
 
@@ -54,7 +55,7 @@ namespace SugarChat.IntegrationTest
             var messages = _database.GetCollection<BaseMessage>("Message");
             Guid id = Guid.NewGuid();
             
-            await messages.InsertOneAsync(new BaseMessage(id, "", DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
+            await messages.InsertOneAsync(new TextMessage(id, "", DateTime.Now, Guid.NewGuid(), Guid.NewGuid(),
                 MessageStatus.Arrived, 1, null));
             var message = (await messages.FindAsync(o => o.Id == id)).FirstOrDefault();
 

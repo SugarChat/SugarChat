@@ -1,7 +1,9 @@
-﻿namespace SugarChat.Core.Domain
+﻿using System;
+
+namespace SugarChat.Core.Domain
 {
-    public interface IEntity<T> 
+    public interface IEntity
     {
-        T Id { get; }
+        string Id { get; set; }
     }
 };

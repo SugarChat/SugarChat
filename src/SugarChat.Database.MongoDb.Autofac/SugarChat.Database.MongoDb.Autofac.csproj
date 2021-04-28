@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
+    <ProjectReference Include="..\SugarChat.MongoDb\SugarChat.Database.MongoDb.csproj" />
+  </ItemGroup>
+
+</Project>

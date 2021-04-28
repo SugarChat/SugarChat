@@ -1,16 +1,16 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
 using System;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Domain
 {
-    public abstract class Entity<T> : IEntity<T>
+    public abstract class Entity : IEntity
     {
-        [BsonId]
-        public virtual T Id { get; protected set; }
-    }
-
-    public abstract class Entity : Entity<Guid>
-    {
+        public string Id { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+        public Guid LastModifyBy { get; set; }
+        public DateTimeOffset LastModifyDate { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
     }
 }

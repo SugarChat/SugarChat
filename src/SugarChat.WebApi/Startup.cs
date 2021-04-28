@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson.Serialization;
+using SugarChat.Core;
 using SugarChat.Core.Settings;
 using SugarChat.Core.Tools;
 
@@ -48,7 +49,6 @@ namespace SugarChat.WebApi
             }
 
             app.UseRouting();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>

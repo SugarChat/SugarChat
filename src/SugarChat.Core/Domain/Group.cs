@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace SugarChat.Core.Domain
+﻿namespace SugarChat.Core.Domain
 {
-    public class Group : Receiver
+    public class Group : Entity
     {
-        public string Name { get; private set; }
-        public virtual ICollection<Guid> MemberIds { get; private set; }
+        public string Name { get; set; }
+        public string AvatarUrl { get; set; }
+        public string Description { get; set; }
     }
 }

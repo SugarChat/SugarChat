@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
-    <ProjectReference Include="..\SugarChat.MongoDb\SugarChat.Database.MongoDb.csproj" />
+    <ProjectReference Include="..\SugarChat.MongoDb\SugarChat.Data.MongoDb.csproj" />
   </ItemGroup>
 
 </Project>

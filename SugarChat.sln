@@ -17,11 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.WebApi", "src\Sug
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Core.Autofac", "src\SugarChat.Core.Autofac\SugarChat.Core.Autofac.csproj", "{D65FCD98-1AC8-4458-BDF9-7F21A6470B35}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Database.MongoDb.Autofac", "src\SugarChat.Database.MongoDb.Autofac\SugarChat.Database.MongoDb.Autofac.csproj", "{95D1C391-9D23-46E1-A2C7-A3192D9CAC03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Data.MongoDb.Autofac", "src\SugarChat.Database.MongoDb.Autofac\SugarChat.Data.MongoDb.Autofac.csproj", "{95D1C391-9D23-46E1-A2C7-A3192D9CAC03}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Message", "src\SugarChat.Message\SugarChat.Message.csproj", "{C19D68EF-31E3-4E61-9082-2B3FAC46A408}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Database.MongoDb", "src\SugarChat.MongoDb\SugarChat.Database.MongoDb.csproj", "{680056B8-CA4F-47F4-A9E7-F6BF8C77B7BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Data.MongoDb", "src\SugarChat.MongoDb\SugarChat.Data.MongoDb.csproj", "{680056B8-CA4F-47F4-A9E7-F6BF8C77B7BA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Push.AzureNotification", "src\SugarChat.Push.AzureNotification\SugarChat.Push.AzureNotification.csproj", "{9C4090A8-A72D-407B-8F0D-329F36C194AB}"
 EndProject
@@ -29,9 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Push.SignalR", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Security", "src\SugarChat.Security\SugarChat.Security.csproj", "{9DE8BFA1-6158-46A2-817A-8AFAA81214E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Core.UnitTest", "test\SugarChat.Core.UnitTest\SugarChat.Core.UnitTest.csproj", "{2B99E059-3385-45A5-9F18-2F644594B3D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Core.UnitTest", "test\SugarChat.Core.UnitTest\SugarChat.Core.UnitTest.csproj", "{2B99E059-3385-45A5-9F18-2F644594B3D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Database.MongoDb.IntegrationTest", "test\SugarChat.Database.MongoDb.IntegrationTest\SugarChat.Database.MongoDb.IntegrationTest.csproj", "{88E5C262-2115-47B3-97EA-82AE89ACC274}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Database.MongoDb.IntegrationTest", "test\SugarChat.Database.MongoDb.IntegrationTest\SugarChat.Database.MongoDb.IntegrationTest.csproj", "{88E5C262-2115-47B3-97EA-82AE89ACC274}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

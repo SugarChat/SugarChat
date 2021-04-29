@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
-namespace SugarChat.Database.MongoDb
+namespace SugarChat.Data.MongoDb
 {
     public class Repository : IRepository
     {

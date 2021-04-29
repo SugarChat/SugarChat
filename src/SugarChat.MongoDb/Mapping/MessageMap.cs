@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization;
 
-namespace SugarChat.Database.MongoDb.Mapping
+namespace SugarChat.Data.MongoDb.Mapping
 {
     public class MessageMap
     {

@@ -14,7 +14,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\SugarChat.Message\SugarChat.Message.csproj" />
       <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
     </ItemGroup>
 

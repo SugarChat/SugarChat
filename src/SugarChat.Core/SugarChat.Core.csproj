@@ -14,13 +14,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\SugarChat.Message\SugarChat.Message.csproj" />
-      <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
+      <Folder Include="Mediator\Middlewares\" />
+      <Folder Include="Services\Groups\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Mediator\Middlewares\" />
-      <Folder Include="Services\Groups\" />
+      <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
     </ItemGroup>
 
 </Project>

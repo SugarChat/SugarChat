@@ -10,6 +10,8 @@ namespace SugarChat.Core.Services.Users
     public class UserService : IUserService
     {
         private readonly IRepository _repository;
+        
+        //TODO Error const would be moved to specific class or json file
         private const string UserExistsError = "User with Id {0} is already existed.";
         private const string UserNoExistsError = "User with Id {0} Dose not exist.";
         private const string FriendAlreadyMadeError = "User with Id {0} has already made friend with Id {1}.";
@@ -26,14 +28,14 @@ namespace SugarChat.Core.Services.Users
             throw new System.NotImplementedException();
         }
 
-        public virtual async Task AddAsync(User user)
+        public virtual async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
             if (await _repository.AnyAsync<User>(o => o.Id == user.Id))
             {
                 throw new BusinessException(string.Format(UserExistsError, user.Id));
             }
 
-            await _repository.AddAsync(user, new());
+            await _repository.AddAsync(user, cancellationToken);
         }
 
         public virtual void Delete(string id)
@@ -41,13 +43,13 @@ namespace SugarChat.Core.Services.Users
             throw new System.NotImplementedException();
         }
 
-        public virtual async Task DeleteAsync(string id)
+        public virtual async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             User user = await GetAsync(id);
-            await _repository.RemoveAsync(user, new());
+            await _repository.RemoveAsync(user, cancellationToken);
         }
 
-        public User Get(string id)
+        public virtual User Get(string id)
         {
             throw new System.NotImplementedException();
         }
@@ -68,7 +70,8 @@ namespace SugarChat.Core.Services.Users
             throw new System.NotImplementedException();
         }
 
-        public virtual async Task AddFriendAsync(string userId, string friendId)
+        public virtual async Task AddFriendAsync(string userId, string friendId,
+            CancellationToken cancellationToken = default)
         {
             await CheckExist(userId);
             await CheckExist(friendId);
@@ -79,8 +82,8 @@ namespace SugarChat.Core.Services.Users
                 FriendId = friendId,
                 BecomeFriendAt = new(DateTime.UtcNow)
             };
-            await _repository.AddAsync(friendEntity, new CancellationToken());
-            
+            await _repository.AddAsync(friendEntity, cancellationToken);
+
             async Task CheckFriend(string userId, string friendId)
             {
                 if (!await _repository.AnyAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId))
@@ -101,7 +104,7 @@ namespace SugarChat.Core.Services.Users
             await CheckExist(userId);
             await CheckExist(friendId);
             await CheckNotFriend(userId, friendId);
-            
+
             async Task CheckNotFriend(string userId, string friendId)
             {
                 if (await _repository.AnyAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId))

@@ -90,7 +90,7 @@ namespace SugarChat.Core.UnitTest.UserServiceTest
         public async Task Should_Not_Delete_None_Exist_User()
         {
             _repository.SingleOrDefaultAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs((User)null);
-            await _userService.DeleteAsync(_user.Id, CancellationToken.None);
+            await Assert.ThrowsAsync<BusinessException>(async ()=>await _userService.DeleteAsync(_user.Id, CancellationToken.None));
             await _repository.DidNotReceive().RemoveAsync(_user, CancellationToken.None);
         }
     }

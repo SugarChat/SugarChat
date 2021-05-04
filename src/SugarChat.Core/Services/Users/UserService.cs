@@ -15,6 +15,7 @@ namespace SugarChat.Core.Services.Users
         private const string UserExistsError = "User with Id {0} is already existed.";
         private const string UserNoExistsError = "User with Id {0} Dose not exist.";
         private const string FriendAlreadyMadeError = "User with Id {0} has already made friend with Id {1}.";
+        private const string AddSelfAsFiendError = "User with Id {0} Should not add self as friend.";
         private const string NotFriendError = "User with Id {0} is not friend with Id {1} yet.";
 
         public UserService(IRepository repository)
@@ -75,6 +76,7 @@ namespace SugarChat.Core.Services.Users
         {
             await CheckExist(userId);
             await CheckExist(friendId);
+            CheckSelf(userId, friendId);
             await CheckFriend(userId, friendId);
             Friend friendEntity = new Friend
             {
@@ -91,8 +93,15 @@ namespace SugarChat.Core.Services.Users
                     throw new BusinessException(string.Format(FriendAlreadyMadeError, userId, friendId));
                 }
             }
-        }
 
+            void CheckSelf(string userId, string friendId)
+            {
+                if (userId == friendId)
+                {
+                    throw new BusinessException(string.Format(AddSelfAsFiendError, userId));
+                }
+            }
+        }
 
         public virtual void RemoveFriend(string userId, string friendId)
         {

@@ -31,6 +31,10 @@ namespace SugarChat.Core.Services.Users
 
         public virtual async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
+            if (user is null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
             if (await _repository.AnyAsync<User>(o => o.Id == user.Id))
             {
                 throw new BusinessException(string.Format(UserExistsError, user.Id));
@@ -57,7 +61,7 @@ namespace SugarChat.Core.Services.Users
 
         public virtual async Task<User> GetAsync(string id)
         {
-            User user = await _repository.SingleAsync<User>(o => o.Id == id);
+            User user = await _repository.SingleOrDefaultAsync<User>(o => o.Id == id);
             if (user is null)
             {
                 throw new BusinessException(string.Format(UserNoExistsError, id));

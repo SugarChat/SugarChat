@@ -21,6 +21,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             _configuration.GetSection("MongoDb")
                           .Bind(settings);
             repository = new MongoDbRepository(settings);
+            Should_Insert_One_Group().Wait();
         }
 
         [Fact]

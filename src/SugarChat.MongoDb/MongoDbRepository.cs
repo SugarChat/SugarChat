@@ -87,28 +87,28 @@ namespace SugarChat.Data.MongoDb
                    .AsQueryable();
         }
 
-        public Task SaveChangesAsync(CancellationToken cancellationToken)
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
-        public Task AddAsync<T>(T entity, CancellationToken cancellationToken) where T : class, IEntity
+        public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             return GetCollection<T>().InsertOneAsync(entity, null, cancellationToken);
         }
 
-        public Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken) where T : class, IEntity
+        public Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
         }
 
-        public Task RemoveAsync<T>(T entity, CancellationToken cancellationToken) where T : class, IEntity
+        public Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
             return GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken);
         }
 
-        public Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken) where T : class, IEntity
+        public Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
             return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
@@ -121,7 +121,7 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoCollection<T> GetCollection<T>()
         {
-            return _database.GetCollection<T>(nameof(T));
+            return _database.GetCollection<T>(typeof(T).Name);
         }
     }
 }

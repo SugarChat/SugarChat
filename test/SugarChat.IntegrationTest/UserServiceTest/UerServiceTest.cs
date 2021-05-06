@@ -35,7 +35,7 @@ namespace SugarChat.IntegrationTest.UserServiceTest
             _configuration.GetSection("MongoDb")
                 .Bind(settings);
             _repository = new MongoDbRepository(settings);
-            
+
             _userService = new UserService(_repository);
             _user = new User
             {
@@ -65,157 +65,376 @@ namespace SugarChat.IntegrationTest.UserServiceTest
         [Fact]
         public async Task Should_Add_New_User()
         {
-            (await _repository.SingleOrDefaultAsync<User>(o => o.Id == _userId)).ShouldBe(null);
-            await _userService.AddAsync(_user, CancellationToken.None);
-            (await _repository.SingleAsync<User>(o => o.Id == _userId)).ShouldNotBe(null);
+            await CleanUser(_user);
+            try
+            {
+                await _userService.AddAsync(_user, CancellationToken.None);
+                (await _repository.SingleAsync<User>(o => o.Id == _userId)).ShouldNotBeNull();
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Null_User()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-                await _userService.AddAsync(null, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(_user, CancellationToken.None);
+            await CleanUser(_user);
+            try
+            {
+                await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+                    await _userService.AddAsync(null, CancellationToken.None));
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Reject_To_Add_Existed_User()
         {
-            _repository.AnyAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(true);
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddAsync(_user, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(_user, CancellationToken.None);
+            await PrepareUser(_user);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddAsync(_user, CancellationToken.None));
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Delete_Exist_User()
         {
-            _repository.SingleOrDefaultAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(_user);
-            await _userService.DeleteAsync(_user.Id, CancellationToken.None);
-            await _repository.Received().RemoveAsync(_user, CancellationToken.None);
+            await PrepareUser(_user);
+            try
+            {
+                await _userService.DeleteAsync(_user.Id, CancellationToken.None);
+                (await _repository.SingleOrDefaultAsync<User>(o => o.Id == _userId)).ShouldBeNull();
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Delete_None_Exist_User()
         {
-            _repository.SingleOrDefaultAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs((User) null);
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.DeleteAsync(_user.Id, CancellationToken.None));
-            await _repository.DidNotReceive().RemoveAsync(_user, CancellationToken.None);
+            await CleanUser(_user);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.DeleteAsync(_user.Id, CancellationToken.None));
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Get_Exist_User()
         {
-            _repository.SingleOrDefaultAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(_user);
-            await _userService.GetAsync(_user.Id);
-            await _repository.Received().SingleOrDefaultAsync(Arg.Any<Expression<Func<User, bool>>>());
+            await PrepareUser(_user);
+            try
+            {
+                User user = await _userService.GetAsync(_user.Id);
+                user.ShouldNotBeNull();
+                user.Id.ShouldBe(_userId);
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Get_None_Exist_User()
         {
-            _repository.SingleOrDefaultAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs((User) null);
-            await Assert.ThrowsAsync<BusinessException>(async () => await _userService.GetAsync(_user.Id));
-            await _repository.Received().SingleOrDefaultAsync(Arg.Any<Expression<Func<User, bool>>>());
+            await CleanUser(_user);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () => await _userService.GetAsync(_user.Id));
+            }
+            finally
+            {
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Add_Friend()
         {
-            _repository.AnyAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(true);
-            _repository.AnyAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs(false);
-            await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None);
-            await _repository.Received().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            await PrepareUser(_user);
+            await PrepareUser(_friend);
+            try
+            {
+                await _userService.AddFriendAsync(_user.Id, _friend.Id, CancellationToken.None);
+                Friend friend =
+                    await _repository.SingleAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+                friend.ShouldNotBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+                await CleanUser(_friend);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Friend_When_User_Not_Exist()
         {
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            await CleanUser(_user);
+            await PrepareUser(_friend);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
+                Friend friend =
+                    await _repository.SingleOrDefaultAsync<Friend>(
+                        o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+                friend.ShouldBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_friend);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Friend_When_Friend_Not_Exist()
         {
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            await PrepareUser(_user);
+            await CleanUser(_friend);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
+                Friend friend =
+                    await _repository.SingleOrDefaultAsync<Friend>(
+                        o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+                friend.ShouldBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Friend_When_Both_Not_Exist()
         {
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            await CleanUser(_user);
+            await CleanUser(_friend);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddFriendAsync(_user.Id, _friendId, CancellationToken.None));
+                Friend friend =
+                    await _repository.SingleOrDefaultAsync<Friend>(
+                        o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+                friend.ShouldBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Friend_When_Add_Self()
         {
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddFriendAsync(_userId, _userId, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            await PrepareUser(_user);
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddFriendAsync(_user.Id, _user.Id, CancellationToken.None));
+                Friend friend =
+                    await _repository.SingleOrDefaultAsync<Friend>(
+                        o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+                friend.ShouldBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Add_Friend_When_Relation_Already_Exists()
         {
-            _repository.AnyAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(true);
-            _repository.AnyAsync<Friend>(o => o.Id == "").ReturnsForAnyArgs(true);
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.AddFriendAsync(_userId, _friendId, CancellationToken.None));
-            await _repository.DidNotReceive().AddAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await PrepareUser(_user);
+            await PrepareUser(_friend);
+            await PrepareFriend();
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.AddFriendAsync(_user.Id, _friend.Id, CancellationToken.None));
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+                await CleanUser(_friend);
+            }
         }
 
         [Fact]
         public async Task Should_Remove_Friend()
         {
-            _repository.AnyAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(true);
-            _repository.SingleOrDefaultAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs(new Friend());
-            await _userService.RemoveFriendAsync(_user.Id, _friendId);
-            await _repository.Received().RemoveAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await PrepareUser(_user);
+            await PrepareUser(_friend);
+            await PrepareFriend();
+
+            try
+            {
+                await _userService.RemoveFriendAsync(_user.Id, _friendId);
+                (await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id))
+                    .ShouldBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+                await CleanUser(_friend);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Remove_Friend_When_User_Not_Exist()
         {
-            _repository.SingleOrDefaultAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs(new Friend());
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.RemoveFriendAsync(_user.Id, _friendId));
-            await _repository.DidNotReceive().RemoveAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanUser(_user);
+            await PrepareUser(_friend);
+            await PrepareFriend();
+
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.RemoveFriendAsync(_user.Id, _friendId));
+                (await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id))
+                    .ShouldNotBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_friend);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Remove_Friend_When_Friend_Not_Exist()
         {
-            _repository.SingleOrDefaultAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs(new Friend());
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.RemoveFriendAsync(_user.Id, _friendId));
-            await _repository.DidNotReceive().RemoveAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await PrepareUser(_user);
+            await CleanUser(_friend);
+            await PrepareFriend();
+
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.RemoveFriendAsync(_user.Id, _friendId));
+                (await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id))
+                    .ShouldNotBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+                await CleanUser(_user);
+            }
         }
 
         [Fact]
         public async Task Should_Not_Remove_Friend_When_Both_Not_Exist()
         {
-            _repository.SingleOrDefaultAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs(new Friend());
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.RemoveFriendAsync(_user.Id, _friendId));
-            await _repository.DidNotReceive().RemoveAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanUser(_user);
+            await CleanUser(_friend);
+            await PrepareFriend();
+
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.RemoveFriendAsync(_user.Id, _friendId));
+                (await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id))
+                    .ShouldNotBeNull();
+            }
+            finally
+            {
+                await CleanFriend();
+            }
         }
 
         [Fact]
         public async Task Should_Not_Remove_Friend_When_Relation_Dose_Not_Exists()
         {
-            _repository.AnyAsync<User>(o => o.Id == _user.Id).ReturnsForAnyArgs(true);
-            _repository.AnyAsync<Friend>(o => o.Id == "").ReturnsForAnyArgs(true);
-            _repository.SingleOrDefaultAsync<Friend>(o => o.Id == _user.Id).ReturnsForAnyArgs((Friend)null);
-            await Assert.ThrowsAsync<BusinessException>(async () =>
-                await _userService.RemoveFriendAsync(_userId, _friendId));
-            await _repository.DidNotReceive().RemoveAsync(Arg.Any<Friend>(), CancellationToken.None);
+            await CleanFriend();
+            
+            try
+            {
+                await Assert.ThrowsAsync<BusinessException>(async () =>
+                    await _userService.RemoveFriendAsync(_user.Id, _friendId));
+                (await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id))
+                    .ShouldBeNull();
+            }
+            finally
+            {
+            }
+        }
+
+        private async Task CleanUser(User user)
+        {
+            User userInRepo = await _repository.SingleOrDefaultAsync<User>(o => o.Id == user.Id);
+            if (userInRepo is not null)
+            {
+                await _repository.RemoveAsync(_user, CancellationToken.None);
+            }
+        }
+
+        private async Task PrepareUser(User user)
+        {
+            User userInRepo = await _repository.SingleOrDefaultAsync<User>(o => o.Id == user.Id);
+            if (userInRepo is null)
+            {
+                await _repository.AddAsync(user, CancellationToken.None);
+            }
+        }
+
+        private async Task CleanFriend()
+        {
+            Friend friend =
+                await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+            if (friend is not null)
+            {
+                await _repository.RemoveAsync(friend, CancellationToken.None);
+            }
+        }
+
+        private async Task PrepareFriend()
+        {
+            Friend friend =
+                await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == _user.Id && o.FriendId == _friend.Id);
+            if (friend is null)
+            {
+                await _repository.AddAsync(new Friend
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    BecomeFriendAt = DateTimeOffset.UtcNow,
+                    UserId = _user.Id,
+                    FriendId = _friend.Id
+                }, CancellationToken.None);
+            }
         }
     }
 }

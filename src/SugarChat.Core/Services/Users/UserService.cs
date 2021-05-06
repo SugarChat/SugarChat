@@ -10,7 +10,7 @@ namespace SugarChat.Core.Services.Users
     public class UserService : IUserService
     {
         private readonly IRepository _repository;
-        
+
         //TODO Error const would be moved to specific class or json file
         private const string UserExistsError = "User with Id {0} is already existed.";
         private const string UserNoExistsError = "User with Id {0} Dose not exist.";
@@ -23,18 +23,13 @@ namespace SugarChat.Core.Services.Users
             _repository = repository;
         }
 
-
-        public virtual void Add(User user)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public virtual async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user is null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
+
             if (await _repository.AnyAsync<User>(o => o.Id == user.Id))
             {
                 throw new BusinessException(string.Format(UserExistsError, user.Id));
@@ -43,20 +38,10 @@ namespace SugarChat.Core.Services.Users
             await _repository.AddAsync(user, cancellationToken);
         }
 
-        public virtual void Delete(string id)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public virtual async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
         {
             User user = await GetAsync(id);
             await _repository.RemoveAsync(user, cancellationToken);
-        }
-
-        public virtual User Get(string id)
-        {
-            throw new System.NotImplementedException();
         }
 
         public virtual async Task<User> GetAsync(string id)
@@ -70,18 +55,13 @@ namespace SugarChat.Core.Services.Users
             return user;
         }
 
-        public virtual void AddFriend(string userId, string friendId)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public virtual async Task AddFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default)
         {
             await CheckExist(userId);
             await CheckExist(friendId);
-            CheckSelf(userId, friendId);
-            await CheckFriend(userId, friendId);
+            CheckNotSelf(userId, friendId);
+            await CheckNotFriend(userId, friendId);
             Friend friendEntity = new Friend
             {
                 UserId = userId,
@@ -90,15 +70,15 @@ namespace SugarChat.Core.Services.Users
             };
             await _repository.AddAsync(friendEntity, cancellationToken);
 
-            async Task CheckFriend(string userId, string friendId)
+            async Task CheckNotFriend(string userId, string friendId)
             {
-                if (!await _repository.AnyAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId))
+                if (await _repository.AnyAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId))
                 {
                     throw new BusinessException(string.Format(FriendAlreadyMadeError, userId, friendId));
                 }
             }
 
-            void CheckSelf(string userId, string friendId)
+            void CheckNotSelf(string userId, string friendId)
             {
                 if (userId == friendId)
                 {
@@ -107,23 +87,23 @@ namespace SugarChat.Core.Services.Users
             }
         }
 
-        public virtual void RemoveFriend(string userId, string friendId)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public virtual async Task RemoveFriendAsync(string userId, string friendId)
         {
             await CheckExist(userId);
             await CheckExist(friendId);
-            await CheckNotFriend(userId, friendId);
+            Friend friend = await GetFriend(userId, friendId);
+            await _repository.RemoveAsync(friend, CancellationToken.None);
 
-            async Task CheckNotFriend(string userId, string friendId)
+            async Task<Friend> GetFriend(string userId, string friendId)
             {
-                if (await _repository.AnyAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId))
+                Friend friend =
+                    await _repository.SingleOrDefaultAsync<Friend>(o => o.UserId == userId && o.FriendId == friendId);
+                if (friend == null)
                 {
                     throw new BusinessException(string.Format(NotFriendError, userId, friendId));
                 }
+
+                return friend;
             }
         }
 
@@ -131,7 +111,7 @@ namespace SugarChat.Core.Services.Users
         {
             if (!await _repository.AnyAsync<User>(o => o.Id == id))
             {
-                throw new BusinessException(string.Format(UserExistsError, id));
+                throw new BusinessException(string.Format(UserNoExistsError, id));
             }
         }
     }

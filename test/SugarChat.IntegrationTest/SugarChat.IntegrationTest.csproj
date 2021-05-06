@@ -33,5 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
+    <ProjectReference Include="..\..\src\SugarChat.MongoDb\SugarChat.Data.MongoDb.csproj" />
   </ItemGroup>
 </Project>

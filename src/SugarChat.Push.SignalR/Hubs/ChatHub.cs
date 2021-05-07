@@ -82,6 +82,15 @@ namespace SugarChat.Push.SignalR.Hubs
             }
         }
 
+        public async Task AddGroup(string groupName, CancellationToken cancellationToken = default)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName, cancellationToken);
+        }
+        public async Task ExitGroup(string groupName, CancellationToken cancellationToken = default)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName, cancellationToken);
+        }
+
         public override Task OnConnectedAsync()
         {
             // todo 

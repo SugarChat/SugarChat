@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SugarChat.Push.SignalR.Requirement
+namespace SugarChat.SignalR.Requirement
 {
-    // Todo: change the TResource
     public class DomainRestrictedRequirement :
-    AuthorizationHandler<DomainRestrictedRequirement, HubCallerContext>,
+    AuthorizationHandler<DomainRestrictedRequirement, HubInvocationContext>,
     IAuthorizationRequirement
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DomainRestrictedRequirement requirement, HubCallerContext resource)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, DomainRestrictedRequirement requirement, HubInvocationContext resource)
         {
             // Todo
             return Task.CompletedTask;

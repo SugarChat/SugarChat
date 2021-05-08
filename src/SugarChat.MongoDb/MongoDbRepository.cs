@@ -124,7 +124,7 @@ namespace SugarChat.Data.MongoDb
             return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
         }
 
-        public Task UpdateAsync<T>(T entity) where T : class, IEntity
+        public Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entity == null)
             {
@@ -132,10 +132,10 @@ namespace SugarChat.Data.MongoDb
             }
             var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
             entity.LastModifyDate = DateTime.UtcNow;
-            return GetCollection<T>().ReplaceOneAsync(filter, entity);
+            return GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
         }
 
-        public Task UpdateRangAsync<T>(IEnumerable<T> entities) where T : class, IEntity
+        public Task UpdateRangAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
@@ -146,7 +146,7 @@ namespace SugarChat.Data.MongoDb
                     var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                     updates.Add(new ReplaceOneModel<T>(filter, entity));
                 }
-                return GetCollection<T>().BulkWriteAsync(updates);
+                return GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken);
             }
             return Task.CompletedTask;
         }

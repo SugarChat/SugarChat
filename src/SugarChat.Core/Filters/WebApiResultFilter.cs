@@ -16,7 +16,11 @@ namespace SugarChat.Core.Filters
         {
             if (context.Result is ObjectResult objectResult)
             {
-                if (objectResult.Value == null)
+                if(objectResult.Value is BasicResponse)
+                {
+
+                }
+                else if (objectResult.Value == null)
                 {
                     context.Result = new ObjectResult(new BasicResponse((int)CommonExceptionEnum.NotFound, "Resouce Not Found"));
                 }

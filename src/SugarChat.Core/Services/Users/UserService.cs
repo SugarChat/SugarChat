@@ -7,7 +7,7 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Core.Services.Groups;
+using SugarChat.Core.Services.Friends;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
@@ -22,32 +22,42 @@ namespace SugarChat.Core.Services.Users
         private readonly IMapper _mapper;
         private readonly IRepository _repository;
         private readonly IUserDataProvider _userDataProvider;
+        private readonly IFriendDataProvider _friendDataProvider;
 
-        public UserService(IMapper mapper, IRepository repository, IUserDataProvider userDataProvider)
+        //TODO Error const would be moved to specific class or json file
+        private const string UserExistsError = "User with Id {0} is already existed.";
+        private const string UserNoExistsError = "User with Id {0} Dose not exist.";
+        private const string FriendAlreadyMadeError = "User with Id {0} has already made friend with Id {1}.";
+        private const string AddSelfAsFiendError = "User with Id {0} Should not add self as friend.";
+        private const string NotFriendError = "User with Id {0} is not friend with Id {1} yet.";
+
+        public UserService(IMapper mapper, IRepository repository, IUserDataProvider userDataProvider,
+            IFriendDataProvider friendDataProvider)
         {
             _mapper = mapper;
             _repository = repository;
             _userDataProvider = userDataProvider;
+            _friendDataProvider = friendDataProvider;
         }
 
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
         {
-            var user = _mapper.Map<User>(command);
-            try
-            {
-                await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
-                await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
-            }
-            catch (Exception e)
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            if (user is not null)
             {
                 return new UserAddedEvent
                 {
-                    Id = user.Id,
+                    Id = command.Id,
                     Status = EventStatus.Failed,
-                    Infomation = e
+                    Infomation = new BusinessException(String.Format(UserExistsError, command.Id))
                 };
             }
+
+            user = _mapper.Map<User>(command);
+
+            await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
+            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
             return new UserAddedEvent
             {
@@ -59,21 +69,19 @@ namespace SugarChat.Core.Services.Users
         public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,
             CancellationToken cancellation = default)
         {
-            try
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            if (user is null)
             {
-                User user = await _repository.SingleAsync<User>(o => o.Id == command.Id);
-                await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
-                await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                return new UserDeletedEvent()
+                return new UserDeletedEvent
                 {
                     Id = command.Id,
                     Status = EventStatus.Failed,
-                    Infomation = e
+                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.Id))
                 };
             }
+
+            await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
+            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
             return new UserDeletedEvent
             {
@@ -92,21 +100,94 @@ namespace SugarChat.Core.Services.Users
                 {
                     Id = null,
                     Status = EventStatus.Failed,
-                    Infomation = new BusinessException("")
+                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.UserId))
                 };
             }
-            throw new NotImplementedException();
+
+            if (command.UserId == command.FriendId)
+            {
+                return new FriendAddedEvent
+                {
+                    Id = null,
+                    Status = EventStatus.Failed,
+                    Infomation = new BusinessException(String.Format(AddSelfAsFiendError, command.UserId))
+                };
+            }
+
+            User friend = await GetUserAsync(command.FriendId, cancellation);
+            if (friend is null)
+            {
+                return new FriendAddedEvent
+                {
+                    Id = null,
+                    Status = EventStatus.Failed,
+                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.FriendId))
+                };
+            }
+
+            Friend existFriend =
+                await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
+            if (existFriend is not null)
+            {
+                return new FriendAddedEvent
+                {
+                    Id = null,
+                    Status = EventStatus.Failed,
+                    Infomation =
+                        new BusinessException(String.Format(FriendAlreadyMadeError, command.UserId, command.FriendId))
+                };
+            }
+
+            Friend makeFriend = new Friend
+            {
+                UserId = command.UserId,
+                FriendId = command.FriendId,
+                BecomeFriendAt = DateTimeOffset.UtcNow
+            };
+
+            await _repository.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
+            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
+
+            return new FriendAddedEvent
+            {
+                Id = user.Id,
+                Status = EventStatus.Success,
+            };
         }
 
-        public Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
+        public async Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
             CancellationToken cancellation = default)
         {
-            throw new NotImplementedException();
+            Friend friend = await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
+            if (friend is null)
+            {
+                return new FriendRemovedEvent
+                {
+                    UserId = command.UserId,
+                    FriendId = command.FriendId,
+                    Status = EventStatus.Failed,
+                    Infomation = new BusinessException(String.Format(NotFriendError, command.UserId, command.FriendId))
+                };
+            }
+
+            await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
+
+            return new FriendRemovedEvent
+            {
+                UserId = command.UserId,
+                FriendId = command.FriendId,
+                Status = EventStatus.Success
+            };
         }
 
-        public Task<GetUserResponse> GetUserAsync(GetUserRequest request, CancellationToken cancellation = default)
+        public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,
+            CancellationToken cancellation = default)
         {
-            throw new NotImplementedException();
+            return new()
+            {
+                User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellation))
+            };
         }
 
         public Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,

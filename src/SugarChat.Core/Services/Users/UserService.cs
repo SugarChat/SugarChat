@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -80,8 +82,19 @@ namespace SugarChat.Core.Services.Users
             };
         }
 
-        public Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command, CancellationToken cancellation = default)
+        public async Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command,
+            CancellationToken cancellation = default)
         {
+            User user = await GetUserAsync(command.UserId, cancellation);
+            if (user is null)
+            {
+                return new FriendAddedEvent
+                {
+                    Id = null,
+                    Status = EventStatus.Failed,
+                    Infomation = new BusinessException("")
+                };
+            }
             throw new NotImplementedException();
         }
 
@@ -100,6 +113,27 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellation = default)
         {
             return Task.FromResult(new GetUserResponse {User = new UserDto()});
+        }
+
+        public async Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request,
+            CancellationToken cancellation = default)
+        {
+            //TODO Should I check if the userId is invalid and return a failed Response with Information of BusinessException?
+
+            IEnumerable<User> friends = await
+                _userDataProvider.GetRangeByIdAsync(_repository.Query<Friend>().Where(o => o.UserId == request.Id)
+                    .Select(o => o.FriendId), cancellation);
+
+            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
+            return new GetFriendsOfUserResponse
+            {
+                Friends = friendsDto
+            };
+        }
+
+        private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
+        {
+            return _userDataProvider.GetByIdAsync(id, cancellation);
         }
     }
 }

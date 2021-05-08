@@ -23,7 +23,7 @@ namespace SugarChat.Data.MongoDb
 
         private static Expression<Func<T, bool>> WhereAdapter<T>(Expression<Func<T, bool>> expression)
         {
-            return expression == null ? e => true : expression;
+            return expression ?? (e => true);
         }
 
         private IMongoCollection<T> GetCollection<T>()
@@ -91,7 +91,7 @@ namespace SugarChat.Data.MongoDb
             return Task.FromResult(result);
         }
 
-        public IQueryable<T> Query<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public IQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
                    .AsQueryable();

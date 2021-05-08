@@ -35,4 +35,8 @@
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
     <ProjectReference Include="..\..\src\SugarChat.MongoDb\SugarChat.Data.MongoDb.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="UserServiceTest" />
+  </ItemGroup>
 </Project>

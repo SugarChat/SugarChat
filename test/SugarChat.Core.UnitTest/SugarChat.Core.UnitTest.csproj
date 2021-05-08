@@ -27,4 +27,8 @@
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UserServiceTest" />
+  </ItemGroup>
+
 </Project>

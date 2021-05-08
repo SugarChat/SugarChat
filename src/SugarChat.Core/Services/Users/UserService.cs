@@ -7,6 +7,7 @@ using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Commands.Users;
+using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -28,42 +29,77 @@ namespace SugarChat.Core.Services.Users
         }
 
 
-        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation)
+        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
         {
             var user = _mapper.Map<User>(command);
-
-            await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
+            try
+            {
+                await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
+                await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return new UserAddedEvent
+                {
+                    Id = user.Id,
+                    Status = EventStatus.Failed,
+                    Infomation = e
+                };
+            }
 
             return new UserAddedEvent
             {
-                Id = user.Id
+                Id = user.Id,
+                Status = EventStatus.Success,
             };
         }
 
-        public Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command, CancellationToken cancellation)
+        public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,
+            CancellationToken cancellation = default)
+        {
+            try
+            {
+                User user = await _repository.SingleAsync<User>(o => o.Id == command.Id);
+                await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
+                await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return new UserDeletedEvent()
+                {
+                    Id = command.Id,
+                    Status = EventStatus.Failed,
+                    Infomation = e
+                };
+            }
+
+            return new UserDeletedEvent
+            {
+                Id = command.Id,
+                Status = EventStatus.Success,
+            };
+        }
+
+        public Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command, CancellationToken cancellation = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command, CancellationToken cancellation)
+        public Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
+            CancellationToken cancellation = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellation)
+        public Task<GetUserResponse> GetUserAsync(GetUserRequest request, CancellationToken cancellation = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<GetUserResponse> GetUserAsync(GetUserRequest request, CancellationToken cancellation)
+        public Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
+            CancellationToken cancellation = default)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request, CancellationToken cancellation)
-        {
-            return Task.FromResult(new GetUserResponse{User = new UserDto()});
+            return Task.FromResult(new GetUserResponse {User = new UserDto()});
         }
     }
 }

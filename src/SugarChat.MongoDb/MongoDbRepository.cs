@@ -21,6 +21,16 @@ namespace SugarChat.Data.MongoDb
             _database = client.GetDatabase(settings.DatabaseName);
         }
 
+        private static Expression<Func<T, bool>> WhereAdapter<T>(Expression<Func<T, bool>> expression)
+        {
+            return expression == null ? e => true : expression;
+        }
+
+        private IMongoCollection<T> GetCollection<T>()
+        {
+            return _database.GetCollection<T>(typeof(T).Name);
+        }
+
         public Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
             var list = GetCollection<T>()
@@ -114,14 +124,31 @@ namespace SugarChat.Data.MongoDb
             return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
         }
 
-        private Expression<Func<T, bool>> WhereAdapter<T>(Expression<Func<T, bool>> expression)
+        public Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return expression == null ? e => true : expression;
+            if (entity == null)
+            {
+                return Task.CompletedTask;
+            }
+            var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+            entity.LastModifyDate = DateTime.UtcNow;
+            return GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
         }
 
-        private IMongoCollection<T> GetCollection<T>()
+        public Task UpdateRangAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return _database.GetCollection<T>(typeof(T).Name);
+            if (entities?.Any() == true)
+            {
+                var updates = new List<WriteModel<T>>();
+                foreach (var entity in entities)
+                {
+                    entity.LastModifyDate = DateTime.UtcNow;
+                    var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+                    updates.Add(new ReplaceOneModel<T>(filter, entity));
+                }
+                return GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken);
+            }
+            return Task.CompletedTask;
         }
     }
 }

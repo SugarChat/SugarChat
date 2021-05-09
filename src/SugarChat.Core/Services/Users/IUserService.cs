@@ -17,5 +17,6 @@ namespace SugarChat.Core.Services.Users
         Task<GetUserResponse> GetUserAsync(GetUserRequest request, CancellationToken cancellation = default);
         Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request, CancellationToken cancellation = default);
         Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request, CancellationToken cancellation = default);
+        Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request, CancellationToken cancellation = default);
     }
 }

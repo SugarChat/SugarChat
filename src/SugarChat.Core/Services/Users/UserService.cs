@@ -8,6 +8,8 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Friends;
+using SugarChat.Core.Services.Groups;
+using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
@@ -23,6 +25,8 @@ namespace SugarChat.Core.Services.Users
         private readonly IRepository _repository;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
+        private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IGroupDataProvider _groupDataProvider;
 
         //TODO Error const would be moved to specific class or json file
         private const string UserExistsError = "User with Id {0} is already existed.";
@@ -32,12 +36,15 @@ namespace SugarChat.Core.Services.Users
         private const string NotFriendError = "User with Id {0} is not friend with Id {1} yet.";
 
         public UserService(IMapper mapper, IRepository repository, IUserDataProvider userDataProvider,
-            IFriendDataProvider friendDataProvider)
+            IFriendDataProvider friendDataProvider, IGroupUserDataProvider groupUserDataProvider,
+            IGroupDataProvider groupDataProvider)
         {
             _mapper = mapper;
             _repository = repository;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
+            _groupUserDataProvider = groupUserDataProvider;
+            _groupDataProvider = groupDataProvider;
         }
 
 
@@ -202,13 +209,27 @@ namespace SugarChat.Core.Services.Users
             //TODO Should I check if the userId is invalid and return a failed Response with Information of BusinessException?
 
             IEnumerable<User> friends = await
-                _userDataProvider.GetRangeByIdAsync(_repository.Query<Friend>().Where(o => o.UserId == request.Id)
-                    .Select(o => o.FriendId), cancellation);
+                _userDataProvider.GetRangeByIdAsync(
+                    (await _friendDataProvider.GetByUserIdAsync(request.Id, cancellation)).Select(o => o.FriendId),
+                    cancellation);
 
             IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
             return new GetFriendsOfUserResponse
             {
                 Friends = friendsDto
+            };
+        }
+
+        public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
+            CancellationToken cancellation = default)
+        {
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation);
+            IEnumerable<Group> groups =
+                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), cancellation);
+            IEnumerable<GroupDto> groupsDto = _mapper.Map<IEnumerable<GroupDto>>(groups);
+            return new GetGroupsOfUserResponse
+            {
+                Friends = groupsDto
             };
         }
 

@@ -8,4 +8,9 @@
     <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.2.0" />
+    <PackageReference Include="Mediator.Net.Autofac" Version="3.4.0" />
+  </ItemGroup>
+
 </Project>

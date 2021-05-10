@@ -17,7 +17,6 @@ namespace SugarChat.Core.IRepositories
         Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity;
         Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity;
         IQueryable<T> Query<T>() where T : class, IEntity;
-        Task SaveChangesAsync(CancellationToken cancellationToken = default);
         Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;

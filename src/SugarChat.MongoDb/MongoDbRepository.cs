@@ -75,14 +75,9 @@ namespace SugarChat.Data.MongoDb
                    .AsQueryable();
         }
 
-        public Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.CompletedTask;
-        }
-
         public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            entity.CreatedDate = DateTime.UtcNow;
+            entity.CreatedDate = DateTimeOffset.Now;
             return GetCollection<T>().InsertOneAsync(entity, null, cancellationToken);
         }
 
@@ -90,7 +85,7 @@ namespace SugarChat.Data.MongoDb
         {
             foreach (var entity in entities)
             {
-                entity.CreatedDate = DateTime.UtcNow;
+                entity.CreatedDate = DateTimeOffset.Now;
             }
             return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
         }
@@ -114,7 +109,7 @@ namespace SugarChat.Data.MongoDb
                 return Task.CompletedTask;
             }
             var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-            entity.LastModifyDate = DateTime.UtcNow;
+            entity.LastModifyDate = DateTimeOffset.Now;
             return GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
         }
 
@@ -125,7 +120,7 @@ namespace SugarChat.Data.MongoDb
                 var updates = new List<WriteModel<T>>();
                 foreach (var entity in entities)
                 {
-                    entity.LastModifyDate = DateTime.UtcNow;
+                    entity.LastModifyDate = DateTimeOffset.Now;
                     var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                     updates.Add(new ReplaceOneModel<T>(filter, entity));
                 }

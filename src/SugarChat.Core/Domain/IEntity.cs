@@ -6,5 +6,7 @@ namespace SugarChat.Core.Domain
     {
         string Id { get; set; }
         DateTimeOffset LastModifyDate { get; set; }
+        public DateTimeOffset CreatedDate { get; set; }
+
     }
 };

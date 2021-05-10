@@ -230,7 +230,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             await _repository.AddRangeAsync(groups, default(CancellationToken));
             groups[0].Name = "UpdatedTestGroup1";
             groups[1].Name = "UpdatedTestGroup2";
-            await _repository.UpdateRangAsync(groups);
+            await _repository.UpdateRangeAsync(groups);
             var ids = groups.Select(e => e.Id).ToList();
             var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id));
             groupList.Count.ShouldBe(groups.Count);

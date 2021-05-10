@@ -9,6 +9,7 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using MongoDB.Driver;
 using SugarChat.Core.Settings;
+using MongoDB.Driver.Linq;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -31,64 +32,41 @@ namespace SugarChat.Data.MongoDb
             return _database.GetCollection<T>(typeof(T).Name);
         }
 
+        private IMongoQueryable<T> FilteredQuery<T>(Expression<Func<T, bool>> predicate = null)
+        {
+            return GetCollection<T>()
+                   .AsQueryable()
+                   .Where(WhereAdapter(predicate));
+        }
+
         public Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var list = GetCollection<T>()
-                 .AsQueryable()
-                 .Where(WhereAdapter(predicate))
-                 .ToList();
-
-            return Task.FromResult(list);
+            return FilteredQuery(predicate).ToListAsync();
         }
 
         public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var result = GetCollection<T>()
-                .AsQueryable()
-                .Where(WhereAdapter(predicate))
-                .Count();
-
-            return Task.FromResult(result);
+            return FilteredQuery(predicate).CountAsync();
         }
 
         public Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var result = GetCollection<T>()
-              .AsQueryable()
-              .Where(WhereAdapter(predicate))
-              .SingleOrDefault();
-
-            return Task.FromResult(result);
+            return FilteredQuery(predicate).SingleOrDefaultAsync();
         }
 
         public Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var result = GetCollection<T>()
-               .AsQueryable()
-               .Where(WhereAdapter(predicate))
-               .Single();
-
-            return Task.FromResult(result);
+            return FilteredQuery(predicate).SingleAsync();
         }
 
         public Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var result = GetCollection<T>()
-                .AsQueryable()
-                .Where(WhereAdapter(predicate))
-                .FirstOrDefault();
-
-            return Task.FromResult(result);
+            return FilteredQuery(predicate).FirstOrDefaultAsync();
         }
 
         public Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
         {
-            var result = GetCollection<T>()
-                      .AsQueryable()
-                      .Where(WhereAdapter(predicate))
-                      .Any();
-
-            return Task.FromResult(result);
+            return FilteredQuery(predicate).AnyAsync();
         }
 
         public IQueryable<T> Query<T>() where T : class, IEntity
@@ -104,11 +82,16 @@ namespace SugarChat.Data.MongoDb
 
         public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
+            entity.CreatedDate = DateTime.UtcNow;
             return GetCollection<T>().InsertOneAsync(entity, null, cancellationToken);
         }
 
         public Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
+            foreach (var entity in entities)
+            {
+                entity.CreatedDate = DateTime.UtcNow;
+            }
             return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
         }
 
@@ -135,7 +118,7 @@ namespace SugarChat.Data.MongoDb
             return GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
         }
 
-        public Task UpdateRangAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public Task UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {

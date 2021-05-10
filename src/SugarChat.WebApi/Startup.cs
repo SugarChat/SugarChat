@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson.Serialization;
 using SugarChat.Core;
-using SugarChat.Core.Settings;
-using SugarChat.Core.Tools;
+using SugarChat.Core.Autofac;
+using System.Reflection;
 
 namespace SugarChat.WebApi
 {
@@ -17,7 +17,6 @@ namespace SugarChat.WebApi
         public IConfiguration Configuration { get; set; }
         public Startup(IConfiguration configuration)
         {
-            BsonSerializer.RegisterSerializationProvider(new LocalDateTimeSerializationProvider());
             Configuration = configuration;
         }
 
@@ -30,14 +29,10 @@ namespace SugarChat.WebApi
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            var mongoSeting = new MongoDbSettings();
-            Configuration.GetSection("MongoDb")
-                         .Bind(mongoSeting);
+            builder.RegisterModule(new SugarChatModule(new Assembly[]
+            {
 
-            builder.RegisterInstance(mongoSeting)
-                   .SingleInstance();
-
-            builder.RegisterModule<RepositoriesModule>();
+            }, Configuration));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

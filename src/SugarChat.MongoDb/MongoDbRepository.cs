@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using MongoDB.Driver;
-using SugarChat.Core.Settings;
 using MongoDB.Driver.Linq;
+using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.Data.MongoDb
 {

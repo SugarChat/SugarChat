@@ -77,29 +77,45 @@ namespace SugarChat.Data.MongoDb
 
         public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
+            if (entity == null)
+            {
+                return Task.CompletedTask;
+            }
             entity.CreatedDate = DateTimeOffset.Now;
             return GetCollection<T>().InsertOneAsync(entity, null, cancellationToken);
         }
 
         public Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            foreach (var entity in entities)
+            if (entities?.Any() == true)
             {
-                entity.CreatedDate = DateTimeOffset.Now;
+                foreach (var entity in entities)
+                {
+                    entity.CreatedDate = DateTimeOffset.Now;
+                }
+                return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
             }
-            return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
+            return Task.CompletedTask;
         }
 
         public Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
+            if (entity == null)
+            {
+                return Task.CompletedTask;
+            }
             FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
             return GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken);
         }
 
         public Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
-            return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
+            if (entities?.Any() == true)
+            {
+                FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
+                return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
+            }
+            return Task.CompletedTask;
         }
 
         public Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity

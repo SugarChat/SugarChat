@@ -1,4 +1,6 @@
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using Mediator.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -8,13 +10,19 @@ using Microsoft.Extensions.Hosting;
 using MongoDB.Bson.Serialization;
 using SugarChat.Core;
 using SugarChat.Core.Autofac;
+using SugarChat.Core.Mediator.CommandHandler;
+using SugarChat.Message.Command;
 using System.Reflection;
+using SugarChat.Data.MongoDb;
+using SugarChat.Data.MongoDb.Autofac;
+using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.WebApi
 {
     public class Startup
     {
         public IConfiguration Configuration { get; set; }
+        private IServiceCollection services;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -25,14 +33,21 @@ namespace SugarChat.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddOptions();
+            this.services = services;
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            builder.Populate(services);
+            builder.RegisterMongoDbRepository(() =>
+            {
+                var setSettings = Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
+                return setSettings;
+            });
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
-
-            }, Configuration));
+                typeof(SugarChat.Core.Services.IService).Assembly
+            }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +63,13 @@ namespace SugarChat.WebApi
             {
                 endpoints.MapGet("/", async context =>
                 {
+                    var root = app.ApplicationServices.GetAutofacRoot();
+                    IMediator mediator = root.Resolve<IMediator>();
+                    SendMessageCommand sendMessageCommand = new SendMessageCommand
+                    {
+                        Content = "Hello World!"
+                    };
+                    await mediator.SendAsync(sendMessageCommand);
                     await context.Response.WriteAsync("Hello World!");
                 });
             });

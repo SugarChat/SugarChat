@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SugarChat.Core.Autofac\SugarChat.Core.Autofac.csproj" />
+      <ProjectReference Include="..\SugarChat.Database.MongoDb.Autofac\SugarChat.Data.MongoDb.Autofac.csproj" />
     </ItemGroup>
 
 </Project>

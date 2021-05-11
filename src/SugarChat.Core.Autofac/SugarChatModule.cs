@@ -1,29 +1,30 @@
-using System.Linq;
-using System.Reflection;
-using System.Collections.Generic;
 using Autofac;
+using AutoMapper;
 using Mediator.Net;
 using Mediator.Net.Autofac;
+using SugarChat.Core.Services;
+using SugarChat.Message.Command;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Module = Autofac.Module;
-using Microsoft.Extensions.Configuration;
 
 namespace SugarChat.Core.Autofac
 {
     public class SugarChatModule : Module
     {
         private readonly IEnumerable<Assembly> _assemblies;
-        private readonly IConfiguration _configuration;
 
-        public SugarChatModule(IEnumerable<Assembly> assemblies, IConfiguration configuration)
+        public SugarChatModule(IEnumerable<Assembly> assemblies)
         {
-            _configuration = configuration;
             _assemblies = assemblies;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
             RegisterMediator(builder);
-            RegisterRepository(builder);
+            RegisterServices(builder);
+            RegisterAutoMapper(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -35,9 +36,31 @@ namespace SugarChat.Core.Autofac
             builder.RegisterMediator(mediaBuilder);
         }
 
-        private void RegisterRepository(ContainerBuilder builder)
+
+        private void RegisterAutoMapper(ContainerBuilder builder)
         {
-            builder.RegisterModule(new SugarChat.Data.MongoDb.Autofac.MongoDbModule(_configuration));
+            builder.Register(context => new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<SendMessageCommand, Domain.Message>();
+            }))
+            .AsSelf()
+            .SingleInstance();
+
+            builder.Register(c =>
+            {
+                var context = c.Resolve<IComponentContext>();
+                var config = context.Resolve<MapperConfiguration>();
+                return config.CreateMapper(context.Resolve);
+            })
+            .As<IMapper>()
+            .InstancePerLifetimeScope();
+        }
+
+        private void RegisterServices(ContainerBuilder builder)
+        {
+            builder.RegisterType<SendMessageService>()
+                .As<ISendMessageService>()
+                .AsImplementedInterfaces();
         }
     }
 }

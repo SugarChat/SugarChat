@@ -29,11 +29,11 @@ namespace SugarChat.Core.Services.Users
         private readonly IGroupDataProvider _groupDataProvider;
 
         //TODO Error const would be moved to specific class or json file
-        private const string UserExistsError = "User with Id {0} is already existed.";
-        private const string UserNoExistsError = "User with Id {0} Dose not exist.";
-        private const string FriendAlreadyMadeError = "User with Id {0} has already made friend with Id {1}.";
-        private const string AddSelfAsFiendError = "User with Id {0} Should not add self as friend.";
-        private const string NotFriendError = "User with Id {0} is not friend with Id {1} yet.";
+        private const string UserExists = "User with Id {0} is already existed.";
+        private const string UserNoExists = "User with Id {0} Dose not exist.";
+        private const string FriendAlreadyMade = "User with Id {0} has already made friend with Id {1}.";
+        private const string AddSelfAsFiend = "User with Id {0} Should not add self as friend.";
+        private const string NotFriend = "User with Id {0} is not friend with Id {1} yet.";
 
         public UserService(IMapper mapper, IRepository repository, IUserDataProvider userDataProvider,
             IFriendDataProvider friendDataProvider, IGroupUserDataProvider groupUserDataProvider,
@@ -51,25 +51,15 @@ namespace SugarChat.Core.Services.Users
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
-            if (user is not null)
-            {
-                return new UserAddedEvent
-                {
-                    Id = command.Id,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(UserExistsError, command.Id))
-                };
-            }
+            CheckUserNoExists(user);
 
             user = _mapper.Map<User>(command);
-
             await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
-            return new UserAddedEvent
+            return new()
             {
                 Id = user.Id,
-                Status = EventStatus.Success,
+                Status = EventStatus.Success
             };
         }
 
@@ -77,20 +67,11 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
-            if (user is null)
-            {
-                return new UserDeletedEvent
-                {
-                    Id = command.Id,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.Id))
-                };
-            }
+            CheckUserExists(user, command.Id);
 
             await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
-            return new UserDeletedEvent
+            return new()
             {
                 Id = command.Id,
                 Status = EventStatus.Success,
@@ -101,64 +82,31 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellation = default)
         {
             User user = await GetUserAsync(command.UserId, cancellation);
-            if (user is null)
-            {
-                return new FriendAddedEvent
-                {
-                    Id = null,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.UserId))
-                };
-            }
+            CheckUserExists(user, command.UserId);
 
-            if (command.UserId == command.FriendId)
-            {
-                return new FriendAddedEvent
-                {
-                    Id = null,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(AddSelfAsFiendError, command.UserId))
-                };
-            }
+            CheckNotAddSelfAsFiend(command.UserId, command.FriendId);
 
             User friend = await GetUserAsync(command.FriendId, cancellation);
-            if (friend is null)
-            {
-                return new FriendAddedEvent
-                {
-                    Id = null,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(UserNoExistsError, command.FriendId))
-                };
-            }
+            CheckUserExists(friend, command.FriendId);
 
             Friend existFriend =
                 await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
-            if (existFriend is not null)
-            {
-                return new FriendAddedEvent
-                {
-                    Id = null,
-                    Status = EventStatus.Failed,
-                    Infomation =
-                        new BusinessException(String.Format(FriendAlreadyMadeError, command.UserId, command.FriendId))
-                };
-            }
+            CheckNotFriend(existFriend, command.UserId, command.FriendId);
 
             Friend makeFriend = new Friend
             {
+                Id = Guid.NewGuid().ToString(),
                 UserId = command.UserId,
                 FriendId = command.FriendId,
                 BecomeFriendAt = DateTimeOffset.UtcNow
             };
 
             await _repository.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
-            return new FriendAddedEvent
+            return new()
             {
-                Id = user.Id,
-                Status = EventStatus.Success,
+                Id = makeFriend.Id,
+                Status = EventStatus.Success
             };
         }
 
@@ -166,24 +114,13 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellation = default)
         {
             Friend friend = await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
-            if (friend is null)
-            {
-                return new FriendRemovedEvent
-                {
-                    UserId = command.UserId,
-                    FriendId = command.FriendId,
-                    Status = EventStatus.Failed,
-                    Infomation = new BusinessException(String.Format(NotFriendError, command.UserId, command.FriendId))
-                };
-            }
+            CheckFriend(friend, command.UserId, command.FriendId);
 
             await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
-            return new FriendRemovedEvent
+            return new()
             {
-                UserId = command.UserId,
-                FriendId = command.FriendId,
+                Id = friend.Id,
                 Status = EventStatus.Success
             };
         }
@@ -207,6 +144,8 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellation = default)
         {
             //TODO Should I check if the userId is invalid and return a failed Response with Information of BusinessException?
+            User user = await GetUserAsync(request.Id, cancellation);
+            CheckUserExists(user, request.Id);
 
             IEnumerable<User> friends = await
                 _userDataProvider.GetRangeByIdAsync(
@@ -214,7 +153,7 @@ namespace SugarChat.Core.Services.Users
                     cancellation);
 
             IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
-            return new GetFriendsOfUserResponse
+            return new()
             {
                 Friends = friendsDto
             };
@@ -223,11 +162,14 @@ namespace SugarChat.Core.Services.Users
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {
+            User user = await GetUserAsync(request.Id, cancellation);
+            CheckUserExists(user, request.Id);
+
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation);
             IEnumerable<Group> groups =
                 await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), cancellation);
             IEnumerable<GroupDto> groupsDto = _mapper.Map<IEnumerable<GroupDto>>(groups);
-            return new GetGroupsOfUserResponse
+            return new()
             {
                 Friends = groupsDto
             };
@@ -236,6 +178,46 @@ namespace SugarChat.Core.Services.Users
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
         {
             return _userDataProvider.GetByIdAsync(id, cancellation);
+        }
+
+        private void CheckUserNoExists(User user)
+        {
+            if (user is not null)
+            {
+                throw new BusinessWarningException(string.Format(UserExists, user.Id));
+            }
+        }
+
+        private void CheckUserExists(User user, string id)
+        {
+            if (user is null)
+            {
+                throw new BusinessWarningException(string.Format(UserNoExists, id));
+            }
+        }
+
+        private void CheckNotFriend(Friend friend, string userId, string friendId)
+        {
+            if (friend is not null)
+            {
+                throw new BusinessWarningException(string.Format(FriendAlreadyMade, userId, friendId));
+            }
+        }
+
+        private void CheckFriend(Friend friend, string userId, string friendId)
+        {
+            if (friend is null)
+            {
+                throw new BusinessWarningException(string.Format(NotFriend, userId, friendId));
+            }
+        }
+
+        private void CheckNotAddSelfAsFiend(string userId, string friendId)
+        {
+            if (userId == friendId)
+            {
+                throw new BusinessWarningException(string.Format(AddSelfAsFiend, userId));
+            }
         }
     }
 }

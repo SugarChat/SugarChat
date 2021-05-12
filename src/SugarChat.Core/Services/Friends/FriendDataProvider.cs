@@ -38,5 +38,15 @@ namespace SugarChat.Core.Services.Friends
         {
             return await _repository.ToListAsync<Friend>(x => x.UserId == userId).ConfigureAwait(false);
         }
+
+        public async Task AddAsync(Friend friend, CancellationToken cancellation)
+        {
+            await _repository.AddAsync(friend, cancellation);
+        }
+
+        public async Task RemoveAsync(Friend friend, CancellationToken cancellation)
+        {
+            await _repository.RemoveAsync(friend, cancellation);
+        }
     }
 }

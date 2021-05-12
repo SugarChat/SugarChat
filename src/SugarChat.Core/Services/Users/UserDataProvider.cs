@@ -25,5 +25,15 @@ namespace SugarChat.Core.Services.Users
         {
             return await _repository.ToListAsync<User>(o=>ids.Contains(o.Id)).ConfigureAwait(false);
         }
+
+        public async Task AddAsync(User user, CancellationToken cancellation)
+        {
+            await _repository.AddAsync(user, cancellation);
+        }
+
+        public async Task RemoveAsync(User user, CancellationToken cancellation)
+        {
+            await _repository.RemoveAsync(user, cancellation);
+        }
     }
 }

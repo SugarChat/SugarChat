@@ -31,6 +31,11 @@ namespace SugarChat.Core.Services.Users
             await _repository.AddAsync(user, cancellation);
         }
 
+        public async Task UpdateAsync(User user, CancellationToken cancellation)
+        {
+            await _repository.UpdateAsync(user, cancellation);
+        }
+
         public async Task RemoveAsync(User user, CancellationToken cancellation)
         {
             await _repository.RemoveAsync(user, cancellation);

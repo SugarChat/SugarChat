@@ -60,6 +60,22 @@ namespace SugarChat.Core.Services.Users
             };
         }
 
+        public async Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command,
+            CancellationToken cancellation = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            CheckUserExists(user, command.Id);
+
+            user = _mapper.Map<User>(command);
+            await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
+
+            return new()
+            {
+                Id = user.Id,
+                Status = EventStatus.Success
+            };
+        }
+
         public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,
             CancellationToken cancellation = default)
         {

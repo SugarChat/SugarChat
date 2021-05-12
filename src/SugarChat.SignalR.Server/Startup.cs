@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SugarChat.Push.SignalR.Extensions;
 using SugarChat.Push.SignalR.Hubs;
+using SugarChat.Push.SignalR.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IChatHubService, ChatHubService>();
             services.AddSugarChatSignalR();
             services.AddAuthentication(options =>
             {

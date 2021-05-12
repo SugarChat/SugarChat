@@ -39,34 +39,34 @@ namespace SugarChat.Data.MongoDb
                    .Where(WhereAdapter(predicate));
         }
 
-        public Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).ToListAsync();
+            return FilteredQuery(predicate).ToListAsync(cancellationToken);
         }
 
-        public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).CountAsync();
+            return FilteredQuery(predicate).CountAsync(cancellationToken);
         }
 
-        public Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).SingleOrDefaultAsync();
+            return FilteredQuery(predicate).SingleOrDefaultAsync(cancellationToken);
         }
 
-        public Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).SingleAsync();
+            return FilteredQuery(predicate).SingleAsync(cancellationToken);
         }
 
-        public Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).FirstOrDefaultAsync();
+            return FilteredQuery(predicate).FirstOrDefaultAsync(cancellationToken);
         }
 
-        public Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null) where T : class, IEntity
+        public Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).AnyAsync();
+            return FilteredQuery(predicate).AnyAsync(cancellationToken);
         }
 
         public IQueryable<T> Query<T>() where T : class, IEntity

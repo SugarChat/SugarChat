@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Core.UnitTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Database.MongoDb.IntegrationTest", "test\SugarChat.Database.MongoDb.IntegrationTest\SugarChat.Database.MongoDb.IntegrationTest.csproj", "{88E5C262-2115-47B3-97EA-82AE89ACC274}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.SignalR.Server", "src\SugarChat.SignalR.Server\SugarChat.SignalR.Server.csproj", "{A4152B10-C611-46F3-9B61-529FDC62D9CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{88E5C262-2115-47B3-97EA-82AE89ACC274}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88E5C262-2115-47B3-97EA-82AE89ACC274}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88E5C262-2115-47B3-97EA-82AE89ACC274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4152B10-C611-46F3-9B61-529FDC62D9CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4152B10-C611-46F3-9B61-529FDC62D9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4152B10-C611-46F3-9B61-529FDC62D9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4152B10-C611-46F3-9B61-529FDC62D9CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +115,7 @@ Global
 		{9DE8BFA1-6158-46A2-817A-8AFAA81214E3} = {646031C8-9701-473A-B858-4BCE64C96A60}
 		{2B99E059-3385-45A5-9F18-2F644594B3D8} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
 		{88E5C262-2115-47B3-97EA-82AE89ACC274} = {03EBFF00-5DD7-4DA7-94A2-EB3A4239910F}
+		{A4152B10-C611-46F3-9B61-529FDC62D9CE} = {646031C8-9701-473A-B858-4BCE64C96A60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {18893F6A-7736-476C-90CF-A0257C41D831}

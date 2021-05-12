@@ -25,7 +25,6 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IChatHubService, ChatHubService>();
             services.AddSugarChatSignalR();
             services.AddAuthentication(options =>
             {

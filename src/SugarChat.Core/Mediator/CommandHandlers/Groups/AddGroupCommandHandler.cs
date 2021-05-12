@@ -2,12 +2,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Commands.Groups;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Groups
 {
-    public class AddGroupCommandHandler : ICommandHandler<AddGroupCommand>
+    public class AddGroupCommandHandler : ICommandHandler<AddGroupCommand, ISugarChatResponse>
     {
         private readonly IGroupService _groupService;
 
@@ -16,12 +17,14 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Groups
             _groupService = groupService;
         }
 
-        public async Task Handle(IReceiveContext<AddGroupCommand> context, CancellationToken cancellationToken)
+
+        public async Task<ISugarChatResponse> Handle(IReceiveContext<AddGroupCommand> context, CancellationToken cancellationToken)
         {
             var groupAddedEvent =
                 await _groupService.AddGroupAsync(context.Message, cancellationToken).ConfigureAwait(false);
 
             await context.PublishAsync(groupAddedEvent, cancellationToken).ConfigureAwait(false);
+            return SugarChatResponse.CreateResponse();
         }
     }
 }

@@ -5,6 +5,11 @@ using Autofac;
 using Mediator.Net;
 using Mediator.Net.Autofac;
 using Module = Autofac.Module;
+using Mediator.Net.Binding;
+using SugarChat.Core.Basic;
+using SugarChat.Core.Middlewares;
+using Mediator.Net.Context;
+using Mediator.Net.Contracts;
 
 namespace SugarChat.Core.Autofac
 {
@@ -25,8 +30,10 @@ namespace SugarChat.Core.Autofac
         private void RegisterMediator(ContainerBuilder builder)
         {
             var mediaBuilder = new MediatorBuilder();
-            
-            mediaBuilder.RegisterHandlers(_assemblies.ToArray());
+
+            mediaBuilder
+                .ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(SugarChatResponse)))
+                .RegisterHandlers(_assemblies.ToArray());
             
             builder.RegisterMediator(mediaBuilder);
         }

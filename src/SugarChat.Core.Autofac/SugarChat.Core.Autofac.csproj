@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.2.0" />
-    <PackageReference Include="Mediator.Net.Autofac" Version="3.4.0" />
+    <PackageReference Include="Mediator.Net.Autofac" Version="3.4.0-extendContract60" />
   </ItemGroup>
 
 </Project>

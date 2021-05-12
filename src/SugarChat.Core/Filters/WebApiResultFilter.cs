@@ -16,26 +16,26 @@ namespace SugarChat.Core.Filters
         {
             if (context.Result is ObjectResult objectResult)
             {
-                if(objectResult.Value is BasicResponse)
+                if(objectResult.Value is SugarChatResponse)
                 {
 
                 }
                 else if (objectResult.Value == null)
                 {
-                    context.Result = new ObjectResult(new BasicResponse((int)CommonExceptionEnum.NotFound, "Resouce Not Found"));
+                    context.Result = new ObjectResult(new SugarChatResponse((int)CommonExceptionEnum.NotFound, "Resouce Not Found"));
                 }
                 else
                 {
-                    context.Result = new ObjectResult(new BasicResponse<object>(objectResult.Value));
+                    context.Result = new ObjectResult(new SugarResponse<object>(objectResult.Value));
                 }
             }
             else if (context.Result is EmptyResult)
             {
-                context.Result = new ObjectResult(new BasicResponse((int)CommonExceptionEnum.NotFound, "Resouce Not Found"));
+                context.Result = new ObjectResult(new SugarChatResponse((int)CommonExceptionEnum.NotFound, "Resouce Not Found"));
             }
             else if (context.Result is ContentResult)
             {
-                context.Result = new ObjectResult(new BasicResponse<string>((context.Result as ContentResult).Content));
+                context.Result = new ObjectResult(new SugarResponse<string>((context.Result as ContentResult).Content));
             }
             // Consider whether you need it or not.
 

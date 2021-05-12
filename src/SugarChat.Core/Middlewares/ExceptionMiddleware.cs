@@ -4,6 +4,7 @@ using SugarChat.Core.Common;
 using SugarChat.Core.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -32,12 +33,13 @@ namespace SugarChat.Core.Middlewares
             string error = "";
             if(e is BusinessException bex)
             {
-                var json = new BasicResponse(bex.Code, bex.Message);
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                var json = new SugarChatResponse(bex.Code, bex.Message);
                 error = JsonSerializer.Serialize(json);
             }
             else
             {
-                var json = new BasicResponse((int)CommonExceptionEnum.InternalError, e.Message);
+                var json = new SugarChatResponse((int)CommonExceptionEnum.InternalError, e.Message);
                 error = JsonSerializer.Serialize(json);
             }
 

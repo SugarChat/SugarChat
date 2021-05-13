@@ -19,13 +19,12 @@ namespace SugarChat.Core.Services
             _mapper = mapper;
         }
 
-        public async Task SendMessage(SendMessageCommand command, CancellationToken cancellationToken)
+        public Task SendMessage(SendMessageCommand command, CancellationToken cancellationToken)
         {
             //todo  只是demo，未写完逻辑
             //todo  add parser to ParsedContent
             var message = _mapper.Map<Domain.Message>(command);
-            await _repository.AddAsync(message, cancellationToken);
-            await _repository.SaveChangesAsync(cancellationToken);
+            return _repository.AddAsync(message, cancellationToken);
         }
     }
 }

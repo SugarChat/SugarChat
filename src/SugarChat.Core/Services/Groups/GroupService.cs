@@ -26,7 +26,6 @@ namespace SugarChat.Core.Services.Groups
             var group = _mapper.Map<Group>(command);
 
             await _repository.AddAsync(group, cancellation).ConfigureAwait(false);
-            await _repository.SaveChangesAsync(cancellation).ConfigureAwait(false);
 
             return new GroupAddedEvent
             {

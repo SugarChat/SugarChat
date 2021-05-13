@@ -17,10 +17,9 @@ namespace SugarChat.Core.Services.Groups
             _repository = repository;
         }
 
-        public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
+        public Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
         {
-            return await _repository.SingleOrDefaultAsync<Group>(x => x.Id == id)
-                .ConfigureAwait(false);
+            return _repository.SingleOrDefaultAsync<Group>(x => x.Id == id);
         }
 
         public async Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken)

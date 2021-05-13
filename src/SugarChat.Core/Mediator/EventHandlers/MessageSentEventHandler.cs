@@ -5,6 +5,7 @@ using SugarChat.Message.Event;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Message.Events;
 
 namespace SugarChat.Core.Mediator.EventHandler
 {

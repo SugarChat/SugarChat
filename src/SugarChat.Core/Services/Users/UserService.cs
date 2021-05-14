@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
-using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
@@ -22,7 +21,6 @@ namespace SugarChat.Core.Services.Users
     public class UserService : IUserService
     {
         private readonly IMapper _mapper;
-        private readonly IRepository _repository;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
@@ -35,12 +33,11 @@ namespace SugarChat.Core.Services.Users
         private const string AddSelfAsFiend = "User with Id {0} Should not add self as friend.";
         private const string NotFriend = "User with Id {0} is not friend with Id {1} yet.";
 
-        public UserService(IMapper mapper, IRepository repository, IUserDataProvider userDataProvider,
+        public UserService(IMapper mapper, IUserDataProvider userDataProvider,
             IFriendDataProvider friendDataProvider, IGroupUserDataProvider groupUserDataProvider,
             IGroupDataProvider groupDataProvider)
         {
             _mapper = mapper;
-            _repository = repository;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
@@ -54,7 +51,23 @@ namespace SugarChat.Core.Services.Users
             CheckUserNoExists(user);
 
             user = _mapper.Map<User>(command);
-            await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
+            await _userDataProvider.AddAsync(user, cancellation).ConfigureAwait(false);
+
+            return new()
+            {
+                Id = user.Id,
+                Status = EventStatus.Success
+            };
+        }
+
+        public async Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command,
+            CancellationToken cancellation = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            CheckUserExists(user, command.Id);
+
+            user = _mapper.Map<User>(command);
+            await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
 
             return new()
             {
@@ -69,7 +82,7 @@ namespace SugarChat.Core.Services.Users
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
             CheckUserExists(user, command.Id);
 
-            await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
+            await _userDataProvider.RemoveAsync(user, cancellation).ConfigureAwait(false);
 
             return new()
             {
@@ -101,7 +114,7 @@ namespace SugarChat.Core.Services.Users
                 BecomeFriendAt = DateTimeOffset.UtcNow
             };
 
-            await _repository.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
+            await _friendDataProvider.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
 
             return new()
             {
@@ -116,7 +129,7 @@ namespace SugarChat.Core.Services.Users
             Friend friend = await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
             CheckFriend(friend, command.UserId, command.FriendId);
 
-            await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            await _friendDataProvider.RemoveAsync(friend, cancellation).ConfigureAwait(false);
 
             return new()
             {

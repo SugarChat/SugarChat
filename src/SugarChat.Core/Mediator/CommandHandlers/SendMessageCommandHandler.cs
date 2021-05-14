@@ -16,10 +16,9 @@ namespace SugarChat.Core.Mediator.CommandHandler
             _sendMessageService = sendMessageService;
         }
 
-        public async Task Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
         {
-            await _sendMessageService.SendMessage(context.Message, cancellationToken);
-
+            return _sendMessageService.SendMessage(context.Message, cancellationToken);
         }
     }
 }

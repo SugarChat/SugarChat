@@ -2,7 +2,7 @@ using Mediator.Net.Contracts;
 
 namespace SugarChat.Message.Events.Groups
 {
-    public class GroupAddedEvent : IEvent
+    public class GroupAddedEvent : EventBase
     {
         public string Id { get; set; }
     }

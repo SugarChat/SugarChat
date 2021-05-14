@@ -8,6 +8,6 @@ namespace SugarChat.Core.Exceptions
 
         int Code { get; set; }
 
-        string Message { get; ; set; }
+        string Message { get; }
     }
 }

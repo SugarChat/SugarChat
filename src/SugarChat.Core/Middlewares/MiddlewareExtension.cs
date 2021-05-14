@@ -20,9 +20,8 @@ namespace SugarChat.Core.Middlewares
 
         public static void UnifyResponseMiddleware<TContext>(this IPipeConfigurator<TContext> configurator, Type unifiedType)
             where TContext : IContext<IMessage>
-            where T : ISugarChatResponse
         {
-            configurator.AddPipeSpecification(new UnifyResponseMiddlewareSpecification(unifiedType));
+            configurator.AddPipeSpecification(new UnifyResponseMiddlewareSpecification<TContext>(unifiedType));
         }
     }
 }

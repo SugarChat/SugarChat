@@ -60,7 +60,7 @@ namespace SugarChat.Core.Autofac
         {
             builder.RegisterType<SendMessageService>()
                 .As<ISendMessageService>()
-                .AsImplementedInterfaces();
+                .InstancePerLifetimeScope();
         }
     }
 }

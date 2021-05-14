@@ -39,11 +39,7 @@ namespace SugarChat.WebApi
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.Populate(services);
-            builder.RegisterMongoDbRepository(() =>
-            {
-                var setSettings = Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
-                return setSettings;
-            });
+            builder.RegisterMongoDbRepository(() => Configuration.GetSection("MongoDb"));
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
                 typeof(SugarChat.Core.Services.IService).Assembly
@@ -63,13 +59,6 @@ namespace SugarChat.WebApi
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    var root = app.ApplicationServices.GetAutofacRoot();
-                    IMediator mediator = root.Resolve<IMediator>();
-                    SendMessageCommand sendMessageCommand = new SendMessageCommand
-                    {
-                        Content = "Hello World!"
-                    };
-                    await mediator.SendAsync(sendMessageCommand);
                     await context.Response.WriteAsync("Hello World!");
                 });
             });

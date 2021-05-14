@@ -15,6 +15,7 @@ namespace SugarChat.Core.Services.Users
         Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command, CancellationToken cancellation = default);
         Task<GetUserResponse> GetUserAsync(GetUserRequest request, CancellationToken cancellation = default);
         Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request, CancellationToken cancellation = default);
+        Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request, CancellationToken cancellation = default);
         Task<GetMembersOfGroupResponse> GetMembersOfGroupAsync(GetMembersOfGroupRequest request, CancellationToken cancellation = default);
     }
 }

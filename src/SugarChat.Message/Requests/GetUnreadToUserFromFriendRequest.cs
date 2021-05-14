@@ -4,6 +4,7 @@ namespace SugarChat.Message.Requests
 {
     public class GetUnreadToUserFromFriendRequest : IRequest
     {
-        
+        public string UserId { get; set; }
+        public string FriendId { get; set; }
     }
 }

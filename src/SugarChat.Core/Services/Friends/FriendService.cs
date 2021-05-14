@@ -41,7 +41,7 @@ namespace SugarChat.Core.Services.Friends
             friend.CheckExist(command.FriendId);
 
             Friend existFriend =
-                await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
+                await _friendDataProvider.GetByBothIdsAsync(command.UserId, command.FriendId, cancellation);
             existFriend.CheckNotExist(command.UserId, command.FriendId);
 
             Friend makeFriend = new Friend
@@ -64,7 +64,7 @@ namespace SugarChat.Core.Services.Friends
         public async Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
             CancellationToken cancellation = default)
         {
-            Friend friend = await _friendDataProvider.GetByUsersIdAsync(command.UserId, command.FriendId, cancellation);
+            Friend friend = await _friendDataProvider.GetByBothIdsAsync(command.UserId, command.FriendId, cancellation);
             friend.CheckExist(command.UserId, command.FriendId);
 
             await _friendDataProvider.RemoveAsync(friend, cancellation).ConfigureAwait(false);
@@ -73,24 +73,6 @@ namespace SugarChat.Core.Services.Friends
             {
                 Id = friend.Id,
                 Status = EventStatus.Success
-            };
-        }
-
-        public async Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request,
-            CancellationToken cancellation = default)
-        {
-            User user = await GetUserAsync(request.Id, cancellation);
-            user.CheckExist(request.Id);
-
-            IEnumerable<User> friends = await
-                _userDataProvider.GetRangeByIdAsync(
-                    (await _friendDataProvider.GetByUserIdAsync(request.Id, cancellation)).Select(o => o.FriendId),
-                    cancellation);
-
-            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
-            return new()
-            {
-                Friends = friendsDto
             };
         }
 

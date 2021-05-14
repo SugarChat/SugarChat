@@ -11,6 +11,8 @@ namespace SugarChat.Core.Services
         private const string AddSelfAsFiend = "User with Id {0} Should not add self as friend.";
         private const string NotFriend = "User with Id {0} has not been friend with Id {1} yet.";
         private const string GroupExists = "Group with Id {0} already exists.";
+        private const string GroupNoExists = "Group with Id {0} Dose not exist.";
+        private const string NotInGroup = "User with Id {0} is not member of Group with Id {1}.";
 
         public static void CheckNotExist(this User user)
         {
@@ -58,6 +60,22 @@ namespace SugarChat.Core.Services
             if (user.Id == friendId)
             {
                 throw new BusinessWarningException(string.Format(AddSelfAsFiend, user.Id));
+            }
+        }
+        
+        public static void CheckExist(this Group group, string groupId)
+        {
+            if (group is null)
+            {
+                throw new BusinessWarningException(string.Format(GroupNoExists, groupId));
+            }
+        }
+        
+        public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
+        {
+            if (groupUser is null)
+            {
+                throw new BusinessWarningException(string.Format(NotInGroup, userId, groupId));
             }
         }
     }

@@ -5,10 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
-using SugarChat.Core.Services.Groups;
-using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
@@ -23,23 +20,13 @@ namespace SugarChat.Core.Services.Users
         private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
-        private readonly IGroupUserDataProvider _groupUserDataProvider;
-        private readonly IGroupDataProvider _groupDataProvider;
 
-        //TODO Error const would be moved to specific class or json file
-
-
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider,
-            IFriendDataProvider friendDataProvider, IGroupUserDataProvider groupUserDataProvider,
-            IGroupDataProvider groupDataProvider)
+        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
-            _groupUserDataProvider = groupUserDataProvider;
-            _groupDataProvider = groupDataProvider;
         }
-
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
         {
@@ -102,9 +89,35 @@ namespace SugarChat.Core.Services.Users
             return Task.FromResult(new GetUserResponse {User = new UserDto()});
         }
 
-        public Task<GetMembersOfGroupResponse> GetMembersOfGroupAsync(GetMembersOfGroupRequest request, CancellationToken cancellation = default)
+
+        public async Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request,
+            CancellationToken cancellation = default)
+        {
+            User user = await GetUserAsync(request.Id, cancellation);
+            user.CheckExist(request.Id);
+
+            IEnumerable<User> friends = await
+                _userDataProvider.GetRangeByIdAsync(
+                    (await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id, cancellation)).Select(o =>
+                        o.FriendId),
+                    cancellation);
+
+            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
+            return new()
+            {
+                Friends = friendsDto
+            };
+        }
+
+        public Task<GetMembersOfGroupResponse> GetMembersOfGroupAsync(GetMembersOfGroupRequest request,
+            CancellationToken cancellation = default)
         {
             throw new NotImplementedException();
+        }
+
+        private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
+        {
+            return _userDataProvider.GetByIdAsync(id, cancellation);
         }
     }
 }

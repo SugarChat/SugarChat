@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Messages
@@ -16,65 +14,54 @@ namespace SugarChat.Core.Services.Messages
             _repository = repository;
         }
 
-        public async Task<IEnumerable<User>> GetRangeByIdAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        public async Task AddAsync(Domain.Message message, CancellationToken cancellation)
         {
-            return await _repository.ToListAsync<User>(o=>ids.Contains(o.Id)).ConfigureAwait(false);
+            await _repository.AddAsync(message, cancellation);
         }
 
-        public async Task<Friend> GetByOwnIdAsync(string id, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(Domain.Message message, CancellationToken cancellation)
         {
-            return await _repository.SingleOrDefaultAsync<Friend>(x => x.Id == id).ConfigureAwait(false);
+            await _repository.UpdateAsync(message, cancellation);
         }
 
+        public async Task RemoveAsync(Domain.Message message, CancellationToken cancellation)
+        {
+            await _repository.RemoveAsync(message, cancellation);
+        }
+        
         public Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetUnreadOfUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllUnreadOfUserAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryOfUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryOfUserAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public async Task<Friend> GetByUsersIdAsync(string userId, string friendId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
         {
-            return await _repository.SingleOrDefaultAsync<Friend>(x => x.UserId == userId && x.FriendId == friendId).ConfigureAwait(false);
-
+            throw new System.NotImplementedException();
         }
 
-        public async Task<IEnumerable<Friend>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
         {
-            return await _repository.ToListAsync<Friend>(x => x.UserId == userId).ConfigureAwait(false);
-        }
-
-        public async Task AddAsync(Friend friend, CancellationToken cancellation)
-        {
-            await _repository.AddAsync(friend, cancellation);
-        }
-
-        public async Task UpdateAsync(Friend friend, CancellationToken cancellation)
-        {
-            await _repository.UpdateAsync(friend, cancellation);
-        }
-
-        public async Task RemoveAsync(Friend friend, CancellationToken cancellation)
-        {
-            await _repository.RemoveAsync(friend, cancellation);
+            throw new System.NotImplementedException();
         }
     }
 }

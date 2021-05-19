@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using MongoDB.Bson.Serialization;
-using SugarChat.Core.Tools;
 using System;
 using System.Configuration;
 
@@ -12,7 +11,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         protected TestBase()
         {
-            BsonSerializer.RegisterSerializationProvider(new LocalDateTimeSerializationProvider());
             _configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();

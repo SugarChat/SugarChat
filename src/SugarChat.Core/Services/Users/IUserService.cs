@@ -11,6 +11,7 @@ namespace SugarChat.Core.Services.Users
     public interface IUserService
     {
         Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default);
+        Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellation = default);
         Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command, CancellationToken cancellation = default);
         Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command, CancellationToken cancellation = default);
         Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellation = default);

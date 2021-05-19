@@ -13,11 +13,6 @@ namespace SugarChat.Core.Middlewares
 {
     public static class MiddlewareExtension
     {
-        public static IApplicationBuilder UseSugarException(this IApplicationBuilder app)
-        {
-            return app.UseMiddleware<ExceptionMiddleware>();
-        }
-
         public static void UnifyResponseMiddleware<TContext>(this IPipeConfigurator<TContext> configurator, Type unifiedType)
             where TContext : IContext<IMessage>
         {

@@ -7,7 +7,7 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="10.1.1" />
-      <PackageReference Include="Mediator.Net" Version="3.4.0-extendContract60" />
+      <PackageReference Include="Mediator.Net" Version="3.4.0-extendContract61" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
@@ -22,6 +22,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Filters\" />
     </ItemGroup>
 
 </Project>

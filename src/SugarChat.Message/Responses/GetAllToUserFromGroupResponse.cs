@@ -4,8 +4,8 @@ using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Message.Responses
 {
-    public class GetGroupsOfUserResponse : IResponse
+    public class GetAllToUserFromGroupResponse : IResponse
     {
-        public IEnumerable<GroupDto> Groups { get; set; }
+        public IEnumerable<MessageDto> Messages { get; set; }
     }
 }

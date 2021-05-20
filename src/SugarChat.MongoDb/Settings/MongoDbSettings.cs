@@ -1,4 +1,8 @@
-﻿namespace SugarChat.Core.Settings
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SugarChat.Data.MongoDb.Settings
 {
     public class MongoDbSettings
     {

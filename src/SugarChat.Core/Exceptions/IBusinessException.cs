@@ -6,5 +6,8 @@ namespace SugarChat.Core.Exceptions
     {
         LogEventLevel LogLevel { get; }
 
+        int Code { get; set; }
+
+        string Message { get; }
     }
 }

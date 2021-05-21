@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SugarChat.Message.Command;
+using System;
 
 namespace SugarChat.Core.Domain
 {
@@ -13,15 +14,6 @@ namespace SugarChat.Core.Domain
         public DateTimeOffset SentTime { get; set; }
         public bool IsDel { get; set; }
         public bool IsSystem { get; set; }
-    }
-
-    public enum MessageType
-    {
-        Text,
-        Video,
-        Image,
-        Voice,
-        File,
-        Other
+        public string AttachmentUrl { get; set; }
     }
 }

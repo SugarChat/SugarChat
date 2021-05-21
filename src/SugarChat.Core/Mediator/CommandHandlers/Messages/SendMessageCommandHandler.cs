@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Services;
 
-namespace SugarChat.Core.Mediator.CommandHandler
+namespace SugarChat.Core.Mediator.CommandHandler.Messages
 {
     public class SendMessageCommandHandler : ICommandHandler<SendMessageCommand>
     {

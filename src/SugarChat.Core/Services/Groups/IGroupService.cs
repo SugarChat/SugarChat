@@ -11,6 +11,6 @@ namespace SugarChat.Core.Services.Groups
     {
         Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation);
         Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request, CancellationToken cancellation = default);
-
+        Task DismissGroup(DismissGroupCommand command, CancellationToken cancellation);
     }
 }

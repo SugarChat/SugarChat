@@ -12,6 +12,7 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -21,14 +22,16 @@ namespace SugarChat.Core.Services.Groups
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IRepository _repository;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IRepository repository)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _repository = repository;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation)
@@ -65,6 +68,31 @@ namespace SugarChat.Core.Services.Groups
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
         {
             return _userDataProvider.GetByIdAsync(id, cancellation);
+        }
+
+        public async Task DismissGroup(DismissGroupCommand command, CancellationToken cancellation)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
+            group.CheckExist(command.Id);
+            group.IsDel = true;
+            await _groupDataProvider.UpdateAsync(group, cancellation);
+        }
+
+        public async Task JoinGroup(JoinGroupCommand command, CancellationToken cancellation)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
+            group.CheckNotExist();
+            User user = await GetUserAsync(command.UserId, cancellation);
+            user.CheckExist(command.UserId);
+            if (await _repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId))
+            {
+                throw new System.Exception("user has joined the group");
+            }
+            await _repository.AddAsync(new GroupUser
+            {
+                GroupId = command.GroupId,
+                UserId = command.UserId
+            });
         }
     }
 }

@@ -5,12 +5,14 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Services;
 
 namespace SugarChat.Core.IRepositories
 {
     public interface IRepository
     {
         Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<(List<T> result, int total)> ToPagedListAsync<T>(Expression<Func<T, bool>> predicate = null,PageSettings pageSettings = default, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;

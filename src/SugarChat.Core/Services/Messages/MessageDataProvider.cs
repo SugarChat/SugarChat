@@ -28,38 +28,44 @@ namespace SugarChat.Core.Services.Messages
         {
             await _repository.RemoveAsync(message, cancellation);
         }
-        
-        public Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+
+        public async Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            return await _repository.SingleOrDefaultAsync<Domain.Message>(o => o.Id == id, cancellationToken);
+        }
+
+        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId,
+            CancellationToken cancellationToken = default)
+        {
+            var 
+        }
+
+        public Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
+            CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId, string friendId,
+            CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
+            CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId,
+            CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId, CancellationToken cancellationToken = default)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
+        public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
+            CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();
         }

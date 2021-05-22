@@ -2,7 +2,7 @@
 
 namespace SugarChat.Core.Domain
 {
-    public class MessageRead
+    public class MessageUnread : Entity
     {
         public string MessageId { get; set; }
         public string UserId { get; set; }

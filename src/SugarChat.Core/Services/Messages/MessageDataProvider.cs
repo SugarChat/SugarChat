@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Messages
@@ -37,13 +39,20 @@ namespace SugarChat.Core.Services.Messages
         public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default)
         {
-            var 
+            var unreadMessageIds = _repository.Query<MessageUnread>().Where(o => o.UserId == userId)
+                .Select(o => o.MessageId);
+            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id));
+            var fromFriends = unreadMessages.Where(o => o.SentBy == friendId).AsEnumerable();
+            return Task.FromResult(fromFriends);
         }
 
         public Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
             CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var unreadMessageIds = _repository.Query<MessageUnread>().Where(o => o.UserId == userId)
+                .Select(o => o.MessageId);
+            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id)).AsEnumerable();
+            return Task.FromResult(unreadMessages);
         }
 
         public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId, string friendId,

@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Driver.Linq;
+using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Services
 {
@@ -20,7 +22,7 @@ namespace SugarChat.Core.Services
         {
             if (pageSettings is null)
             {
-                return collection;
+                throw new ArgumentException("PageSettings is required.");
             }
 
             return collection.Skip(pageSettings.PageSize * (pageSettings.PageNum - 1)).Take(pageSettings.PageSize);

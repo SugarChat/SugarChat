@@ -47,14 +47,14 @@ namespace SugarChat.Data.MongoDb
             return FilteredQuery(predicate).ToListAsync(cancellationToken);
         }
 
-        public async Task<(List<T> result, int total)> ToPagedListAsync<T>(Expression<Func<T, bool>> predicate = null,
+        public async Task<PagedResult<T>> ToPagedListAsync<T>(Expression<Func<T, bool>> predicate = null,
             PageSettings pageSettings = default,
             CancellationToken cancellationToken = default) where T : class, IEntity
         {
             var query = FilteredQuery(predicate);
             var result = await query.Paging(pageSettings).ToListAsync(cancellationToken);
             var total = await FilteredQuery(predicate).CountAsync(cancellationToken);
-            return (result, total);
+            return new PagedResult<T>{Result = result, Total = total};
         }
 
         public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,

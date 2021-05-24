@@ -33,9 +33,7 @@ namespace SugarChat.Core.Autofac
             RegisterMediator(builder);
             RegisterServices(builder);
             RegisterAutoMapper(builder);
-            builder.RegisterType(typeof(GroupUserDataProvider)).As(typeof(IGroupUserDataProvider));
-            builder.RegisterType(typeof(UserDataProvider)).As(typeof(IUserDataProvider));
-            builder.RegisterType(typeof(GroupDataProvider)).As(typeof(IGroupDataProvider));
+            RegisterDataProvider(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -73,6 +71,15 @@ namespace SugarChat.Core.Autofac
         {
             foreach (var type in typeof(IService).GetTypeInfo().Assembly.GetTypes()
                 .Where(t => typeof(IService).IsAssignableFrom(t) && t.IsClass))
+            {
+                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
+        }
+
+        private void RegisterDataProvider(ContainerBuilder builder)
+        {
+            foreach (var type in typeof(IDataProvider).GetTypeInfo().Assembly.GetTypes()
+                .Where(t => typeof(IDataProvider).IsAssignableFrom(t) && t.IsClass))
             {
                 builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }

@@ -51,7 +51,8 @@ namespace SugarChat.Core.Services.Messages
         {
             var unreadMessageIds = _repository.Query<MessageUnread>().Where(o => o.UserId == userId)
                 .Select(o => o.MessageId);
-            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id)).AsEnumerable();
+            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id))
+                .AsEnumerable();
             return Task.FromResult(unreadMessages);
         }
 
@@ -61,16 +62,31 @@ namespace SugarChat.Core.Services.Messages
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
+        public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
             CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var groupIds =
+                (await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken)).Select(o =>
+                    o.GroupId);
+            var messages =
+                (await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken))
+                .OrderBy(o => o.GroupId).ThenByDescending(o => o.SentTime);
+
+            return messages;
         }
 
-        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId,
+        public async Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
+                cancellationToken)).LastReadTime;
+
+            var messages =
+                (await _repository.ToListAsync<Domain.Message>(
+                    o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime),
+                    cancellationToken)).OrderByDescending(o => o.SentTime);
+
+            return messages;
         }
 
         public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,

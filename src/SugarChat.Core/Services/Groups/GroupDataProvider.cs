@@ -41,6 +41,6 @@ namespace SugarChat.Core.Services.Groups
         public async Task RemoveAsync(Group group, CancellationToken cancellation)
         {
             await _repository.RemoveAsync(group, cancellation);
-        }
+        }       
     }
 }

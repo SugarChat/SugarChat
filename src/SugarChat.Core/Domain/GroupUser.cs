@@ -6,5 +6,6 @@ namespace SugarChat.Core.Domain
     {
         public string UserId { get; set; }
         public string GroupId { get; set; }
+        public DateTimeOffset? LastReadTime { get; set; }
     }
 }

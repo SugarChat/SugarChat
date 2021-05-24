@@ -40,6 +40,12 @@ namespace SugarChat.Core.Services.Messages
             return _userDataProvider.GetByIdAsync(id, cancellation);
         }
 
+        /// <summary>
+        /// 根据用户Id获取用户所有的未读消息
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetAllUnreadToUserResponse> GetAllUnreadToUserAsync(GetAllUnreadToUserRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -54,6 +60,12 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+        /// <summary>
+        /// 获取用户与某个好友会话的所有未读消息
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
             GetUnreadToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -76,6 +88,12 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+        /// <summary>
+        /// 获取与好友的所有
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -108,6 +126,13 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+
+        /// <summary>
+        /// 获取用户所在组的所有未读消息
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetUnreadToUserFromGroupResponse> GetUnreadToUserFromGroupAsync(
             GetUnreadToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
@@ -128,6 +153,13 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+
+        /// <summary>
+        /// 获取用户所在组的所有消息列表
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {

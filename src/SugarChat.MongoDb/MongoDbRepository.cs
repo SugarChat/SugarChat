@@ -53,7 +53,7 @@ namespace SugarChat.Data.MongoDb
         {
             var query = FilteredQuery(predicate);
             var result = await query.Paging(pageSettings).ToListAsync(cancellationToken);
-            var total = await FilteredQuery(predicate).CountAsync(cancellationToken);
+            var total = await query.CountAsync(cancellationToken);
             return new PagedResult<T> {Result = result, Total = total};
         }
 

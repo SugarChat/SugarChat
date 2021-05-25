@@ -52,7 +52,7 @@ namespace SugarChat.Core.Autofac
         {
             builder.Register(context => new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SendMessageCommand, Domain.Message>();
+                cfg.AddMaps(System.AppDomain.CurrentDomain.GetAssemblies());
             }))
             .AsSelf()
             .SingleInstance();

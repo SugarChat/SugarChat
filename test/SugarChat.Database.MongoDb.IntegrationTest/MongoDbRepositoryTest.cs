@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Shouldly;
 using SugarChat.Core.IRepositories;
-using SugarChat.Core.Settings;
 using SugarChat.Data.MongoDb;
 using SugarChat.Core.Domain;
 using Xunit;
@@ -10,6 +9,7 @@ using System.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {

@@ -6,6 +6,6 @@ namespace SugarChat.Message.Responses
 {
     public class GetGroupsOfUserResponse : IResponse
     {
-        public IEnumerable<GroupDto> Friends { get; set; }
+        public IEnumerable<GroupDto> Groups { get; set; }
     }
 }

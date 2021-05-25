@@ -29,7 +29,7 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getConversationListByUserId"), HttpGet]
+        [Route("getConversationList"), HttpGet]
         public async Task<IActionResult> GetConversationListByUserId([FromQuery] GetConversationListByUserIdRequest request)
         {
             var response =

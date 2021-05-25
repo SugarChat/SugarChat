@@ -69,10 +69,9 @@ namespace SugarChat.Data.MongoDb
             return FilteredQuery(predicate).AnyAsync(cancellationToken);
         }
 
-        public IQueryable<T> Query<T>() where T : class, IEntity
+        public ISugarChatQueryable<T> Query<T>() where T : class, IEntity
         {
-            return GetCollection<T>()
-                   .AsQueryable();
+            return new MongoDbQueryable<T>(GetCollection<T>().AsQueryable());
         }
 
         public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
@@ -144,5 +143,6 @@ namespace SugarChat.Data.MongoDb
             }
             return Task.CompletedTask;
         }
+
     }
 }

@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using SugarChat.Data.MongoDb.Settings;
+using System.Linq;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
@@ -247,6 +247,25 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Assert.Equal(updatedGroup.LastModifyDate, group.LastModifyDate);
             }
             await _repository.RemoveRangeAsync(groupList);
+        }
+
+        [Fact]
+        public async Task Should_Query_With_ListAsync()
+        {
+            var id = _group.Id;
+            var group = await _repository
+                     .Query<Group>()
+                     .Where(e => e.Id == _group.Id)
+                     .Select(e => new
+                     {
+                         e.Id,
+                         e.CreatedBy,
+                         e.CreatedDate
+                     })
+                     .ToListAsync()
+                     .ConfigureAwait(false);
+            group.ShouldNotBeEmpty();
+            group.FirstOrDefault().Id.ShouldBe(_group.Id);
         }
 
         public void Dispose()

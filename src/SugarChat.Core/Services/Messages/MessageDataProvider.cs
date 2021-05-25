@@ -56,10 +56,19 @@ namespace SugarChat.Core.Services.Messages
             return Task.FromResult(unreadMessages);
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId, string friendId,
+        public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId,
+            string friendId,
             CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            var userGroup = _repository.Query<GroupUser>().Where(o => o.UserId == userId);
+            var friendGroup = _repository.Query<GroupUser>().Where(o => o.UserId == friendId);
+            var bothGroup = userGroup.Intersect(friendGroup);
+            var groupId = bothGroup.GroupBy(o => o.GroupId).Single(o => o.Count() == 2).First().GroupId;
+            var messages =
+                await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId && o.SentBy == friendId,
+                    cancellationToken);
+
+            return messages;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
@@ -89,10 +98,14 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
+        public async Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            var messages =
+                await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId && o.SentBy != userId,
+                    cancellationToken);
+
+            return messages;
         }
     }
 }

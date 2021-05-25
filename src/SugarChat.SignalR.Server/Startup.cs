@@ -25,7 +25,7 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSugarChatSignalR();
+            services.AddSugarChatSignalR().AddStackExchangeRedis(Configuration.GetSection("Redis").Value);
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,7 +67,7 @@ namespace SugarChat.SignalR.Server
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ChatHub>("/hubs/chat", async context =>
+                endpoints.MapHub<ChatHub>("/hubs/chat", context =>
                 {
                 });
             });

@@ -1,0 +1,7 @@
+signalr:
+  domains: 
+  image:
+    repository: ''
+    tag: ''
+    pullPolicy: ''
+  connectionString: 

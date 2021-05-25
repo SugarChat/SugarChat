@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ template "signalrserver.fullname" . }}-config
+data:
+    appsettings.json: |-
+    {
+        "Logging": {
+            "LogLevel": {
+            "Default": "Information",
+            "Microsoft": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information"
+            }
+        },
+        "AllowedHosts": "*",
+        "Redis": "127.0.0.1:6379"
+    }

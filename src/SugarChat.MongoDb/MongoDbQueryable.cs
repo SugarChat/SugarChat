@@ -101,89 +101,90 @@ namespace SugarChat.Data.MongoDb
             return new MongoDbQueryable<TResult>(_query.Join(inner, outerKeySelector, innerKeySelector, resultSelector));
         }
 
-        public Task<double> SumAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
+        public async Task<double> SumAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
         {
-            return _query.SumAsync(predicate, cancellationToken);
+            return await _query.SumAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<double> AverageAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
+        public async Task<double> AverageAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
         {
-            return _query.AverageAsync(predicate, cancellationToken);
+            return await _query.AverageAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<double> MinAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
+        public async Task<double> MinAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
         {
-            return _query.MinAsync(predicate, cancellationToken);
+            return await _query.MinAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<double> MaxAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
+        public async Task<double> MaxAsync(Expression<Func<T, double>> predicate, CancellationToken cancellationToken = default)
         {
-            return _query.MaxAsync(predicate, cancellationToken);
+            return await _query.MaxAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<List<T>> ToListAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<List<T>> ToListAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query
+                return await _query
                     .Where(predicate)
-                    .ToListAsync(cancellationToken);
+                    .ToListAsync(cancellationToken)
+                    .ConfigureAwait(false);
             }
-            return _query.ToListAsync(cancellationToken);
+            return await _query.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<int> CountAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<int> CountAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.CountAsync(predicate, cancellationToken);
+                return await _query.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.CountAsync(cancellationToken);
+            return await _query.CountAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<T> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.SingleOrDefaultAsync(predicate, cancellationToken);
+                return await _query.SingleOrDefaultAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.SingleOrDefaultAsync(cancellationToken);
+            return await _query.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> SingleAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<T> SingleAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.SingleAsync(predicate, cancellationToken);
+                return await _query.SingleAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.SingleAsync(cancellationToken);
+            return await _query.SingleAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.FirstOrDefaultAsync(predicate, cancellationToken);
+                return await _query.FirstOrDefaultAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.FirstOrDefaultAsync(cancellationToken);
+            return await _query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> FirstAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<T> FirstAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.FirstAsync(predicate, cancellationToken);
+                return await _query.FirstAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.FirstAsync(cancellationToken);
+            return await _query.FirstAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<bool> AnyAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             if (predicate != null)
             {
-                return _query.AnyAsync(predicate, cancellationToken);
+                return await _query.AnyAsync(predicate, cancellationToken).ConfigureAwait(false);
             }
-            return _query.AnyAsync(cancellationToken);
+            return await _query.AnyAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public QueryableExecutionModel GetExecutionModel()
@@ -196,9 +197,9 @@ namespace SugarChat.Data.MongoDb
             return _query.ToCursor(cancellationToken);
         }
 
-        public Task<IAsyncCursor<T>> ToCursorAsync(CancellationToken cancellationToken = default)
+        public async Task<IAsyncCursor<T>> ToCursorAsync(CancellationToken cancellationToken = default)
         {
-            return _query.ToCursorAsync(cancellationToken);
+            return await _query.ToCursorAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

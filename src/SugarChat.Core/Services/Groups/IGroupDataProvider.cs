@@ -6,7 +6,7 @@ using SugarChat.Core.Domain;
 
 namespace SugarChat.Core.Services.Groups
 {
-    public interface IGroupDataProvider
+    public interface IGroupDataProvider: IDataProvider
     {
         Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken);
         Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken);

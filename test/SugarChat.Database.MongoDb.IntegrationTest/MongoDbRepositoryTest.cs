@@ -249,28 +249,9 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             await _repository.RemoveRangeAsync(groupList);
         }
 
-        [Fact]
-        public async Task Should_Query_With_ListAsync()
+        public async void Dispose()
         {
-            var id = _group.Id;
-            var group = await _repository
-                     .Query<Group>()
-                     .Where(e => e.Id == _group.Id)
-                     .Select(e => new
-                     {
-                         e.Id,
-                         e.CreatedBy,
-                         e.CreatedDate
-                     })
-                     .ToListAsync()
-                     .ConfigureAwait(false);
-            group.ShouldNotBeEmpty();
-            group.FirstOrDefault().Id.ShouldBe(_group.Id);
-        }
-
-        public void Dispose()
-        {
-            _repository.RemoveAsync(_group).Wait();
+            await _repository.RemoveAsync(_group).ConfigureAwait(false);
         }
     }
 }

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Data.MongoDb
 {
-    public class MongoDbQueryable<T> : ISugarChatQueryable<T>
+    public class MongoDbQueryable<T> : IMongoQueryable<T>, ISugarChatQueryable<T>
     {
         private IMongoQueryable<T> _query;
         public MongoDbQueryable(IMongoQueryable<T> query)
@@ -184,6 +184,21 @@ namespace SugarChat.Data.MongoDb
                 return _query.AnyAsync(predicate, cancellationToken);
             }
             return _query.AnyAsync(cancellationToken);
+        }
+
+        public QueryableExecutionModel GetExecutionModel()
+        {
+            return _query.GetExecutionModel();
+        }
+
+        public IAsyncCursor<T> ToCursor(CancellationToken cancellationToken = default)
+        {
+            return _query.ToCursor(cancellationToken);
+        }
+
+        public Task<IAsyncCursor<T>> ToCursorAsync(CancellationToken cancellationToken = default)
+        {
+            return _query.ToCursorAsync(cancellationToken);
         }
     }
 }

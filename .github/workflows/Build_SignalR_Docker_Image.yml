@@ -27,7 +27,4 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Publish
-        run: |
-        cd src/SugarChat.SignalR.Server
-        dotnet publish "SugarChat.SignalR.Server.csproj" -c Release -o ./publish
-        docker build -t sugarchat-signalr-server .
+        run: cd src/SugarChat.SignalR.Server && dotnet publish "SugarChat.SignalR.Server.csproj" -c Release -o ./publish && docker build -t sugarchat-signalr-server .

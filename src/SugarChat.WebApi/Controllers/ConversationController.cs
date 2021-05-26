@@ -1,5 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses;
@@ -19,7 +20,7 @@ namespace SugarChat.WebApi.Controllers
             _mediator = mediator;
         }
 
-        [Route("getAllToUserFromGroup"), HttpGet]
+        [Route("getMessageList"), HttpGet]
         public async Task<IActionResult> GetAllToUserFromGroup(GetAllToUserFromGroupRequest request)
         {
             var response =
@@ -38,6 +39,24 @@ namespace SugarChat.WebApi.Controllers
 
             return Ok(response);
         }
+
+        [Route("getConversationProfile"), HttpGet]
+        public async Task<IActionResult> GetConversationProfileById([FromQuery] GetConversationProfileByIdRequest request)
+        {
+            var response =
+                  await _mediator
+                      .RequestAsync<GetConversationProfileByIdRequest, GetConversationProfileByIdResponse>(request);
+
+            return Ok(response);
+        }
+
+        [Route("setMessageRead"), HttpPost]
+        public async Task<IActionResult> SetMessageRead(SetMessageReadCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
+
 
     }
 }

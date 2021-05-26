@@ -2,10 +2,12 @@
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +34,7 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
         }
+
         public async Task<GetConversationListByUserIdResponse> GetConversationListByUserIdAsync(GetConversationListByUserIdRequest request, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
@@ -60,5 +63,48 @@ namespace SugarChat.Core.Services.Conversations
                 Result = conversations
             };
         }
+
+        public async Task<GetConversationProfileByIdResponse> GetConversationProfileByIdRequestAsync(GetConversationProfileByIdRequest request, CancellationToken cancellationToken)
+        {   
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(request.ConversationId, cancellationToken);
+            group.CheckExist(request.ConversationId);
+
+            return new GetConversationProfileByIdResponse
+            {
+                Result = _mapper.Map<GroupDto>(group)
+            };
+        }
+
+        //TODO:DeleteConversation
+        public async Task DeleteConversationByIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            group.CheckExist(command.ConversationId);
+
+            //var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
+            
+        }
+
+        public async Task SetMessageReadByConversationIdAsync(SetMessageReadCommand command, CancellationToken cancellationToken)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            group.CheckExist(command.ConversationId);
+
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
+            groupUser.CheckExist(command.UserId, command.ConversationId);
+
+            groupUser.LastReadTime = DateTimeOffset.Now;
+            await _groupUserDataProvider.UpdateAsync(groupUser,cancellationToken);
+        }
+
     }
 }

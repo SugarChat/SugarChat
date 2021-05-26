@@ -28,5 +28,10 @@ namespace SugarChat.Core.Services.GroupUsers
                 .SingleOrDefaultAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId, cancellationToken)
                 .ConfigureAwait(false);
         }
+
+        public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation)
+        {
+            await _repository.UpdateAsync(groupUser, cancellation);
+        }
     }
 }

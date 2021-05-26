@@ -9,5 +9,6 @@ namespace SugarChat.Core.Services.GroupUsers
     {
         Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id, CancellationToken cancellationToken);
         Task<GroupUser> GetByUserAndGroupIdAsync(string userId, string groupId, CancellationToken cancellationToken);
+        Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation);
     }
 }

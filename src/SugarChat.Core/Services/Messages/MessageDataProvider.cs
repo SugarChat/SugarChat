@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Messages
@@ -28,7 +30,7 @@ namespace SugarChat.Core.Services.Messages
         {
             await _repository.RemoveAsync(message, cancellation);
         }
-        
+
         public Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
@@ -54,14 +56,26 @@ namespace SugarChat.Core.Services.Messages
             throw new System.NotImplementedException();
         }
 
-        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
+                cancellationToken)).LastReadTime;
+
+            var messages =
+                (await _repository.ToListAsync<Domain.Message>(
+                    o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime),
+                    cancellationToken)).OrderByDescending(o => o.SentTime);
+
+            return messages;
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            var messages =
+                await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId && o.SentBy != userId,
+                    cancellationToken);
+
+            return messages;
         }
     }
 }

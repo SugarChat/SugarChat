@@ -14,5 +14,7 @@ namespace SugarChat.Core.Services.Conversations
         Task<List<Domain.Message>> GetMessagesByGroupIdAsync(string groupId, CancellationToken cancellationToken);
 
         Task<Domain.Message> GetLastMessageByGroupIdAsync(string groupId, CancellationToken cancellationToken);
+
+       
     }
 }

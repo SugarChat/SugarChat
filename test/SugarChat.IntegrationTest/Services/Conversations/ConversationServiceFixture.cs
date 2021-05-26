@@ -32,12 +32,9 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
         [Fact]
         public async Task ShouldGetUserConversations()
-        {
-
-            //生成测试数据
+        {            
             await GenerateTestCollections();
-
-            //验证生成数据的数量
+            
             var groupIds = groups.Select(x => x.Id).ToList();
             var groupList = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
             groupList.Count.ShouldBe(groups.Count);
@@ -57,9 +54,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             var messageIds = messages.Select(x => x.Id).ToList();
             var messageList = await _repository.ToListAsync<Core.Domain.Message>(x => messageIds.Contains(x.Id));
             messageList.Count.ShouldBe(messages.Count);
-
-
-            //测试获取用户对话列表
+            
             await Task.Run( async () =>
             {
                 var request = new GetConversationListByUserIdRequest()
@@ -67,16 +62,11 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     UserId = "b81cac07-1346-5417-318a-7a371b198511"
                 };
                 var reponse = await _mediator.RequestAsync<GetConversationListByUserIdRequest, GetConversationListByUserIdResponse>(request);
-
                 reponse.Result.Count().ShouldBe(2);
-
-            });
-
-
-            //测试完成后从数据库中删除测试数据
-            await RemoveTestCollections();
-
-            //验证是否删除测试数据
+            });            
+           
+            Dispose();
+            
             var groupExistingData = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
             groupExistingData.ShouldBeEmpty();
 
@@ -596,16 +586,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await _repository.AddRangeAsync(friends, default(CancellationToken));
             await _repository.AddRangeAsync(groupUsers, default(CancellationToken));
             await _repository.AddRangeAsync(messages, default(CancellationToken));
-        }
-
-        private async Task RemoveTestCollections()
-        {
-            await _repository.RemoveRangeAsync(groups, default(CancellationToken));
-            await _repository.RemoveRangeAsync(users, default(CancellationToken));
-            await _repository.RemoveRangeAsync(friends, default(CancellationToken));
-            await _repository.RemoveRangeAsync(groupUsers, default(CancellationToken));
-            await _repository.RemoveRangeAsync(messages, default(CancellationToken));
-        }
+        }       
 
     }
 }

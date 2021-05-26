@@ -55,11 +55,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 LastModifyBy = Guid.NewGuid().ToString(),
                 Name = "NewTestGroup"
             };
-            await _repository.AddAsync(newGroup).ConfigureAwait(false);
-            var firstGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == newGroup.Id).ConfigureAwait(false);
+            await _repository.AddAsync(newGroup);
+            var firstGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == newGroup.Id);
             firstGroup.ShouldNotBeNull();
-            await _repository.RemoveAsync(newGroup).ConfigureAwait(false);
-            var deleted = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == newGroup.Id).ConfigureAwait(false);
+            await _repository.RemoveAsync(newGroup);
+            var deleted = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == newGroup.Id);
             deleted.ShouldBeNull();
         }
 
@@ -93,68 +93,68 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     Name = "NewTestGroup2"
                 }
             };
-            await _repository.AddRangeAsync(groups).ConfigureAwait(false);
+            await _repository.AddRangeAsync(groups);
             var ids = groups.Select(e => e.Id).ToList();
-            var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id)).ConfigureAwait(false);
+            var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id));
             groupList.Count.ShouldBe(groups.Count);
             await _repository.RemoveRangeAsync(groupList);
-            var deleted = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id)).ConfigureAwait(false);
+            var deleted = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id));
             deleted.ShouldBeEmpty();
         }
 
         [Fact]
         public async Task Should_FirstOrDefault_Group_Be_Not_Null()
         {
-            var group = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var group = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id);
             group.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task Should_FirstOrDefault_Group_Be_Null()
         {
-            var group = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false);
+            var group = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == Guid.NewGuid().ToString());
             group.ShouldBeNull();
         }
 
         [Fact]
         public async Task Should_List_Group_Be_Empty()
         {
-            var list = await _repository.ToListAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false);
+            var list = await _repository.ToListAsync<Group>(e => e.Id == Guid.NewGuid().ToString());
             list.ShouldBeEmpty();
         }
 
         [Fact]
         public async Task Should_List_Group_Not_Be_Empty()
         {
-            var list = await _repository.ToListAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var list = await _repository.ToListAsync<Group>(e => e.Id == _group.Id);
             list.ShouldNotBeEmpty();
         }
 
         [Fact]
         public async Task Should_Any_Group_Be_False()
         {
-            var any = await _repository.AnyAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false);
+            var any = await _repository.AnyAsync<Group>(e => e.Id == Guid.NewGuid().ToString());
             any.ShouldBeFalse();
         }
 
         [Fact]
         public async Task Should_Any_Group_Be_True()
         {
-            var any = await _repository.AnyAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var any = await _repository.AnyAsync<Group>(e => e.Id == _group.Id);
             any.ShouldBeTrue();
         }
 
         [Fact]
         public async Task Should_Count_Group_Great_Than_0()
         {
-            var any = await _repository.CountAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var any = await _repository.CountAsync<Group>(e => e.Id == _group.Id);
             any.ShouldBeGreaterThan(0);
         }
 
         [Fact]
         public async Task Should_Count_Group_Equivalent_0()
         {
-            var any = await _repository.CountAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false);
+            var any = await _repository.CountAsync<Group>(e => e.Id == Guid.NewGuid().ToString());
             any.ShouldBeEquivalentTo(0);
         }
 
@@ -162,39 +162,39 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         public Task Should_Single_Group_Throw_Exception()
         {
             return Should.ThrowAsync<Exception>(async () =>
-                await _repository.SingleAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false));
+                await _repository.SingleAsync<Group>(e => e.Id == Guid.NewGuid().ToString()));
         }
 
         [Fact]
         public async Task Should_Single_Group_Not_Throw_Exception()
         {
-            var single = await _repository.SingleAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var single = await _repository.SingleAsync<Group>(e => e.Id == _group.Id);
             single.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task Should_SingleOrDefault_Group_Be_Default()
         {
-            var single = await _repository.SingleOrDefaultAsync<Group>(e => e.Id == Guid.NewGuid().ToString()).ConfigureAwait(false);
+            var single = await _repository.SingleOrDefaultAsync<Group>(e => e.Id == Guid.NewGuid().ToString());
             single.ShouldBe(default);
         }
 
         [Fact]
         public async Task Should_SingleOrDefault_Group_Not_Be_Default()
         {
-            var single = await _repository.SingleOrDefaultAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var single = await _repository.SingleOrDefaultAsync<Group>(e => e.Id == _group.Id);
             single.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task Should_Update_Group_Name()
         {
-            var firstGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            var firstGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id);
             firstGroup.ShouldNotBeNull();
             string updatedName = "UpdatedGroupName";
             firstGroup.Name = updatedName;
-            await _repository.UpdateAsync(firstGroup).ConfigureAwait(false);
-            var updatedGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id).ConfigureAwait(false);
+            await _repository.UpdateAsync(firstGroup);
+            var updatedGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == _group.Id);
             Assert.Equal(updatedGroup.Name, updatedName);
             Assert.Equal(updatedGroup.AvatarUrl, firstGroup.AvatarUrl);
             Assert.Equal(updatedGroup.CreatedBy, firstGroup.CreatedBy);
@@ -235,12 +235,12 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     Name = "NewTestGroup2"
                 }
             };
-            await _repository.AddRangeAsync(groups).ConfigureAwait(false);
+            await _repository.AddRangeAsync(groups);
             groups[0].Name = "UpdatedTestGroup1";
             groups[1].Name = "UpdatedTestGroup2";
-            await _repository.UpdateRangeAsync(groups).ConfigureAwait(false);
+            await _repository.UpdateRangeAsync(groups);
             var ids = groups.Select(e => e.Id).ToList();
-            var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id)).ConfigureAwait(false);
+            var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id));
             groupList.Count.ShouldBe(groups.Count);
             foreach (var updatedGroup in groupList)
             {
@@ -255,13 +255,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Assert.Equal(updatedGroup.LastModifyDate, group.LastModifyDate);
             }
 
-            await _repository.RemoveRangeAsync(groupList).ConfigureAwait(false);
+            await _repository.RemoveRangeAsync(groupList);
         }
 
         [Fact]
         public async Task Should_Get_Paged_Result()
         {
-            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true)).ConfigureAwait(false);
+            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true));
             List<Group> groups = new List<Group>();
             for (int i = 0; i < 30; i++)
             {
@@ -279,9 +279,9 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 });
             }
 
-            await _repository.AddRangeAsync(groups).ConfigureAwait(false);
+            await _repository.AddRangeAsync(groups);
             PageSettings pageSettings = new() {PageNum = 2, PageSize = 10};
-            var result = await _repository.ToPagedListAsync<Group>(pageSettings, o => o.Description == "Test Paging").ConfigureAwait(false);
+            var result = await _repository.ToPagedListAsync<Group>(pageSettings, o => o.Description == "Test Paging");
             result.Total.ShouldBe(30);
             result.Result.Count().ShouldBe(10);
             string.Join('-', result.Result.Select(o => int.Parse(o.Name)).OrderBy(o => o).Select(o => o.ToString()))
@@ -291,7 +291,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public async Task Should_Throw_Exception_When_PageSettings_Are_Null()
         {
-            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true)).ConfigureAwait(false);
+            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true));
             List<Group> groups = new List<Group>();
             for (int i = 0; i < 30; i++)
             {
@@ -309,9 +309,9 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 });
             }
 
-            await _repository.AddRangeAsync(groups).ConfigureAwait(false);
+            await _repository.AddRangeAsync(groups);
             await Should.ThrowAsync<ArgumentException>(async () =>
-                await _repository.ToPagedListAsync<Group>(null, o => o.Description == "Test Paging").ConfigureAwait(false));
+                await _repository.ToPagedListAsync<Group>(null, o => o.Description == "Test Paging"));
         }
 
         protected virtual void Dispose()
@@ -320,7 +320,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         public override async ValueTask DisposeAsync()
         {
-            await _repository.RemoveAsync(_group).ConfigureAwait(false);
+            await _repository.RemoveAsync(_group);
             //if needed
             Dispose();
         }

@@ -6,5 +6,7 @@ namespace SugarChat.Core.Domain
     {
         public string UserId { get; set; }
         public string GroupId { get; set; }
+        public bool IsMaster { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

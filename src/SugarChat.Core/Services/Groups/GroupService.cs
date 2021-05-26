@@ -38,7 +38,7 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
             group.CheckNotExist();
-            
+
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
@@ -70,6 +70,14 @@ namespace SugarChat.Core.Services.Groups
             return _userDataProvider.GetByIdAsync(id, cancellation);
         }
 
+        public async Task GroupCheckExistAndUserCheckExist(string groupId, string userId, CancellationToken cancellation = default(CancellationToken))
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(groupId, cancellation);
+            group.CheckExist(groupId);
+            User user = await GetUserAsync(userId, cancellation);
+            user.CheckExist(userId);
+        }
+
         public async Task DismissGroup(DismissGroupCommand command, CancellationToken cancellation)
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
@@ -80,10 +88,7 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task JoinGroup(JoinGroupCommand command, CancellationToken cancellation)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
-            group.CheckNotExist();
-            User user = await GetUserAsync(command.UserId, cancellation);
-            user.CheckExist(command.UserId);
+            await GroupCheckExistAndUserCheckExist(command.GroupId, command.UserId, cancellation);
             if (await _repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId))
             {
                 throw new System.Exception("user has joined the group");
@@ -93,6 +98,38 @@ namespace SugarChat.Core.Services.Groups
                 GroupId = command.GroupId,
                 UserId = command.UserId
             });
+        }
+
+        public async Task QuitGroup(QuitGroupCommand command, CancellationToken cancellation)
+        {
+            await GroupCheckExistAndUserCheckExist(command.GroupId, command.UserId, cancellation);
+            var groupUser = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId);
+            if (groupUser is null)
+            {
+                throw new System.Exception("current user has't joined the group");
+            }
+            await _repository.RemoveAsync(groupUser, cancellation);
+        }
+
+        public async Task ChangeGroupOwner(ChangeGroupOwnerCommand command, CancellationToken cancellation)
+        {
+            var groupOwner = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.FromUserId);
+            if (groupOwner is null)
+            {
+                throw new System.Exception("current user is't group owner");
+            }
+
+            var newGroupOwner = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.ToUserId);
+            if (newGroupOwner is null)
+            {
+                throw new System.Exception("target user is't group owner");
+            }
+
+            groupOwner.IsMaster = false;
+            await _repository.UpdateAsync(groupOwner);
+
+            newGroupOwner.IsMaster = true;
+            await _repository.UpdateAsync(newGroupOwner);
         }
     }
 }

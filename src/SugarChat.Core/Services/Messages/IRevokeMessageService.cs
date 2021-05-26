@@ -25,7 +25,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task RevokeMessage(RevokeMessageCommand command, CancellationToken cancellationToken)
         {
             var message = await _repository.FirstOrDefaultAsync<Domain.Message>(x => x.Id == command.MessageId);
-            if (message == null)
+            if (message is null)
             {
                 throw new Exception("message is not defind");
             }

@@ -39,34 +39,36 @@ namespace SugarChat.Data.MongoDb
                    .Where(WhereAdapter(predicate));
         }
 
-        public Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).ToListAsync(cancellationToken);
+            return await FilteredQuery(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).CountAsync(cancellationToken);
+            return await FilteredQuery(predicate).CountAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).SingleOrDefaultAsync(cancellationToken);
+            return await FilteredQuery(predicate).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).SingleAsync(cancellationToken);
+            return await FilteredQuery(predicate).SingleAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).FirstOrDefaultAsync(cancellationToken);
+            return await FilteredQuery(predicate).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return FilteredQuery(predicate).AnyAsync(cancellationToken);
+            return await FilteredQuery(predicate)
+                    .AnyAsync(cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         public IQueryable<T> Query<T>() where T : class, IEntity
@@ -75,17 +77,16 @@ namespace SugarChat.Data.MongoDb
                    .AsQueryable();
         }
 
-        public Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            if (entity == null)
+            if (entity != null)
             {
-                return Task.CompletedTask;
+                entity.CreatedDate = DateTimeOffset.Now;
+                await GetCollection<T>().InsertOneAsync(entity, null, cancellationToken).ConfigureAwait(false);
             }
-            entity.CreatedDate = DateTimeOffset.Now;
-            return GetCollection<T>().InsertOneAsync(entity, null, cancellationToken);
         }
 
-        public Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
@@ -93,43 +94,39 @@ namespace SugarChat.Data.MongoDb
                 {
                     entity.CreatedDate = DateTimeOffset.Now;
                 }
-                return GetCollection<T>().InsertManyAsync(entities, null, cancellationToken);
+                await GetCollection<T>().InsertManyAsync(entities, null, cancellationToken).ConfigureAwait(false);
             }
-            return Task.CompletedTask;
         }
 
-        public Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            if (entity == null)
+            if (entity != null)
             {
-                return Task.CompletedTask;
+                FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+                await GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken).ConfigureAwait(false);
             }
-            FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-            return GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken);
         }
 
-        public Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
-                return GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken);
+                await GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken).ConfigureAwait(false);
             }
-            return Task.CompletedTask;
         }
 
-        public Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            if (entity == null)
+            if (entity != null)
             {
-                return Task.CompletedTask;
+                var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
+                entity.LastModifyDate = DateTimeOffset.Now;
+                await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-            var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-            entity.LastModifyDate = DateTimeOffset.Now;
-            return GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken);
         }
 
-        public Task UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
@@ -140,9 +137,8 @@ namespace SugarChat.Data.MongoDb
                     var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                     updates.Add(new ReplaceOneModel<T>(filter, entity));
                 }
-                return GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken);
+                await GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken).ConfigureAwait(false);
             }
-            return Task.CompletedTask;
         }
     }
 }

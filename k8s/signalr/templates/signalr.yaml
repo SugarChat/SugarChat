@@ -10,7 +10,6 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  replicas: {{ .Values.api.replicaCount }}
   selector:
     matchLabels:
       component: {{ template "signalr.fullname" . }}-server
@@ -28,7 +27,7 @@ spec:
     spec:
       containers:
         - name: {{ template "signalr.name" . }}-server
-          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          image: "{{ .Values.signalr.image.repository }}:{{ .Values.signalr.image.tag }}"
           imagePullPolicy: {{ .Values.signalr.image.pullPolicy }}
           livenessProbe:
             httpGet:
@@ -59,13 +58,13 @@ spec:
           env:
           volumeMounts:
           - mountPath: /app/appsettings.json
-            name: test
+            name: appsettings-volume
             readOnly: true
             subPath: appsettings.json
       volumes:
-        - configMap:
-            defaultMode: 420
-            name: {{ template "signalrserver.fullname" . }}-config
+        - name: appsettings-volume
+          configMap:
+            name: {{ template "signalr.fullname" . }}-config
 
 ---
 apiVersion: v1
@@ -79,7 +78,7 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.signalr.type }}
   ports:
     - port: 80
       targetPort: http

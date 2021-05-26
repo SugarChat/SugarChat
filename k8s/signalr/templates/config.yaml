@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-    name: {{ template "signalrserver.fullname" . }}-config
+  name: {{ template "signalr.fullname" . }}-config
 data:
-    appsettings.json: |-
+  appsettings.json: |-
     {
-        "Logging": {
+        "Logging" : {
             "LogLevel": {
             "Default": "Information",
             "Microsoft": "Warning",

@@ -5,7 +5,7 @@ using SugarChat.Core.Domain;
 
 namespace SugarChat.Core.Services.Users
 {
-    public interface IUserDataProvider
+    public interface IUserDataProvider: IDataProvider
     {
         Task<User> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task<IEnumerable<User>> GetRangeByIdAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);

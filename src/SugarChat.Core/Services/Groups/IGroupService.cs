@@ -7,7 +7,7 @@ using SugarChat.Message.Responses;
 
 namespace SugarChat.Core.Services.Groups
 {
-    public interface IGroupService
+    public interface IGroupService : IService
     {
         Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation);
         Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request, CancellationToken cancellation = default);

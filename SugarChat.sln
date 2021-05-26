@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Core.UnitTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Database.MongoDb.IntegrationTest", "test\SugarChat.Database.MongoDb.IntegrationTest\SugarChat.Database.MongoDb.IntegrationTest.csproj", "{88E5C262-2115-47B3-97EA-82AE89ACC274}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Shared", "src\SugarChat.Shared\SugarChat.Shared.csproj", "{95669E4D-8538-484B-AEE5-01D6EF95C14B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Shared", "src\SugarChat.Shared\SugarChat.Shared.csproj", "{95669E4D-8538-484B-AEE5-01D6EF95C14B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -13,7 +13,9 @@ using SugarChat.Core.Basic;
 using SugarChat.Core.Middlewares;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using System;
+using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Core.Services.Groups;
+using SugarChat.Core.Services.Users;
 
 namespace SugarChat.Core.Autofac
 {
@@ -31,7 +33,7 @@ namespace SugarChat.Core.Autofac
             RegisterMediator(builder);
             RegisterServices(builder);
             RegisterAutoMapper(builder);
-            RegisterDataProviders(builder);
+            RegisterDataProvider(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -50,7 +52,7 @@ namespace SugarChat.Core.Autofac
         {
             builder.Register(context => new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SendMessageCommand, Domain.Message>();
+                cfg.AddMaps(System.AppDomain.CurrentDomain.GetAssemblies());
             }))
             .AsSelf()
             .SingleInstance();
@@ -63,24 +65,6 @@ namespace SugarChat.Core.Autofac
             })
             .As<IMapper>()
             .InstancePerLifetimeScope();
-
-            if (_assemblies == null)
-                return;
-            var profileTypes = new List<Type>();
-            profileTypes = _assemblies.Aggregate(profileTypes,
-                (acc, a) =>
-                {
-                    return acc.Concat(a.GetTypes().Where(t => typeof(Profile).IsAssignableFrom(t) && !t.IsAbstract && t.IsPublic)).ToList();
-                });
-
-            builder.RegisterTypes(profileTypes.ToArray()).AsSelf().As<Profile>();
-
-            builder.Register(c => new MapperConfiguration(cfg =>
-              {
-                  var profiles = c.Resolve<IEnumerable<Profile>>().ToList();
-                  profiles.ForEach(x => { cfg.AddProfile(x); });
-
-              })).AsSelf().SingleInstance();                  
         }
 
         private void RegisterServices(ContainerBuilder builder)
@@ -88,16 +72,16 @@ namespace SugarChat.Core.Autofac
             foreach (var type in typeof(IService).GetTypeInfo().Assembly.GetTypes()
                 .Where(t => typeof(IService).IsAssignableFrom(t) && t.IsClass))
             {
-                builder.RegisterType(type).AsSelf().AsImplementedInterfaces();
+                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }
         }
 
-        private void RegisterDataProviders(ContainerBuilder builder)
+        private void RegisterDataProvider(ContainerBuilder builder)
         {
             foreach (var type in typeof(IDataProvider).GetTypeInfo().Assembly.GetTypes()
                 .Where(t => typeof(IDataProvider).IsAssignableFrom(t) && t.IsClass))
             {
-                builder.RegisterType(type).AsSelf().AsImplementedInterfaces();
+                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }
         }
     }

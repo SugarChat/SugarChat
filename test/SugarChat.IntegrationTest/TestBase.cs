@@ -1,39 +1,134 @@
 ﻿using Autofac;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver;
 using SugarChat.Core.Autofac;
-using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Autofac;
 using System;
+using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace SugarChat.IntegrationTest
 {
-    public abstract class TestBase
+    public abstract class TestBase : IDisposable
     {
-        protected readonly IConfiguration _configuration;
+        protected IConfiguration _configuration;
         protected ILifetimeScope Container { get; set; }
 
         protected TestBase()
         {
-            _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-
+            LoadThisConfiguration();
             var containerBuilder = new ContainerBuilder();
+            containerBuilder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
             RegisterBaseContainer(containerBuilder);
-            Container = containerBuilder.Build();
+        }
+
+        private void LoadThisConfiguration()
+        {
+            _configuration = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json")
+               .Build();
         }
 
         private void RegisterBaseContainer(ContainerBuilder builder)
         {
-            builder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
-                typeof(IService).Assembly
+                typeof(SugarChat.Core.Services.IService).Assembly
             }));
+            Container = builder.Build().BeginLifetimeScope();
         }
 
-       
+        protected void Run<T>(Action<T> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var dependency = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration).Resolve<T>()
+                : Container.BeginLifetimeScope().Resolve<T>();
+            action(dependency);
+        }
+
+        protected void Run<T, R>(Action<T, R> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var lifetime = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration)
+                : Container.BeginLifetimeScope();
+
+            var dependency = lifetime.Resolve<T>();
+            var dependency2 = lifetime.Resolve<R>();
+            action(dependency, dependency2);
+        }
+
+        protected async Task Run<T, R, L>(Func<T, R, L, Task> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var lifetime = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration)
+                : Container.BeginLifetimeScope();
+
+            var dependency = lifetime.Resolve<T>();
+            var dependency2 = lifetime.Resolve<R>();
+            var dependency3 = lifetime.Resolve<L>();
+            await action(dependency, dependency2, dependency3);
+        }
+
+        protected async Task Run<T>(Func<T, Task> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var dependency = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration).Resolve<T>()
+                : Container.BeginLifetimeScope().Resolve<T>();
+            await action(dependency);
+        }
+
+        protected async Task<R> Run<T, R>(Func<T, Task<R>> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var dependency = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration).Resolve<T>()
+                : Container.BeginLifetimeScope().Resolve<T>();
+            return await action(dependency);
+        }
+
+        protected R Run<T, R>(Func<T, R> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var dependency = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration).Resolve<T>()
+                : Container.BeginLifetimeScope().Resolve<T>();
+            return action(dependency);
+        }
+
+        protected R Run<T, U, R>(Func<T, U, R> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var lifetime = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration)
+                : Container.BeginLifetimeScope();
+
+            var dependency = lifetime.Resolve<T>();
+            var dependency2 = lifetime.Resolve<U>();
+            return action(dependency, dependency2);
+        }
+
+        protected Task Run<T, U>(Func<T, U, Task> action, Action<ContainerBuilder> extraRegistration = null)
+        {
+            var lifetime = extraRegistration != null
+                ? Container.BeginLifetimeScope(extraRegistration)
+                : Container.BeginLifetimeScope();
+            var dependency = lifetime.Resolve<T>();
+            var dependency2 = lifetime.Resolve<U>();
+            return action(dependency, dependency2);
+        }
+
+        public void Dispose()
+        {
+            ClearDatabaseRecord();
+        }
+
+        private void ClearDatabaseRecord()
+        {
+            var client = new MongoClient(_configuration["MongoDb:ConnectionString"]);
+            client.DropDatabase(_configuration["MongoDb:DatabaseName"]);
+        }
     }
 }

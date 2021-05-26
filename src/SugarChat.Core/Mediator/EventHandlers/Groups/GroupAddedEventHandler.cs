@@ -10,7 +10,7 @@ namespace SugarChat.Core.Mediator.EventHandlers.Groups
     {
         public Task Handle(IReceiveContext<GroupAddedEvent> context, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            return Task.CompletedTask;
         }
     }
 }

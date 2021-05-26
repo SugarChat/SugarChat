@@ -13,6 +13,9 @@ using SugarChat.Core.Basic;
 using SugarChat.Core.Middlewares;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
+using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Core.Services.Groups;
+using SugarChat.Core.Services.Users;
 
 namespace SugarChat.Core.Autofac
 {
@@ -30,6 +33,7 @@ namespace SugarChat.Core.Autofac
             RegisterMediator(builder);
             RegisterServices(builder);
             RegisterAutoMapper(builder);
+            RegisterDataProvider(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -48,7 +52,7 @@ namespace SugarChat.Core.Autofac
         {
             builder.Register(context => new MapperConfiguration(cfg =>
             {
-                cfg.CreateMap<SendMessageCommand, Domain.Message>();
+                cfg.AddMaps(System.AppDomain.CurrentDomain.GetAssemblies());
             }))
             .AsSelf()
             .SingleInstance();
@@ -65,9 +69,20 @@ namespace SugarChat.Core.Autofac
 
         private void RegisterServices(ContainerBuilder builder)
         {
-            builder.RegisterType<SendMessageService>()
-                .As<ISendMessageService>()
-                .InstancePerLifetimeScope();
+            foreach (var type in typeof(IService).GetTypeInfo().Assembly.GetTypes()
+                .Where(t => typeof(IService).IsAssignableFrom(t) && t.IsClass))
+            {
+                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
+        }
+
+        private void RegisterDataProvider(ContainerBuilder builder)
+        {
+            foreach (var type in typeof(IDataProvider).GetTypeInfo().Assembly.GetTypes()
+                .Where(t => typeof(IDataProvider).IsAssignableFrom(t) && t.IsClass))
+            {
+                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
+            }
         }
     }
 }

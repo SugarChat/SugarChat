@@ -1,10 +1,10 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using SugarChat.Message.Command;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Services;
+using SugarChat.Message.Commands;
 
 namespace SugarChat.Core.Mediator.CommandHandler
 {

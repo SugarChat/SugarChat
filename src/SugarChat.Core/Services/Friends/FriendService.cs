@@ -29,7 +29,7 @@ namespace SugarChat.Core.Services.Friends
             _friendDataProvider = friendDataProvider;
         }
 
-        public async Task<FriendAddedEvent> AddFriendAsync(AddFriendCommand command,
+        public async Task<AddFriendEvent> AddFriendAsync(AddFriendCommand command,
             CancellationToken cancellation = default)
         {
             User user = await GetUserAsync(command.UserId, cancellation);
@@ -61,7 +61,7 @@ namespace SugarChat.Core.Services.Friends
             };
         }
 
-        public async Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
+        public async Task<RemoveFriendEvent> RemoveFriendAsync(RemoveFriendCommand command,
             CancellationToken cancellation = default)
         {
             Friend friend = await _friendDataProvider.GetByBothIdsAsync(command.UserId, command.FriendId, cancellation);

@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Command;
+using SugarChat.Message.Commands;
 
 namespace SugarChat.Core.Services
 {

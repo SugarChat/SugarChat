@@ -11,7 +11,6 @@ using MongoDB.Bson.Serialization;
 using SugarChat.Core;
 using SugarChat.Core.Autofac;
 using SugarChat.Core.Mediator.CommandHandler;
-using SugarChat.Message.Command;
 using System.Reflection;
 using SugarChat.Data.MongoDb;
 using SugarChat.Data.MongoDb.Autofac;

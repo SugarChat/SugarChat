@@ -1,7 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Groups;
+using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Events.Groups;
+using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 
@@ -27,5 +29,13 @@ namespace SugarChat.Core.Services.Messages
 
         Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default);
+        
+        Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
+            CancellationToken cancellationToken);
+        Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request,
+            CancellationToken cancellationToken);
+        
+        Task<SetMessageReadByUserEvent> SetMessageReadByUserAsync(SetMessageReadByUserCommand command,
+            CancellationToken cancellationToken);
     }
 }

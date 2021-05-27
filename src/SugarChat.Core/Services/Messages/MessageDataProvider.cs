@@ -36,39 +36,53 @@ namespace SugarChat.Core.Services.Messages
             return await _repository.SingleOrDefaultAsync<Domain.Message>(o => o.Id == id, cancellationToken);
         }
 
-        public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId,
+        public async Task<IEnumerable<Domain.Message>> GetUnreadToUserWithFriendAsync(string userId, string friendId, 
             CancellationToken cancellationToken = default)
         {
-            var unreadMessageIds = _repository.Query<MessageUnread>().Where(o => o.UserId == userId)
-                .Select(o => o.MessageId);
-            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id));
-            var fromFriends = unreadMessages.Where(o => o.SentBy == friendId).AsEnumerable();
-            return Task.FromResult(fromFriends);
+            var groupIdsIncludingBoth = GetGroupIdsIncludingUserAndFiend(userId, friendId);
+            var groupId = GetGroupIdOfUserAndFiend(groupIdsIncludingBoth);
+            var lastReadTime = (await _repository.SingleAsync<GroupUser>(o => o.GroupId == groupId, cancellationToken))
+                .LastReadTime;
+            var messages = _repository.Query<Domain.Message>()
+                .Where(o => o.GroupId == groupId && o.SentTime > lastReadTime).OrderByDescending(o => o.SentTime);
+            return await Task.FromResult(messages);
         }
 
-        public Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
+        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
             CancellationToken cancellationToken = default)
         {
-            var unreadMessageIds = _repository.Query<MessageUnread>().Where(o => o.UserId == userId)
-                .Select(o => o.MessageId);
-            var unreadMessages = _repository.Query<Domain.Message>().Where(o => unreadMessageIds.Contains(o.Id))
-                .AsEnumerable();
-            return Task.FromResult(unreadMessages);
+            var groupIds = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
+            var unreadMessages = await _repository.ToListAsync<Domain.Message>(
+                o => groupIds.Select(x => x.GroupId).Contains(o.GroupId) &&
+                     o.SentTime > groupIds.SingleOrDefault(x => x.GroupId == o.GroupId).LastReadTime, cancellationToken);
+
+            return await Task.FromResult(unreadMessages);
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserFromFriendAsync(string userId,
-            string friendId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserWithFriendAsync(string userId,
+            string friendId, CancellationToken cancellationToken = default)
         {
-            var userGroup = _repository.Query<GroupUser>().Where(o => o.UserId == userId);
-            var friendGroup = _repository.Query<GroupUser>().Where(o => o.UserId == friendId);
-            var bothGroup = userGroup.Intersect(friendGroup);
-            var groupId = bothGroup.GroupBy(o => o.GroupId).Single(o => o.Count() == 2).First().GroupId;
-            var messages =
-                await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId && o.SentBy == friendId,
-                    cancellationToken);
+            var groupIdsIncludingBoth = GetGroupIdsIncludingUserAndFiend(userId, friendId);
+            var groupId = GetGroupIdOfUserAndFiend(groupIdsIncludingBoth);
+            var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId).OrderByDescending(o=>o.SentTime);
 
-            return messages;
+            return await Task.FromResult(messages);
+        }
+
+        private IQueryable<string> GetGroupIdsIncludingUserAndFiend(string userId, string friendId)
+        {
+            var userGroupIds = _repository.Query<GroupUser>().Where(o => o.UserId == userId).Select(o => o.GroupId);
+            var friendGroupIds = _repository.Query<GroupUser>().Where(o => o.UserId == friendId).Select(o => o.GroupId);
+            var groupIdsIncludingBoth = userGroupIds.Intersect(friendGroupIds);
+            return groupIdsIncludingBoth;
+        }
+
+        private string GetGroupIdOfUserAndFiend(IQueryable<string> groupIdsIncludingBoth)
+        {
+            var groupId = _repository.Query<GroupUser>().Where(o => groupIdsIncludingBoth.Contains(o.GroupId))
+                .GroupBy(o => o.GroupId).SingleOrDefault(o => o.Count() == 2)?.First().GroupId;
+
+            return groupId;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
@@ -104,6 +118,17 @@ namespace SugarChat.Core.Services.Messages
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId && o.SentBy != userId,
                     cancellationToken);
+
+            return messages;
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count, CancellationToken cancellationToken)
+        {
+            var message = await _repository.SingleAsync<Domain.Message>(o => o.Id == messageId, cancellationToken);
+            var messages =
+                _repository.Query<Domain.Message>()
+                    .Where(o => o.GroupId == message.GroupId && o.SentTime < message.SentTime)
+                    .OrderByDescending(o => o.SentTime).Take(count);
 
             return messages;
         }

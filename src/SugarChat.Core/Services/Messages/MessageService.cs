@@ -7,6 +7,8 @@ using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands.Messages;
+using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
@@ -71,7 +73,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetUnreadToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserFromFriendAsync(request.UserId, request.FriendId,
+                    await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId,
                         cancellationToken))
             };
         }
@@ -89,7 +91,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllHistoryToUserFromFriendAsync(request.UserId, request.FriendId,
+                    await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId,
                         cancellationToken))
             };
         }
@@ -145,6 +147,22 @@ namespace SugarChat.Core.Services.Messages
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
                     await _messageDataProvider.GetAllToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
             };
+        }
+
+        public Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request,
+            CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<SetMessageReadByUserEvent> SetMessageReadByUserAsync(SetMessageReadByUserCommand command, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

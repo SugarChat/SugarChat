@@ -1,3 +1,5 @@
+using Mediator.Net;
+using Mediator.Net.MicrosoftDependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Extensions;
 using SugarChat.Push.SignalR.Hubs;
+using System.Reflection;
 
 namespace SugarChat.SignalR.Server
 {
@@ -25,6 +28,14 @@ namespace SugarChat.SignalR.Server
             services.AddSugarChatSignalR()
                 .AddJsonProtocol()
                 .AddStackExchangeRedis(Configuration.GetSection("SignalRRedis").Value);
+
+            #region ConfigureMediator
+            var mediatorBuilder = new MediatorBuilder();
+            mediatorBuilder.RegisterHandlers(
+                typeof(SugarChat.Push.SignalR.Hubs.ChatHub).Assembly
+            );
+            services.RegisterMediator(mediatorBuilder);
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

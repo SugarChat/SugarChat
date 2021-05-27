@@ -2,10 +2,11 @@
 using MongoDB.Bson.Serialization;
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
-    public abstract class TestBase
+    public abstract class TestBase : IAsyncDisposable
     {
         protected readonly IConfiguration _configuration;
 
@@ -14,6 +15,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             _configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
+        }
+
+        public virtual ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
         }
     }
 }

@@ -1,17 +1,11 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Extensions;
 using SugarChat.Push.SignalR.Hubs;
-using SugarChat.Push.SignalR.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SugarChat.SignalR.Server
 {
@@ -25,35 +19,12 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IRedisClient, RedisClient>(sp => new RedisClient(Configuration.GetSection("Redis").Value));
+            services.AddHttpContextAccessor();
             services.AddControllers();
-            services.AddSugarChatSignalR().AddStackExchangeRedis(Configuration.GetSection("Redis").Value);
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = "";
-
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnMessageReceived = context =>
-                        {
-                            var accessToken = context.Request.Query["access_token"];
-
-                            // If the request is for our hub...
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken) &&
-                                (path.StartsWithSegments("/hubs/chat")))
-                            {
-                                // Read the token out of the query string
-                                context.Token = accessToken;
-                            }
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
+            services.AddSugarChatSignalR()
+                .AddJsonProtocol()
+                .AddStackExchangeRedis(Configuration.GetSection("SignalRRedis").Value);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,9 +34,8 @@ namespace SugarChat.SignalR.Server
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseAuthentication();
             app.UseRouting();
-            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<ChatHub>("/hubs/chat", context =>

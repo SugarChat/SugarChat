@@ -12,6 +12,7 @@ namespace SugarChat.Push.SignalR.Extensions
     {
         public static ISignalRServerBuilder AddSugarChatSignalR(this IServiceCollection services)
         {
+            services.AddScoped<IConnectService, ConnectService>();
             services.AddScoped<IChatHubService, ChatHubService>();
             services.AddSingleton<IUserIdProvider, UserIdProvider>();
             return services.AddSignalR();

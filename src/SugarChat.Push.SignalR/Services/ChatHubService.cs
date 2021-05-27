@@ -13,6 +13,10 @@ namespace SugarChat.Push.SignalR.Services
     {
         private readonly IHubContext<ChatHub> _chatHubContext;
 
+        public ChatHubService(IHubContext<ChatHub> chatHubContext)
+        {
+            _chatHubContext = chatHubContext;
+        }
 
         public async Task SendUserMessage([NotNull] string userId, object[] messages, CancellationToken cancellationToken = default)
         {

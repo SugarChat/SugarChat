@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Push.SignalR.Model;
 using SugarChat.Push.SignalR.Services;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,18 @@ namespace SugarChat.SignalR.Server.Controllers
     public class ChatController : ControllerBase
     {
         private readonly IChatHubService _chatHubService;
+        private readonly IConnectService _connectService;
 
-        public ChatController(IChatHubService chatHubService)
+        public ChatController(IChatHubService chatHubService, IConnectService connectService)
         {
             _chatHubService = chatHubService;
+            _connectService = connectService;
+        }
+        [HttpPost("GetConnectionUrl")]
+        public async Task<IActionResult> GetConnectionUrl(GetConnectionUrlModel model)
+        {
+            var url = await _connectService.GetConnectionUrl(model);
+            return Ok(url);
         }
     }
 }

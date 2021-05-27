@@ -20,26 +20,26 @@ namespace SugarChat.Push.SignalR.Services
 
         public async Task SendUserMessage([NotNull] string userId, object[] messages, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Clients.User(userId).SendCoreAsync("ReceiveMessage", messages, cancellationToken);
+            await _chatHubContext.Clients.User(userId).SendCoreAsync("ReceiveMessage", messages, cancellationToken).ConfigureAwait(false);
         }
         public async Task SendMassUserMessage([NotNull] IReadOnlyList<string> userIds, object[] messages, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Clients.Users(userIds).SendCoreAsync("ReceiveMessage", messages, cancellationToken);
+            await _chatHubContext.Clients.Users(userIds).SendCoreAsync("ReceiveMessage", messages, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SendGroupMessage([NotNull] string group, object[] messages, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Clients.Group(group).SendCoreAsync("ReceiveGroupMessage", messages, cancellationToken);
+            await _chatHubContext.Clients.Group(group).SendCoreAsync("ReceiveGroupMessage", messages, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SendMassGroupMessage([NotNull] IReadOnlyList<string> groups, object[] messages, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Clients.Groups(groups).SendCoreAsync("ReceiveGroupMessage", messages, cancellationToken);
+            await _chatHubContext.Clients.Groups(groups).SendCoreAsync("ReceiveGroupMessage", messages, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SendAllMessage(object[] messages, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Clients.All.SendCoreAsync("ReceiveGlobalMessage", messages, cancellationToken);
+            await _chatHubContext.Clients.All.SendCoreAsync("ReceiveGlobalMessage", messages, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CustomMessage(SendWay sendWay, [NotNull] string method, object[] messages, string sendTo = "", CancellationToken cancellationToken = default)
@@ -49,15 +49,15 @@ namespace SugarChat.Push.SignalR.Services
                 case SendWay.User:
                     if (string.IsNullOrWhiteSpace(sendTo)) throw new ArgumentException("The arg {0} is null or whitespace", nameof(sendTo));
 
-                    await _chatHubContext.Clients.User(sendTo).SendCoreAsync(method, messages, cancellationToken);
+                    await _chatHubContext.Clients.User(sendTo).SendCoreAsync(method, messages, cancellationToken).ConfigureAwait(false);
                     break;
                 case SendWay.Group:
                     if (string.IsNullOrWhiteSpace(sendTo)) throw new ArgumentException("The arg {0} is null or whitespace", nameof(sendTo));
 
-                    await _chatHubContext.Clients.Group(sendTo).SendCoreAsync(method, messages, cancellationToken);
+                    await _chatHubContext.Clients.Group(sendTo).SendCoreAsync(method, messages, cancellationToken).ConfigureAwait(false);
                     break;
                 case SendWay.All:
-                    await _chatHubContext.Clients.All.SendCoreAsync(method, messages, cancellationToken);
+                    await _chatHubContext.Clients.All.SendCoreAsync(method, messages, cancellationToken).ConfigureAwait(false);
                     break;
                 default:
                     break;
@@ -69,12 +69,12 @@ namespace SugarChat.Push.SignalR.Services
             {
                 case SendWay.User:
 
-                    await _chatHubContext.Clients.Users(sendTo).SendCoreAsync(method, messages, cancellationToken);
+                    await _chatHubContext.Clients.Users(sendTo).SendCoreAsync(method, messages, cancellationToken).ConfigureAwait(false);
 
                     break;
                 case SendWay.Group:
 
-                    await _chatHubContext.Clients.Groups(sendTo).SendCoreAsync(method, messages, cancellationToken);
+                    await _chatHubContext.Clients.Groups(sendTo).SendCoreAsync(method, messages, cancellationToken).ConfigureAwait(false);
 
                     break;
                 default:
@@ -84,11 +84,11 @@ namespace SugarChat.Push.SignalR.Services
 
         public async Task AddGroup(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Groups.AddToGroupAsync(connectionId, groupName, cancellationToken);
+            await _chatHubContext.Groups.AddToGroupAsync(connectionId, groupName, cancellationToken).ConfigureAwait(false);
         }
         public async Task ExitGroup(string connectionId, string groupName, CancellationToken cancellationToken = default)
         {
-            await _chatHubContext.Groups.RemoveFromGroupAsync(connectionId, groupName, cancellationToken);
+            await _chatHubContext.Groups.RemoveFromGroupAsync(connectionId, groupName, cancellationToken).ConfigureAwait(false);
         }
     }
 }

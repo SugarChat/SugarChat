@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Push.SignalR.Model;
 using SugarChat.Push.SignalR.Services;
@@ -13,13 +14,13 @@ namespace SugarChat.SignalR.Server.Controllers
     [ApiController]
     public class ChatController : ControllerBase
     {
-        private readonly IChatHubService _chatHubService;
+        private readonly IMediator _mediator;
         private readonly IConnectService _connectService;
 
-        public ChatController(IChatHubService chatHubService, IConnectService connectService)
+        public ChatController(IConnectService connectService, IMediator mediator)
         {
-            _chatHubService = chatHubService;
             _connectService = connectService;
+            _mediator = mediator;
         }
         [HttpPost("GetConnectionUrl")]
         public async Task<IActionResult> GetConnectionUrl(GetConnectionUrlModel model)

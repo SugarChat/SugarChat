@@ -9,6 +9,7 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.Data.MongoDb
@@ -16,6 +17,7 @@ namespace SugarChat.Data.MongoDb
     public class MongoDbRepository : IRepository
     {
         readonly IMongoDatabase _database;
+
         public MongoDbRepository(MongoDbSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
@@ -35,8 +37,8 @@ namespace SugarChat.Data.MongoDb
         private IMongoQueryable<T> FilteredQuery<T>(Expression<Func<T, bool>> predicate = null)
         {
             return GetCollection<T>()
-                   .AsQueryable()
-                   .Where(WhereAdapter(predicate));
+                .AsQueryable()
+                .Where(WhereAdapter(predicate));
         }
 
         public async Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
@@ -44,7 +46,18 @@ namespace SugarChat.Data.MongoDb
             return await FilteredQuery(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings,
+            Expression<Func<T, bool>> predicate = null,
+            CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            var query = FilteredQuery(predicate);
+            var result = await query.Paging(pageSettings).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
+            return new PagedResult<T> {Result = result, Total = total};
+        }
+
+        public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,
+            CancellationToken cancellationToken = default) where T : class, IEntity
         {
             return await FilteredQuery(predicate).CountAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -74,7 +87,7 @@ namespace SugarChat.Data.MongoDb
         public IQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
-                   .AsQueryable();
+                .AsQueryable();
         }
 
         public async Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity

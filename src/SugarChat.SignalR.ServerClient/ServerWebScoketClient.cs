@@ -21,6 +21,12 @@ namespace SugarChat.SignalR.ServerClient
                   options.Transports = HttpTransportType.WebSockets;
               })
               .Build();
+            HubConnection.Closed += async (error) =>
+            {
+                await Task.Delay(new Random().Next(0, 5) * 1000);
+                await HubConnection.StartAsync();
+            };
+            HubConnection.StartAsync();
         }
 
         public async Task<string> GetConnectionUrl(string userIdentifier)

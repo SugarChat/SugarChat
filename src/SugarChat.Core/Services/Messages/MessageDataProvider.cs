@@ -28,10 +28,10 @@ namespace SugarChat.Core.Services.Messages
         {
             await _repository.RemoveAsync(message, cancellation);
         }
-        
-        public Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+
+        public async Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            return await _repository.FirstOrDefaultAsync<Domain.Message>(x => x.Id == id, cancellationToken);
         }
 
         public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)

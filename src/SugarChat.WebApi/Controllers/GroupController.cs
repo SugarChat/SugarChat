@@ -33,26 +33,5 @@ namespace SugarChat.WebApi.Controllers
             await _mediator.SendAsync(command);
             return Ok();
         }
-
-        [Route("join"), HttpPost]
-        public async Task<IActionResult> JoinGroup(DismissGroupCommand command)
-        {
-            await _mediator.SendAsync(command);
-            return Ok();
-        }
-
-        [Route("quit"), HttpPost]
-        public async Task<IActionResult> QuitGroup(QuitGroupCommand command)
-        {
-            await _mediator.SendAsync(command);
-            return Ok();
-        }
-
-        [Route("changeGroupOwner"), HttpPost]
-        public async Task<IActionResult> ChangeGroupOwner(ChangeGroupOwnerCommand command)
-        {
-            await _mediator.SendAsync(command);
-            return Ok();
-        }
     }
 }

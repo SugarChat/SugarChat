@@ -13,15 +13,15 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 {
     public class RevokeMessageCommandHandler : ICommandHandler<RevokeMessageCommand>
     {
-        private readonly IRevokeMessageService _revokeMessageService;
-        public RevokeMessageCommandHandler(IRevokeMessageService revokeMessageService)
+        private readonly IMessageService _messageService;
+        public RevokeMessageCommandHandler(IMessageService messageService)
         {
-            _revokeMessageService = revokeMessageService;
+            _messageService = messageService;
         }
 
         public Task Handle(IReceiveContext<RevokeMessageCommand> context, CancellationToken cancellationToken)
         {
-            return _revokeMessageService.RevokeMessage(context.Message, cancellationToken);
+            return _messageService.RevokeMessage(context.Message, cancellationToken);
         }
     }
 }

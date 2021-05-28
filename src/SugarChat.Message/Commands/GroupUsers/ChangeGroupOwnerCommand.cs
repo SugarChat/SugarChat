@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SugarChat.Message.Commands.Groups
+namespace SugarChat.Message.Commands.GroupUsers
 {
-    public class QuitGroupCommand:ICommand
+    public class ChangeGroupOwnerCommand : ICommand
     {
-        public string UserId { get; set; }
+        public string FromUserId { get; set; }
+        public string ToUserId { get; set; }
         public string GroupId { get; set; }
     }
 }

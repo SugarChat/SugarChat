@@ -7,6 +7,8 @@ using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands.Message;
+using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
@@ -145,6 +147,16 @@ namespace SugarChat.Core.Services.Messages
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
                     await _messageDataProvider.GetAllToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
             };
+        }
+
+        public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
+            message.CheckExist(command.MessageId);
+            message.IsDel = true;
+            await _messageDataProvider.UpdateAsync(message, cancellationToken);
+
+            return new MessageRevokedEvent { };
         }
     }
 }

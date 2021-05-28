@@ -5,7 +5,7 @@ using SugarChat.Core.Domain;
 
 namespace SugarChat.Core.Services.Friends
 {
-    public interface IFriendDataProvider
+    public interface IFriendDataProvider : IDataProvider
     {
         Task<Friend> GetByOwnIdAsync(string id, CancellationToken cancellationToken = default);
         Task<Friend> GetByBothIdsAsync(string userId, string friendId, CancellationToken cancellationToken = default);

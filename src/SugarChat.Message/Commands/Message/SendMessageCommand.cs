@@ -13,14 +13,4 @@ namespace SugarChat.Message.Command
         public string SentBy { get; set; }
         public string AttachmentUrl { get; set; }
     }
-
-    public enum MessageType
-    {
-        Text,
-        Video,
-        Image,
-        Voice,
-        File,
-        Other
-    }
 }

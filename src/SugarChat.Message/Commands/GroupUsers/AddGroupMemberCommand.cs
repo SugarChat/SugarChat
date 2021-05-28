@@ -5,12 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SugarChat.Message.Commands.GroupMember
+namespace SugarChat.Message.Commands.GroupUsers
 {
     public class AddGroupMemberCommand : ICommand
     {
-        public string GroupOwnerId { get; set; }
-        public string GroupId { get;set; }
+        public string GroupId { get; set; }
+        public string GroupAdminId { get; set; }
         public string MemberId { get; set; }
     }
 }

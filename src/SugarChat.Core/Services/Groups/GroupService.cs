@@ -22,16 +22,14 @@ namespace SugarChat.Core.Services.Groups
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
-        private readonly IRepository _repository;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IRepository repository)
+            IGroupUserDataProvider groupUserDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
-            _repository = repository;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation)
@@ -70,66 +68,14 @@ namespace SugarChat.Core.Services.Groups
             return _userDataProvider.GetByIdAsync(id, cancellation);
         }
 
-        public async Task GroupCheckExistAndUserCheckExist(string groupId, string userId, CancellationToken cancellation = default(CancellationToken))
+        public async Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(groupId, cancellation);
-            group.CheckExist(groupId);
-            User user = await GetUserAsync(userId, cancellation);
-            user.CheckExist(userId);
-        }
-
-        public async Task DismissGroup(DismissGroupCommand command, CancellationToken cancellation)
-        {
-            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
-            group.CheckExist(command.Id);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
+            group.CheckExist(command.GroupId);
             group.IsDel = true;
             await _groupDataProvider.UpdateAsync(group, cancellation);
-        }
 
-        public async Task JoinGroup(JoinGroupCommand command, CancellationToken cancellation)
-        {
-            await GroupCheckExistAndUserCheckExist(command.GroupId, command.UserId, cancellation);
-            if (await _repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId))
-            {
-                throw new System.Exception("user has joined the group");
-            }
-            await _repository.AddAsync(new GroupUser
-            {
-                GroupId = command.GroupId,
-                UserId = command.UserId
-            });
-        }
-
-        public async Task QuitGroup(QuitGroupCommand command, CancellationToken cancellation)
-        {
-            await GroupCheckExistAndUserCheckExist(command.GroupId, command.UserId, cancellation);
-            var groupUser = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId);
-            if (groupUser is null)
-            {
-                throw new System.Exception("current user has't joined the group");
-            }
-            await _repository.RemoveAsync(groupUser, cancellation);
-        }
-
-        public async Task ChangeGroupOwner(ChangeGroupOwnerCommand command, CancellationToken cancellation)
-        {
-            var groupOwner = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.FromUserId);
-            if (groupOwner is null)
-            {
-                throw new System.Exception("current user is't group owner");
-            }
-
-            var newGroupOwner = await _repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.ToUserId);
-            if (newGroupOwner is null)
-            {
-                throw new System.Exception("target user is't group owner");
-            }
-
-            groupOwner.IsMaster = false;
-            await _repository.UpdateAsync(groupOwner);
-
-            newGroupOwner.IsMaster = true;
-            await _repository.UpdateAsync(newGroupOwner);
+            return new GroupDismissedEvent { };
         }
     }
 }

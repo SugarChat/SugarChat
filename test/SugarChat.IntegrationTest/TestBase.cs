@@ -11,9 +11,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace SugarChat.IntegrationTest
 {
+    [Collection("tests")]
     public abstract class TestBase : IDisposable
     {
         protected IConfiguration _configuration;

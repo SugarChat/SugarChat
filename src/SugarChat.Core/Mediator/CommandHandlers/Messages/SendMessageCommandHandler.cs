@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Services;
+using SugarChat.Message.Messages.Events;
 
 namespace SugarChat.Core.Mediator.CommandHandler.Messages
 {
@@ -16,9 +17,10 @@ namespace SugarChat.Core.Mediator.CommandHandler.Messages
             _sendMessageService = sendMessageService;
         }
 
-        public Task Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
         {
-            return _sendMessageService.SendMessage(context.Message, cancellationToken);
+            var messageSentEvent = await _sendMessageService.SendMessage(context.Message, cancellationToken).ConfigureAwait(false);
+            //await context.PublishAsync(messageSentEvent, cancellationToken).ConfigureAwait(false);
         }
     }
 }

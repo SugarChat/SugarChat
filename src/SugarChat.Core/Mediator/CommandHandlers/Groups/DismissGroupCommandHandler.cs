@@ -19,9 +19,10 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Groups
         {
             _groupService = groupService;
         }
-        public Task Handle(IReceiveContext<DismissGroupCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<DismissGroupCommand> context, CancellationToken cancellationToken)
         {
-            return _groupService.DismissGroup(context.Message, cancellationToken);
+            var groupJoinedEvent = await _groupService.DismissGroup(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(groupJoinedEvent, cancellationToken).ConfigureAwait(false);
         }
     }
 }

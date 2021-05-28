@@ -1,3 +1,8 @@
+using Mediator.Net;
+using Microsoft.AspNetCore.SignalR;
+using Moq;
+using SugarChat.Push.SignalR.Hubs;
+using SugarChat.Push.SignalR.Services;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -7,19 +12,16 @@ namespace SugarChat.SignalR.ServerClient.Test
 {
     public class ServerHttpClientUnitTest
     {
+
         [Fact]
-        public async Task TestGetConnectionUrl()
+        public async Task TestHub()
         {
-            var client = GetClient();
-            var urlStr = await client.GetConnectionUrl("Test123");
-            Assert.NotNull(urlStr);
+            var hub = new ApiHub(new Mock<IMediator>().Object, new Mock<IConnectService>().Object);
+            var mockClients = new Mock<IHubCallerClients>();
+            hub.Clients = mockClients.Object;
+            await hub.SendMessage(new Mock<Push.SignalR.Models.SendMessageModel>().Object);
+            Assert.True(true);
         }
 
-        private ServerHttpClient GetClient()
-        {
-            var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri("http://localhost:9875");
-            return new ServerHttpClient(httpClient);
-        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using ServiceStack.Redis;
-using SugarChat.Push.SignalR.Model;
+using SugarChat.Push.SignalR.Models;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;

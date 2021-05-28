@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using ServiceStack.Redis;
-using SugarChat.Push.SignalR.Model;
+using SugarChat.Push.SignalR.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;

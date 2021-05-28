@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SugarChat.SignalR.Server.Models
+namespace SugarChat.Push.SignalR.Models
 {
     public class GroupActionModel
     {

@@ -24,5 +24,10 @@ namespace SugarChat.SignalR.ServerClient.Extensions
                 }));
             return services;
         }
+        public static IServiceCollection AddSugarChatSignalRServerWebSocketClient(this IServiceCollection services, string serverUrl)
+        {
+            services.AddSingleton<IServerClient, ServerWebScoketClient>(sp => new ServerWebScoketClient(serverUrl));
+            return services;
+        }
     }
 }

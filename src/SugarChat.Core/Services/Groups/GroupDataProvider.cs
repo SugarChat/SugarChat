@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -17,15 +18,21 @@ namespace SugarChat.Core.Services.Groups
             _repository = repository;
         }
 
-        public Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
         {
-            return _repository.SingleOrDefaultAsync<Group>(x => x.Id == id);
+            return await _repository.SingleOrDefaultAsync<Group>(x => x.Id == id, cancellationToken)
+                .ConfigureAwait(false);
+            ;
         }
 
-        public async Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
+        public async Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
+            CancellationToken cancellationToken)
         {
-            return await _repository.ToListAsync<Group>(o=>ids.Contains(o.Id)).ConfigureAwait(false);
+            var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
+                .OrderByDescending(o => o.LastModifyDate);
 
+            var result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken);
+            return result;
         }
 
         public async Task AddAsync(Group group, CancellationToken cancellation)

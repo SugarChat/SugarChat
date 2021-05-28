@@ -11,6 +11,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -55,6 +56,14 @@ namespace SugarChat.Data.MongoDb
             var result = await query.Paging(pageSettings).ToListAsync(cancellationToken);
             var total = await query.CountAsync(cancellationToken);
             return new PagedResult<T> {Result = result, Total = total};
+        }
+
+        public Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query,
+            CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            var result = query?.Paging(pageSettings).ToList();
+            var total = query?.Count() ?? 0;
+            return Task.FromResult(new PagedResult<T> {Result = result, Total = total});
         }
 
         public Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,

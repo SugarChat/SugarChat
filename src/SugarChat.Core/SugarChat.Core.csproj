@@ -24,8 +24,4 @@
       <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Filters\" />
-    </ItemGroup>
-
 </Project>

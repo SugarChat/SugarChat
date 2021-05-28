@@ -1,4 +1,5 @@
-﻿using SugarChat.Core.Domain;
+﻿using System;
+using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Services
@@ -13,6 +14,11 @@ namespace SugarChat.Core.Services
         private const string GroupExists = "Group with Id {0} already exists.";
         private const string GroupNoExists = "Group with Id {0} Dose not exist.";
         private const string NotInGroup = "User with Id {0} is not member of Group with Id {1}.";
+        private const string GroupUserExists = "User with Id {0} is already member of Group with Id {1}.";
+        private const string MessageNoExists = "Message with Id {0} Dose not exist.";
+
+        private const string LastReadTimeLaterThanOrEqualTo =
+            "User with Id {0} From Group with Id {1}'s Last Read Timed is later than or equal to {3}";
 
         public static void CheckNotExist(this User user)
         {
@@ -45,7 +51,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(NotFriend, userId, friendId));
             }
         }
-        
+
         public static void CheckNotExist(this Group group)
         {
             if (group is not null)
@@ -62,7 +68,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(AddSelfAsFiend, user.Id));
             }
         }
-        
+
         public static void CheckExist(this Group group, string groupId)
         {
             if (group is null)
@@ -70,12 +76,37 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(GroupNoExists, groupId));
             }
         }
-        
+
         public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
         {
             if (groupUser is null)
             {
                 throw new BusinessWarningException(string.Format(NotInGroup, userId, groupId));
+            }
+        }
+
+        public static void CheckNotExist(this GroupUser groupUser)
+        {
+            if (groupUser is not null)
+            {
+                throw new BusinessWarningException(string.Format(GroupUserExists, groupUser.UserId, groupUser.GroupId));
+            }
+        }
+
+        public static void CheckExist(this Domain.Message message, string messageId)
+        {
+            if (message is null)
+            {
+                throw new BusinessWarningException(string.Format(MessageNoExists, messageId));
+            }
+        }
+
+        public static void CheckLastReadTimeEarlierThan(this GroupUser groupUser, DateTimeOffset sentTime)
+        {
+            if (groupUser.LastReadTime >= sentTime)
+            {
+                throw new BusinessWarningException(string.Format(LastReadTimeLaterThanOrEqualTo, groupUser.UserId,
+                    groupUser.GroupId, sentTime));
             }
         }
     }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {

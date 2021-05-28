@@ -31,5 +31,7 @@ namespace SugarChat.Core.Services.Messages
         
         Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string requestGroupId, int requestCount, CancellationToken cancellationToken);
     }
 }

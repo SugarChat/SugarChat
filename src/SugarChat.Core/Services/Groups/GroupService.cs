@@ -12,6 +12,7 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -35,7 +36,7 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
             group.CheckNotExist();
-            
+
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
@@ -53,18 +54,21 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.Id);
 
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation);
-            IEnumerable<Group> groups =
-                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), cancellation);
-            IEnumerable<GroupDto> groupsDto = _mapper.Map<IEnumerable<GroupDto>>(groups);
+            PagedResult<Group> groups =
+                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation);
+            PagedResult<GroupDto> groupsDto = _mapper.Map<PagedResult<GroupDto>>(groups);
             return new()
             {
                 Groups = groupsDto
             };
         }
 
-        public Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation)
+        public async Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation)
         {
-            throw new System.NotImplementedException();
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
+            group.CheckExist(command.GroupId);
+            await _groupDataProvider.RemoveAsync(group, cancellation);
+            return new RemoveGroupEvent {Status = EventStatus.Success};
         }
 
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)

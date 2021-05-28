@@ -109,12 +109,6 @@ namespace SugarChat.Core.Services.Users
             };
         }
 
-        public Task<GetMembersOfGroupResponse> GetMembersOfGroupAsync(GetMembersOfGroupRequest request,
-            CancellationToken cancellation = default)
-        {
-            throw new NotImplementedException();
-        }
-
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
         {
             return _userDataProvider.GetByIdAsync(id, cancellation);

@@ -8,6 +8,7 @@ using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Messages;
+using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -26,7 +27,8 @@ namespace SugarChat.Core.Services.Messages
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
-            IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider, IGroupUserDataProvider groupUserDataProvider)
+            IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
+            IGroupUserDataProvider groupUserDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -116,53 +118,95 @@ namespace SugarChat.Core.Services.Messages
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
-            
+
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
-            
-            GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
+
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
+                    cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
-            
+
             return new GetUnreadToUserFromGroupResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
+                    await _messageDataProvider.GetUnreadToUserFromGroupAsync(request.UserId, request.GroupId,
+                        cancellationToken))
             };
         }
 
-        public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
+        public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(
+            GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
-            
+
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
-            
-            GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
+
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
+                    cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
-            
+
             return new GetAllToUserFromGroupResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
+                    await _messageDataProvider.GetAllToUserFromGroupAsync(request.UserId, request.GroupId,
+                        cancellationToken))
             };
         }
 
-        public Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request, CancellationToken cancellationToken)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request,
+        public async Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
             CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
+            group.CheckExist(request.GroupId);
+
+            var messages =
+                await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.Count, cancellationToken);
+            return new()
+            {
+                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+            };
         }
 
-        public Task<SetMessageReadByUserEvent> SetMessageReadByUserAsync(SetMessageReadByUserCommand command, CancellationToken cancellationToken)
+        public async Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(
+            GetMessagesOfGroupBeforeRequest request,
+            CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            Domain.Message message = await _messageDataProvider.GetByIdAsync(request.MessageId, cancellationToken);
+            message.CheckExist(request.MessageId);
+
+            var messages =
+                await _messageDataProvider.GetMessagesOfGroupBeforeAsync(request.MessageId, request.Count,
+                    cancellationToken);
+            return new()
+            {
+                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+            };
+        }
+
+        public async Task<SetMessageReadByUserEvent> SetMessageReadByUserAsync(SetMessageReadByUserCommand command,
+            CancellationToken cancellationToken)
+        {
+            User user = await GetUserAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+            Domain.Message message = await _messageDataProvider.GetByIdAsync(command.MessageId, cancellationToken);
+            message.CheckExist(command.MessageId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, message.GroupId,
+                    cancellationToken);
+            groupUser.CheckExist(command.UserId, message.GroupId);
+            groupUser.CheckLastReadTimeEarlierThan(message.SentTime);
+
+            await _groupUserDataProvider.SetMessageReadByUserAsync(command.UserId, message.GroupId, message.SentTime,
+                cancellationToken);
+            return new()
+            {
+                Status = EventStatus.Success
+            };
         }
     }
 }

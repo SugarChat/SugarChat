@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using SugarChat.Core.Domain;
 
-namespace SugarChat.Core.IRepositories
+namespace SugarChat.Shared.Paging
 {
-    public class PagedResult<T> where T : class, IEntity
+    public class PagedResult<T> where T : class
     {
         public IEnumerable<T> Result { get; set; }
         public int Total { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace SugarChat.Core.Services
+﻿namespace SugarChat.Shared.Paging
 {
     public class PageSettings
     {

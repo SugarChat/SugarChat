@@ -8,10 +8,10 @@ namespace SugarChat.SignalR.ServerClient.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddSugarChatSignalRServerHttpClient(this IServiceCollection services, string serverUrl)
+        public static IServiceCollection AddSugarChatSignalRServerHttpClient(this IServiceCollection services, string connectionString)
         {
             services.AddHttpClient<IServerClient, ServerHttpClient>(client => {
-                    client.BaseAddress = new Uri(serverUrl);
+                    client.BaseAddress = new Uri(connectionString);
                 })
                 .AddTransientHttpErrorPolicy(builder => builder.WaitAndRetryAsync(new[]
                 {
@@ -24,9 +24,9 @@ namespace SugarChat.SignalR.ServerClient.Extensions
                 }));
             return services;
         }
-        public static IServiceCollection AddSugarChatSignalRServerWebSocketClient(this IServiceCollection services, string serverUrl)
+        public static IServiceCollection AddSugarChatSignalRServerWebSocketClient(this IServiceCollection services, string connectionString)
         {
-            services.AddSingleton<IServerClient, ServerWebScoketClient>(sp => new ServerWebScoketClient(serverUrl));
+            services.AddSingleton<IServerClient, ServerWebScoketClient>(sp => new ServerWebScoketClient(connectionString));
             return services;
         }
     }

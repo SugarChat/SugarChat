@@ -52,6 +52,7 @@ namespace SugarChat.SignalR.Server
                 endpoints.MapHub<ChatHub>("/hubs/chat", context =>
                 {
                 });
+                endpoints.MapHub<ApiHub>("/hubs/api");
                 endpoints.MapControllers();
             });
         }

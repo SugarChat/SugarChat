@@ -9,6 +9,6 @@ namespace SugarChat.Push.SignalR.Services
 {
     public interface IConnectService
     {
-        Task<string> GetConnectionUrl(GetConnectionUrlModel model);
+        Task<string> GetConnectionUrl(string userIdentifier);
     }
 }

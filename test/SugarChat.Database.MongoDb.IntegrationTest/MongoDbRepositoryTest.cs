@@ -9,19 +9,21 @@ using System.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
-    public class MongoDbRepositoryTest : TestBase, IDisposable
+    public class MongoDbRepositoryTest : TestBase
     {
         readonly IRepository _repository;
         readonly Group _group;
+
         public MongoDbRepositoryTest()
         {
             MongoDbSettings settings = new MongoDbSettings();
             _configuration.GetSection("MongoDb")
-                          .Bind(settings);
+                .Bind(settings);
             _repository = new MongoDbRepository(settings);
             _group = new Group()
             {
@@ -54,7 +56,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 LastModifyBy = Guid.NewGuid().ToString(),
                 Name = "NewTestGroup"
             };
-            await _repository.AddAsync(newGroup, default(CancellationToken));
+            await _repository.AddAsync(newGroup);
             var firstGroup = await _repository.FirstOrDefaultAsync<Group>(e => e.Id == newGroup.Id);
             firstGroup.ShouldNotBeNull();
             await _repository.RemoveAsync(newGroup);
@@ -65,31 +67,34 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public async Task Should_Insert_Many_Groups_And_Remove_Them()
         {
-            List<Group> groups = new List<Group> {
-                new Group {
-                AvatarUrl = "https://Avatar.jpg",
-                CreatedBy = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.Now,
-                CustomProperties = new Dictionary<string, string>(),
-                Description = "A Test Group!",
-                Id = Guid.NewGuid().ToString(),
-                LastModifyDate = DateTime.Now,
-                LastModifyBy = Guid.NewGuid().ToString(),
-                Name = "NewTestGroup1"
-            },
-              new Group   {
-                AvatarUrl = "https://Avatar.jpg",
-                CreatedBy = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.Now,
-                CustomProperties = new Dictionary<string, string>(),
-                Description = "A Test Group!",
-                Id = Guid.NewGuid().ToString(),
-                LastModifyDate = DateTime.Now,
-                LastModifyBy = Guid.NewGuid().ToString(),
-                Name = "NewTestGroup2"
-            }
-        };
-            await _repository.AddRangeAsync(groups, default(CancellationToken));
+            List<Group> groups = new List<Group>
+            {
+                new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "A Test Group!",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = "NewTestGroup1"
+                },
+                new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "A Test Group!",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = "NewTestGroup2"
+                }
+            };
+            await _repository.AddRangeAsync(groups);
             var ids = groups.Select(e => e.Id).ToList();
             var groupList = await _repository.ToListAsync<Group>(e => ids.Contains(e.Id));
             groupList.Count.ShouldBe(groups.Count);
@@ -157,8 +162,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public Task Should_Single_Group_Throw_Exception()
         {
-            return Should.ThrowAsync<Exception>(() =>
-             _repository.SingleAsync<Group>(e => e.Id == Guid.NewGuid().ToString()));
+            return Should.ThrowAsync<Exception>(async () =>
+                await _repository.SingleAsync<Group>(e => e.Id == Guid.NewGuid().ToString()));
         }
 
         [Fact]
@@ -204,31 +209,34 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public async Task Should_Update_Group_Name_By_Range()
         {
-            List<Group> groups = new List<Group> {
-                new Group {
-                AvatarUrl = "https://Avatar.jpg",
-                CreatedBy = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.Now,
-                CustomProperties = new Dictionary<string, string>(),
-                Description = "A Test Group!",
-                Id = Guid.NewGuid().ToString(),
-                LastModifyDate = DateTime.Now,
-                LastModifyBy = Guid.NewGuid().ToString(),
-                Name = "NewTestGroup1"
-            },
-              new Group   {
-                AvatarUrl = "https://Avatar.jpg",
-                CreatedBy = Guid.NewGuid().ToString(),
-                CreatedDate = DateTime.Now,
-                CustomProperties = new Dictionary<string, string>(),
-                Description = "A Test Group!",
-                Id = Guid.NewGuid().ToString(),
-                LastModifyDate = DateTime.Now,
-                LastModifyBy = Guid.NewGuid().ToString(),
-                Name = "NewTestGroup2"
-            }
-        };
-            await _repository.AddRangeAsync(groups, default(CancellationToken));
+            List<Group> groups = new List<Group>
+            {
+                new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "A Test Group!",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = "NewTestGroup1"
+                },
+                new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "A Test Group!",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = "NewTestGroup2"
+                }
+            };
+            await _repository.AddRangeAsync(groups);
             groups[0].Name = "UpdatedTestGroup1";
             groups[1].Name = "UpdatedTestGroup2";
             await _repository.UpdateRangeAsync(groups);
@@ -247,12 +255,75 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Assert.Equal(updatedGroup.LastModifyBy, group.LastModifyBy);
                 Assert.Equal(updatedGroup.LastModifyDate, group.LastModifyDate);
             }
+
             await _repository.RemoveRangeAsync(groupList);
         }
 
-        public void Dispose()
+        [Fact]
+        public async Task Should_Get_Paged_Result()
         {
-            _repository.RemoveAsync(_group).Wait();
+            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true));
+            List<Group> groups = new List<Group>();
+            for (int i = 0; i < 30; i++)
+            {
+                groups.Add(new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "Test Paging",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = i.ToString()
+                });
+            }
+
+            await _repository.AddRangeAsync(groups);
+            PageSettings pageSettings = new() {PageNum = 2, PageSize = 10};
+            var result = await _repository.ToPagedListAsync<Group>(pageSettings, o => o.Description == "Test Paging");
+            result.Total.ShouldBe(30);
+            result.Result.Count().ShouldBe(10);
+            string.Join('-', result.Result.Select(o => int.Parse(o.Name)).OrderBy(o => o).Select(o => o.ToString()))
+                .ShouldBe("10-11-12-13-14-15-16-17-18-19");
+        }
+
+        [Fact]
+        public async Task Should_Throw_Exception_When_PageSettings_Are_Null()
+        {
+            await _repository.RemoveRangeAsync(await _repository.ToListAsync<Group>(o => true));
+            List<Group> groups = new List<Group>();
+            for (int i = 0; i < 30; i++)
+            {
+                groups.Add(new Group
+                {
+                    AvatarUrl = "https://Avatar.jpg",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
+                    Description = "Test Paging",
+                    Id = Guid.NewGuid().ToString(),
+                    LastModifyDate = DateTime.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = i.ToString()
+                });
+            }
+
+            await _repository.AddRangeAsync(groups);
+            await Should.ThrowAsync<ArgumentException>(async () =>
+                await _repository.ToPagedListAsync<Group>(null, o => o.Description == "Test Paging"));
+        }
+
+        protected virtual void Dispose()
+        {
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await _repository.RemoveAsync(_group);
+            //if needed
+            Dispose();
         }
     }
 }

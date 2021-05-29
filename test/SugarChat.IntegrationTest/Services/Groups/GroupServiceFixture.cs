@@ -3,9 +3,8 @@ using Mediator.Net;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Commands.Conversations;
-using SugarChat.Message.Requests.Conversations;
-using SugarChat.Message.Responses.Conversations;
+using SugarChat.Message.Requests;
+using SugarChat.Message.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +12,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace SugarChat.IntegrationTest.Services.Conversations
+namespace SugarChat.IntegrationTest.Services.Groups
 {
-    public class ConversationServiceFixture : TestBase
+    public class GroupServiceFixture : TestBase
     {
         private readonly IRepository _repository;
         private readonly IMediator _mediator;
-        public ConversationServiceFixture()
+        public GroupServiceFixture()
         {
             _repository = Container.Resolve<IRepository>();
             _mediator = Container.Resolve<IMediator>();
@@ -32,115 +31,17 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         private List<Core.Domain.Message> messages = new List<Core.Domain.Message>();
 
         [Fact]
-        public async Task ShouldGetUserConversations()
-        {
-            await GenerateTestCollections();
-
-            var groupIds = groups.Select(x => x.Id).ToList();
-            var groupList = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
-            groupList.Count.ShouldBe(groups.Count);
-
-            var userIds = users.Select(x => x.Id).ToList();
-            var userList = await _repository.ToListAsync<User>(x => userIds.Contains(x.Id));
-            userList.Count.ShouldBe(users.Count);
-
-            var friendIds = friends.Select(x => x.Id).ToList();
-            var friendList = await _repository.ToListAsync<Friend>(x => friendIds.Contains(x.Id));
-            friendList.Count.ShouldBe(friends.Count);
-
-            var groupUserIds = groupUsers.Select(x => x.Id).ToList();
-            var groupUserList = await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id));
-            groupUserList.Count.ShouldBe(groupUsers.Count);
-
-            var messageIds = messages.Select(x => x.Id).ToList();
-            var messageList = await _repository.ToListAsync<Core.Domain.Message>(x => messageIds.Contains(x.Id));
-            messageList.Count.ShouldBe(messages.Count);
-
-            await Task.Run(async () =>
-            {
-                var reponse = await _mediator.RequestAsync<GetConversationListRequest, GetConversationListResponse>
-                (new GetConversationListRequest { UserId = "b81cac07-1346-5417-318a-7a371b198511" });
-
-                reponse.Result.Count().ShouldBe(2);
-            });
-
-            Dispose();
-
-            var groupExistingData = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
-            groupExistingData.ShouldBeEmpty();
-
-            var userExistingData = await _repository.ToListAsync<User>(x => userIds.Contains(x.Id));
-            userExistingData.ShouldBeEmpty();
-
-            var friendExistingData = await _repository.ToListAsync<Friend>(x => friendIds.Contains(x.Id));
-            friendExistingData.ShouldBeEmpty();
-
-            var groupUserExistingData = await _repository.ToListAsync<Group>(x => groupUserIds.Contains(x.Id));
-            groupUserExistingData.ShouldBeEmpty();
-
-            var messageExistingData = await _repository.ToListAsync<Core.Domain.Message>(x => messageIds.Contains(x.Id));
-            messageExistingData.ShouldBeEmpty();
-        }
-
-        [Fact]
-        public async Task ShouldSetConversationMessagesRead()
+        public async Task ShouldGetUserGroups()
         {
             await GenerateTestCollections();
 
             await Task.Run(async () =>
             {
-                await _mediator.SendAsync(new SetMessageReadCommand
-                {
-                    ConversationId = "03c7049f-0455-344f-d291-771530ff436b",
-                    UserId = "b81cac07-1346-5417-318a-7a371b198511"
-
-                }, default(CancellationToken));
-
-                var request = new GetConversationListRequest()
-                {
-                    UserId = "b81cac07-1346-5417-318a-7a371b198511"
-                };
-                var response = await _mediator.RequestAsync<GetConversationListRequest, GetConversationListResponse>(request);
-                response.Result.Where(x => x.ConversationID == "03c7049f-0455-344f-d291-771530ff436b")
-                .FirstOrDefault().UnreadCount.ShouldBe(0);
+                var reponse = await _mediator.RequestAsync<GetGroupsOfUserRequest, GetGroupsOfUserResponse>(new GetGroupsOfUserRequest { Id = "b81cac07-1346-5417-318a-7a371b198511" });
+                reponse.Groups.Count().ShouldBe(4);
             });
 
             Dispose();
-        }
-
-        [Fact]
-        public async Task ShouldGetConversationProfile()
-        {
-            await GenerateTestCollections();
-            await Task.Run(async () =>
-            {
-                var request = new GetConversationProfileRequest()
-                {
-                    ConversationId = "03c7049f-0455-344f-d291-771530ff436b",
-                    UserId = "b81cac07-1346-5417-318a-7a371b198511"
-                };
-                var response = await _mediator.RequestAsync<GetConversationProfileRequest, GetConversationProfileResponse>(request);
-                response.Result.Name.ShouldBe("TestGroup3");
-            });
-
-            Dispose();
-        }
-
-        [Fact]
-        public async Task ShouldGetMessageList()
-        {
-            await GenerateTestCollections();
-            var request = new GetMessageListRequest()
-            {
-                ConversationId = "03c7049f-0455-344f-d291-771530ff436b",
-                UserId = "b81cac07-1346-5417-318a-7a371b198511",
-                NextReqMessageId = "",
-                Count = 5
-            };
-            var response = await _mediator.RequestAsync<GetMessageListRequest, GetMessageListResponse>(request);
-            response.Result.Count().ShouldBe(3);
-            response.Result.First().Content.ShouldBe("[图片]");
-
         }
 
         private async Task GenerateTestCollections()

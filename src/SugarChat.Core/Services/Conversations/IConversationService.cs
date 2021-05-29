@@ -8,9 +8,9 @@ namespace SugarChat.Core.Services.Conversations
 {
     public interface IConversationService : IService
     {
-        Task<GetConversationListByUserIdResponse> GetConversationListByUserIdAsync(GetConversationListByUserIdRequest request, CancellationToken cancellationToken);
-        Task<GetConversationProfileByIdResponse> GetConversationProfileByIdRequestAsync(GetConversationProfileByIdRequest request, CancellationToken cancellationToken);
-        Task DeleteConversationByIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken);
+        Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken);
+        Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request, CancellationToken cancellationToken);       
         Task SetMessageReadByConversationIdAsync(SetMessageReadCommand command, CancellationToken cancellationToken);
+        Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace SugarChat.Message.Requests.Conversations
 {
-    public class GetConversationListByUserIdRequest : IRequest
-    {
+    public class GetConversationListRequest : IRequest
+    {     
         public string UserId { get; set; }
     }
 }

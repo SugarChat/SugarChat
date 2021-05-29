@@ -15,6 +15,9 @@ namespace SugarChat.Core.Services.Conversations
 
         Task<Domain.Message> GetLastMessageByGroupIdAsync(string groupId, CancellationToken cancellationToken);
 
-       
+        Task<(List<Domain.Message> Messages, string NextReqMessageId)> GetPagingMessagesByConversationIdAsync(string conversationId, string nextReqMessageId = "", int count = 15, CancellationToken cancellationToken = default(CancellationToken));
+
+
+
     }
 }

@@ -1,9 +1,7 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Message.Commands.Conversations;
-using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Conversations;
-using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Conversations;
 using System.Threading.Tasks;
 
@@ -21,31 +19,31 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
-        public async Task<IActionResult> GetAllToUserFromGroup(GetAllToUserFromGroupRequest request)
+        public async Task<IActionResult> GetPagingMessageList([FromQuery]GetMessageListRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetAllToUserFromGroupRequest, GetAllToUserFromGroupResponse>(request);
+                     .RequestAsync<GetMessageListRequest, GetMessageListResponse>(request);
 
             return Ok(response);
         }
 
         [Route("getConversationList"), HttpGet]
-        public async Task<IActionResult> GetConversationListByUserId([FromQuery] GetConversationListByUserIdRequest request)
+        public async Task<IActionResult> GetConversationListByUserId([FromQuery] GetConversationListRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationListByUserIdRequest, GetConversationListByUserIdResponse>(request);
+                      .RequestAsync<GetConversationListRequest, GetConversationListResponse>(request);
 
             return Ok(response);
         }
 
         [Route("getConversationProfile"), HttpGet]
-        public async Task<IActionResult> GetConversationProfileById([FromQuery] GetConversationProfileByIdRequest request)
+        public async Task<IActionResult> GetConversationProfileById([FromQuery] GetConversationProfileRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationProfileByIdRequest, GetConversationProfileByIdResponse>(request);
+                      .RequestAsync<GetConversationProfileRequest, GetConversationProfileResponse>(request);
 
             return Ok(response);
         }
@@ -56,6 +54,9 @@ namespace SugarChat.WebApi.Controllers
             await _mediator.SendAsync(command);
             return Ok();
         }
+
+
+
 
 
     }

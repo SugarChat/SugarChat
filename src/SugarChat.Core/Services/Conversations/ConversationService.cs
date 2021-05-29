@@ -35,7 +35,7 @@ namespace SugarChat.Core.Services.Conversations
             _groupUserDataProvider = groupUserDataProvider;
         }
 
-        public async Task<GetConversationListByUserIdResponse> GetConversationListByUserIdAsync(GetConversationListByUserIdRequest request, CancellationToken cancellationToken)
+        public async Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
@@ -58,38 +58,25 @@ namespace SugarChat.Core.Services.Conversations
                 }
             }
 
-            return new GetConversationListByUserIdResponse
+            return new GetConversationListResponse
             {
                 Result = conversations
             };
         }
 
-        public async Task<GetConversationProfileByIdResponse> GetConversationProfileByIdRequestAsync(GetConversationProfileByIdRequest request, CancellationToken cancellationToken)
-        {   
+        public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request, CancellationToken cancellationToken)
+        {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
             var group = await _groupDataProvider.GetByIdAsync(request.ConversationId, cancellationToken);
             group.CheckExist(request.ConversationId);
 
-            return new GetConversationProfileByIdResponse
+            return new GetConversationProfileResponse
             {
                 Result = _mapper.Map<GroupDto>(group)
             };
-        }
-
-        //TODO:DeleteConversation
-        public async Task DeleteConversationByIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
-        {
-            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
-            user.CheckExist(command.UserId);
-
-            var group = await _groupDataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
-            group.CheckExist(command.ConversationId);
-
-            //var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
-            
-        }
+        }      
 
         public async Task SetMessageReadByConversationIdAsync(SetMessageReadCommand command, CancellationToken cancellationToken)
         {
@@ -103,8 +90,29 @@ namespace SugarChat.Core.Services.Conversations
             groupUser.CheckExist(command.UserId, command.ConversationId);
 
             groupUser.LastReadTime = DateTimeOffset.Now;
-            await _groupUserDataProvider.UpdateAsync(groupUser,cancellationToken);
+            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
         }
+
+        public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken)
+        {
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(request.ConversationId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(request.ConversationId);
+
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId, cancellationToken);
+            groupUser.CheckExist(request.UserId, request.ConversationId);
+
+            var (messages, nextReqMessageId) = await _conversationDataProvider.GetPagingMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Count, cancellationToken).ConfigureAwait(false);
+
+            return new GetMessageListResponse
+            {
+                Result = _mapper.Map<IEnumerable<MessageDto>>(messages),
+                NextReqMessageID = nextReqMessageId
+            };
+        }
+
 
     }
 }

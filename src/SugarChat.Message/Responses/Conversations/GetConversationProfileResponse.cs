@@ -3,7 +3,7 @@ using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Message.Responses.Conversations
 {
-    public class GetConversationProfileByIdResponse : IResponse
+    public class GetConversationProfileResponse : IResponse
     {
         public GroupDto Result { get; set; }
     }

@@ -15,20 +15,45 @@ namespace SugarChat.Core.Services.Conversations
             _repository = repository;
         }
 
-
         public async Task<int> GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(string groupId, DateTimeOffset? lastReadTime, CancellationToken cancellationToken)
         {
-            return await _repository.CountAsync<Domain.Message>(x => x.GroupId == groupId && (lastReadTime == null || x.SentTime > lastReadTime));
+            return await _repository.CountAsync<Domain.Message>(x => x.GroupId == groupId
+            && (lastReadTime == null || x.SentTime > lastReadTime))
+                .ConfigureAwait(false);
         }
 
         public async Task<List<Domain.Message>> GetMessagesByGroupIdAsync(string groupId, CancellationToken cancellationToken)
         {
-            return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId, cancellationToken);
+            return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task<Domain.Message> GetLastMessageByGroupIdAsync(string groupId, CancellationToken cancellationToken)
         {
-            return (await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId, cancellationToken)).OrderByDescending(x => x.SentTime).FirstOrDefault();
+            return (await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId, cancellationToken).ConfigureAwait(false))
+                .OrderByDescending(x => x.SentTime).FirstOrDefault();
+        }
+
+        public async Task<(List<Domain.Message> Messages, string NextReqMessageId)> GetPagingMessagesByConversationIdAsync(string conversationId, string nextReqMessageId = "", int count = 15, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var messages = new List<Domain.Message>();
+
+            if (string.IsNullOrEmpty(nextReqMessageId))
+            {
+                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.IsDel == false)
+                    .OrderByDescending(x => x.SentTime)
+                    .Take(count)
+                    .ToList();
+            }
+            else
+            {
+                var nextReqMessage = await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId);
+                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.IsDel == false && x.CreatedDate < nextReqMessage.CreatedDate)
+                     .OrderByDescending(x => x.SentTime)
+                     .Take(count)
+                     .ToList();
+            }
+            return (messages, messages?.Last()?.Id);
         }
     }
 }

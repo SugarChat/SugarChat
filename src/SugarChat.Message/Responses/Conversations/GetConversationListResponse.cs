@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SugarChat.Message.Responses.Conversations
 {
-    public class GetConversationListByUserIdResponse : IResponse
+    public class GetConversationListResponse : IResponse
     {
         public IEnumerable<ConversationDto> Result { get; set; }
     }

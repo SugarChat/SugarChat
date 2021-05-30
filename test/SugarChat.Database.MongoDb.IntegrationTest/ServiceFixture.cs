@@ -8,8 +8,25 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 {
     public class ServiceFixture : TestBase
     {
-        public DateTimeOffset BaseTime = new(2021, 1, 1, 0, 0, 0, default);
-        
+        protected DateTimeOffset BaseTime = new(2021, 1, 1, 0, 0, 0, default);
+        protected Core.Domain.Message MessageOfGroupTomAndJerry1;
+        protected Core.Domain.Message MessageOfGroupTomAndJerry2;
+        protected Core.Domain.Message MessageOfGroupTomAndJerryAndTyke1;
+        protected Core.Domain.Message MessageOfGroupTomAndJerryAndTyke2;
+        protected Group TomAndJerryGroup;
+        protected GroupUser TomInTomAndJerry;
+        protected GroupUser JerryInTomAndJerry;
+        protected Group TomAndJerryAndTykeGroup;
+        protected GroupUser TomInTomAndJerryAndTyke;
+        protected GroupUser JerryInTomAndJerryAndTyke;
+        protected GroupUser TykeInTomAndJerryAndTyke;
+        protected Friend TomAndJerryFriend;
+        protected Friend SpikeAndTyke;
+        protected User Tom;
+        protected User Jerry;
+        protected User Spike;
+        protected User Tyke;
+
         public ServiceFixture()
         {
             StuffRepository();
@@ -31,7 +48,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         private async Task AddMessages()
         {
-            Core.Domain.Message messageOfGroupTomAndJerry1 = new()
+            MessageOfGroupTomAndJerry1 = new()
             {
                 Id = "1",
                 Content = "Hello Jerry",
@@ -39,8 +56,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 SentTime = BaseTime,
                 GroupId = "1"
             };
-            
-            Core.Domain.Message messageOfGroupTomAndJerry2 = new()
+
+            MessageOfGroupTomAndJerry2 = new()
             {
                 Id = "2",
                 Content = "Hello Tom",
@@ -48,8 +65,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 SentTime = BaseTime,
                 GroupId = "2"
             };
-            
-            Core.Domain.Message messageOfGroupTomAndJerryAndTyke1 = new()
+
+            MessageOfGroupTomAndJerryAndTyke1 = new()
             {
                 Id = "3",
                 Content = "Hello Jerry and Tyke",
@@ -57,8 +74,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 SentTime = BaseTime,
                 GroupId = "2"
             };
-            
-            Core.Domain.Message messageOfGroupTomAndJerryAndTyke2 = new()
+
+            MessageOfGroupTomAndJerryAndTyke2 = new()
             {
                 Id = "4",
                 Content = "Hello Tom and Jerry",
@@ -66,109 +83,109 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 SentTime = BaseTime,
                 GroupId = "2"
             };
-            await Repository.AddAsync(messageOfGroupTomAndJerry1);
-            await Repository.AddAsync(messageOfGroupTomAndJerry2);
-            await Repository.AddAsync(messageOfGroupTomAndJerryAndTyke1);
-            await Repository.AddAsync(messageOfGroupTomAndJerryAndTyke2);
-
+            await Repository.AddAsync(MessageOfGroupTomAndJerry1);
+            await Repository.AddAsync(MessageOfGroupTomAndJerry2);
+            await Repository.AddAsync(MessageOfGroupTomAndJerryAndTyke1);
+            await Repository.AddAsync(MessageOfGroupTomAndJerryAndTyke2);
         }
 
         private async Task AddGroups()
         {
-            Group tomAndJerry = new()
+            TomAndJerryGroup = new()
             {
-                Id = "1"
+                Id = "1",
+                Description = "Friend group of Tom and Jerry"
             };
-            GroupUser tomInTomAndJerry = new()
+            TomInTomAndJerry = new()
             {
                 Id = "1",
                 UserId = "1",
                 GroupId = "1"
             };
-            GroupUser jerryInTomAndJerry = new()
+            JerryInTomAndJerry = new()
             {
                 Id = "2",
                 UserId = "2",
                 GroupId = "1"
             };
-            await Repository.AddAsync(tomAndJerry);
-            await Repository.AddAsync(tomInTomAndJerry);
-            await Repository.AddAsync(jerryInTomAndJerry);
-            
-            
-            Group tomAndJerryAndTyke = new()
+            await Repository.AddAsync(TomAndJerryGroup);
+            await Repository.AddAsync(TomInTomAndJerry);
+            await Repository.AddAsync(JerryInTomAndJerry);
+
+            TomAndJerryAndTykeGroup = new()
             {
-                Id = "2"
+                Id = "2",
+                Description = "Multi group of Tom and Jerry and Tyke"
             };
-            GroupUser tomInTomAndJerryAndTyke = new()
+            TomInTomAndJerryAndTyke = new()
             {
                 Id = "3",
                 UserId = "1",
                 GroupId = "2"
             };
-            GroupUser jerryInTomAndJerryAndTyke = new()
+            JerryInTomAndJerryAndTyke = new()
             {
                 Id = "4",
                 UserId = "2",
                 GroupId = "2"
             };
-            GroupUser tykeInTomAndJerryAndTyke = new()
+            TykeInTomAndJerryAndTyke = new()
             {
                 Id = "5",
                 UserId = "4",
                 GroupId = "2"
             };
-            await Repository.AddAsync(tomAndJerryAndTyke);
-            await Repository.AddAsync(tomInTomAndJerryAndTyke);
-            await Repository.AddAsync(jerryInTomAndJerryAndTyke);
-            await Repository.AddAsync(tykeInTomAndJerryAndTyke);
+            await Repository.AddAsync(TomAndJerryAndTykeGroup);
+            await Repository.AddAsync(TomInTomAndJerryAndTyke);
+            await Repository.AddAsync(JerryInTomAndJerryAndTyke);
+            await Repository.AddAsync(TykeInTomAndJerryAndTyke);
         }
 
         private async Task AddFriends()
         {
-            Friend tomAndJerry = new()
+            TomAndJerryFriend = new()
             {
                 Id = "1",
                 UserId = "1",
                 FriendId = "2"
             };
-            Friend spikeAndTyke = new()
+            SpikeAndTyke = new()
             {
                 Id = "2",
                 UserId = "3",
                 FriendId = "4"
             };
-            await Repository.AddAsync(tomAndJerry);
-            await Repository.AddAsync(spikeAndTyke);
+            await Repository.AddAsync(TomAndJerryFriend);
+            await Repository.AddAsync(SpikeAndTyke);
         }
 
         private async Task AddUsers()
         {
-            User tom = new()
+            Tom = new()
             {
                 Id = "1",
                 DisplayName = "Tom"
             };
 
-            User jerry = new()
+            Jerry = new()
             {
                 Id = "2",
                 DisplayName = "Jerry"
             };
-            User spike = new()
+            Spike = new()
             {
                 Id = "3",
                 DisplayName = "Spike"
             };
-            User tyke = new()
+            Tyke = new()
             {
                 Id = "4",
                 DisplayName = "Tyke"
             };
-            await Repository.AddAsync(tom);
-            await Repository.AddAsync(jerry);
-            await Repository.AddAsync(spike);
-            await Repository.AddAsync(tyke);
+            await Repository.AddAsync(Tom);
+            await Repository.AddAsync(Jerry);
+            await Repository.AddAsync(Spike);
+            await Repository.AddAsync(Tyke);
         }
 
         public override async ValueTask DisposeAsync()

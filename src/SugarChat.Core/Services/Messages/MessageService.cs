@@ -188,7 +188,7 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<SetMessageReadByUserEvent> SetMessageReadByUserAsync(SetMessageReadByUserCommand command,
+        public async Task<SetMessageReadByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken)
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
@@ -202,6 +202,28 @@ namespace SugarChat.Core.Services.Messages
             groupUser.CheckLastReadTimeEarlierThan(message.SentTime);
 
             await _groupUserDataProvider.SetMessageReadByUserAsync(command.UserId, message.GroupId, message.SentTime,
+                cancellationToken);
+            return new()
+            {
+                Status = EventStatus.Success
+            };
+        }
+
+        public async Task<SetMessageReadByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(SetMessageReadByUserBasedOnGroupIdCommand command,
+            CancellationToken cancellationToken)
+        {
+            User user = await GetUserAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
+                    cancellationToken);
+            groupUser.CheckExist(command.UserId, command.GroupId);
+            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessagesOfGroupAsync(command.GroupId, cancellationToken);
+            groupUser.CheckLastReadTimeEarlierThan(lastMessageOfGroup.SentTime);
+
+            await _groupUserDataProvider.SetMessageReadByUserAsync(command.UserId, command.GroupId, lastMessageOfGroup.SentTime,
                 cancellationToken);
             return new()
             {

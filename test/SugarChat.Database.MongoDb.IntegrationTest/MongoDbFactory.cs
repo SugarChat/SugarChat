@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
 using SugarChat.Core.IRepositories;
 using SugarChat.Data.MongoDb;
 using SugarChat.Data.MongoDb.Settings;
@@ -7,15 +8,28 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 {
     public static class MongoDbFactory
     {
-        public static IRepository GetRepository()
+        private static readonly MongoDbSettings _settings;
+        public static readonly string DbName ;
+
+        static MongoDbFactory()
         {
-            MongoDbSettings settings = new MongoDbSettings();
+            _settings = new MongoDbSettings();
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
                 .Build();
             configuration.GetSection("MongoDb")
-                .Bind(settings);
-            return new MongoDbRepository(settings);
+                .Bind(_settings);
+            DbName = configuration["MongoDb:DatabaseName"];
         }
+        public static IRepository GetRepository()
+        {
+            return new MongoDbRepository(_settings);
+        }
+        
+        public static MongoClient GetClient()
+        {
+            return new(_settings.ConnectionString);
+        }
+
     }
 }

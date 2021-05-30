@@ -144,5 +144,13 @@ namespace SugarChat.Core.Services.Messages
 
             return await Task.FromResult(messages);
         }
+
+        public async Task<Domain.Message> GetLatestMessagesOfGroupAsync(string groupId,
+            CancellationToken cancellationToken)
+        {
+            var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
+                .OrderByDescending(o => o.SentTime).FirstOrDefault();
+            return await Task.FromResult(messages);
+        }
     }
 }

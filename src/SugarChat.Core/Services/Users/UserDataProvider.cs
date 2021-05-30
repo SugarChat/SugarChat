@@ -26,17 +26,17 @@ namespace SugarChat.Core.Services.Users
             return await _repository.ToListAsync<User>(o=>ids.Contains(o.Id), cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task AddAsync(User user, CancellationToken cancellation)
+        public async Task AddAsync(User user, CancellationToken cancellation = default)
         {
-            await _repository.AddAsync(user, cancellation);
+            await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
         }
 
-        public async Task UpdateAsync(User user, CancellationToken cancellation)
+        public async Task UpdateAsync(User user, CancellationToken cancellation = default)
         {
             await _repository.UpdateAsync(user, cancellation);
         }
 
-        public async Task RemoveAsync(User user, CancellationToken cancellation)
+        public async Task RemoveAsync(User user, CancellationToken cancellation = default)
         {
             await _repository.RemoveAsync(user, cancellation);
         }

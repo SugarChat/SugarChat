@@ -3,23 +3,30 @@ using MongoDB.Bson.Serialization;
 using System;
 using System.Configuration;
 using System.Threading.Tasks;
+using MongoDB.Driver;
+using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
-    public abstract class TestBase : IAsyncDisposable
+    public abstract class TestBase : IAsyncDisposable, IDisposable
     {
-        protected readonly IConfiguration _configuration;
+        public IRepository Repository { get; }
+        protected readonly MongoClient Client;
+        protected readonly string DbName = MongoDbFactory.DbName;
 
         protected TestBase()
         {
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+            Repository = MongoDbFactory.GetRepository();
+            Client = MongoDbFactory.GetClient();
         }
 
         public virtual ValueTask DisposeAsync()
         {
             return ValueTask.CompletedTask;
+        }
+
+        public virtual void Dispose()
+        {
         }
     }
 }

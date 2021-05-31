@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Basic
 {
-    public class SugarChatResponse : SugarChatResponse<object>
+    public class SugarChatResponse : SugarChatResponse<object>, ISugarChatResponse
     {
     }
     public class SugarChatResponse<T> : ISugarChatResponse<T>

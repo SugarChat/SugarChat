@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SugarChat.Core.UnitTest.Request;
 using Xunit;
 
 namespace SugarChat.Core.UnitTest
@@ -20,14 +21,17 @@ namespace SugarChat.Core.UnitTest
             var builder = SetupMediatorBuilderWithMiddleware();
             var mediator = SetupIMediator(builder);
             var response = await
-                mediator.RequestAsync<TestRequest, TestRequestResponse>(new TestRequest());
+                mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
-            Assert.True(response is ISugarChatResponse);
+            Assert.Equal(0, response.Code);
+            Assert.Equal("Test", response.Message);
+            
+            // TODO: Test Data from response
         }
         MediatorBuilder SetupMediatorBuilderWithMiddleware()
         {
             var builder = new MediatorBuilder();
-            builder.ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(SugarChatResponse)));
+            builder.ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(SugarChatResponse<>)));
             return builder;
         }
 

@@ -47,13 +47,16 @@ namespace SugarChat.Core.Middlewares
             var businessException = ex as BusinessException;
             if (context.Result is null)
             {
-                context.Result = Activator.CreateInstance(_unifiedType);
+                var tArgs = context.ResultGenericArguments;
+                var targetType = tArgs != null && tArgs.Any() ? _unifiedType.MakeGenericType(tArgs) : _unifiedType;
+            
+                var unifiedTypeInstance = Activator.CreateInstance(targetType) as dynamic;
+                context.Result = unifiedTypeInstance;
             }
-            if( context.Result is ISugarChatResponse response)
-            {
-                response.Code = businessException.Code;
-                response.Message = businessException.Message;
-            }
+
+            if (!(context.Result is SugarChatResponse response)) return Task.CompletedTask;
+            response.Code = businessException.Code;
+            response.Message = businessException.Message;
             return Task.CompletedTask;
         }
 

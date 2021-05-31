@@ -1,15 +1,11 @@
-﻿using Mediator.Net.Context;
-using Mediator.Net.Contracts;
-using SugarChat.Core.Basic;
-using SugarChat.Core.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Mediator.Net.Context;
+using Mediator.Net.Contracts;
+using SugarChat.Core.Exceptions;
+using SugarChat.Core.UnitTest.Command;
 
-namespace SugarChat.Core.UnitTest.Command
+namespace SugarChat.Core.UnitTest.Request
 {
     public class TestRequestHandler : IRequestHandler<TestRequest, TestRequestResponse>
     {

@@ -13,7 +13,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
     {
         private readonly IGroupDataProvider _groupDataProvider;
 
-        public GroupDataProviderTests()
+        public GroupDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _groupDataProvider = new GroupDataProvider(Repository);
         }

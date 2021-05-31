@@ -12,7 +12,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
     {
         private readonly IUserDataProvider _userDataProvider;
 
-        public UserDataProviderTests()
+        public UserDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _userDataProvider = new UserDataProvider(Repository);
         }
@@ -24,14 +24,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             user.Id.ShouldBe(Tom.Id);
             user.DisplayName.ShouldBe(Tom.DisplayName);
         }
-
+        
         [Fact]
         public async Task Should_Not_Get_None_Exist_User_By_Id()
         {
             User user = await _userDataProvider.GetByIdAsync("0");
             user.ShouldBeNull();
         }
-
+        
         [Fact]
         public async Task Should_Get_Exist_Users_By_Ids()
         {
@@ -44,7 +44,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             jerry.ShouldNotBeNull();
             jerry.DisplayName.ShouldBe(Jerry.DisplayName);
         }
-
+        
         [Fact]
         public async Task Should_Not_Get_None_Exist_Users_By_Ids()
         {
@@ -57,7 +57,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             jerry.ShouldNotBeNull();
             jerry.DisplayName.ShouldBe(Jerry.DisplayName);
         }
-
+        
         [Fact]
         public async Task Should_Add_None_Exist_User()
         {
@@ -68,14 +68,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             user.Id.ShouldBe(tweety.Id);
             user.DisplayName.ShouldBe(tweety.DisplayName);
         }
-
+        
         [Fact]
         public async Task Should_Not_Add_Exist_User()
         {
             await Assert.ThrowsAnyAsync<Exception>(async () =>
                 await _userDataProvider.AddAsync(new() {Id = Tom.Id, DisplayName = "Tweety"}));
         }
-
+        
         [Fact]
         public async Task Should_Update_Exist_User()
         {
@@ -83,7 +83,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             User user = await _userDataProvider.GetByIdAsync(Tom.Id);
             user.DisplayName.ShouldBe("Tweety");
         }
-
+        
         [Fact(Skip = "The IRepo is fixing the bug")]
         public async Task Should_Throw_Exception_On_Update_None_Exist_User()
         {
@@ -91,7 +91,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             await Assert.ThrowsAnyAsync<Exception>(async () =>
                 await _userDataProvider.UpdateAsync(tweety));
         }
-
+        
         [Fact]
         public async Task Should_Remove_Exist_User()
         {
@@ -99,13 +99,20 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             User user = await _userDataProvider.GetByIdAsync(Tom.Id);
             user.ShouldBeNull();
         }
-
-
+        
+        
         [Fact(Skip = "The IRepo is fixing the bug")]
         public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
         {
             await Assert.ThrowsAnyAsync<Exception>(async () =>
                 await _userDataProvider.RemoveAsync(new() {Id = "0"}));
+        }
+        
+        [Fact]
+        public async Task Should_Be_True()
+        {
+            true.ShouldBe(true);
+            await Task.CompletedTask;
         }
     }
 }

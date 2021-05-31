@@ -25,7 +25,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         protected User Spike;
         protected User Tyke;
 
-        public ServiceFixture()
+        public ServiceFixture(DatabaseFixture dbFixture) : base(dbFixture)
         {
             Stuff().Wait();
         }

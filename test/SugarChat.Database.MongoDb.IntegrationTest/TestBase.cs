@@ -7,37 +7,33 @@ using MongoDB.Driver;
 using SugarChat.Core.IRepositories;
 using SugarChat.Data.MongoDb;
 using SugarChat.Data.MongoDb.Settings;
+using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
+    [Collection("DatabaseCollection")]
     public abstract class TestBase : IAsyncDisposable, IDisposable
     {
+        private readonly DatabaseFixture _dbFixture;
         protected readonly IRepository Repository;
-        private readonly MongoClient _client;
         private readonly string _dbName = Guid.NewGuid().ToString();
 
-        protected TestBase()
+        protected TestBase(DatabaseFixture dbFixture)
         {
-            var settings = new MongoDbSettings();
-            IConfiguration configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-            configuration.GetSection("MongoDb")
-                .Bind(settings);
+            _dbFixture = dbFixture;
+            var settings = _dbFixture.Settings;
             settings.DatabaseName = _dbName;
-            
             Repository = new MongoDbRepository(settings);
-            _client = new MongoClient(settings.ConnectionString);
         }
        
         public virtual async ValueTask DisposeAsync()
         {
-            await _client.DropDatabaseAsync(_dbName);
+            await _dbFixture.Client.DropDatabaseAsync(_dbName);
         }
 
         public virtual void Dispose()
         {
-            _client.DropDatabase(_dbName);
+            _dbFixture.Client.DropDatabase(_dbName);
         }
     }
 }

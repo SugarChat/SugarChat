@@ -10,7 +10,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.GroupUserTests
     {
         private GroupUser _groupUser;
 
-        public GroupUserTest()
+        public GroupUserTest(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _groupUser = new GroupUser
             {

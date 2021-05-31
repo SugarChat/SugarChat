@@ -13,7 +13,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
     {
         readonly Group _group;
 
-        public MongoDbRepositoryTest()
+        public MongoDbRepositoryTest(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _group = new Group()
             {

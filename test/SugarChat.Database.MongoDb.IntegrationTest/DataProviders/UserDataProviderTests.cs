@@ -17,13 +17,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             _userDataProvider = new UserDataProvider(Repository);
         }
 
-        [Fact]
-        public async Task Should_Get_Exist_User_By_Id()
-        {
-            User user = await _userDataProvider.GetByIdAsync(Tom.Id);
-            user.Id.ShouldBe(Tom.Id);
-            user.DisplayName.ShouldBe(Tom.DisplayName);
-        }
+        // [Fact]
+        // public async Task Should_Get_Exist_User_By_Id()
+        // {
+        //     User user = await _userDataProvider.GetByIdAsync(Tom.Id);
+        //     user.Id.ShouldBe(Tom.Id);
+        //     user.DisplayName.ShouldBe(Tom.DisplayName);
+        // }
 
         // [Fact]
         // public async Task Should_Not_Get_None_Exist_User_By_Id()

@@ -1,16 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
-using Shouldly;
-using SugarChat.Core.IRepositories;
-using SugarChat.Data.MongoDb;
+﻿using Shouldly;
 using SugarChat.Core.Domain;
 using Xunit;
 using System.Threading.Tasks;
-using System.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SugarChat.Core.Services;
-using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Shared.Paging;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
@@ -308,16 +302,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             await Repository.AddRangeAsync(groups);
             await Should.ThrowAsync<ArgumentException>(async () =>
                 await Repository.ToPagedListAsync<Group>(null, o => o.Description == "Test Paging"));
-        }
-
-        public override void Dispose()
-        {
-            Repository.RemoveAsync(_group).Wait();
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            await Repository.RemoveAsync(_group);
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Core.IRepositories;
-using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
@@ -29,17 +27,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         public ServiceFixture()
         {
-            StuffRepository();
-        }
-
-        private void StuffRepository()
-        {
             Stuff().Wait();
         }
 
         private async Task Stuff()
         {
-            await Client.DropDatabaseAsync(DbName);
             await AddUsers();
             await AddFriends();
             await AddGroups();
@@ -186,18 +178,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             await Repository.AddAsync(Jerry);
             await Repository.AddAsync(Spike);
             await Repository.AddAsync(Tyke);
-        }
-
-        public override async ValueTask DisposeAsync()
-        {
-            await Client.DropDatabaseAsync(DbName);
-            await base.DisposeAsync();
-        }
-
-        public override void Dispose()
-        {
-            Client.DropDatabase(DbName);
-            base.Dispose();
         }
     }
 }

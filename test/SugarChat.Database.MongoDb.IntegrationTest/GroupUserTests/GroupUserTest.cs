@@ -7,9 +7,8 @@ using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.GroupUserTests
 {
-    public class GroupUserTest
+    public class GroupUserTest : ServiceFixture
     {
-        private readonly IRepository _repository = MongoDbFactory.GetRepository();
         private GroupUser _groupUser;
 
         public GroupUserTest()
@@ -28,13 +27,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.GroupUserTests
         {
             try
             {
-                await _repository.AddAsync(_groupUser);
-                GroupUser groupUser = await _repository.SingleAsync<GroupUser>(o => o.Id == _groupUser.Id);
+                await Repository.AddAsync(_groupUser);
+                GroupUser groupUser = await Repository.SingleAsync<GroupUser>(o => o.Id == _groupUser.Id);
                 groupUser.ShouldBeEquivalentTo(_groupUser);
             }
             finally
             {
-                await _repository.RemoveAsync(_groupUser);
+                await Repository.RemoveAsync(_groupUser);
             }
         }
     }

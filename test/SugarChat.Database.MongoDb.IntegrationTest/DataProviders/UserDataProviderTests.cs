@@ -84,13 +84,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             user.DisplayName.ShouldBe("Tweety");
         }
 
-        // [Fact(Skip = "The IRepo is fixing the bug")]
-        // public async Task Should_Throw_Exception_On_Update_None_Exist_User()
-        // {
-        //     User tweety = new() {Id = "0", DisplayName = "Tweety"};
-        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //         await _userDataProvider.UpdateAsync(tweety));
-        // }
+        [Fact(Skip = "The IRepo is fixing the bug")]
+        public async Task Should_Throw_Exception_On_Update_None_Exist_User()
+        {
+            User tweety = new() {Id = "0", DisplayName = "Tweety"};
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+                await _userDataProvider.UpdateAsync(tweety));
+        }
 
         [Fact]
         public async Task Should_Remove_Exist_User()
@@ -101,11 +101,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
 
 
-        // [Fact(Skip = "The IRepo is fixing the bug")]
-        // public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
-        // {
-        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //         await _userDataProvider.RemoveAsync(new() {Id = "0"}));
-        // }
+        [Fact(Skip = "The IRepo is fixing the bug")]
+        public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
+        {
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+                await _userDataProvider.RemoveAsync(new() {Id = "0"}));
+        }
     }
 }

@@ -13,9 +13,8 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Middlewares
 {
-    public class UnifyResponseMiddlewareSpecification<TContext, TResponse> : IPipeSpecification<TContext>
+    public class UnifyResponseMiddlewareSpecification<TContext> : IPipeSpecification<TContext>
          where TContext : IContext<IMessage>
-         where TResponse: IResponse
     {
         private readonly Type _unifiedType;
         public UnifyResponseMiddlewareSpecification(Type unifiedType)
@@ -45,7 +44,6 @@ namespace SugarChat.Core.Middlewares
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;
             }
-            var messageType = context.Message.GetType();
             var businessException = ex as BusinessException;
             if (context.Result is null)
             {

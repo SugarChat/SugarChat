@@ -17,6 +17,6 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<GroupOwnerChangedEvent> ChangeGroupOwner(ChangeGroupOwnerCommand command, CancellationToken cancellation);
         Task<GroupJoinedEvent> JoinGroup(JoinGroupCommand command, CancellationToken cancellation);
         Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command, CancellationToken cancellationToken);
-        Task<GroupMemberAddedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken);
+        Task<GroupMemberDeletedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken);
     }
 }

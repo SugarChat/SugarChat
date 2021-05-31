@@ -106,7 +106,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
             await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
 
-            return new GroupMemberDeletedEvent { };
+            return _mapper.Map<GroupMemberDeletedEvent>(command);
         }
     }
 }

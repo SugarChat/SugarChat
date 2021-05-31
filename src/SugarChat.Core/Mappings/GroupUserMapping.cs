@@ -17,6 +17,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<QuitGroupCommand, GroupQuittedEvent>();
             CreateMap<ChangeGroupOwnerCommand, GroupOwnerChangedEvent>();
             CreateMap<AddGroupMemberCommand, GroupMemberAddedEvent>();
+            CreateMap<DeleteGroupMemberCommand, GroupMemberDeletedEvent>();
         }
     }
 }

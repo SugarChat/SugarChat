@@ -108,11 +108,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         //         await _userDataProvider.RemoveAsync(new() {Id = "0"}));
         // }
         //
-        [Fact]
-        public async Task Should_Be_True()
-        {
-            true.ShouldBe(true);
-            await Task.CompletedTask;
-        }
+        // [Fact]
+        // public async Task Should_Be_True()
+        // {
+        //     true.ShouldBe(true);
+        //     await Task.CompletedTask;
+        // }
     }
 }

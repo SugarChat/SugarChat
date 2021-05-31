@@ -92,13 +92,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             group.Description.ShouldBe("TomAndJerryGroup");
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
-        public async Task Should_Throw_Exception_On_Update_None_Exist_Group()
-        {
-            Group tomAndJerryAndSpikeGroup = new() {Id = "0", Description = "tomAndJerryAndSpikeGroup"};
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
-                await _groupDataProvider.UpdateAsync(tomAndJerryAndSpikeGroup));
-        }
+        // [Fact(Skip = "The IRepo is fixing the bug")]
+        // public async Task Should_Throw_Exception_On_Update_None_Exist_Group()
+        // {
+        //     Group tomAndJerryAndSpikeGroup = new() {Id = "0", Description = "tomAndJerryAndSpikeGroup"};
+        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
+        //         await _groupDataProvider.UpdateAsync(tomAndJerryAndSpikeGroup));
+        // }
 
         [Fact]
         public async Task Should_Remove_Exist_Group()
@@ -109,11 +109,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
 
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
-        public async Task Should_Throw_Exception_On_Removing_None_Exist_Group()
-        {
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
-                await _groupDataProvider.RemoveAsync(new() {Id = "0"}));
-        }
+        // [Fact(Skip = "The IRepo is fixing the bug")]
+        // public async Task Should_Throw_Exception_On_Removing_None_Exist_Group()
+        // {
+        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
+        //         await _groupDataProvider.RemoveAsync(new() {Id = "0"}));
+        // }
     }
 }

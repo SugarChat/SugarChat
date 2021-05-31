@@ -92,13 +92,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
                 await _userDataProvider.UpdateAsync(tweety));
         }
 
-        // [Fact]
-        // public async Task Should_Remove_Exist_User()
-        // {
-        //     await _userDataProvider.RemoveAsync(Tom);
-        //     User user = await _userDataProvider.GetByIdAsync(Tom.Id);
-        //     user.ShouldBeNull();
-        // }
+        [Fact]
+        public async Task Should_Remove_Exist_User()
+        {
+            await _userDataProvider.RemoveAsync(Tom);
+            User user = await _userDataProvider.GetByIdAsync(Tom.Id);
+            user.ShouldBeNull();
+        }
 
 
         // [Fact(Skip = "The IRepo is fixing the bug")]

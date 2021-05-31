@@ -16,49 +16,48 @@ namespace SugarChat.Core.Services.GroupUsers
             _repository = repository;
         }
 
-        public async Task AddAsync(string userId, string groupId, CancellationToken cancellation)
+        public async Task AddAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
-            GroupUser groupUser = new()
-            {
-                //TODO should talk about this later
-                Id = Guid.NewGuid().ToString(),
-                UserId = userId,
-                GroupId = groupId
-            };
             await _repository.AddAsync(groupUser, cancellation);
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id,
+            CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<GroupUser>(o => o.UserId == id, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id,
+            CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<GroupUser>(o => o.GroupId == id, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         public async Task<GroupUser> GetByUserAndGroupIdAsync(string userId, string groupId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             return await _repository
                 .SingleOrDefaultAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task SetMessageReadByUserAsync(string userId, string groupId, DateTimeOffset messageSentTime,
-            CancellationToken cancellationToken)
+        public async Task SetMessageReadAsync(string userId, string groupId, DateTimeOffset messageSentTime,
+            CancellationToken cancellationToken = default)
         {
             GroupUser groupUser =
                 await _repository.SingleOrDefaultAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                     cancellationToken);
+            if (groupUser is null)
+            {
+                throw new ArgumentException();
+            }
             groupUser.LastReadTime = messageSentTime;
             await _repository.UpdateAsync(groupUser, cancellationToken);
         }
 
-        public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation)
+        public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
             await _repository.RemoveAsync(groupUser, cancellation);
         }

@@ -107,5 +107,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             await Assert.ThrowsAnyAsync<Exception>(async () =>
                 await _userDataProvider.RemoveAsync(new() {Id = "0"}));
         }
+        
+        
     }
 }

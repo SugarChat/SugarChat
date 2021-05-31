@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +40,7 @@ namespace SugarChat.Core.Services.GroupUsers
             GroupUser groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
             groupUser.CheckNotExist();
-            await _groupUserDataProvider.AddAsync(command.UserId, command.GroupId, cancellation);
+            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             return new AddUserToGroupEvent
             {
                 Status = EventStatus.Success

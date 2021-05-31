@@ -20,7 +20,7 @@ namespace SugarChat.Core.UnitTest
             var builder = SetupMediatorBuilderWithMiddleware();
             var mediator = SetupIMediator(builder);
             var response = await
-                mediator.RequestAsync<TestRequest, TestRequestResponse>(new TestRequest());
+                mediator.RequestAsync<TestRequest, SugarChatResponse>(new TestRequest());
 
             Assert.True(response is ISugarChatResponse);
         }

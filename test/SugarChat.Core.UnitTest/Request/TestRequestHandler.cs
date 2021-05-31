@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.UnitTest.Command
 {
-    public class TestRequestHandler : IRequestHandler<TestRequest, TestRequestResponse>
+    public class TestRequestHandler : IRequestHandler<TestRequest, SugarChatResponse>
     {
-        public Task<TestRequestResponse> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
+        public Task<SugarChatResponse> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
         {
             throw new BusinessWarningException("Test");
         }

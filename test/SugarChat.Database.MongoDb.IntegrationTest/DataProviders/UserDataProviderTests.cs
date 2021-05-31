@@ -1,21 +1,21 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Shouldly;
-using SugarChat.Core.Domain;
-using SugarChat.Core.Services.Users;
-using Xunit;
-
-namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
-{
-    public class UserDataProviderTests : ServiceFixture
-    {
-        private readonly IUserDataProvider _userDataProvider;
-
-        public UserDataProviderTests()
-        {
-            _userDataProvider = new UserDataProvider(Repository);
-        }
+﻿// using System;
+// using System.Linq;
+// using System.Threading.Tasks;
+// using Shouldly;
+// using SugarChat.Core.Domain;
+// using SugarChat.Core.Services.Users;
+// using Xunit;
+//
+// namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
+// {
+//     public class UserDataProviderTests : ServiceFixture
+//     {
+//         private readonly IUserDataProvider _userDataProvider;
+//
+//         public UserDataProviderTests()
+//         {
+//             _userDataProvider = new UserDataProvider(Repository);
+//         }
 
         // [Fact]
         // public async Task Should_Get_Exist_User_By_Id()
@@ -114,5 +114,5 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         //     true.ShouldBe(true);
         //     await Task.CompletedTask;
         // }
-    }
-}
+//     }
+// }

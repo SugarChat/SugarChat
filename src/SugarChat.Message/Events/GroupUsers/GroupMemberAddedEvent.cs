@@ -8,5 +8,8 @@ namespace SugarChat.Message.Events.GroupUsers
 {
     public class GroupMemberAddedEvent : EventBase
     {
+        public string GroupId { get; set; }
+        public string GroupAdminId { get; set; }
+        public string MemberId { get; set; }
     }
 }

@@ -8,5 +8,7 @@ namespace SugarChat.Message.Events.GroupUsers
 {
     public class GroupQuittedEvent : EventBase
     {
+        public string UserId { get; set; }
+        public string GroupId { get; set; }
     }
 }

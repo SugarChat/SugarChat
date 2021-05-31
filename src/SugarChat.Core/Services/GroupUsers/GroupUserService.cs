@@ -46,7 +46,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 UserId = command.UserId
             }, cancellation);
 
-            return new GroupJoinedEvent { };
+            return _mapper.Map<GroupJoinedEvent>(command);
         }
 
         public async Task<GroupQuittedEvent> QuitGroup(QuitGroupCommand command, CancellationToken cancellation)
@@ -57,7 +57,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
 
-            return new GroupQuittedEvent { };
+            return _mapper.Map<GroupQuittedEvent>(command);
         }
 
         public async Task<GroupOwnerChangedEvent> ChangeGroupOwner(ChangeGroupOwnerCommand command, CancellationToken cancellation)
@@ -75,7 +75,7 @@ namespace SugarChat.Core.Services.GroupUsers
             newGroupOwner.IsAdmin = true;
             await _groupUserDataProvider.UpdateAsync(newGroupOwner, cancellation);
 
-            return new GroupOwnerChangedEvent { };
+            return _mapper.Map<GroupOwnerChangedEvent>(command);
         }
 
         public async Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command, CancellationToken cancellationToken)
@@ -93,7 +93,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 GroupId = command.GroupId
             }, cancellationToken);
 
-            return new GroupMemberAddedEvent { };
+            return _mapper.Map<GroupMemberAddedEvent>(command);
         }
     }
 }

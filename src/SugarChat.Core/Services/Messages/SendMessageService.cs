@@ -15,9 +15,12 @@ namespace SugarChat.Core.Services
 {
     public class SendMessageService : ISendMessageService
     {
+        private readonly IMapper _mapper;
         private IMessageDataProvider _messageDataProvider;
-        public SendMessageService(IMessageDataProvider messageDataProvider)
+
+        public SendMessageService(IMapper mapper, IMessageDataProvider messageDataProvider)
         {
+            _mapper = mapper;
             _messageDataProvider = messageDataProvider;
         }
 
@@ -33,7 +36,7 @@ namespace SugarChat.Core.Services
                 AttachmentUrl = command.AttachmentUrl
             }, cancellationToken).ConfigureAwait(false);
 
-            return new MessageSentEvent { };
+            return _mapper.Map<MessageSentEvent>(command);
         }
     }
 }

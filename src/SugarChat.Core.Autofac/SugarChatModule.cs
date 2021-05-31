@@ -41,7 +41,7 @@ namespace SugarChat.Core.Autofac
             var mediaBuilder = new MediatorBuilder();
 
             mediaBuilder
-                .ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(ISugarChatResponse)))
+                .ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(SugarChatResponse)))
                 .RegisterHandlers(_assemblies.ToArray());
             
             builder.RegisterMediator(mediaBuilder);

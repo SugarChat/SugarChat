@@ -39,7 +39,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
-            if (_unifiedType == null || ex.GetType() != typeof(BusinessException))
+            if (_unifiedType == null || ex is not BusinessException)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;

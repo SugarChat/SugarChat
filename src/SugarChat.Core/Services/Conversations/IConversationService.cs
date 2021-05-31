@@ -10,7 +10,7 @@ namespace SugarChat.Core.Services.Conversations
     {
         Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken);
         Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request, CancellationToken cancellationToken);       
-        Task SetMessageReadByConversationIdAsync(SetMessageReadCommand command, CancellationToken cancellationToken);
+        Task SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken);
         Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken);
     }
 }

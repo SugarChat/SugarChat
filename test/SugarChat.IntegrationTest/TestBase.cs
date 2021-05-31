@@ -122,7 +122,7 @@ namespace SugarChat.IntegrationTest
 
         public void Dispose()
         {
-            ClearDatabaseRecord();
+            //ClearDatabaseRecord();
         }
 
         private void ClearDatabaseRecord()

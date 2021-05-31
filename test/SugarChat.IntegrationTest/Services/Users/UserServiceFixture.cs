@@ -1,5 +1,4 @@
-﻿using Autofac;
-using Mediator.Net;
+﻿using Mediator.Net;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
@@ -14,37 +13,27 @@ namespace SugarChat.IntegrationTest.Services.Users
 {
     public class UserServiceFixture : TestBase
     {
-        private readonly IRepository _repository;
-        private readonly IMediator _mediator;
-        public UserServiceFixture()
-        {
-            _repository = Container.Resolve<IRepository>();
-            _mediator = Container.Resolve<IMediator>();
-        }
-
         [Fact]
         public async Task ShouldGetUserProfile()
         {
-            await _repository.AddAsync(new User
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                Id = "b81cac07-1346-5417-318a-7a371b198511",
-                CreatedBy = Guid.NewGuid().ToString(),
-                CreatedDate = DateTimeOffset.Now,
-                LastModifyBy = Guid.NewGuid().ToString(),
-                CustomProperties = new Dictionary<string, string>(),
-                LastModifyDate = DateTimeOffset.Now,
-                DisplayName = "TestUser10",
-                AvatarUrl = "",
-            });
-
-            await Task.Run(async () =>
-            {
-                var reponse = await _mediator.RequestAsync<GetUserRequest, GetUserResponse>(new GetUserRequest { Id = "b81cac07-1346-5417-318a-7a371b198511" });
+                var userId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new User
+                {
+                    Id = userId,
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTimeOffset.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    CustomProperties = new Dictionary<string, string>(),
+                    LastModifyDate = DateTimeOffset.Now,
+                    DisplayName = "TestUser10",
+                    AvatarUrl = "",
+                });
+                var reponse = await mediator.RequestAsync<GetUserRequest, GetUserResponse>(new GetUserRequest { Id = userId });
                 reponse.User.DisplayName.ShouldBe("TestUser10");
             });
-
-            Dispose();
-        }     
+        }
 
     }
 }

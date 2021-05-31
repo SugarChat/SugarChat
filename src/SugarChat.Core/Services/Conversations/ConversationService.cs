@@ -78,7 +78,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }      
 
-        public async Task SetMessageReadByConversationIdAsync(SetMessageReadCommand command, CancellationToken cancellationToken)
+        public async Task SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);

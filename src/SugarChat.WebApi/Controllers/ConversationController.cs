@@ -49,7 +49,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setMessageRead"), HttpPost]
-        public async Task<IActionResult> SetMessageRead(SetMessageReadCommand command)
+        public async Task<IActionResult> SetMessageRead(SetMessageAsReadCommand command)
         {
             await _mediator.SendAsync(command);
             return Ok();

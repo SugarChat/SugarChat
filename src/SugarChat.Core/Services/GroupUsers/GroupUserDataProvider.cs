@@ -3,6 +3,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Shared.Dtos.GroupUsers;
+using System.Linq;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -32,6 +34,24 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation)
         {
             await _repository.UpdateAsync(groupUser, cancellation);
+        }
+
+        public async Task<IEnumerable<GroupUserDto>> GetGroupMembersByIdAsync(string id, CancellationToken cancellationToken)
+        {
+            return await Task.Run<IEnumerable<GroupUserDto>>(() =>
+              {
+                  return (from a in _repository.Query<GroupUser>()
+                          join b in _repository.Query<User>() on a.UserId equals b.Id
+                          where a.GroupId == id
+                          select new GroupUserDto
+                          {
+                              UserId = a.UserId,
+                              DisplayName = b.DisplayName,
+                              AvatarUrl = b.AvatarUrl,
+                              CustomProperties = b.CustomProperties,
+                              JoinTime = a.CreatedDate
+                          }).ToList();
+              });
         }
     }
 }

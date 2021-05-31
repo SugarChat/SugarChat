@@ -1,4 +1,5 @@
-﻿using Mediator.Net;
+﻿using Autofac;
+using Mediator.Net;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
@@ -6,13 +7,14 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace SugarChat.IntegrationTest.Services.Users
 {
-    public class UserServiceFixture : TestBase
-    {
+    public class UserServiceFixture : TestFixtureBase
+    {       
         [Fact]
         public async Task ShouldGetUserProfile()
         {
@@ -34,6 +36,17 @@ namespace SugarChat.IntegrationTest.Services.Users
                 reponse.User.DisplayName.ShouldBe("TestUser10");
             });
         }
+
+        [Fact]
+        public async Task ShouldGetGroupMembers()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, GetMembersOfGroupResponse>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                reponse.Result.Count().ShouldBe(2);
+            });
+        }
+
 
     }
 }

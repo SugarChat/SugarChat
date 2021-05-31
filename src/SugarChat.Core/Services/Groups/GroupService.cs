@@ -75,7 +75,7 @@ namespace SugarChat.Core.Services.Groups
             group.IsDel = true;
             await _groupDataProvider.UpdateAsync(group, cancellation);
 
-            return new GroupDismissedEvent { };
+            return _mapper.Map<GroupDismissedEvent>(command);
         }
     }
 }

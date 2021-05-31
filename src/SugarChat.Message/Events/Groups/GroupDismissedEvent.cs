@@ -8,6 +8,6 @@ namespace SugarChat.Message.Events.Groups
 {
     public class GroupDismissedEvent : EventBase
     {
-
+        public string GroupId { get; set; }
     }
 }

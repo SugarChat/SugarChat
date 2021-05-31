@@ -181,18 +181,18 @@ namespace SugarChat.IntegrationTest.Services
                 AddGroupMemberCommand command = new AddGroupMemberCommand
                 {
                     GroupId = Guid.NewGuid().ToString(),
-                    GroupAdminId = Guid.NewGuid().ToString(),
+                    AdminId = Guid.NewGuid().ToString(),
                     MemberId = Guid.NewGuid().ToString()
                 };
 
                 Func<Task> funcTask = () => mediator.SendAsync(command);
-                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.GroupAdminId, command.GroupId));
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
 
                 command.GroupId = groupId;
                 funcTask = () => mediator.SendAsync(command);
-                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.GroupAdminId, command.GroupId));
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
 
-                command.GroupAdminId = groupOwnerId;
+                command.AdminId = groupOwnerId;
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.MemberId)).ShouldBeTrue();
 
@@ -202,6 +202,41 @@ namespace SugarChat.IntegrationTest.Services
 
                 funcTask = () => mediator.SendAsync(command);
                 funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.InGroup, command.MemberId, command.GroupId));
+            });
+        }
+
+        [Fact]
+        public async Task ShouldDeleteGroupMember()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await AddGroup(repository);
+                await AddGroupOwner(repository);
+                await AddGroupUser(repository);
+                DeleteGroupMemberCommand command = new DeleteGroupMemberCommand
+                {
+                    GroupId = Guid.NewGuid().ToString(),
+                    AdminId = Guid.NewGuid().ToString(),
+                    MemberId = Guid.NewGuid().ToString()
+                };
+
+                Func<Task> funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
+
+                command.GroupId = groupId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
+
+                command.AdminId = groupOwnerId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
+
+                command.MemberId = userId;
+                await mediator.SendAsync(command);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.MemberId)).ShouldBeFalse();
+
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
             });
         }
     }

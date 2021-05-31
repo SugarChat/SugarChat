@@ -80,8 +80,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command, CancellationToken cancellationToken)
         {
-            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.GroupAdminId, command.GroupId, cancellationToken);
-            admin.CheckIsAdmin(command.GroupAdminId, command.GroupId);
+            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId, cancellationToken);
+            admin.CheckIsAdmin(command.AdminId, command.GroupId);
 
             var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
             member.CheckNotExist(command.MemberId, command.GroupId);
@@ -94,6 +94,19 @@ namespace SugarChat.Core.Services.GroupUsers
             }, cancellationToken);
 
             return new GroupMemberAddedEvent { };
+        }
+
+        public async Task<GroupMemberDeletedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken)
+        {
+            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId, cancellationToken);
+            admin.CheckIsAdmin(command.AdminId, command.GroupId);
+
+            var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
+            member.CheckExist(command.MemberId, command.GroupId);
+
+            await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
+
+            return new GroupMemberDeletedEvent { };
         }
     }
 }

@@ -92,21 +92,21 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         //         await _userDataProvider.UpdateAsync(tweety));
         // }
 
-        // [Fact]
-        // public async Task Should_Remove_Exist_User()
-        // {
-        //     await _userDataProvider.RemoveAsync(Tom);
-        //     User user = await _userDataProvider.GetByIdAsync(Tom.Id);
-        //     user.ShouldBeNull();
-        // }
+        [Fact]
+        public async Task Should_Remove_Exist_User()
+        {
+            await _userDataProvider.RemoveAsync(Tom);
+            User user = await _userDataProvider.GetByIdAsync(Tom.Id);
+            user.ShouldBeNull();
+        }
 
 
-        // [Fact(Skip = "The IRepo is fixing the bug")]
-        // public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
-        // {
-        //     await Assert.ThrowsAnyAsync<Exception>(async () =>
-        //         await _userDataProvider.RemoveAsync(new() {Id = "0"}));
-        // }
+        [Fact(Skip = "The IRepo is fixing the bug")]
+        public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
+        {
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+                await _userDataProvider.RemoveAsync(new() {Id = "0"}));
+        }
         
         [Fact]
         public async Task Should_Be_True()

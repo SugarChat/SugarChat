@@ -19,6 +19,8 @@ namespace SugarChat.IntegrationTest.Services
     {
         private string groupId = Guid.NewGuid().ToString();
         private string groupOwnerId = Guid.NewGuid().ToString();
+        private string groupAdmin1Id = Guid.NewGuid().ToString();
+        private string groupAdmin2Id = Guid.NewGuid().ToString();
         private string userId = Guid.NewGuid().ToString();
 
         private async Task AddGroup(IRepository repository)
@@ -44,8 +46,37 @@ namespace SugarChat.IntegrationTest.Services
                 Id = Guid.NewGuid().ToString(),
                 UserId = groupOwnerId,
                 GroupId = groupId,
-                IsMaster = true,
-                IsAdmin = true
+                Role = UserRole.Owner
+            });
+        }
+
+        private async Task AddGroupAdmin1(IRepository repository)
+        {
+            await repository.AddAsync(new User
+            {
+                Id = groupAdmin1Id
+            });
+            await repository.AddAsync(new GroupUser
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = groupAdmin1Id,
+                GroupId = groupId,
+                Role = UserRole.Admin
+            });
+        }
+
+        private async Task AddGroupAdmin2(IRepository repository)
+        {
+            await repository.AddAsync(new User
+            {
+                Id = groupAdmin2Id
+            });
+            await repository.AddAsync(new GroupUser
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = groupAdmin2Id,
+                GroupId = groupId,
+                Role = UserRole.Admin
             });
         }
 
@@ -164,11 +195,9 @@ namespace SugarChat.IntegrationTest.Services
                 command.ToUserId = userId;
                 await mediator.SendAsync(command);
 
-                (await repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.FromUserId)).IsMaster.ShouldBeFalse();
+                (await repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.FromUserId)).Role.ShouldBe(UserRole.Admin);
 
-                var groupUser = await repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.ToUserId);
-                groupUser.IsMaster.ShouldBeTrue();
-                groupUser.IsAdmin.ShouldBeTrue();
+                (await repository.FirstOrDefaultAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.ToUserId)).Role.ShouldBe(UserRole.Owner);
             });
         }
 
@@ -179,6 +208,7 @@ namespace SugarChat.IntegrationTest.Services
             {
                 await AddGroup(repository);
                 await AddGroupOwner(repository);
+                await AddGroupAdmin1(repository);
                 AddGroupMemberCommand command = new AddGroupMemberCommand
                 {
                     GroupId = Guid.NewGuid().ToString(),
@@ -193,7 +223,12 @@ namespace SugarChat.IntegrationTest.Services
                 funcTask = () => mediator.SendAsync(command);
                 funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
 
+                command.AdminId = groupAdmin1Id;
+                await mediator.SendAsync(command);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.MemberId)).ShouldBeTrue();
+
                 command.AdminId = groupOwnerId;
+                command.MemberId = Guid.NewGuid().ToString();
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.MemberId)).ShouldBeTrue();
 
@@ -213,6 +248,8 @@ namespace SugarChat.IntegrationTest.Services
             {
                 await AddGroup(repository);
                 await AddGroupOwner(repository);
+                await AddGroupAdmin1(repository);
+                await AddGroupAdmin2(repository);
                 await AddGroupUser(repository);
                 DeleteGroupMemberCommand command = new DeleteGroupMemberCommand
                 {
@@ -228,9 +265,14 @@ namespace SugarChat.IntegrationTest.Services
                 funcTask = () => mediator.SendAsync(command);
                 funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
 
-                command.AdminId = groupOwnerId;
+                command.AdminId = groupAdmin1Id;
+                command.MemberId = groupAdmin2Id;
                 funcTask = () => mediator.SendAsync(command);
-                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe("amdin can't delete amdin.");
+
+                command.MemberId = groupOwnerId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe("the deleted member cannot be owner.");
 
                 command.MemberId = userId;
                 await mediator.SendAsync(command);
@@ -270,6 +312,48 @@ namespace SugarChat.IntegrationTest.Services
                 command.MessageRemindType = MessageRemindType.DISCARD;
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId && x.MessageRemindType == command.MessageRemindType)).ShouldBeTrue();
+            });
+        }
+
+        [Fact]
+        public async Task ShouldSetGroupMemberRole()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await AddGroup(repository);
+                await AddGroupOwner(repository);
+                await AddGroupUser(repository);
+
+                SetGroupMemberRoleCommand command = new SetGroupMemberRoleCommand
+                {
+                    GroupId = Guid.NewGuid().ToString(),
+                    OwnerId = Guid.NewGuid().ToString(),
+                    MemberId = Guid.NewGuid().ToString(),
+                    Role = UserRole.Admin
+                };
+
+                Func<Task> funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
+
+                command.GroupId = groupId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
+
+                command.OwnerId = userId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.IsNotOwner, command.OwnerId, command.GroupId));
+
+                command.OwnerId = groupOwnerId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
+
+                command.MemberId = userId;
+                await mediator.SendAsync(command);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.MemberId && x.Role == command.Role)).ShouldBeTrue();
+
+                command.Role = UserRole.Owner;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe("can't set group member role to owner.");
             });
         }
     }

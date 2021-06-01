@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class ChangeGroupOwnerHandler : ICommandHandler<ChangeGroupOwnerCommand>
+    public class ChangeGroupOwnerCommandHandler : ICommandHandler<ChangeGroupOwnerCommand>
     {
         private readonly IGroupUserService _service;
 
-        public ChangeGroupOwnerHandler(IGroupUserService service)
+        public ChangeGroupOwnerCommandHandler(IGroupUserService service)
         {
             _service = service;
         }

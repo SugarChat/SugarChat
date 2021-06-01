@@ -60,5 +60,12 @@ namespace SugarChat.WebApi.Controllers
             await _mediator.SendAsync(command);
             return Ok();
         }
+
+        [Route("setGroupMemberRole"), HttpPost]
+        public async Task<IActionResult> SetGroupMemberRole(SetGroupMemberRoleCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
     }
 }

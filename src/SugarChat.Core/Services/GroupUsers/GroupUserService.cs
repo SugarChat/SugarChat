@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 using System;
@@ -68,11 +70,10 @@ namespace SugarChat.Core.Services.GroupUsers
             var newGroupOwner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.ToUserId, command.GroupId, cancellation);
             newGroupOwner.CheckExist(command.ToUserId, command.GroupId);
 
-            groupOwner.IsMaster = false;
+            groupOwner.Role = UserRole.Admin;
             await _groupUserDataProvider.UpdateAsync(groupOwner, cancellation);
 
-            newGroupOwner.IsMaster = true;
-            newGroupOwner.IsAdmin = true;
+            newGroupOwner.Role = UserRole.Owner;
             await _groupUserDataProvider.UpdateAsync(newGroupOwner, cancellation);
 
             return _mapper.Map<GroupOwnerChangedEvent>(command);
@@ -104,6 +105,16 @@ namespace SugarChat.Core.Services.GroupUsers
             var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
             member.CheckExist(command.MemberId, command.GroupId);
 
+            if (member.Role == UserRole.Owner)
+            {
+                throw new BusinessWarningException("the deleted member cannot be owner.");
+            }
+
+            if (admin.Role == UserRole.Admin && member.Role == UserRole.Admin)
+            {
+                throw new BusinessWarningException("amdin can't delete amdin.");
+            }
+
             await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
 
             return _mapper.Map<GroupMemberDeletedEvent>(command);
@@ -118,6 +129,24 @@ namespace SugarChat.Core.Services.GroupUsers
             await _groupUserDataProvider.UpdateAsync(user, cancellationToken);
 
             return _mapper.Map<MessageRemindTypeSetEvent>(command);
+        }
+
+        public async Task<GroupMemberRoleSetEvent> SetGroupMemberRole(SetGroupMemberRoleCommand command, CancellationToken cancellationToken)
+        {
+            if (command.Role == UserRole.Owner)
+            {
+                throw new BusinessWarningException("can't set group member role to owner.");
+            }
+            var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellationToken);
+            owner.CheckIsOwner(command.OwnerId, command.GroupId);
+
+            var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
+            member.CheckExist(command.MemberId, command.GroupId);
+
+            member.Role = command.Role;
+            await _groupUserDataProvider.UpdateAsync(member, cancellationToken);
+
+            return _mapper.Map<GroupMemberRoleSetEvent>(command);
         }
     }
 }

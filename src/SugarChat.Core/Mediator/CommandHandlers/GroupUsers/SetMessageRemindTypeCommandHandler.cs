@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class SetMessageRemindTypeHandler : ICommandHandler<SetMessageRemindTypeCommand>
+    public class SetMessageRemindTypeCommandHandler : ICommandHandler<SetMessageRemindTypeCommand>
     {
         private readonly IGroupUserService _service;
 
-        public SetMessageRemindTypeHandler(IGroupUserService service)
+        public SetMessageRemindTypeCommandHandler(IGroupUserService service)
         {
             _service = service;
         }

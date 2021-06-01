@@ -38,17 +38,6 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendMessage(SendMessageModel model)
         {
-            var strlist = new List<string>();
-            foreach (var message in model.Messages)
-            {
-                strlist.Add(message.ToString());
-            }
-            var jsonModle = new
-            {
-                model.SendTo,
-                model.SendWay,
-                Messages = strlist
-            };
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             await Client.PostAsync(MessageUrl, content).ConfigureAwait(false);

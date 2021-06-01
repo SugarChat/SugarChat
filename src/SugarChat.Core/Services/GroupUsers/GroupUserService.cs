@@ -108,5 +108,16 @@ namespace SugarChat.Core.Services.GroupUsers
 
             return _mapper.Map<GroupMemberDeletedEvent>(command);
         }
+
+        public async Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command, CancellationToken cancellationToken)
+        {
+            var user = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
+            user.CheckExist(command.UserId, command.GroupId);
+
+            user.MessageRemindType = command.MessageRemindType;
+            await _groupUserDataProvider.UpdateAsync(user, cancellationToken);
+
+            return _mapper.Map<MessageRemindTypeSetEvent>(command);
+        }
     }
 }

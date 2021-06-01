@@ -4,6 +4,7 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services;
+using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using System;
 using System.Collections.Generic;
@@ -237,6 +238,38 @@ namespace SugarChat.IntegrationTest.Services
 
                 funcTask = () => mediator.SendAsync(command);
                 funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
+            });
+        }
+
+        [Fact]
+        public async Task SetMessageRemindType()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await AddGroup(repository);
+                await AddGroupUser(repository);
+
+                SetMessageRemindTypeCommand command = new SetMessageRemindTypeCommand
+                {
+                    GroupId = Guid.NewGuid().ToString(),
+                    UserId = Guid.NewGuid().ToString(),
+                    MessageRemindType = default
+                };
+
+                Func<Task> funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
+
+                command.GroupId = groupId;
+                funcTask = () => mediator.SendAsync(command);
+                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
+
+                command.UserId = userId;
+                await mediator.SendAsync(command);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId && x.MessageRemindType == command.MessageRemindType)).ShouldBeTrue();
+
+                command.MessageRemindType = MessageRemindType.DISCARD;
+                await mediator.SendAsync(command);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId && x.MessageRemindType == command.MessageRemindType)).ShouldBeTrue();
             });
         }
     }

@@ -53,5 +53,12 @@ namespace SugarChat.WebApi.Controllers
             await _mediator.SendAsync(command);
             return Ok();
         }
+
+        [Route("setMessageRemindType"), HttpPost]
+        public async Task<IActionResult> SetMessageRemindType(SetMessageRemindTypeCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
     }
 }

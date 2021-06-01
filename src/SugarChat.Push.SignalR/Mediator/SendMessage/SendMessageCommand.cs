@@ -13,7 +13,7 @@ namespace SugarChat.Push.SignalR.Mediator.SendMessage
 
         public string Method { get; set; }
 
-        public object[] Messages { get; set; }
+        public string[] Messages { get; set; }
 
         public bool IsMass { get; set; }
 

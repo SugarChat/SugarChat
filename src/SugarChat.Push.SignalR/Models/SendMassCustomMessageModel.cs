@@ -12,7 +12,7 @@ namespace SugarChat.Push.SignalR.Models
 
         public string Method { get; set; }
 
-        public object[] Messages { get; set; }
+        public string[] Messages { get; set; }
 
         public IReadOnlyList<string> SendTos { get; set; }
 

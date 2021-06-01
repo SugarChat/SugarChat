@@ -26,8 +26,19 @@ namespace SugarChat.Core.UnitTest
 
             Assert.Equal(0, response.Code);
             Assert.Equal("Test", response.Message);
-            
-            // TODO: Test Data from response
+        }
+        [Fact]
+        public async Task TestUnifyResponseMiddleware2()
+        {
+            var builder = SetupMediatorBuilderWithMiddleware();
+            var mediator = SetupIMediator2(builder);
+            var response = await
+                mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
+
+
+            Assert.Equal(0, response.Code);
+            Assert.Equal("TestMessage", response.Message);
+            Assert.Equal("TestData", response.Data);
         }
         MediatorBuilder SetupMediatorBuilderWithMiddleware()
         {
@@ -43,6 +54,17 @@ namespace SugarChat.Core.UnitTest
                 var binding = new List<MessageBinding>
                 {
                     new MessageBinding(typeof(TestRequest), typeof(TestRequestHandler)),
+                };
+                return binding;
+            }).Build();
+        }
+        IMediator SetupIMediator2(MediatorBuilder builder)
+        {
+            return builder.RegisterHandlers(() =>
+            {
+                var binding = new List<MessageBinding>
+                {
+                    new MessageBinding(typeof(TestRequest), typeof(TestDataFromResponseRequestHandler)),
                 };
                 return binding;
             }).Build();

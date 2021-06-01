@@ -4,10 +4,8 @@ using Mediator.Net.Pipeline;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +15,7 @@ namespace SugarChat.Core.Middlewares
          where TContext : IContext<IMessage>
     {
         private readonly Type _unifiedType;
+
         public UnifyResponseMiddlewareSpecification(Type unifiedType)
         {
             _unifiedType = unifiedType;
@@ -49,12 +48,14 @@ namespace SugarChat.Core.Middlewares
             {
                 var tArgs = context.ResultGenericArguments;
                 var targetType = tArgs != null && tArgs.Any() ? _unifiedType.MakeGenericType(tArgs) : _unifiedType;
-            
-                var unifiedTypeInstance = Activator.CreateInstance(targetType) as dynamic;
+
+                var unifiedTypeInstance = Activator.CreateInstance(targetType);
                 context.Result = unifiedTypeInstance;
             }
 
-            if (!(context.Result is SugarChatResponse response)) return Task.CompletedTask;
+            if (!(context.Result is SugarChatResponse response))
+                return Task.CompletedTask;
+
             response.Code = businessException.Code;
             response.Message = businessException.Message;
             return Task.CompletedTask;

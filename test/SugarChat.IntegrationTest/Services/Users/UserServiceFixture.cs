@@ -1,5 +1,4 @@
-﻿using Autofac;
-using Mediator.Net;
+﻿using Mediator.Net;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
@@ -40,7 +39,7 @@ namespace SugarChat.IntegrationTest.Services.Users
         [Fact]
         public async Task ShouldGetGroupMembers()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator>(async (mediator) =>
             {
                 var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, GetMembersOfGroupResponse>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
                 reponse.Result.Count().ShouldBe(2);

@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Mediator.Net;
 using Shouldly;
+using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Requests.Conversations;
@@ -17,7 +18,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldGetUserConversations()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator>(async (mediator) =>
             {
                 var reponse = await mediator.RequestAsync<GetConversationListRequest, GetConversationListResponse>
                 (new GetConversationListRequest { UserId = userId });
@@ -29,7 +30,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldSetConversationMessagesRead()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator>(async (mediator) =>
             {
                 await mediator.SendAsync(new SetMessageAsReadCommand
                 {
@@ -51,7 +52,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldGetConversationProfile()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator>(async (mediator) =>
             {
                 var request = new GetConversationProfileRequest()
                 {
@@ -66,7 +67,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldGetMessageList()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator>(async (mediator) =>
             {
                 var request = new GetMessageListRequest()
                 {
@@ -79,7 +80,25 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 response.Result.Count().ShouldBe(3);
                 response.Result.First().Content.ShouldBe("[图片]");
             });
-        }       
+        }
+
+
+        [Fact]
+        public async Task ShouldDeleteConversation()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await mediator.SendAsync(new DeleteConversationCommand
+                {
+                    ConversationId = conversationId,
+                    UserId = userId
+
+                }, default(CancellationToken));
+
+                var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
+                groupUser.ShouldBeNull();
+            });
+        }
 
     }
 }

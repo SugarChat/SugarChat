@@ -1,5 +1,7 @@
-﻿using SugarChat.Core.Services.Groups;
+﻿using SugarChat.Core.Exceptions;
+using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using System.Threading;
@@ -37,5 +39,27 @@ namespace SugarChat.Core.Services.GroupUsers
                 Result = groupMembers
             };
         }
+
+        public async Task SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
+
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
+            groupUser.CheckExist(command.UserId, command.GroupId);
+
+            if (command.CustomProperties != null && command.CustomProperties.Count > 0)
+            {
+                groupUser.CustomProperties = command.CustomProperties;
+                await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
+            }
+            else
+            {
+                throw new BusinessWarningException("Custom properties cannot be empty");
+            }
+        }       
     }
 }

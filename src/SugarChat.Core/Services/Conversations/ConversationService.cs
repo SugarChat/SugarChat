@@ -113,6 +113,20 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
+        public async Task DeleteConversationByConversationIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            var group = await _groupDataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            group.CheckExist(command.ConversationId);
+
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
+            groupUser.CheckExist(command.UserId, command.ConversationId);
+           
+            await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
+        }
+
 
     }
 }

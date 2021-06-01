@@ -1,5 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using System.Threading.Tasks;
@@ -8,11 +9,11 @@ namespace SugarChat.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GroupMemberController : ControllerBase
+    public class GroupUserController : ControllerBase
     {
         private readonly IMediator _mediator;
 
-        public GroupMemberController(IMediator mediator)
+        public GroupUserController(IMediator mediator)
         {
             _mediator = mediator;
         }
@@ -25,6 +26,13 @@ namespace SugarChat.WebApi.Controllers
                      .RequestAsync<GetMembersOfGroupRequest, GetMembersOfGroupResponse>(request);
 
             return Ok(response);
+        }
+
+        [Route("setGroupMemberCustomField"), HttpPost]
+        public async Task<IActionResult> SetGroupMemberCustomField(SetGroupMemberCustomFieldCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
         }
     }
 }

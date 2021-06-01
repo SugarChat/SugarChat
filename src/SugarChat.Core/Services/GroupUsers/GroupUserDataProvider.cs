@@ -53,5 +53,10 @@ namespace SugarChat.Core.Services.GroupUsers
                           }).ToList();
               });
         }
+
+        public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation = default)
+        {
+            await _repository.RemoveAsync(groupUser, cancellation);
+        }
     }
 }

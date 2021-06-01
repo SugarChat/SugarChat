@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SugarChat.Core.UnitTest.Request;
 using Xunit;
+using SugarChat.Core.UnitTest.Events;
 
 namespace SugarChat.Core.UnitTest
 {
@@ -22,7 +23,6 @@ namespace SugarChat.Core.UnitTest
             var mediator = SetupIMediator(builder);
             var response = await
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
-
 
             Assert.Equal(0, response.Code);
             Assert.Equal("Test", response.Message);
@@ -39,6 +39,13 @@ namespace SugarChat.Core.UnitTest
             Assert.Equal(0, response.Code);
             Assert.Equal("TestMessage", response.Message);
             Assert.Equal("TestData", response.Data);
+        }
+        [Fact]
+        public async Task TestUnifyResponseMiddlewarePublish()
+        {
+            var builder = SetupMediatorBuilderWithMiddleware();
+            var mediator = SetupIMediator3(builder);
+            await mediator.PublishAsync<TestEvent>(new TestEvent());
         }
         MediatorBuilder SetupMediatorBuilderWithMiddleware()
         {
@@ -65,6 +72,17 @@ namespace SugarChat.Core.UnitTest
                 var binding = new List<MessageBinding>
                 {
                     new MessageBinding(typeof(TestRequest), typeof(TestDataFromResponseRequestHandler)),
+                };
+                return binding;
+            }).Build();
+        }
+        IMediator SetupIMediator3(MediatorBuilder builder)
+        {
+            return builder.RegisterHandlers(() =>
+            {
+                var binding = new List<MessageBinding>
+                {
+                    new MessageBinding(typeof(TestEvent), typeof(TestEventHandler)),
                 };
                 return binding;
             }).Build();

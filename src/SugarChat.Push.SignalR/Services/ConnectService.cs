@@ -29,7 +29,7 @@ namespace SugarChat.Push.SignalR.Services
                 baseUrl = Configuration.GetSection("SUGARCHAT_SIGNAL_HUB_URL").Value;
             }
             var key = Guid.NewGuid().ToString("N");
-            _redis.Set("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier });
+            _redis.Set("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromMinutes(5));
             return Task.FromResult($"{baseUrl}?connectionkey={key}");
         }
     }

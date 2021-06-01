@@ -65,7 +65,7 @@ namespace SugarChat.Core.UnitTest
         MediatorBuilder SetupMediatorBuilderWithMiddleware()
         {
             var builder = new MediatorBuilder();
-            builder.ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware(typeof(SugarChatResponse<>)));
+            builder.ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware());
             return builder;
         }
 

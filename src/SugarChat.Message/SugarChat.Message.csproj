@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mediator.Net" Version="3.4.0-extendContract71" />
+    <PackageReference Include="Mediator.Net" Version="3.4.0-extendContract73" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Basic
 {
-    public interface ISugarChatResponse<in T> : IResponse
+    public interface ISugarChatResponse : IResponse
     {
         public int Code { get; set;  }
 
         public string Message { get; set; }
+        
+    }
 
-        public T Data { set; }
-    }
-    public interface ISugarChatResponse : ISugarChatResponse<object>
+    public interface ISugarChatResponse<T> : ISugarChatResponse
     {
+        T Data { get; set; }
     }
+    
 }

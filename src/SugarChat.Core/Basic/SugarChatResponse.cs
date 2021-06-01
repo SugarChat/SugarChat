@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Basic
 {
-    public class SugarChatResponse : SugarChatResponse<object>, ISugarChatResponse
-    {
-    }
-    public class SugarChatResponse<T> : ISugarChatResponse<T>
+    public class SugarChatResponse : ISugarChatResponse
     {
         public int Code { get; set; }
         public string Message { get; set; }
+    }
+    public class SugarChatResponse<T> : SugarChatResponse, ISugarChatResponse<T>
+    {
         public T Data { get; set; }
     }
 }

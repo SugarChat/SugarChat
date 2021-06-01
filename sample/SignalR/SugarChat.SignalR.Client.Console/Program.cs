@@ -11,19 +11,16 @@ namespace SugarChat.SignalR.Client.ConsoleSample
     {
         public static async Task Main(string[] args)
         {
-            var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri("http://localhost:7777");
-            var connectionUrl = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userIdentifier=console");
-
-            HubConnection hubConnection = new HubConnectionBuilder()
-              .WithUrl(connectionUrl,
-              options => {
-                  options.SkipNegotiation = true;
-                  options.Transports = HttpTransportType.WebSockets;
-              })
-              .Build();
+            HubConnection hubConnection = await build();
+            var count = 1;
             hubConnection.Closed += async (error) =>
             {
+                if (count > 5)
+                {
+                    hubConnection = await build();
+                    count = 0;
+                }
+                count++;
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await hubConnection.StartAsync();
             };
@@ -46,6 +43,21 @@ namespace SugarChat.SignalR.Client.ConsoleSample
             await hubConnection.StartAsync();
 
             Thread.Sleep(int.MaxValue);
+        }
+        private static async Task<HubConnection> build()
+        {
+            var httpClient = new HttpClient();
+            httpClient.BaseAddress = new Uri("http://localhost:7777");
+            var connectionUrl = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userIdentifier=console");
+
+            HubConnection hubConnection = new HubConnectionBuilder()
+              .WithUrl(connectionUrl,
+              options => {
+                  options.SkipNegotiation = true;
+                  options.Transports = HttpTransportType.WebSockets;
+              })
+              .Build();
+            return hubConnection;
         }
     }
 }

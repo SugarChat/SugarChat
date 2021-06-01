@@ -23,6 +23,7 @@ namespace SugarChat.Core.UnitTest
             var response = await
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
+
             Assert.Equal(0, response.Code);
             Assert.Equal("Test", response.Message);
             

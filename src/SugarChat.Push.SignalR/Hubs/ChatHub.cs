@@ -5,6 +5,7 @@ using SugarChat.Push.SignalR.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,15 @@ namespace SugarChat.Push.SignalR.Hubs
             // todo 
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
             var connectionkey = Context.GetHttpContext().Request.Query["connectionkey"].ToString();
+            if (string.IsNullOrWhiteSpace(connectionkey))
+            {
+                throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
+            }
             var userinfo = _redis.Get<UserInfoModel>("Connectionkey:" + connectionkey);
+            if(userinfo is null)
+            {
+                throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
+            }
             _redis.Set("Connectionkey:" + connectionkey, userinfo);
             var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
             if(connectionIds is null)

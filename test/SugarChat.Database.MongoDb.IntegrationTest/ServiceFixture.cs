@@ -55,8 +55,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Id = "2",
                 Content = "Hello Tom",
                 SentBy = "2",
-                SentTime = BaseTime,
-                GroupId = "2"
+                SentTime = BaseTime.AddSeconds(5),
+                GroupId = "1"
             };
 
             MessageOfGroupTomAndJerryAndTyke1 = new()
@@ -73,7 +73,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Id = "4",
                 Content = "Hello Tom and Jerry",
                 SentBy = "4",
-                SentTime = BaseTime,
+                SentTime = BaseTime.AddSeconds(5),
                 GroupId = "2"
             };
             await Repository.AddAsync(MessageOfGroupTomAndJerry1);

@@ -220,7 +220,7 @@ namespace SugarChat.Core.Services.Messages
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
                     cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessagesOfGroupAsync(command.GroupId, cancellationToken);
+            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
             groupUser.CheckLastReadTimeEarlierThan(lastMessageOfGroup.SentTime);
 
             await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageOfGroup.SentTime,

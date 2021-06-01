@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Autofac;
+using MongoDB.Driver;
 using SugarChat.Core.Domain;
+using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
@@ -33,6 +36,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         private async Task Stuff()
         {
+            await CleanDatabaseAsync();
             await AddUsers();
             await AddFriends();
             await AddGroups();

@@ -2,10 +2,15 @@
 using MongoDB.Bson.Serialization;
 using System;
 using System.Configuration;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using Autofac;
 using MongoDB.Driver;
+using SugarChat.Core.Autofac;
 using SugarChat.Core.IRepositories;
 using SugarChat.Data.MongoDb;
+using SugarChat.Data.MongoDb.Autofac;
 using SugarChat.Data.MongoDb.Settings;
 using Xunit;
 
@@ -16,24 +21,37 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
     {
         private readonly DatabaseFixture _dbFixture;
         protected readonly IRepository Repository;
-        private readonly string _dbName = Guid.NewGuid().ToString();
+        protected readonly IConfigurationRoot Configuration;
+        protected readonly IMongoClient Client;
+        protected readonly ILifetimeScope Container;
 
         protected TestBase(DatabaseFixture dbFixture)
         {
             _dbFixture = dbFixture;
-            var settings = _dbFixture.Settings;
-            settings.DatabaseName = _dbName;
-            Repository = new MongoDbRepository(settings);
+            Configuration = _dbFixture.Configuration;
+            Client = _dbFixture.Client;
+            Container = _dbFixture.Container;
+            Repository = _dbFixture.Repository;
         }
-       
+
         public virtual async ValueTask DisposeAsync()
         {
-            await _dbFixture.Client.DropDatabaseAsync(_dbName);
+            await CleanDatabaseAsync();
         }
 
         public virtual void Dispose()
         {
-            _dbFixture.Client.DropDatabase(_dbName);
+            CleanDatabase();
+        }
+
+        protected void CleanDatabase()
+        {
+            Client.DropDatabase(Configuration["MongoDb:DatabaseName"]);
+        }
+
+        protected async Task CleanDatabaseAsync()
+        {
+            await Client.DropDatabaseAsync(Configuration["MongoDb:DatabaseName"]);
         }
     }
 }

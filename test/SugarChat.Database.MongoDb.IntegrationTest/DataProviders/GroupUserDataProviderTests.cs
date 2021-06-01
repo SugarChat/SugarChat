@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.GroupUsers;
@@ -16,7 +17,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 
         public GroupUserDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            _groupUserDataProvider = new GroupUserDataProvider(Repository);
+            _groupUserDataProvider = Container.Resolve<IGroupUserDataProvider>();
         }
 
         [Fact]

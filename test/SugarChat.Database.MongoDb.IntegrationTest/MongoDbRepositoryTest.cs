@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autofac;
+using SugarChat.Core.IRepositories;
 using SugarChat.Shared.Paging;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest

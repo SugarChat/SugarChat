@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Friends;
@@ -17,7 +18,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 
         public FriendDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            _friendDataProvider = new FriendDataProvider(Repository);
+            _friendDataProvider = Container.Resolve<IFriendDataProvider>();
         }
 
         [Fact]
@@ -122,7 +123,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             };
             await Assert.ThrowsAnyAsync<Exception>(async () => await _friendDataProvider.UpdateAsync(tomAndTykeFriend));
         }
-        
+
         [Fact]
         public async Task Should_Remove_Exist_Friend()
         {
@@ -135,7 +136,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 
             friend.ShouldBeNull();
         }
-        
+
         [Fact(Skip = "The IRepo is fixing the bug")]
         public async Task Should_Not_Remove_None_Exist_Friend()
         {

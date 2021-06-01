@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Users;
@@ -14,7 +15,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 
         public UserDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            _userDataProvider = new UserDataProvider(Repository);
+            _userDataProvider = Container.Resolve<IUserDataProvider>();
         }
 
         [Fact]

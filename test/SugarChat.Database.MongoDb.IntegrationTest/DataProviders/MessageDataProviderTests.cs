@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using SugarChat.Core.Services.Messages;
 using Xunit;
 using Shouldly;
@@ -16,8 +17,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 
         public MessageDataProviderTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            _messageDataProvider = new MessageDataProvider(Repository);
-            _groupUserDataProvider = new GroupUserDataProvider(Repository);
+            _messageDataProvider = Container.Resolve<IMessageDataProvider>();
+            _groupUserDataProvider = Container.Resolve<IGroupUserDataProvider>();
         }
 
         [Fact]

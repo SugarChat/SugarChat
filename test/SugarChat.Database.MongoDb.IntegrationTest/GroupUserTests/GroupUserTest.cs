@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
+using SugarChat.Core.IRepositories;
 using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.GroupUserTests
@@ -9,7 +11,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.GroupUserTests
     public class GroupUserTest : ServiceFixture
     {
         private GroupUser _groupUser;
-
         public GroupUserTest(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _groupUser = new GroupUser

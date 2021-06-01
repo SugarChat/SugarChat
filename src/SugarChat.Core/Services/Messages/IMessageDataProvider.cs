@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Services.Messages
 {
-    public interface IMessageDataProvider
+    public interface IMessageDataProvider : IDataProvider
     {
         Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task AddAsync(Domain.Message message, CancellationToken cancellation = default);

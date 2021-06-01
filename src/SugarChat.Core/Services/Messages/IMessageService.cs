@@ -9,7 +9,7 @@ using SugarChat.Message.Responses;
 
 namespace SugarChat.Core.Services.Messages
 {
-    public interface IMessageService
+    public interface IMessageService : IService
     {
         Task<GetAllUnreadToUserResponse> GetAllUnreadToUserAsync(GetAllUnreadToUserRequest request,
             CancellationToken cancellationToken = default);

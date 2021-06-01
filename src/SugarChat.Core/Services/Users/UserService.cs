@@ -12,6 +12,7 @@ using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Users
 {
@@ -96,16 +97,19 @@ namespace SugarChat.Core.Services.Users
             User user = await GetUserAsync(request.Id, cancellation);
             user.CheckExist(request.Id);
 
-            IEnumerable<User> friends = await
-                _userDataProvider.GetRangeByIdAsync(
-                    (await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id, cancellation)).Select(o =>
-                        o.FriendId),
-                    cancellation);
+            PagedResult<Friend> friends = await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id,
+                request.PageSettings, cancellation);
+            IEnumerable<User> users = await
+                _userDataProvider.GetRangeByIdAsync(friends.Result.Select(o => o.FriendId), cancellation);
 
-            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
+            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(users);
             return new()
             {
-                Friends = friendsDto
+                Friends = new PagedResult<UserDto>
+                {
+                    Result = friendsDto,
+                    Total = friends.Total
+                }
             };
         }
 

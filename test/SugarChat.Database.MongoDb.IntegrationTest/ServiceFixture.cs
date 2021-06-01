@@ -19,6 +19,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         protected GroupUser JerryInTomAndJerryAndTyke;
         protected GroupUser TykeInTomAndJerryAndTyke;
         protected Friend TomAndJerryFriend;
+        protected Friend TomAndSpikeFriend;
         protected Friend SpikeAndTyke;
         protected User Tom;
         protected User Jerry;
@@ -139,15 +140,25 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             {
                 Id = "1",
                 UserId = "1",
-                FriendId = "2"
+                FriendId = "2",
+                BecomeFriendAt = BaseTime
+            };
+            TomAndSpikeFriend = new()
+            {
+                Id = "2",
+                UserId = "1",
+                FriendId = "3",
+                BecomeFriendAt = BaseTime.AddDays(1)
             };
             SpikeAndTyke = new()
             {
-                Id = "2",
+                Id = "3",
                 UserId = "3",
-                FriendId = "4"
+                FriendId = "4",
+                BecomeFriendAt = BaseTime.AddDays(2)
             };
             await Repository.AddAsync(TomAndJerryFriend);
+            await Repository.AddAsync(TomAndSpikeFriend);
             await Repository.AddAsync(SpikeAndTyke);
         }
 

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Friends
 {
@@ -37,11 +38,19 @@ namespace SugarChat.Core.Services.Friends
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Friend>> GetAllFriendsByUserIdAsync(string userId,
+        public Task<PagedResult<Friend>> GetAllFriendsByUserIdAsync(string userId,
+            PageSettings pageSettings,
             CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<Friend>(x => x.UserId == userId, cancellationToken)
-                .ConfigureAwait(false);
+            IQueryable<Friend> query = _repository.Query<Friend>().Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.BecomeFriendAt);
+            int total = query.Count();
+            IEnumerable<Friend> friends = query.Paging(pageSettings).ToList();
+            return Task.FromResult(new PagedResult<Friend>
+            {
+                Result = friends,
+                Total = total
+            });
         }
 
         public async Task AddAsync(Friend friend, CancellationToken cancellation)

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.UnitTest.Request;
 using Xunit;
 using SugarChat.Core.UnitTest.Events;
+using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.UnitTest
 {
@@ -46,6 +47,20 @@ namespace SugarChat.Core.UnitTest
             var builder = SetupMediatorBuilderWithMiddleware();
             var mediator = SetupIMediator3(builder);
             await mediator.PublishAsync<TestEvent>(new TestEvent());
+        }
+        [Fact]
+        public async Task TestUnifyResponseMiddlewarePublishEx()
+        {
+            var builder = SetupMediatorBuilderWithMiddleware();
+            var mediator = SetupIMediator4(builder);
+            try
+            {
+                await mediator.PublishAsync<TestEvent>(new TestEvent());
+            }
+            catch(Exception ex)
+            {
+                Assert.True(ex is BusinessWarningException);
+            }
         }
         MediatorBuilder SetupMediatorBuilderWithMiddleware()
         {
@@ -83,6 +98,17 @@ namespace SugarChat.Core.UnitTest
                 var binding = new List<MessageBinding>
                 {
                     new MessageBinding(typeof(TestEvent), typeof(TestEventHandler)),
+                };
+                return binding;
+            }).Build();
+        }
+        IMediator SetupIMediator4(MediatorBuilder builder)
+        {
+            return builder.RegisterHandlers(() =>
+            {
+                var binding = new List<MessageBinding>
+                {
+                    new MessageBinding(typeof(TestEvent), typeof(TestEventExHandler)),
                 };
                 return binding;
             }).Build();

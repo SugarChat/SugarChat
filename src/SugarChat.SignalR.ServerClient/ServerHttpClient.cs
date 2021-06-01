@@ -2,6 +2,7 @@
 using SugarChat.SignalR.Server.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendMessage(SendMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             await Client.PostAsync(MessageUrl, content).ConfigureAwait(false);
@@ -45,6 +47,7 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendMassMessage(SendMassMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             await Client.PostAsync(MassMessageUrl, content).ConfigureAwait(false);
@@ -52,6 +55,7 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendCustomMessage(SendCustomMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             await Client.PostAsync(CustomMessageUrl, content).ConfigureAwait(false);
@@ -59,6 +63,7 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendMassCustomMessage(SendMassCustomMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             var json = JsonConvert.SerializeObject(model);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             await Client.PostAsync(MassCustomMessageUrl, content).ConfigureAwait(false);

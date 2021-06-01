@@ -10,7 +10,7 @@ namespace SugarChat.SignalR.Server.Models
     {
         public SendWay SendWay { get; set; }
 
-        public string[] Messages { get; set; }
+        public object[] Messages { get; set; }
 
         public IReadOnlyList<string> SendTos { get; set; }
     }

@@ -38,7 +38,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
-            if (_unifiedType == null || ex is not BusinessException || context.ResultGenericArguments is null)
+            if (_unifiedType == null || ex is not BusinessException)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;
@@ -47,6 +47,8 @@ namespace SugarChat.Core.Middlewares
             if (context.Result is null)
             {
                 var tArgs = context.ResultGenericArguments;
+                if (tArgs is null)
+                    return Task.CompletedTask;
                 var targetType = tArgs != null && tArgs.Any() ? _unifiedType.MakeGenericType(tArgs) : _unifiedType;
 
                 var unifiedTypeInstance = Activator.CreateInstance(targetType);

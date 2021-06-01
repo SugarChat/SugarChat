@@ -26,7 +26,6 @@ namespace SugarChat.Push.SignalR.Hubs
         public override Task OnConnectedAsync()
         {
             // todo 
-            Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
             var connectionkey = Context.GetHttpContext().Request.Query["connectionkey"].ToString();
             if (string.IsNullOrWhiteSpace(connectionkey))
             {
@@ -37,6 +36,7 @@ namespace SugarChat.Push.SignalR.Hubs
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }
+            Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
             _redis.Set("Connectionkey:" + connectionkey, userinfo);
             var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
             if(connectionIds is null)
@@ -51,9 +51,17 @@ namespace SugarChat.Push.SignalR.Hubs
         public override Task OnDisconnectedAsync(Exception exception)
         {
             // todo 
-            Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Offline");
             var connectionkey = Context.GetHttpContext().Request.Query["connectionkey"].ToString();
+            if (string.IsNullOrWhiteSpace(connectionkey))
+            {
+                return Task.CompletedTask;
+            }
             var userinfo = _redis.Get<UserInfoModel>("Connectionkey:" + connectionkey);
+            if (userinfo is null)
+            {
+                return Task.CompletedTask;
+            }
+            Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Offline");
             _redis.Set("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromMinutes(5));
             var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
             connectionIds.Remove(Context.ConnectionId);

@@ -14,11 +14,9 @@ namespace SugarChat.Core.Middlewares
     public class UnifyResponseMiddlewareSpecification<TContext> : IPipeSpecification<TContext>
          where TContext : IContext<IMessage>
     {
-        private readonly Type _unifiedType;
 
-        public UnifyResponseMiddlewareSpecification(Type unifiedType)
+        public UnifyResponseMiddlewareSpecification()
         {
-            _unifiedType = unifiedType;
         }
 
         public Task AfterExecute(TContext context, CancellationToken cancellationToken)
@@ -38,7 +36,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
-            if (_unifiedType == null || ex is not BusinessException || context.Message is IEvent)
+            if (ex is not BusinessException || context.Message is IEvent)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;
@@ -46,18 +44,15 @@ namespace SugarChat.Core.Middlewares
             var businessException = ex as BusinessException;
             if (context.Result is null)
             {
-                var tArgs = context.ResultGenericArguments;
-                var targetType = _unifiedType.MakeGenericType(tArgs);
-
-                var unifiedTypeInstance = Activator.CreateInstance(targetType);
+                var unifiedTypeInstance = Activator.CreateInstance(context.ResultDataType);
                 context.Result = unifiedTypeInstance;
             }
 
-            if (!(context.Result is ISugarChatResponse response))
-                return Task.CompletedTask;
-
-            response.Code = businessException.Code;
-            response.Message = businessException.Message;
+            if (context.Result is ISugarChatResponse response)
+            {
+                response.Code = businessException.Code;
+                response.Message = businessException.Message;
+            }
             return Task.CompletedTask;
         }
 

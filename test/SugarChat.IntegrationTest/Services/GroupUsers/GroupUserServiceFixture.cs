@@ -13,7 +13,7 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
     public class GroupUserServiceFixture : TestFixtureBase
     {
         [Fact]
-        public async Task ShouldGetUserGroups()
+        public async Task ShouldSetGroupMemberCustomField()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {

@@ -3,6 +3,8 @@ using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Conversations;
+using SugarChat.Message.Event;
+using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos;
@@ -76,9 +78,9 @@ namespace SugarChat.Core.Services.Conversations
             {
                 Result = _mapper.Map<GroupDto>(group)
             };
-        }      
+        }
 
-        public async Task SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken)
+        public async Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);
@@ -91,6 +93,11 @@ namespace SugarChat.Core.Services.Conversations
 
             groupUser.LastReadTime = DateTimeOffset.Now;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
+
+            return new MessageReadedEvent
+            {
+                Status = EventStatus.Success
+            };
         }
 
         public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken)
@@ -113,7 +120,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task DeleteConversationByConversationIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
+        public async Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);
@@ -123,8 +130,13 @@ namespace SugarChat.Core.Services.Conversations
 
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.ConversationId);
-           
+
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
+
+            return new ConversationDeletedEvent
+            {
+                Status = EventStatus.Success
+            };
         }
 
 

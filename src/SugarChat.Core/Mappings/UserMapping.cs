@@ -1,15 +1,16 @@
 ﻿using AutoMapper;
 using SugarChat.Core.Domain;
+using SugarChat.Message.Commands.Users;
 using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
 {
-    public class UserMapping: Profile
+    public class UserMapping : Profile
     {
         public UserMapping()
         {
-            CreateMap<UserDto, User>();
             CreateMap<User, UserDto>();
+            CreateMap<UpdateUserCommand, User>();
         }
     }
 }

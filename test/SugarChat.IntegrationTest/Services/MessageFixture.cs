@@ -63,7 +63,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 command.MessageId = message.Id;
                 await mediator.SendAsync(command);
-                (await repository.AnyAsync<Core.Domain.Message>(x => x.Id == command.MessageId && x.IsDel)).ShouldBe(true);
+                (await repository.AnyAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).ShouldBeFalse();
             });
         }
     }

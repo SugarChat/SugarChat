@@ -28,5 +28,9 @@ namespace SugarChat.Core.Services.Messages
 
         Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken);
+
+        Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken);
     }
 }

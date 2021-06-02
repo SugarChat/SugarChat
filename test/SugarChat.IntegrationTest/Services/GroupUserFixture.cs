@@ -27,8 +27,7 @@ namespace SugarChat.IntegrationTest.Services
                 Id = groupId,
                 Name = "testGroup",
                 AvatarUrl = "testAvatarUrl",
-                Description = "testDescription",
-                IsDel = false,
+                Description = "testDescription"
             });
         }
 

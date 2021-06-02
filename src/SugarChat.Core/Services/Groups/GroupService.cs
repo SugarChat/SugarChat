@@ -13,6 +13,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
 using SugarChat.Core.IRepositories;
+using SugarChat.Core.Services.Messages;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -22,14 +23,16 @@ namespace SugarChat.Core.Services.Groups
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IMessageDataProvider _messageDataProvider;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _messageDataProvider = messageDataProvider;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation)
@@ -72,8 +75,13 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
             group.CheckExist(command.GroupId);
-            group.IsDel = true;
-            await _groupDataProvider.UpdateAsync(group, cancellation);
+            await _groupDataProvider.RemoveAsync(group, cancellation);
+
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
+            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation);
+
+            var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
+            await _messageDataProvider.RemoveRangeAsync(messages, cancellation);
 
             return _mapper.Map<GroupDismissedEvent>(command);
         }

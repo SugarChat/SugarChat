@@ -12,7 +12,6 @@ namespace SugarChat.Core.Domain
         public int SubType { get; set; }
         public string SentBy { get; set; }
         public DateTimeOffset SentTime { get; set; }
-        public bool IsDel { get; set; }
         public bool IsSystem { get; set; }
         public string AttachmentUrl { get; set; }
     }

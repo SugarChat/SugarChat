@@ -15,9 +15,10 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
             _conversationService = conversationService;
         }
 
-        public Task Handle(IReceiveContext<DeleteConversationCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<DeleteConversationCommand> context, CancellationToken cancellationToken)
         {
-            return _conversationService.DeleteConversationByConversationIdAsync(context.Message, cancellationToken);
+            var conversationDeletedEvent = await _conversationService.DeleteConversationByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(conversationDeletedEvent, cancellationToken).ConfigureAwait(false);
 
         }
     }

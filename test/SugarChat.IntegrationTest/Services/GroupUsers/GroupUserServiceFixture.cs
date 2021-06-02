@@ -7,6 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
+using SugarChat.Message.Requests;
+using SugarChat.Message.Responses;
+using System.Linq;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -30,6 +33,16 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
 
                 var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 groupUser.CustomProperties["Signature"].ShouldBe("The closer you get to the essence, the less confused you will be");
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetGroupMembers()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, GetMembersOfGroupResponse>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                reponse.Result.Count().ShouldBe(2);
             });
         }
 

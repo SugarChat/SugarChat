@@ -12,6 +12,8 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Message.Responses.Groups;
+using SugarChat.Message.Requests.Groups;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -35,7 +37,7 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
             group.CheckNotExist();
-            
+
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
@@ -65,6 +67,37 @@ namespace SugarChat.Core.Services.Groups
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
         {
             return _userDataProvider.GetByIdAsync(id, cancellation);
+        }
+
+        public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request, CancellationToken cancellationToken)
+        {
+            var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
+            group.CheckExist(request.GroupId);
+
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
+            groupUser.CheckExist(request.UserId, request.GroupId);
+
+            var groupDto = _mapper.Map<GroupDto>(group);
+            groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken);
+
+            return new GetGroupProfileResponse
+            {
+                Result = groupDto
+            };
+        }
+
+        public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken)
+        {           
+            var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken);
+            group.CheckExist(command.Id);
+
+            group = _mapper.Map<Group>(command);
+            await _groupDataProvider.UpdateAsync(group,cancellationToken);
+
+            return new GroupProfileUpdatedEvent
+            {
+                
+            };
         }
     }
 }

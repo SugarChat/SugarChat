@@ -40,7 +40,7 @@ namespace SugarChat.Core.Services.Conversations
 
             if (string.IsNullOrEmpty(nextReqMessageId))
             {
-                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.IsDel == false)
+                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId)
                     .OrderByDescending(x => x.SentTime)
                     .Take(count)
                     .ToList();
@@ -48,7 +48,7 @@ namespace SugarChat.Core.Services.Conversations
             else
             {
                 var nextReqMessage = await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId);
-                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.IsDel == false && x.CreatedDate < nextReqMessage.CreatedDate)
+                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.CreatedDate < nextReqMessage.CreatedDate)
                      .OrderByDescending(x => x.SentTime)
                      .Take(count)
                      .ToList();

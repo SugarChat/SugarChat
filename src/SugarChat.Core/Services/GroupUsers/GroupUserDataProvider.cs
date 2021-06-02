@@ -36,7 +36,7 @@ namespace SugarChat.Core.Services.GroupUsers
             await _repository.UpdateAsync(groupUser, cancellation);
         }
 
-        public async Task<IEnumerable<GroupUserDto>> GetGroupMembersByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id, CancellationToken cancellationToken)
         {
             return await Task.Run<IEnumerable<GroupUserDto>>(() =>
               {
@@ -57,6 +57,11 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
             await _repository.RemoveAsync(groupUser, cancellation);
+        }
+
+        public async Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken)
+        {
+            return await _repository.CountAsync<GroupUser>(x => x.GroupId == groupId, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -10,10 +10,8 @@ namespace SugarChat.Core.Mappings
         public GroupMapping()
         {
             CreateMap<AddGroupCommand, Group>();
-
+            CreateMap<UpdateGroupProfileCommand,Group>();
             CreateMap<Group, GroupDto>();
-
-            CreateMap<GroupDto, Group>();
         }
     }
 }

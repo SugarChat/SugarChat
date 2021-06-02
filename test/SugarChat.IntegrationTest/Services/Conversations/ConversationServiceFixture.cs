@@ -60,7 +60,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     UserId = userId
                 };
                 var response = await mediator.RequestAsync<GetConversationProfileRequest, GetConversationProfileResponse>(request);
-                response.Result.Name.ShouldBe("TestGroup3");
+                response.Result.GroupProfile.Name.ShouldBe("TestGroup3");
             });
         }
 
@@ -81,7 +81,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 response.Result.First().Content.ShouldBe("[图片]");
             });
         }
-
 
         [Fact]
         public async Task ShouldDeleteConversation()

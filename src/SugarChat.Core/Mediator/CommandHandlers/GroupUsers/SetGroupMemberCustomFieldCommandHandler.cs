@@ -2,7 +2,6 @@
 using Mediator.Net.Contracts;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Commands.GroupUsers;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,9 +14,10 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
         {
             _groupUserService = groupUserService;
         }
-        public Task Handle(IReceiveContext<SetGroupMemberCustomFieldCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<SetGroupMemberCustomFieldCommand> context, CancellationToken cancellationToken)
         {
-            return _groupUserService.SetGroupMemberCustomFieldAsync(context.Message, cancellationToken);
+            var groupMemberCustomFieldBeSetEvent = await _groupUserService.SetGroupMemberCustomFieldAsync(context.Message, cancellationToken);
+            await context.PublishAsync(groupMemberCustomFieldBeSetEvent, cancellationToken);
         }
     }
 }

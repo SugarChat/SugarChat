@@ -15,9 +15,10 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Users
             _userService = userService;
         }
 
-        public Task Handle(IReceiveContext<UpdateUserCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<UpdateUserCommand> context, CancellationToken cancellationToken)
         {
-            return _userService.UpdateUserAsync(context.Message, cancellationToken);
+            var userUpdatedEvent = await _userService.UpdateUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(userUpdatedEvent, cancellationToken).ConfigureAwait(false);
 
         }
     }

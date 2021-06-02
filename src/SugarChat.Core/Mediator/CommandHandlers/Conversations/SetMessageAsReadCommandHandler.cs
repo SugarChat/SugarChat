@@ -15,10 +15,10 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
             _conversationService = conversationService;
         }
 
-        public Task Handle(IReceiveContext<SetMessageAsReadCommand> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<SetMessageAsReadCommand> context, CancellationToken cancellationToken)
         {
-            return _conversationService.SetMessageAsReadByConversationIdAsync(context.Message, cancellationToken);
-
+            var messageReadedEvent = await _conversationService.SetMessageAsReadByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(messageReadedEvent, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -9,5 +9,6 @@ namespace SugarChat.Shared.Dtos
         public string AvatarUrl { get; set; }
         public string Description { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
+        public int MemberCount { get; set; }
     }
 }

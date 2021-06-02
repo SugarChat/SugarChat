@@ -60,7 +60,7 @@ namespace SugarChat.Core.Services.Users
             };
         }
 
-        public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,
+        public async Task<RemoveUserEvent> RemoveUserAsync(RemoveUserCommand command,
             CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
@@ -78,16 +78,18 @@ namespace SugarChat.Core.Services.Users
         public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,
             CancellationToken cancellation = default)
         {
+            User user = await _userDataProvider.GetByIdAsync(request.Id, cancellation);
+            user.CheckExist(request.Id);
             return new()
             {
                 User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellation))
             };
         }
 
-        public Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
+        public Task<GetCurrentUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
             CancellationToken cancellation = default)
         {
-            return Task.FromResult(new GetUserResponse {User = new UserDto()});
+            return Task.FromResult(new GetCurrentUserResponse {User = new UserDto()});
         }
 
 

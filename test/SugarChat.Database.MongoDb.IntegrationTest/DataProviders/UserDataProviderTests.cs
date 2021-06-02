@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Users;
 using Xunit;
 
@@ -85,11 +86,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             user.DisplayName.ShouldBe("Tweety");
         }
         
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Throw_Exception_On_Update_None_Exist_User()
         {
             User tweety = new() {Id = "0", DisplayName = "Tweety"};
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _userDataProvider.UpdateAsync(tweety));
         }
         
@@ -102,10 +103,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
         
         
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
         {
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _userDataProvider.RemoveAsync(new() {Id = "0"}));
         }
         

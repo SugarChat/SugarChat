@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Shared.Paging;
 using Xunit;
@@ -93,11 +94,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             group.Description.ShouldBe("TomAndJerryGroup");
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Throw_Exception_On_Update_None_Exist_Group()
         {
             Group tomAndJerryAndSpikeGroup = new() {Id = "0", Description = "tomAndJerryAndSpikeGroup"};
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _groupDataProvider.UpdateAsync(tomAndJerryAndSpikeGroup));
         }
 
@@ -110,10 +111,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
 
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Throw_Exception_On_Removing_None_Exist_Group()
         {
-            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _groupDataProvider.RemoveAsync(new() {Id = "0"}));
         }
     }

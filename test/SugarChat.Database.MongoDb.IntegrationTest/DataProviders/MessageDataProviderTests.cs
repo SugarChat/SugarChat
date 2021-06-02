@@ -6,6 +6,7 @@ using Autofac;
 using SugarChat.Core.Services.Messages;
 using Xunit;
 using Shouldly;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.GroupUsers;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
@@ -75,7 +76,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             message.ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Not_Update_None_Exist_Message()
         {
             Core.Domain.Message fakeMessage = new()
@@ -83,7 +84,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
                 Id = "0",
                 Content = "It's not exist"
             };
-            await Assert.ThrowsAnyAsync<Exception>(async () => await _messageDataProvider.UpdateAsync(fakeMessage));
+            await Assert.ThrowsAnyAsync<BusinessException>(async () => await _messageDataProvider.UpdateAsync(fakeMessage));
         }
 
         [Fact]
@@ -95,14 +96,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             message.ShouldBeNull();
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Not_Remove_None_Exist_Message()
         {
             Core.Domain.Message message = new()
             {
                 Id = "0"
             };
-            await Assert.ThrowsAnyAsync<Exception>(async () => await _messageDataProvider.RemoveAsync(message));
+            await Assert.ThrowsAnyAsync<BusinessException>(async () => await _messageDataProvider.RemoveAsync(message));
         }
 
         [Fact]

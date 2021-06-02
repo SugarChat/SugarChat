@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
     public class GroupUserDataProvider : IGroupUserDataProvider
     {
+        private const string UpdateGroupUserFailed = "GroupUser with Id {0} Update Failed.";
+        private const string AddGroupUserFailed = "GroupUser with Id {0} Add Failed.";
+        private const string RemoveGroupUserFailed = "GroupUser with Id {0} Remove Failed.";
+
         private readonly IRepository _repository;
 
         public GroupUserDataProvider(IRepository repository)
@@ -18,7 +23,11 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task AddAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
-            await _repository.AddAsync(groupUser, cancellation);
+            int affectedLineNum = await _repository.AddAsync(groupUser, cancellation);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(AddGroupUserFailed, groupUser.Id));
+            }
         }
 
         public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id,
@@ -53,13 +62,23 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new ArgumentException();
             }
+
             groupUser.LastReadTime = messageSentTime;
-            await _repository.UpdateAsync(groupUser, cancellationToken);
+
+            int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(UpdateGroupUserFailed, groupUser.Id));
+            }
         }
 
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
-            await _repository.RemoveAsync(groupUser, cancellation);
+            int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellation);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(RemoveGroupUserFailed, groupUser.Id));
+            }
         }
     }
 }

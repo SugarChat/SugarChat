@@ -18,7 +18,7 @@ namespace SugarChat.Core.Services
         private const string MessageNoExists = "Message with Id {0} Dose not exist.";
 
         private const string LastReadTimeLaterThanOrEqualTo =
-            "User with Id {0} From Group with Id {1}'s Last Read Timed is later than or equal to {3}";
+            "User with Id {0} From Group with Id {1}'s Last Read Timed is later than or equal to {2}";
 
         public static void CheckNotExist(this User user)
         {

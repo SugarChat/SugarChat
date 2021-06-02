@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Shared.Paging;
@@ -111,7 +112,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             friend.ShouldBeEquivalentTo(tomAndJerryFriend);
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Not_Update_None_Exist_Friend()
         {
             Friend tomAndTykeFriend = new Friend
@@ -121,7 +122,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
                 FriendId = Tyke.Id,
                 BecomeFriendAt = BaseTime
             };
-            await Assert.ThrowsAnyAsync<Exception>(async () => await _friendDataProvider.UpdateAsync(tomAndTykeFriend));
+            await Assert.ThrowsAnyAsync<BusinessException>(async () => await _friendDataProvider.UpdateAsync(tomAndTykeFriend));
         }
 
         [Fact]
@@ -137,14 +138,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             friend.ShouldBeNull();
         }
 
-        [Fact(Skip = "The IRepo is fixing the bug")]
+        [Fact]
         public async Task Should_Not_Remove_None_Exist_Friend()
         {
             Friend tomAndTykeFriend = new Friend
             {
                 Id = "0"
             };
-            await Assert.ThrowsAnyAsync<Exception>(async () => await _friendDataProvider.RemoveAsync(tomAndTykeFriend));
+            await Assert.ThrowsAnyAsync<BusinessException>(async () => await _friendDataProvider.RemoveAsync(tomAndTykeFriend));
         }
     }
 }

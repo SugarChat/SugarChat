@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Shared.Paging;
 
@@ -10,6 +11,10 @@ namespace SugarChat.Core.Services.Friends
 {
     public class FriendDataProvider : IFriendDataProvider
     {
+        private const string UpdateFriendFailed = "Friend with Id {0} Update Failed.";
+        private const string AddFriendFailed = "Friend with Id {0} Add Failed.";
+        private const string RemoveFriendFailed = "Friend with Id {0} Remove Failed.";
+
         private readonly IRepository _repository;
 
         public FriendDataProvider(IRepository repository)
@@ -55,17 +60,29 @@ namespace SugarChat.Core.Services.Friends
 
         public async Task AddAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(AddFriendFailed, friend.Id));
+            }
         }
 
         public async Task UpdateAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(UpdateFriendFailed, friend.Id));
+            }
         }
 
         public async Task RemoveAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(string.Format(RemoveFriendFailed, friend.Id));
+            }
         }
 
         public async Task<bool> AreFriendsAsync(string userId, string friendId,

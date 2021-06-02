@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -10,6 +10,8 @@ namespace SugarChat.Core.Services.Friends
     public interface IFriendService : IService
     {
         Task<AddFriendEvent> AddFriendAsync(AddFriendCommand command, CancellationToken cancellation = default);
-        Task<RemoveFriendEvent> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellation = default);
+
+        Task<RemoveFriendEvent> RemoveFriendAsync(RemoveFriendCommand command,
+            CancellationToken cancellation = default);
     }
 }

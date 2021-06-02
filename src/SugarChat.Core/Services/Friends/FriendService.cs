@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Users;
@@ -18,13 +17,11 @@ namespace SugarChat.Core.Services.Friends
 {
     public class FriendService : IFriendService
     {
-        private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
 
-        public FriendService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
+        public FriendService(IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
         {
-            _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
         }

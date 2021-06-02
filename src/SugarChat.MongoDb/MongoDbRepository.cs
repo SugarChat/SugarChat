@@ -54,7 +54,7 @@ namespace SugarChat.Data.MongoDb
             var query = FilteredQuery(predicate);
             var result = await query.Paging(pageSettings).ToListAsync(cancellationToken).ConfigureAwait(false);
             var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
-            return new PagedResult<T> {Result = result, Total = total};
+            return new PagedResult<T> { Result = result, Total = total };
         }
 
         public Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query,
@@ -99,16 +99,18 @@ namespace SugarChat.Data.MongoDb
                 .AsQueryable();
         }
 
-        public async Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entity != null)
             {
                 entity.CreatedDate = DateTimeOffset.Now;
                 await GetCollection<T>().InsertOneAsync(entity, null, cancellationToken).ConfigureAwait(false);
+                return 1;
             }
+            return default;
         }
 
-        public async Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
@@ -117,38 +119,55 @@ namespace SugarChat.Data.MongoDb
                     entity.CreatedDate = DateTimeOffset.Now;
                 }
                 await GetCollection<T>().InsertManyAsync(entities, null, cancellationToken).ConfigureAwait(false);
+                return entities.Count();
             }
+            return default;
         }
 
-        public async Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entity != null)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-                await GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken).ConfigureAwait(false);
+                var deleteResult = await GetCollection<T>().DeleteOneAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (deleteResult.IsAcknowledged)
+                {
+                    return (int)deleteResult.DeletedCount;
+                }
             }
+            return default;
         }
 
-        public async Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
-                await GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken).ConfigureAwait(false);
+                var deleteCount = await GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken).ConfigureAwait(false);
+                if (deleteCount.IsAcknowledged)
+                {
+                    return (int)deleteCount.DeletedCount;
+                }
             }
+            return default;
         }
 
-        public async Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entity != null)
             {
                 var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                 entity.LastModifyDate = DateTimeOffset.Now;
-                await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var replaceResult = await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (replaceResult.IsAcknowledged)
+                {
+                    return (int)replaceResult.ModifiedCount;
+                }
             }
+            return default;
         }
 
-        public async Task UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
+        public async Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)
             {
@@ -159,8 +178,13 @@ namespace SugarChat.Data.MongoDb
                     var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                     updates.Add(new ReplaceOneModel<T>(filter, entity));
                 }
-                await GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var writeResult = await GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken).ConfigureAwait(false);
+                if (writeResult.IsAcknowledged)
+                {
+                    return (int)writeResult.ModifiedCount;
+                }
             }
+            return default;
         }
     }
 }

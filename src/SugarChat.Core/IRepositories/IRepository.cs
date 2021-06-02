@@ -21,11 +21,11 @@ namespace SugarChat.Core.IRepositories
         Task<T> FirstOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<bool> AnyAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         IQueryable<T> Query<T>() where T : class, IEntity;
-        Task AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
     }
 }

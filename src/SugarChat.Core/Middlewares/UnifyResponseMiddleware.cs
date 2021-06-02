@@ -53,7 +53,7 @@ namespace SugarChat.Core.Middlewares
                 context.Result = unifiedTypeInstance;
             }
 
-            if (!(context.Result is SugarChatResponse response))
+            if (!(context.Result is ISugarChatResponse response))
                 return Task.CompletedTask;
 
             response.Code = businessException.Code;

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.UnitTest.Command
 {
-    public class TestRequestResponse : SugarChatResponse, ISugarChatResponse
+    public class TestRequestResponse : SugarChatResponse<object>, ISugarChatResponse
     {
     }
 }

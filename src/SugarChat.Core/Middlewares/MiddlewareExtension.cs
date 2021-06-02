@@ -13,10 +13,10 @@ namespace SugarChat.Core.Middlewares
 {
     public static class MiddlewareExtension
     {
-        public static void UnifyResponseMiddleware<TContext>(this IPipeConfigurator<TContext> configurator, Type unifiedType)
+        public static void UnifyResponseMiddleware<TContext>(this IPipeConfigurator<TContext> configurator)
             where TContext : IContext<IMessage>
         {
-            configurator.AddPipeSpecification(new UnifyResponseMiddlewareSpecification<TContext>(unifiedType));
+            configurator.AddPipeSpecification(new UnifyResponseMiddlewareSpecification<TContext>());
         }
     }
 }

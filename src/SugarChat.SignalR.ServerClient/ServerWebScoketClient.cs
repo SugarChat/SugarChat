@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using SugarChat.SignalR.Server.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -42,21 +43,25 @@ namespace SugarChat.SignalR.ServerClient
 
         public async Task SendCustomMessage(SendCustomMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             await HubConnection.SendAsync("SendCustomMessage", model).ConfigureAwait(false);
         }
 
         public async Task SendMassCustomMessage(SendMassCustomMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             await HubConnection.SendAsync("SendMassCustomMessage", model).ConfigureAwait(false);
         }
 
         public async Task SendMassMessage(SendMassMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             await HubConnection.SendAsync("SendMassMessage", model).ConfigureAwait(false);
         }
 
         public async Task SendMessage(SendMessageModel model)
         {
+            model.Messages = model.Messages.Select(o => o.ToString()).ToArray();
             await HubConnection.SendAsync("SendMessage", model).ConfigureAwait(false);
         }
     }

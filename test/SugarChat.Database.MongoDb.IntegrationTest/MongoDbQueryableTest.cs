@@ -79,7 +79,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             group.Id.ShouldBe(_group.Id);
         }
 
-
         public async void Dispose()
         {
             await _repository.RemoveAsync(_group);

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,13 +39,7 @@ namespace SugarChat.Push.SignalR.Hubs
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
             _redis.Set("Connectionkey:" + connectionkey, userinfo);
-            var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
-            if(connectionIds is null)
-            {
-                connectionIds = new List<string>();
-            }
-            connectionIds.Add(Context.ConnectionId);
-            _redis.Set("UserConnectionIds:" + Context.UserIdentifier, connectionIds, TimeSpan.Zero);
+            SetUserConnectionId();
             return base.OnConnectedAsync();
         }
 
@@ -63,10 +58,26 @@ namespace SugarChat.Push.SignalR.Hubs
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Offline");
             _redis.Set("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromMinutes(5));
-            var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
-            connectionIds.Remove(Context.ConnectionId);
-            _redis.Set("UserConnectionIds:" + Context.UserIdentifier, connectionIds);
+            RemoveUserConnectionId();
             return base.OnDisconnectedAsync(exception);
+        }
+
+        private void SetUserConnectionId()
+        {
+            var connectionIds = _redis.Get<List<string>>("UserConnectionIds:" + Context.UserIdentifier);
+            if (connectionIds is null)
+            {
+                connectionIds = new List<string>();
+            }
+            connectionIds.Add(Context.ConnectionId);
+            _redis.SetEntryInHash("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
+        }
+        private void RemoveUserConnectionId()
+        {
+            var connectionIds = JsonSerializer.Deserialize<List<string>>(_redis.GetValueFromHash("UserConnectionIds", Context.UserIdentifier));
+
+            connectionIds.Remove(Context.ConnectionId);
+            _redis.SetEntryInHash("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
         }
     }
 

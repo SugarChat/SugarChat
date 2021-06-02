@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace SugarChat.Push.SignalR.Mediator.Goup
         public async Task Handle(IReceiveContext<GroupCommand> context, CancellationToken cancellationToken)
         {
             var message = context.Message;
-            var userConnectionIds = _redis.Get<List<string>>("UserConnectionIds:" + message.UserIdentifier);
+            var userConnectionIds = JsonSerializer.Deserialize<List<string>>(_redis.GetValueFromHash("UserConnectionIds", message.UserIdentifier));
             switch (message.Action)
             {
                 case Enums.GroupAction.Add:

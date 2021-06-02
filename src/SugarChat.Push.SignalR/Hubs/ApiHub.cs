@@ -1,9 +1,11 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using SugarChat.Push.SignalR.Mediator.Goup;
 using SugarChat.Push.SignalR.Mediator.SendMessage;
 using SugarChat.Push.SignalR.Models;
 using SugarChat.Push.SignalR.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace SugarChat.Push.SignalR.Hubs
@@ -12,11 +14,13 @@ namespace SugarChat.Push.SignalR.Hubs
     {
         private readonly IMediator _mediator;
         private readonly IConnectService _connectService;
+        private static string ServerKey;
 
-        public ApiHub(IMediator mediator, IConnectService connectService)
+        public ApiHub(IMediator mediator, IConnectService connectService, IConfiguration configuration)
         {
             _mediator = mediator;
             _connectService = connectService;
+            ServerKey = configuration.GetSection("ServerClientKey").Value;
         }
 
         public async Task<string> GetConnectionUrl(string userIdentifier)
@@ -79,6 +83,19 @@ namespace SugarChat.Push.SignalR.Hubs
             var command = new SendMessageCommand { Method = model.Method, SendTos = model.SendTos, Messages = model.Messages, SendWay = model.SendWay };
 
             await _mediator.SendAsync(command);
+        }
+        public override Task OnConnectedAsync()
+        {
+            var securityKey = Context.GetHttpContext().Request.Query["security"].ToString();
+            if (string.IsNullOrWhiteSpace(securityKey)|| securityKey!= ServerKey)
+            {
+                throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
+            }
+            return base.OnConnectedAsync();
+        }
+        public override Task OnDisconnectedAsync(System.Exception exception)
+        {
+            return base.OnDisconnectedAsync(exception);
         }
     }
 }

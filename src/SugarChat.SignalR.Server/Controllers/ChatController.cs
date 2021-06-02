@@ -1,6 +1,7 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using SugarChat.Push.SignalR.Mediator.Goup;
 using SugarChat.Push.SignalR.Mediator.SendMessage;
 using SugarChat.Push.SignalR.Models;
@@ -16,17 +17,25 @@ namespace SugarChat.SignalR.Server.Controllers
     [ApiController]
     public class ChatController : ControllerBase
     {
+        private IHttpContextAccessor _httpContextAccessor;
         private readonly IMediator _mediator;
         private readonly IConnectService _connectService;
+        private static string ServerKey;
 
-        public ChatController(IConnectService connectService, IMediator mediator)
+        public ChatController(IConnectService connectService, IMediator mediator, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
             _connectService = connectService;
             _mediator = mediator;
+            _httpContextAccessor = httpContextAccessor;
+            ServerKey = configuration.GetSection("ServerClientKey").Value;
         }
         [HttpGet("ConnectionUrl")]
         public async Task<IActionResult> GetConnectionUrl(string userIdentifier)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             var url = await _connectService.GetConnectionUrl(userIdentifier);
             return Ok(url);
         }
@@ -34,6 +43,10 @@ namespace SugarChat.SignalR.Server.Controllers
         [HttpPost("Group")]
         public async Task<IActionResult> Group(GroupActionModel model)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             await _mediator.SendAsync(new GroupCommand { Action = model.Action, GroupName = model.GroupName, UserIdentifier = model.UserIdentifier });
             return Ok();
         }
@@ -41,6 +54,10 @@ namespace SugarChat.SignalR.Server.Controllers
         [HttpPost("Message")]
         public async Task<IActionResult> SendMessage(SendMessageModel model)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             var command = new SendMessageCommand { SendTo = model.SendTo, Messages = model.Messages, SendWay = model.SendWay };
             switch (model.SendWay)
             {
@@ -63,6 +80,10 @@ namespace SugarChat.SignalR.Server.Controllers
         [HttpPost("MassMessage")]
         public async Task<IActionResult> SendMassMessage(SendMassMessageModel model)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             var command = new SendMessageCommand { SendTos = model.SendTos, Messages = model.Messages, SendWay = model.SendWay };
             switch (model.SendWay)
             {
@@ -82,6 +103,10 @@ namespace SugarChat.SignalR.Server.Controllers
         [HttpPost("CustomMessage")]
         public async Task<IActionResult> SendCustomMessage(SendCustomMessageModel model)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             var command = new SendMessageCommand { Method = model.Method, SendTo = model.SendTo, Messages = model.Messages, SendWay = model.SendWay };
            
             await _mediator.SendAsync(command);
@@ -91,10 +116,23 @@ namespace SugarChat.SignalR.Server.Controllers
         [HttpPost("MassCustomMessage")]
         public async Task<IActionResult> SendMassCustomMessage(SendMassCustomMessageModel model)
         {
+            if (!Check())
+            {
+                return Unauthorized();
+            }
             var command = new SendMessageCommand { Method = model.Method, SendTos = model.SendTos, Messages = model.Messages, SendWay = model.SendWay };
             
             await _mediator.SendAsync(command);
             return Ok();
+        }
+        private bool Check()
+        {
+            var securityKey = _httpContextAccessor.HttpContext.Request.Query["security"].ToString();
+            if (string.IsNullOrWhiteSpace(securityKey) || securityKey != ServerKey)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

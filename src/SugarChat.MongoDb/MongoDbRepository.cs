@@ -55,7 +55,7 @@ namespace SugarChat.Data.MongoDb
             var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
             return new PagedResult<T> { Result = result, Total = total };
         }
-        
+
         public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,
             CancellationToken cancellationToken = default) where T : class, IEntity
         {
@@ -120,7 +120,7 @@ namespace SugarChat.Data.MongoDb
             if (entity != null)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-                var deleteResult = await GetCollection<T>().DeleteOneAsync(filter, null, cancellationToken).ConfigureAwait(false);
+                var deleteResult = await GetCollection<T>().DeleteOneAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (deleteResult.IsAcknowledged)
                 {
                     return (int)deleteResult.DeletedCount;

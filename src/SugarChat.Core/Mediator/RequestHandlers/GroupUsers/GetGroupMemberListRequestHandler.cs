@@ -1,14 +1,16 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
+using SugarChat.Shared.Dtos.GroupUsers;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.GroupUsers
 {
-    public class GetGroupMemberListRequestHandler : IRequestHandler<GetMembersOfGroupRequest, GetMembersOfGroupResponse>
+    public class GetGroupMemberListRequestHandler : IRequestHandler<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>
     {
         private readonly IGroupUserService _groupUserService;
         public GetGroupMemberListRequestHandler(IGroupUserService groupUserService)
@@ -16,9 +18,10 @@ namespace SugarChat.Core.Mediator.RequestHandlers.GroupUsers
             _groupUserService = groupUserService;
         }
 
-        public async Task<GetMembersOfGroupResponse> Handle(IReceiveContext<GetMembersOfGroupRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<IEnumerable<GroupUserDto>>> Handle(IReceiveContext<GetMembersOfGroupRequest> context, CancellationToken cancellationToken)
         {
-            return await _groupUserService.GetGroupMembersByIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            var response = await _groupUserService.GetGroupMembersByIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            return new SugarChatResponse<IEnumerable<GroupUserDto>>() { Code = 0, Message = "Success", Data = response.Result };
         }
     }
 }

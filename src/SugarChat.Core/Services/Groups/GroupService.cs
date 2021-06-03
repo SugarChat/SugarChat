@@ -94,10 +94,7 @@ namespace SugarChat.Core.Services.Groups
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.UpdateAsync(group,cancellationToken);
 
-            return new GroupProfileUpdatedEvent
-            {
-                
-            };
+            return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }
     }
 }

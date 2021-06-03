@@ -1,8 +1,11 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos.Conversations;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SugarChat.WebApi.Controllers
@@ -23,7 +26,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetMessageListRequest, GetMessageListResponse>(request);
+                     .RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
 
             return Ok(response);
         }
@@ -33,7 +36,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationListRequest, GetConversationListResponse>(request);
+                      .RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
 
             return Ok(response);
         }
@@ -43,7 +46,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationProfileRequest, GetConversationProfileResponse>(request);
+                      .RequestAsync<GetConversationProfileRequest, SugarChatResponse<ConversationDto>>(request);
 
             return Ok(response);
         }

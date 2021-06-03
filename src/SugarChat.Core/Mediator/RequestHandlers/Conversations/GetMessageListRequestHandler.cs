@@ -1,5 +1,6 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
 {
-    public class GetMessageListRequestHandler : IRequestHandler<GetMessageListRequest, GetMessageListResponse>
+    public class GetMessageListRequestHandler : IRequestHandler<GetMessageListRequest, SugarChatResponse<MessageListResult>>
     {
         private readonly IConversationService _conversationService;
 
@@ -16,9 +17,10 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
         {
             _conversationService = conversationService;
         }
-        public async Task<GetMessageListResponse> Handle(IReceiveContext<GetMessageListRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<MessageListResult>> Handle(IReceiveContext<GetMessageListRequest> context, CancellationToken cancellationToken)
         {
-            return await _conversationService.GetPagingMessagesByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            var response = await _conversationService.GetPagingMessagesByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            return new SugarChatResponse<MessageListResult>() { Code = 0, Message = "Success", Data = response.Result };
         }
     }
 }

@@ -3,7 +3,6 @@ using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Conversations;
-using SugarChat.Message.Event;
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
@@ -88,21 +87,18 @@ namespace SugarChat.Core.Services.Conversations
         }
 
         public async Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken)
-        {            
+        {
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.ConversationId);
 
             groupUser.LastReadTime = DateTimeOffset.Now;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
 
-            return new MessageReadedEvent
-            {
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<MessageReadedEvent>(command);
         }
 
         public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken)
-        {           
+        {
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId, cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
@@ -110,8 +106,11 @@ namespace SugarChat.Core.Services.Conversations
 
             return new GetMessageListResponse
             {
-                Result = _mapper.Map<IEnumerable<MessageDto>>(messages),
-                NextReqMessageID = nextReqMessageId
+                Result = new MessageListResult
+                {
+                    Messages = _mapper.Map<IEnumerable<MessageDto>>(messages),
+                    NextReqMessageID = nextReqMessageId
+                }
             };
         }
 
@@ -122,10 +121,7 @@ namespace SugarChat.Core.Services.Conversations
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
-            return new ConversationDeletedEvent
-            {
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<ConversationDeletedEvent>(command);
         }
 
 

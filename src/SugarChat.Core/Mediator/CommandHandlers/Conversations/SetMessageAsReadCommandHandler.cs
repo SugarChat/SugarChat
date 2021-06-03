@@ -1,5 +1,6 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Conversations;
 using SugarChat.Message.Commands.Conversations;
 using System.Threading;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
 {
-    public class SetMessageAsReadCommandHandler : ICommandHandler<SetMessageAsReadCommand>
+    public class SetMessageAsReadCommandHandler : ICommandHandler<SetMessageAsReadCommand, SugarChatResponse<object>>
     {
         public IConversationService _conversationService;
         public SetMessageAsReadCommandHandler(IConversationService conversationService)
@@ -15,10 +16,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
             _conversationService = conversationService;
         }
 
-        public async Task Handle(IReceiveContext<SetMessageAsReadCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<SetMessageAsReadCommand> context, CancellationToken cancellationToken)
         {
             var messageReadedEvent = await _conversationService.SetMessageAsReadByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageReadedEvent, cancellationToken).ConfigureAwait(false);
+            return new SugarChatResponse<object>();
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using SugarChat.Message.Commands.Conversations;
+using SugarChat.Message.Events.Conversations;
 using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
@@ -7,8 +9,8 @@ namespace SugarChat.Core.Mappings
     {
         public MessageMapping()
         {
-            CreateMap<Domain.Message, MessageDto>();           
-        }
-        
+            CreateMap<Domain.Message, MessageDto>();   
+            CreateMap<SetMessageAsReadCommand, MessageReadedEvent>();
+        }        
     }
 }

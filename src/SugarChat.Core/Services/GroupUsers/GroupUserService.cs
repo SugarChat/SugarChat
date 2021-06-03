@@ -1,4 +1,5 @@
-﻿using SugarChat.Core.Exceptions;
+﻿using AutoMapper;
+using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
@@ -12,10 +13,12 @@ namespace SugarChat.Core.Services.GroupUsers
     {
 
         private readonly IGroupUserDataProvider _groupUserDataProvider;
-
-        public GroupUserService(IGroupUserDataProvider groupUserDataProvider)
+        private readonly IMapper _mapper;
+        public GroupUserService(IGroupUserDataProvider groupUserDataProvider,
+            IMapper mapper)
         {
             _groupUserDataProvider = groupUserDataProvider;
+            _mapper = mapper;
         }
 
         public async Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request, CancellationToken cancellationToken)
@@ -40,8 +43,7 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 groupUser.CustomProperties = command.CustomProperties;
                 await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-                return new GroupMemberCustomFieldBeSetEvent
-                { };
+                return _mapper.Map<GroupMemberCustomFieldBeSetEvent>(command);
             }
             else
             {

@@ -6,7 +6,16 @@ namespace SugarChat.Message.Responses.Conversations
 {
     public class GetMessageListResponse : IResponse
     {
-        public IEnumerable<MessageDto> Result { get; set; }
+        public MessageListResult Result { get; set; }
+    }
+
+    public class MessageListResult
+    {
+        public IEnumerable<MessageDto> Messages { get; set; }
         public string NextReqMessageID { get; set; }
     }
+
+
+
+
 }

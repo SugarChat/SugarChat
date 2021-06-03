@@ -1,10 +1,11 @@
 ﻿using Mediator.Net;
 using Shouldly;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
+using SugarChat.Shared.Dtos;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace SugarChat.IntegrationTest.Services.Users
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                var reponse = await mediator.RequestAsync<GetUserRequest, GetUserResponse>(new GetUserRequest { Id = userId });
-                reponse.User.DisplayName.ShouldBe("TestUser10");
+                var reponse = await mediator.RequestAsync<GetUserRequest, SugarChatResponse<UserDto>>(new GetUserRequest { Id = userId });
+                reponse.Data.DisplayName.ShouldBe("TestUser10");
             });
         }      
 

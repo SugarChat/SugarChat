@@ -1,10 +1,13 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
+using SugarChat.Shared.Dtos;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SugarChat.WebApi.Controllers
@@ -25,7 +28,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetGroupsOfUserRequest, GetGroupsOfUserResponse>(request);
+                      .RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
 
             return Ok(response);
         }
@@ -35,7 +38,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetGroupProfileRequest, GetGroupProfileResponse>(request);
+                      .RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(request);
 
             return Ok(response);
         }

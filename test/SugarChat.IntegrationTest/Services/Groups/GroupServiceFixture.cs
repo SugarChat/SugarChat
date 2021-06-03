@@ -1,10 +1,13 @@
 ﻿using Mediator.Net;
 using Shouldly;
+using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
+using SugarChat.Shared.Dtos;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +22,8 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, GetGroupsOfUserResponse>(new GetGroupsOfUserRequest { Id = userId });
-                reponse.Groups.Count().ShouldBe(4);
+                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId });
+                reponse.Data.Count().ShouldBe(4);
             });
         }
 
@@ -29,9 +32,9 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, GetGroupProfileResponse>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
-                reponse.Result.Name.ShouldBe("TestGroup3");
-                reponse.Result.MemberCount.ShouldBe(2);
+                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
+                reponse.Data.Name.ShouldBe("TestGroup3");
+                reponse.Data.MemberCount.ShouldBe(2);
             });
         }
 
@@ -48,8 +51,8 @@ namespace SugarChat.IntegrationTest.Services.Groups
 
                 }, default(CancellationToken));
 
-                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, GetGroupProfileResponse>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
-                reponse.Result.Name.ShouldBe("内部沟通群");                
+                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
+                reponse.Data.Name.ShouldBe("内部沟通群");                
             });
         }
 

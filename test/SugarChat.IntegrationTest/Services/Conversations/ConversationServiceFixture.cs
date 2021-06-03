@@ -1,11 +1,14 @@
 ﻿using Autofac;
 using Mediator.Net;
 using Shouldly;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos.Conversations;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +23,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetConversationListRequest, GetConversationListResponse>
+                var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
                 (new GetConversationListRequest { UserId = userId });
 
-                reponse.Result.Count().ShouldBe(2);
+                reponse.Data.Count().ShouldBe(2);
             });
         }
 
@@ -43,8 +46,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     UserId = userId
                 };
-                var response = await mediator.RequestAsync<GetConversationListRequest, GetConversationListResponse>(request);
-                response.Result.Where(x => x.ConversationID == conversationId)
+                var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+                response.Data.Where(x => x.ConversationID == conversationId)
                 .FirstOrDefault().UnreadCount.ShouldBe(0);
             });
         }
@@ -59,8 +62,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     ConversationId = conversationId,
                     UserId = userId
                 };
-                var response = await mediator.RequestAsync<GetConversationProfileRequest, GetConversationProfileResponse>(request);
-                response.Result.GroupProfile.Name.ShouldBe("TestGroup3");
+                var response = await mediator.RequestAsync<GetConversationProfileRequest, SugarChatResponse<ConversationDto>>(request);
+                response.Data.GroupProfile.Name.ShouldBe("TestGroup3");
             });
         }
 
@@ -76,9 +79,9 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     NextReqMessageId = "",
                     Count = 5
                 };
-                var response = await mediator.RequestAsync<GetMessageListRequest, GetMessageListResponse>(request);
-                response.Result.Count().ShouldBe(3);
-                response.Result.First().Content.ShouldBe("[图片]");
+                var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
+                response.Data.Messages.Count().ShouldBe(3);
+                response.Data.Messages.First().Content.ShouldBe("[图片]");
             });
         }
 

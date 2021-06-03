@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
 using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
 using System.Linq;
+using SugarChat.Core.Basic;
+using SugarChat.Shared.Dtos.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -41,8 +42,8 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, GetMembersOfGroupResponse>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
-                reponse.Result.Count().ShouldBe(2);
+                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                reponse.Data.Count().ShouldBe(2);
             });
         }
 

@@ -4,10 +4,8 @@ using Mediator.Net.Pipeline;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,10 +14,9 @@ namespace SugarChat.Core.Middlewares
     public class UnifyResponseMiddlewareSpecification<TContext> : IPipeSpecification<TContext>
          where TContext : IContext<IMessage>
     {
-        private readonly Type _unifiedType;
-        public UnifyResponseMiddlewareSpecification(Type unifiedType)
+
+        public UnifyResponseMiddlewareSpecification()
         {
-            _unifiedType = unifiedType;
         }
 
         public Task AfterExecute(TContext context, CancellationToken cancellationToken)
@@ -39,18 +36,23 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
-            if (_unifiedType == null || ex.GetType() != typeof(BusinessException))
+            if (ex is not BusinessException || context.Message is IEvent)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;
             }
-
             var businessException = ex as BusinessException;
-            var unifiedTypeInstance = (ISugarChatResponse)Activator.CreateInstance(_unifiedType);
-            unifiedTypeInstance.Data = context.Result;
-            unifiedTypeInstance.Code = businessException.Code;
-            unifiedTypeInstance.Message = businessException.Message;
-            context.Result = unifiedTypeInstance;
+            if (context.Result is null)
+            {
+                var unifiedTypeInstance = Activator.CreateInstance(context.ResultDataType);
+                context.Result = unifiedTypeInstance;
+            }
+
+            if (context.Result is ISugarChatResponse response)
+            {
+                response.Code = businessException.Code;
+                response.Message = businessException.Message;
+            }
             return Task.CompletedTask;
         }
 

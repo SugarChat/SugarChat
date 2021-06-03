@@ -12,11 +12,10 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUser
 {
-    public class AddGroupMemberHandler : ICommandHandler<AddGroupMemberCommand, SugarChatResponse<object>>
-    {
+	public class AddGroupMemberCommandHandler : ICommandHandler<AddGroupMemberCommand, SugarChatResponse<object>>    {
         private readonly IGroupUserService _service;
 
-        public AddGroupMemberHandler(IGroupUserService service)
+        public AddGroupMemberCommandHandler(IGroupUserService service)
         {
             _service = service;
         }

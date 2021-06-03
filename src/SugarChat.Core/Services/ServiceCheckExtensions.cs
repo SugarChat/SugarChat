@@ -1,5 +1,6 @@
 ﻿using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
+using SugarChat.Message;
 
 namespace SugarChat.Core.Services
 {
@@ -50,7 +51,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(NotFriend, userId, friendId));
             }
         }
-        
+
         public static void CheckNotExist(this Group group)
         {
             if (group is not null)
@@ -67,7 +68,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(AddSelfAsFiend, user.Id));
             }
         }
-        
+
         public static void CheckExist(this Group group, string groupId)
         {
             if (group is null)
@@ -75,7 +76,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(GroupNoExists, groupId));
             }
         }
-        
+
         public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
         {
             if (groupUser is null)
@@ -95,7 +96,7 @@ namespace SugarChat.Core.Services
         public static void CheckIsOwner(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);
-            if (!groupUser.IsMaster)
+            if (groupUser.Role != UserRole.Owner)
             {
                 throw new BusinessWarningException(string.Format(IsNotOwner, userId, groupId));
             }
@@ -104,7 +105,7 @@ namespace SugarChat.Core.Services
         public static void CheckIsNotOwner(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);
-            if (groupUser.IsMaster)
+            if (groupUser.Role == UserRole.Owner)
             {
                 throw new BusinessWarningException(string.Format(IsOwner, userId, groupId));
             }
@@ -113,13 +114,13 @@ namespace SugarChat.Core.Services
         public static void CheckIsAdmin(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);
-            if (!groupUser.IsAdmin)
+            if (groupUser.Role != UserRole.Admin && groupUser.Role != UserRole.Owner)
             {
                 throw new BusinessWarningException(string.Format(NotAdmin, userId, groupId));
             }
         }
 
-        public static void CheckExist(this Domain.Message message,string messageId)
+        public static void CheckExist(this Domain.Message message, string messageId)
         {
             if (message is null)
             {

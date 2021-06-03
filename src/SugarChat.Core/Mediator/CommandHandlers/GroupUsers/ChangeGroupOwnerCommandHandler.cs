@@ -13,19 +13,18 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class JoinGroupHandler : ICommandHandler<JoinGroupCommand, SugarChatResponse<object>>
-    {
+    public class ChangeGroupOwnerCommandHandler : ICommandHandler<ChangeGroupOwnerCommand, SugarChatResponse<object>>    {
         private readonly IGroupUserService _service;
 
-        public JoinGroupHandler(IGroupUserService service)
+        public ChangeGroupOwnerCommandHandler(IGroupUserService service)
         {
             _service = service;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<JoinGroupCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<ChangeGroupOwnerCommand> context, CancellationToken cancellationToken)
         {
-            var groupJoinedEvent = await _service.JoinGroup(context.Message, cancellationToken).ConfigureAwait(false); 
-            await context.PublishAsync(groupJoinedEvent, cancellationToken).ConfigureAwait(false);
+            var groupOwnerChangedEvent = await _service.ChangeGroupOwner(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(groupOwnerChangedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse<object>();
         }
     }

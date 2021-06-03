@@ -46,5 +46,26 @@ namespace SugarChat.WebApi.Controllers
             await _mediator.SendAsync(command);
             return Ok();
         }
+
+        [Route("deleteGroupMember"), HttpPost]
+        public async Task<IActionResult> DeleteGroupMember(AddGroupMemberCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
+
+        [Route("setMessageRemindType"), HttpPost]
+        public async Task<IActionResult> SetMessageRemindType(SetMessageRemindTypeCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
+
+        [Route("setGroupMemberRole"), HttpPost]
+        public async Task<IActionResult> SetGroupMemberRole(SetGroupMemberRoleCommand command)
+        {
+            await _mediator.SendAsync(command);
+            return Ok();
+        }
     }
 }

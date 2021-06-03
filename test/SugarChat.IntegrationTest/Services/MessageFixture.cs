@@ -12,6 +12,7 @@ using SugarChat.Message;
 using SugarChat.Message.Commands.Message;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services;
+using SugarChat.Core.Basic;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -58,8 +59,11 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     MessageId = Guid.NewGuid().ToString()
                 };
-                Func<Task> funcTask = () => mediator.SendAsync(command);
-                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.MessageExists, command.MessageId));
+
+                {
+                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.MessageExists, command.MessageId));
+                }
 
                 command.MessageId = message.Id;
                 await mediator.SendAsync(command);

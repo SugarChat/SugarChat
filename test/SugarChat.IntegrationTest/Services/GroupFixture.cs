@@ -1,5 +1,6 @@
 ﻿using Mediator.Net;
 using Shouldly;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
@@ -40,7 +41,7 @@ namespace SugarChat.IntegrationTest.Services
             {
                 groups.Add(new Group
                 {
-                    Id=Guid.NewGuid().ToString()
+                    Id = Guid.NewGuid().ToString()
                 });
             }
             List<GroupUser> groupUsers = new List<GroupUser>();
@@ -50,14 +51,15 @@ namespace SugarChat.IntegrationTest.Services
                 groupUsers.Add(new GroupUser
                 {
                     Id = Guid.NewGuid().ToString(),
-                    GroupId= groupId
+                    GroupId = groupId
                 });
             }
             List<Core.Domain.Message> messages = new List<Core.Domain.Message>();
             for (int i = 0; i < 15; i++)
             {
                 var groupId = groups[i % 5].Id;
-                messages.Add(new Core.Domain.Message{
+                messages.Add(new Core.Domain.Message
+                {
                     Id = Guid.NewGuid().ToString(),
                     GroupId = groupId
                 });
@@ -72,8 +74,11 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = Guid.NewGuid().ToString()
                 };
-                Func<Task> funcTask = () => mediator.SendAsync(command);
-                funcTask.ShouldThrow(typeof(BusinessWarningException)).Message.ShouldBe(string.Format(ServiceCheckExtensions.GroupNoExists, command.GroupId));
+
+                {
+                    var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse<object>>(command);
+                    response.Message.ShouldBe(string.Format(string.Format(ServiceCheckExtensions.GroupNoExists, command.GroupId)));
+                }
 
                 command.GroupId = groups[0].Id;
                 await mediator.SendAsync(command);

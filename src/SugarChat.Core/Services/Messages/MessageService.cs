@@ -153,7 +153,8 @@ namespace SugarChat.Core.Services.Messages
         {
             var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
             message.CheckExist(command.MessageId);
-            await _messageDataProvider.RemoveAsync(message, cancellationToken);
+            message.IsRevoked = true;
+            await _messageDataProvider.UpdateAsync(message, cancellationToken);
 
             return new MessageRevokedEvent { };
         }

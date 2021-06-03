@@ -91,7 +91,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 command.UserId = userId;
                 await mediator.SendAsync(command);
-                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId)).ShouldBe(true);
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId)).ShouldBeTrue();
 
                 {
                     var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse<object>>(command);

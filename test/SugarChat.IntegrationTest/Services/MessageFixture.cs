@@ -29,14 +29,20 @@ namespace SugarChat.IntegrationTest.Services
                     Content = "Test",
                     Type = MessageType.Text,
                     SentBy = Guid.NewGuid().ToString(),
-                    AttachmentUrl = "testUrl"
+                    Payload = new
+                    {
+                        uuid = Guid.NewGuid(),
+                        url = "testUrl",
+                        size = 100,
+                        second = 50
+                    }
                 };
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
                     && x.Content == command.Content
                     && x.Type == command.Type
                     && x.SentBy == command.SentBy
-                    && x.AttachmentUrl == command.AttachmentUrl)).ShouldBe(true);
+                    && x.Payload == command.Payload)).ShouldBeTrue();
             });
         }
 
@@ -51,7 +57,7 @@ namespace SugarChat.IntegrationTest.Services
                     Content = "Test",
                     Type = MessageType.Text,
                     SentBy = Guid.NewGuid().ToString(),
-                    AttachmentUrl = "testUrl"
+                    Payload = "testUrl"
                 };
                 await repository.AddAsync(message);
 
@@ -67,7 +73,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 command.MessageId = message.Id;
                 await mediator.SendAsync(command);
-                (await repository.AnyAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).ShouldBeFalse();
+                (await repository.SingleOrDefaultAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).IsRevoked.ShouldBeTrue();
             });
         }
     }

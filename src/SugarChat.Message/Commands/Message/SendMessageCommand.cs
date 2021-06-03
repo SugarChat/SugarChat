@@ -11,6 +11,6 @@ namespace SugarChat.Message.Command
         public string Content { get; set; }
         public MessageType Type { get; set; }
         public string SentBy { get; set; }
-        public string AttachmentUrl { get; set; }
+        public object Payload { get; set; }
     }
 }

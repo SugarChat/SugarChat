@@ -29,7 +29,7 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 await mediator.SendAsync<AddGroupCommand, AddGroupResponse>(command);
 
-                (await repository.AnyAsync<Group>(x => x.Id == command.Id)).ShouldBe(true);
+                (await repository.AnyAsync<Group>(x => x.Id == command.Id)).ShouldBeTrue();
             });
         }
 

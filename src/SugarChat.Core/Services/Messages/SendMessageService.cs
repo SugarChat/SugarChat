@@ -33,7 +33,7 @@ namespace SugarChat.Core.Services
                 Type = command.Type,
                 SentBy = command.SentBy,
                 SentTime = DateTime.Now,
-                AttachmentUrl = command.AttachmentUrl
+                Payload = command.Payload
             }, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageSentEvent>(command);

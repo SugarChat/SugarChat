@@ -1,10 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Autofac;
-using AutoMapper;
 using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
-using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
@@ -12,6 +11,7 @@ using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.Services
@@ -19,12 +19,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
     public class UserServiceTests : ServiceFixture
     {
         private readonly IUserService _userService;
-        private readonly IMapper _mapper;
 
         public UserServiceTests(DatabaseFixture dbFixture) : base(dbFixture)
         {
             _userService = Container.Resolve<IUserService>();
-            _mapper = Container.Resolve<IMapper>();
         }
 
         [Fact]
@@ -111,7 +109,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _userService.RemoveUserAsync(removeUserCommand));
         }
-        
+
         [Fact]
         public async Task Should_Get_User()
         {
@@ -122,9 +120,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetUserResponse getUserResponse =
                 await _userService.GetUserAsync(getUserRequest);
             getUserResponse.User.ShouldNotBeNull();
-            getUserResponse.User.ShouldBeEquivalentTo(_mapper.Map<UserDto>(Tom));
+            getUserResponse.User.Id.ShouldBe(Tom.Id);
+            getUserResponse.User.DisplayName.ShouldBe(Tom.DisplayName);
         }
-        
+
         [Fact]
         public async Task Should_Not_Get_User_Who_Dose_Not_Exists()
         {
@@ -135,7 +134,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _userService.GetUserAsync(getUserRequest));
         }
-        
+
         [Fact]
         public async Task Should_Get_Current_User()
         {
@@ -145,6 +144,36 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetCurrentUserResponse getCurrentUserResponse =
                 await _userService.GetCurrentUserAsync(getCurrentUserRequest);
             getCurrentUserResponse.User.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Get_Friends_Of_User()
+        {
+            GetFriendsOfUserRequest getFriendsOfUserRequest = new()
+            {
+                Id = Tom.Id,
+                PageSettings = new PageSettings {PageNum = 1}
+            };
+            GetFriendsOfUserResponse getCurrentUserResponse =
+                await _userService.GetFriendsOfUserAsync(getFriendsOfUserRequest);
+            getCurrentUserResponse.Friends.Total.ShouldBe(2);
+            getCurrentUserResponse.Friends.Result.Count().ShouldBe(2);
+            UserDto user = getCurrentUserResponse.Friends.Result.SingleOrDefault(o => o.Id == Spike.Id);
+            user.ShouldNotBeNull();
+            user.Id.ShouldBe(Spike.Id);
+            user.DisplayName.ShouldBe(Spike.DisplayName);
+        }
+
+        [Fact]
+        public async Task Should_Not_Get_Friends_When_User_Dose_Not_Exists()
+        {
+            GetFriendsOfUserRequest getFriendsOfUserRequest = new()
+            {
+                Id = "0",
+                PageSettings = new PageSettings {PageNum = 1}
+            };
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
+                await _userService.GetFriendsOfUserAsync(getFriendsOfUserRequest));
         }
     }
 }

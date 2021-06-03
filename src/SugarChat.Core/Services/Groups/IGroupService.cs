@@ -9,9 +9,9 @@ namespace SugarChat.Core.Services.Groups
 {
     public interface IGroupService : IService
     {
-        Task<AddGroupEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation);
+        Task<AddGroupEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation = default);
         Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request, CancellationToken cancellation = default);
-        Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation);
+        Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation = default);
 
     }
 }

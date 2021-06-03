@@ -32,7 +32,8 @@ namespace SugarChat.Core.Services.Groups
             _groupUserDataProvider = groupUserDataProvider;
         }
 
-        public async Task<AddGroupEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation)
+        public async Task<AddGroupEvent> AddGroupAsync(AddGroupCommand command,
+            CancellationToken cancellation = default)
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
             group.CheckNotExist();
@@ -55,20 +56,26 @@ namespace SugarChat.Core.Services.Groups
 
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation);
             PagedResult<Group> groups =
-                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation);
-            PagedResult<GroupDto> groupsDto = _mapper.Map<PagedResult<GroupDto>>(groups);
+                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings,
+                    cancellation);
+            PagedResult<GroupDto> groupsDto = new()
+            {
+                Result = _mapper.Map<IEnumerable<GroupDto>>(groups.Result),
+                Total = groups.Total
+            };
             return new()
             {
                 Groups = groupsDto
             };
         }
 
-        public async Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation)
+        public async Task<RemoveGroupEvent> RemoveGroupAsync(RemoveGroupCommand command,
+            CancellationToken cancellation = default)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
-            group.CheckExist(command.GroupId);
+            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
+            group.CheckExist(command.Id);
             await _groupDataProvider.RemoveAsync(group, cancellation);
-            return new RemoveGroupEvent {Status = EventStatus.Success};
+            return new RemoveGroupEvent {Id = group.Id, Status = EventStatus.Success};
         }
 
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)

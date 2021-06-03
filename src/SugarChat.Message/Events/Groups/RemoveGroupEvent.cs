@@ -2,5 +2,6 @@
 {
     public class RemoveGroupEvent : EventBase
     {
+        public string Id { get; set; }
     }
 }

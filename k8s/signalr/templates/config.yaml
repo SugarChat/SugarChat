@@ -5,13 +5,17 @@ metadata:
 data:
   appsettings.json: |-
     {
-        "Logging" : {
-            "LogLevel": {
-            "Default": "Information",
-            "Microsoft": "Warning",
-            "Microsoft.Hosting.Lifetime": "Information"
-            }
-        },
-        "AllowedHosts": "*",
-        "Redis": "127.0.0.1:6379"
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft": "Warning",
+          "Microsoft.Hosting.Lifetime": "Information"
+        }
+      },
+      "AllowedHosts": "*",
+      "SignalRRedis": "{{ .Values.signalr.signalRRedisConnectionString }}",
+      "Redis": "{{ .Values.signalr.redisConnectionString }}",
+      "SUGARCHAT_SIGNAL_HUB_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}",
+      "ServerClientKey": "{{ .Values.signalr.ServerClientKey }}"
     }
+

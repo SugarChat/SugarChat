@@ -1,9 +1,12 @@
 signalr:
   type: ClusterIP
   domains: 
-    - 'sugarchat'
+    - "localhost"
   image:
-    repository: 'registry.cn-hangzhou.aliyuncs.com/funshow/sugarchat-signalr-server'
-    tag: '1.0'
-    pullPolicy: 'registry.cn-hangzhou.aliyuncs.com'
-  connectionString: '127.0.0.1'
+    repository: "registry.cn-hangzhou.aliyuncs.com/funshow/sugarchat-signalr-server"
+    tag: "1.1.0"
+    pullPolicy: "IfNotPresent"
+  redisConnectionString: "127.0.0.1:6379"
+  signalRRedisConnectionString: "127.0.0.1:6379"
+  SUGARCHAT_SIGNAL_HUB_URL: "http://127.0.0.1"
+  ServerClientKey: "key"

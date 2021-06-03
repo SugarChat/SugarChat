@@ -56,6 +56,8 @@ spec:
             - configMapRef:
                 name: {{ template "signalr.fullname" . }}-config
           env:
+            - name: SUGARCHAT_SIGNAL_HUB_URL
+              value: "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}"
           volumeMounts:
           - mountPath: /app/appsettings.json
             name: appsettings-volume
@@ -113,7 +115,7 @@ spec:
   - host: {{ . }}
     http:
       paths:
-      - path: /hubs/chat
+      - path: /
         backend:
           serviceName: {{ template "signalr.fullname" $ }}-server
           servicePort: 80

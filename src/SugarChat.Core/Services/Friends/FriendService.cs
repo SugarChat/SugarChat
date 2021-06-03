@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
@@ -17,11 +19,13 @@ namespace SugarChat.Core.Services.Friends
 {
     public class FriendService : IFriendService
     {
+        private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
 
-        public FriendService(IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
+        public FriendService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
         {
+            _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
         }
@@ -41,14 +45,7 @@ namespace SugarChat.Core.Services.Friends
                 await _friendDataProvider.GetByBothIdsAsync(command.UserId, command.FriendId, cancellation);
             existFriend.CheckNotExist(command.UserId, command.FriendId);
 
-            Friend makeFriend = new Friend
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = command.UserId,
-                FriendId = command.FriendId,
-                BecomeFriendAt = DateTimeOffset.UtcNow
-            };
-
+            Friend makeFriend = _mapper.Map<Friend>(command);
             await _friendDataProvider.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
 
             return new()

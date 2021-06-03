@@ -2,5 +2,6 @@
 {
     public class RemoveUserFromGroupEvent : EventBase
     {
+        public string Id { get; set; }
     }
 }

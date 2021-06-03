@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;

@@ -16,14 +16,16 @@ namespace SugarChat.Core.Services.GroupUsers
 {
     public class GroupUserService : IGroupUserService
     {
+        private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
 
-        public GroupUserService(IGroupDataProvider groupDataProvider,
+        public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider)
         {
+            _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
@@ -40,9 +42,12 @@ namespace SugarChat.Core.Services.GroupUsers
             GroupUser groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
             groupUser.CheckNotExist();
+
+            groupUser = _mapper.Map<GroupUser>(command);
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             return new AddUserToGroupEvent
             {
+                Id = groupUser.Id,
                 Status = EventStatus.Success
             };
         }
@@ -60,6 +65,7 @@ namespace SugarChat.Core.Services.GroupUsers
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
             return new RemoveUserFromGroupEvent
             {
+                Id = groupUser.Id,
                 Status = EventStatus.Success
             };
         }

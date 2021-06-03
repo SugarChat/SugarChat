@@ -2,5 +2,6 @@
 {
     public class AddUserToGroupEvent : EventBase
     {
+        public string Id { get; set; }
     }
 }

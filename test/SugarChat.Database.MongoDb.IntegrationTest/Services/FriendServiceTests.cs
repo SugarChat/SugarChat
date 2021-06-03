@@ -4,6 +4,7 @@ using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
+using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;

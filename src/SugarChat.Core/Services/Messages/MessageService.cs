@@ -69,7 +69,7 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(request.FriendId);
 
             Friend friend =
-                await _friendDataProvider.GetByBothIdsAsync(request.FriendId, request.FriendId, cancellationToken);
+                await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
 
             return new GetUnreadToUserFromFriendResponse
@@ -90,6 +90,10 @@ namespace SugarChat.Core.Services.Messages
             user = await GetUserAsync(request.FriendId, cancellationToken);
             user.CheckExist(request.FriendId);
 
+            Friend friend =
+                await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
+            friend.CheckExist(request.UserId, request.FriendId);
+            
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(

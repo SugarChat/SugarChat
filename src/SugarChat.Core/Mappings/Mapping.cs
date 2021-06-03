@@ -21,6 +21,7 @@ namespace SugarChat.Core.Mappings
             
             CreateMap<User, UserDto>();
             CreateMap<Group, GroupDto>();
+            CreateMap<Domain.Message, MessageDto>();
         }
     }
 }

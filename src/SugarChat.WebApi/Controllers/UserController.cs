@@ -20,7 +20,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getUserProfile"), HttpGet]
-        public async Task<IActionResult> GetUserProfile([FromQuery]GetUserRequest request)
+        public async Task<IActionResult> GetUserProfile([FromQuery] GetUserRequest request)
         {
             var response =
                   await _mediator
@@ -32,8 +32,8 @@ namespace SugarChat.WebApi.Controllers
         [Route("updateMyProfile"), HttpPost]
         public async Task<IActionResult> UpdateMyProfile(UpdateUserCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
 

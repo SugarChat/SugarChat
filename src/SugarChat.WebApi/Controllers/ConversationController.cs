@@ -22,7 +22,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
-        public async Task<IActionResult> GetPagingMessageList([FromQuery]GetMessageListRequest request)
+        public async Task<IActionResult> GetPagingMessageList([FromQuery] GetMessageListRequest request)
         {
             var response =
                  await _mediator
@@ -54,15 +54,15 @@ namespace SugarChat.WebApi.Controllers
         [Route("setMessageRead"), HttpPost]
         public async Task<IActionResult> SetMessageRead(SetMessageAsReadCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("deleteConversation"), HttpPost]
         public async Task<IActionResult> DeleteConversation(DeleteConversationCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<DeleteConversationCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
 

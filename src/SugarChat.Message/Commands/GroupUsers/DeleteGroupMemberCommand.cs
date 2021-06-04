@@ -11,6 +11,6 @@ namespace SugarChat.Message.Commands.GroupUsers
     {
         public string GroupId { get; set; }
         public string AdminId { get; set; }
-        public string MemberId { get; set; }
+        public List<string> UserIdList { get; set; }
     }
 }

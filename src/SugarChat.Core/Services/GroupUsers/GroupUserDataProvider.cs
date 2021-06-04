@@ -34,6 +34,11 @@ namespace SugarChat.Core.Services.GroupUsers
             await _repository.AddAsync(groupUser, cancellation);
         }
 
+        public async Task AddRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellation)
+        {
+            await _repository.AddRangeAsync(groupUsers, cancellation);
+        }
+
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation)
         {
             await _repository.RemoveAsync(groupUser, cancellation);

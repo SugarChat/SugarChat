@@ -9,6 +9,7 @@ namespace SugarChat.Message.Commands.Message
 {
     public class RevokeMessageCommand : ICommand
     {
+        public string UserId { get; set; }
         public string MessageId { get; set; }
     }
 }

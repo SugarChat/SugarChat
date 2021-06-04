@@ -38,6 +38,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Name = "TestGroup"
             };
             _repository.AddAsync(_group).Wait();
+
         }
 
         [Fact]

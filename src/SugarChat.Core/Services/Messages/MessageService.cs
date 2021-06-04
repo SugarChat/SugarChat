@@ -57,7 +57,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken))
             };
         }
-
+       
         public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
             GetUnreadToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -79,7 +79,7 @@ namespace SugarChat.Core.Services.Messages
                         cancellationToken))
             };
         }
-
+       
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -111,7 +111,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken))
             };
         }
-
+       
         public async Task<GetUnreadToUserFromGroupResponse> GetUnreadToUserFromGroupAsync(
             GetUnreadToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
@@ -131,7 +131,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetUnreadToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
             };
         }
-
+      
         public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {

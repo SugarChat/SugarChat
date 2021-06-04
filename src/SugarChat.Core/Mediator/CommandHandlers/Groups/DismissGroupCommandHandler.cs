@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Groups
 {
-    public class DismissGroupCommandHandler : ICommandHandler<DismissGroupCommand, SugarChatResponse<object>>
+    public class DismissGroupCommandHandler : ICommandHandler<DismissGroupCommand, SugarChatResponse>
     {
         private readonly IGroupService _groupService;
 
@@ -20,11 +20,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Groups
         {
             _groupService = groupService;
         }
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<DismissGroupCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<DismissGroupCommand> context, CancellationToken cancellationToken)
         {
             var groupDismissedEvent = await _groupService.DismissGroup(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupDismissedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

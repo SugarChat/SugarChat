@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class SetMessageRemindTypeCommandHandler : ICommandHandler<SetMessageRemindTypeCommand, SugarChatResponse<object>>
+    public class SetMessageRemindTypeCommandHandler : ICommandHandler<SetMessageRemindTypeCommand, SugarChatResponse>
     {
         private readonly IGroupUserService _service;
 
@@ -21,11 +21,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
             _service = service;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<SetMessageRemindTypeCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<SetMessageRemindTypeCommand> context, CancellationToken cancellationToken)
         {
             var messageRemindTypeSetEvent = await _service.SetMessageRemindType(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageRemindTypeSetEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

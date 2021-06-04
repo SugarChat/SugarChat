@@ -74,17 +74,17 @@ namespace SugarChat.IntegrationTest.Services
                     UserId = Guid.NewGuid().ToString()
                 };
                 {
-                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.MessageExists, command.MessageId));
                 }
                 {
                     command.MessageId = messageId1;
-                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe("no authorization");
                 }
                 {
                     command.UserId = message.SentBy;
-                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe("the sending time is more than two minutes and cannot be withdrawn");
                 }
 

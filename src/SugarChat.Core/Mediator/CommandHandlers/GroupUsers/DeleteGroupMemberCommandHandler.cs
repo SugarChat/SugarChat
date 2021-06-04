@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class DeleteGroupMemberCommandHandler : ICommandHandler<DeleteGroupMemberCommand, SugarChatResponse<object>>
+    public class DeleteGroupMemberCommandHandler : ICommandHandler<DeleteGroupMemberCommand, SugarChatResponse>
     {
         private readonly IGroupUserService _service;
 
@@ -21,11 +21,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
             _service = service;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<DeleteGroupMemberCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<DeleteGroupMemberCommand> context, CancellationToken cancellationToken)
         {
             var groupMemberDeletedEvent = await _service.DeleteGroupMember(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupMemberDeletedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

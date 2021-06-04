@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 {
-    public class RevokeMessageCommandHandler : ICommandHandler<RevokeMessageCommand, SugarChatResponse<object>>
+    public class RevokeMessageCommandHandler : ICommandHandler<RevokeMessageCommand, SugarChatResponse>
     {
         private readonly IMessageService _messageService;
         public RevokeMessageCommandHandler(IMessageService messageService)
@@ -20,11 +20,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Messages
             _messageService = messageService;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<RevokeMessageCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<RevokeMessageCommand> context, CancellationToken cancellationToken)
         {
             var messageRevokedEvent = await _messageService.RevokeMessage(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageRevokedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

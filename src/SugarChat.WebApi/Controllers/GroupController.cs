@@ -34,7 +34,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("dismiss"), HttpPost]
         public async Task<IActionResult> DismissGroup(DismissGroupCommand command)
         {
-            var response = await _mediator.SendAsync<DismissGroupCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
@@ -61,7 +61,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("updateGroupProfile"), HttpPost]
         public async Task<IActionResult> UpdateGroupProfile(UpdateGroupProfileCommand command)
         {
-            var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

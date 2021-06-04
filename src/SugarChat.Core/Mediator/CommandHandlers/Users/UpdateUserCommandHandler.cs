@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Users
 {
-    public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand, SugarChatResponse<object>>
+    public class UpdateUserCommandHandler : ICommandHandler<UpdateUserCommand, SugarChatResponse>
     {
         public IUserService _userService;
         public UpdateUserCommandHandler(IUserService userService)
@@ -16,11 +16,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Users
             _userService = userService;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<UpdateUserCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<UpdateUserCommand> context, CancellationToken cancellationToken)
         {
             var userUpdatedEvent = await _userService.UpdateUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(userUpdatedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
 
         }
     }

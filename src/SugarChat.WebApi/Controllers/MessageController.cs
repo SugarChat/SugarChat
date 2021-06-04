@@ -25,14 +25,14 @@ namespace SugarChat.WebApi.Controllers
         [Route("send"), HttpPost]
         public async Task<IActionResult> SendMessage(SendMessageCommand command)
         {
-            var response = await _mediator.SendAsync<SendMessageCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<SendMessageCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
         [Route("revoke"), HttpPost]
         public async Task<IActionResult> RevokeMessage(RevokeMessageCommand command)
         {
-            var response = await _mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
             return Ok(response);
         }
     }

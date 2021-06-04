@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class QuitGroupCommandHandler : ICommandHandler<QuitGroupCommand, SugarChatResponse<object>>
+    public class QuitGroupCommandHandler : ICommandHandler<QuitGroupCommand, SugarChatResponse>
     {
         private readonly IGroupUserService _groupUserService;
 
@@ -21,11 +21,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
         {
             _groupUserService = groupUserService;
         }
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<QuitGroupCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<QuitGroupCommand> context, CancellationToken cancellationToken)
         {
             var groupQuittedEvent = await _groupUserService.QuitGroup(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupQuittedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

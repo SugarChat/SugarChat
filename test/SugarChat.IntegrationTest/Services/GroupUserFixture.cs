@@ -111,12 +111,12 @@ namespace SugarChat.IntegrationTest.Services
                     UserId = Guid.NewGuid().ToString(),
                 };
                 {
-                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.GroupNoExists, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.UserNoExists, command.UserId));
                 }
 
@@ -125,7 +125,7 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == command.UserId)).ShouldBeTrue();
 
                 {
-                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.InGroup, command.UserId, command.GroupId));
                 }
             });
@@ -145,17 +145,17 @@ namespace SugarChat.IntegrationTest.Services
                     UserId = Guid.NewGuid().ToString()
                 };
                 {
-                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
                 }
                 {
                     command.UserId = groupOwnerId;
-                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.IsOwner, command.UserId, command.GroupId));
                 }
 
@@ -165,7 +165,7 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.ToListAsync<GroupUser>(x => x.GroupId == command.GroupId && x.UserId == groupOwnerId)).Count.ShouldBe(1);
 
                 {
-                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
                 }
             });
@@ -186,22 +186,22 @@ namespace SugarChat.IntegrationTest.Services
                     GroupId = Guid.NewGuid().ToString()
                 };
                 {
-                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
                 }
                 {
                     command.OwnerId = userIds[0];
-                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.IsNotOwner, command.OwnerId, command.GroupId));
                 }
                 {
                     command.OwnerId = groupOwnerId;
-                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MewOwnerId, command.GroupId));
                 }
 
@@ -230,17 +230,17 @@ namespace SugarChat.IntegrationTest.Services
                     UserIdList = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
                 };
                 {
-                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
                 }
                 {
                     command.AdminId = groupAdminIds[0];
-                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.UserNoExists, command.UserIdList[0], command.GroupId));
                 }
 
@@ -254,7 +254,7 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBe(1);
 
                 {
-                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.InGroup, command.UserIdList[0], command.GroupId));
                 }
             });
@@ -280,23 +280,23 @@ namespace SugarChat.IntegrationTest.Services
                     UserIdList = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
                 };
                 {
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.AdminId, command.GroupId));
                 }
                 {
                     command.AdminId = groupAdminIds[0];
                     command.UserIdList = new List<string> { groupAdminIds[1] };
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe($"amdin can't delete amdin with Id {command.UserIdList[0]}.");
                 }
                 {
                     command.UserIdList = new List<string> { groupOwnerId };
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe($"the deleted member cannot be owner with Id {command.UserIdList[0]}.");
                 }
 
@@ -305,7 +305,7 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
 
                 {
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserIdList[0], command.GroupId));
                 }
             });
@@ -326,12 +326,12 @@ namespace SugarChat.IntegrationTest.Services
                     MessageRemindType = default
                 };
                 {
-                    var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.UserId, command.GroupId));
                 }
 
@@ -362,22 +362,22 @@ namespace SugarChat.IntegrationTest.Services
                     Role = UserRole.Admin
                 };
                 {
-                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.OwnerId, command.GroupId));
                 }
                 {
                     command.OwnerId = userIds[0];
-                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.IsNotOwner, command.OwnerId, command.GroupId));
                 }
                 {
                     command.OwnerId = groupOwnerId;
-                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(string.Format(ServiceCheckExtensions.NotInGroup, command.MemberId, command.GroupId));
                 }
 
@@ -387,7 +387,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     command.Role = UserRole.Owner;
-                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+                    var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe($"can't set group member role to owner with Id {command.MemberId}.");
                 }
             });

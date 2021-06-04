@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
 {
-    public class DeleteConversationCommandHandler : ICommandHandler<DeleteConversationCommand,SugarChatResponse<object>>
+    public class DeleteConversationCommandHandler : ICommandHandler<DeleteConversationCommand,SugarChatResponse>
     {
         public IConversationService _conversationService;
         public DeleteConversationCommandHandler(IConversationService conversationService)
@@ -16,11 +16,11 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
             _conversationService = conversationService;
         }
 
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<DeleteConversationCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<DeleteConversationCommand> context, CancellationToken cancellationToken)
         {
             var conversationDeletedEvent = await _conversationService.DeleteConversationByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(conversationDeletedEvent, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

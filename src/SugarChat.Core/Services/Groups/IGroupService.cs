@@ -16,5 +16,6 @@ namespace SugarChat.Core.Services.Groups
         Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request, CancellationToken cancellationToken);
         Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken);
 
+        Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation);
     }
 }

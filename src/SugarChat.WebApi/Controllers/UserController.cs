@@ -32,7 +32,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("updateMyProfile"), HttpPost]
         public async Task<IActionResult> UpdateMyProfile(UpdateUserCommand command)
         {
-            var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

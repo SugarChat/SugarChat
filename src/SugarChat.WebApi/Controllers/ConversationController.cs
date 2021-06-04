@@ -54,14 +54,14 @@ namespace SugarChat.WebApi.Controllers
         [Route("setMessageRead"), HttpPost]
         public async Task<IActionResult> SetMessageRead(SetMessageAsReadCommand command)
         {
-            var response = await _mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
         [Route("deleteConversation"), HttpPost]
         public async Task<IActionResult> DeleteConversation(DeleteConversationCommand command)
         {
-            var response = await _mediator.SendAsync<DeleteConversationCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<DeleteConversationCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

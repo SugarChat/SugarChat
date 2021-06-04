@@ -15,12 +15,14 @@ namespace SugarChat.Push.SignalR.Hubs
         private readonly IMediator _mediator;
         private readonly IConnectService _connectService;
         private static string ServerKey;
+        private static bool Security;
 
         public ApiHub(IMediator mediator, IConnectService connectService, IConfiguration configuration)
         {
             _mediator = mediator;
             _connectService = connectService;
             ServerKey = configuration.GetSection("ServerClientKey").Value;
+            Security = configuration.GetValue<bool>("Security");
         }
 
         public async Task<string> GetConnectionUrl(string userIdentifier)
@@ -87,7 +89,7 @@ namespace SugarChat.Push.SignalR.Hubs
         public override Task OnConnectedAsync()
         {
             var securityKey = Context.GetHttpContext().Request.Query["security"].ToString();
-            if (string.IsNullOrWhiteSpace(securityKey)|| securityKey!= ServerKey)
+            if (Security && (string.IsNullOrWhiteSpace(securityKey)|| securityKey!= ServerKey))
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }

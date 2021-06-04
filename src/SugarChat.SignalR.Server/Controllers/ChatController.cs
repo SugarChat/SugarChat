@@ -21,6 +21,7 @@ namespace SugarChat.SignalR.Server.Controllers
         private readonly IMediator _mediator;
         private readonly IConnectService _connectService;
         private static string ServerKey;
+        private static bool Security;
 
         public ChatController(IConnectService connectService, IMediator mediator, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
@@ -28,6 +29,7 @@ namespace SugarChat.SignalR.Server.Controllers
             _mediator = mediator;
             _httpContextAccessor = httpContextAccessor;
             ServerKey = configuration.GetSection("ServerClientKey").Value;
+            Security = configuration.GetValue<bool>("Security");
         }
         [HttpGet("ConnectionUrl")]
         public async Task<IActionResult> GetConnectionUrl(string userIdentifier)
@@ -128,7 +130,7 @@ namespace SugarChat.SignalR.Server.Controllers
         private bool Check()
         {
             var securityKey = _httpContextAccessor.HttpContext.Request.Query["security"].ToString();
-            if (string.IsNullOrWhiteSpace(securityKey) || securityKey != ServerKey)
+            if (Security && (string.IsNullOrWhiteSpace(securityKey) || securityKey != ServerKey))
             {
                 return false;
             }

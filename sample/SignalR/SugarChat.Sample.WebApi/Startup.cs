@@ -26,7 +26,7 @@ namespace SugarChat.Sample.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSugarChatSignalRServerHttpClient("http://localhost:9875");
+            services.AddSugarChatSignalRServerHttpClient("http://192.168.0.167:9875");
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

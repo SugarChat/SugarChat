@@ -64,11 +64,12 @@ namespace SugarChat.Push.SignalR.Hubs
 
         private void SetUserConnectionId()
         {
-            var connectionIds = JsonSerializer.Deserialize<List<string>>(_redis.GetValueFromHash("UserConnectionIds", Context.UserIdentifier));
+            var redisValue = _redis.GetValueFromHash("UserConnectionIds", Context.UserIdentifier);
 
-            if (connectionIds is null)
+            var connectionIds = new List<string>();
+            if(redisValue is not null)
             {
-                connectionIds = new List<string>();
+                connectionIds = JsonSerializer.Deserialize<List<string>>(redisValue);
             }
             connectionIds.Add(Context.ConnectionId);
             _redis.SetEntryInHash("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));

@@ -10,3 +10,4 @@ signalr:
   signalRRedisConnectionString: "127.0.0.1:6379"
   SUGARCHAT_SIGNAL_HUB_URL: "http://127.0.0.1"
   ServerClientKey: "key"
+  Security: true

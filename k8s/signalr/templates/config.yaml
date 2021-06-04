@@ -16,6 +16,7 @@ data:
       "SignalRRedis": "{{ .Values.signalr.signalRRedisConnectionString }}",
       "Redis": "{{ .Values.signalr.redisConnectionString }}",
       "SUGARCHAT_SIGNAL_HUB_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}",
-      "ServerClientKey": "{{ .Values.signalr.ServerClientKey }}"
+      "ServerClientKey": "{{ .Values.signalr.ServerClientKey }}",
+      "Security": {{ .Values.signalr.Security }}
     }
 

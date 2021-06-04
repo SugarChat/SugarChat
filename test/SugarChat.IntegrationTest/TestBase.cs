@@ -1,9 +1,5 @@
 ﻿using Autofac;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using SugarChat.Core.Autofac;
 using SugarChat.Data.MongoDb.Autofac;
@@ -11,9 +7,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace SugarChat.IntegrationTest
 {
+    [Collection("tests")]
     public abstract class TestBase : IDisposable
     {
         protected IConfiguration _configuration;

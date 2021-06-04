@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Messages
@@ -28,7 +30,7 @@ namespace SugarChat.Core.Services.Messages
         {
             await _repository.RemoveAsync(message, cancellation);
         }
-        
+
         public Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();

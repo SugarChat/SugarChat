@@ -5,8 +5,8 @@ using SugarChat.Message.Messages.Events;
 
 namespace SugarChat.Core.Services
 {
-    public interface ISendMessageService: IService
+    public interface ISendMessageService : IService
     {
-        Task<MessageSentEvent> SendMessage(SendMessageCommand command, CancellationToken cancellationToken);
+        Task<MessageSentEvent> SendMessage(SendMessageCommand command, CancellationToken cancellationToken = default);
     }
 }

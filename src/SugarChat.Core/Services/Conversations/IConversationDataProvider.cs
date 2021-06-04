@@ -9,15 +9,15 @@ namespace SugarChat.Core.Services.Conversations
 {
     public interface IConversationDataProvider : IDataProvider
     {
-        Task<int> GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(string groupId, DateTimeOffset? lastReadTime, CancellationToken cancellationToken);
+        Task<int> GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(string groupId, DateTimeOffset? lastReadTime,
+            CancellationToken cancellationToken = default);
 
-        Task<List<Domain.Message>> GetMessagesByGroupIdAsync(string groupId, CancellationToken cancellationToken);
+        Task<List<Domain.Message>> GetMessagesByGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
 
-        Task<Domain.Message> GetLastMessageByGroupIdAsync(string groupId, CancellationToken cancellationToken);
+        Task<Domain.Message> GetLastMessageByGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
 
-        Task<(List<Domain.Message> Messages, string NextReqMessageId)> GetPagingMessagesByConversationIdAsync(string conversationId, string nextReqMessageId = "", int count = 15, CancellationToken cancellationToken = default(CancellationToken));
-
-
-
+        Task<(List<Domain.Message> Messages, string NextReqMessageId)> GetPagingMessagesByConversationIdAsync(
+            string conversationId, string nextReqMessageId = "", int count = 15,
+            CancellationToken cancellationToken = default);
     }
 }

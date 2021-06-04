@@ -17,7 +17,6 @@ namespace SugarChat.Core.Services
         public const string NotInGroup = "User with Id {0} is not member of Group with Id {1}.";
         public const string GroupUserExists = "User with Id {0} is already member of Group with Id {1}.";
         public const string MessageNoExists = "Message with Id {0} Dose not exist.";
-        public const string InGroup = "User with Id {0} is member of Group with Id {1}.";
         public const string NotAdmin = "User with Id {0} is not administrator of Group with Id {1}.";
         public const string IsOwner = "User with Id {0} is owner of Group with Id {1}.";
         public const string IsNotOwner = "User with Id {0} is not owner of Group with Id {1}.";

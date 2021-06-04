@@ -22,6 +22,7 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
+
         public ConversationService(
             IMapper mapper,
             IUserDataProvider userDataProvider,
@@ -36,7 +37,8 @@ namespace SugarChat.Core.Services.Conversations
             _groupUserDataProvider = groupUserDataProvider;
         }
 
-        public async Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken)
+        public async Task<GetConversationListResponse> GetConversationListByUserIdAsync(
+            GetConversationListRequest request, CancellationToken cancellationToken = default)
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
@@ -47,15 +49,23 @@ namespace SugarChat.Core.Services.Conversations
             foreach (var groupUser in groupUsers)
             {
                 //Get the groups that have had conversations
-                var groupMessages = await _conversationDataProvider.GetMessagesByGroupIdAsync(groupUser.GroupId, cancellationToken);
+                var groupMessages =
+                    await _conversationDataProvider.GetMessagesByGroupIdAsync(groupUser.GroupId, cancellationToken);
                 if (groupMessages.Count > 0)
                 {
                     var conversationDto = new ConversationDto();
                     conversationDto.ConversationID = groupUser.GroupId;
-                    conversationDto.UnreadCount = await _conversationDataProvider.GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(groupUser.GroupId, groupUser.LastReadTime, cancellationToken);
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(await _conversationDataProvider.GetLastMessageByGroupIdAsync(groupUser.GroupId, cancellationToken));
-                    var groupDto = _mapper.Map<GroupDto>(await _groupDataProvider.GetByIdAsync(groupUser.GroupId, cancellationToken));
-                    groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(groupUser.GroupId, cancellationToken);
+                    conversationDto.UnreadCount =
+                        await _conversationDataProvider.GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(
+                            groupUser.GroupId, groupUser.LastReadTime, cancellationToken);
+                    conversationDto.LastMessage = _mapper.Map<MessageDto>(
+                        await _conversationDataProvider.GetLastMessageByGroupIdAsync(groupUser.GroupId,
+                            cancellationToken));
+                    var groupDto =
+                        _mapper.Map<GroupDto>(
+                            await _groupDataProvider.GetByIdAsync(groupUser.GroupId, cancellationToken));
+                    groupDto.MemberCount =
+                        await _groupUserDataProvider.GetGroupMemberCountAsync(groupUser.GroupId, cancellationToken);
                     conversationDto.GroupProfile = groupDto;
                     conversations.Add(conversationDto);
                 }
@@ -67,17 +77,25 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request, CancellationToken cancellationToken)
+        public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(
+            GetConversationProfileRequest request, CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId,
+                    cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
             var conversationDto = new ConversationDto();
             conversationDto.ConversationID = groupUser.GroupId;
-            conversationDto.UnreadCount = await _conversationDataProvider.GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(groupUser.GroupId, groupUser.LastReadTime, cancellationToken);
-            conversationDto.LastMessage = _mapper.Map<MessageDto>(await _conversationDataProvider.GetLastMessageByGroupIdAsync(groupUser.GroupId, cancellationToken));
-            var groupDto = _mapper.Map<GroupDto>(await _groupDataProvider.GetByIdAsync(groupUser.GroupId, cancellationToken));
-            groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(groupUser.GroupId, cancellationToken);
+            conversationDto.UnreadCount =
+                await _conversationDataProvider.GetUserUnreadMessagesCountByGroupIdAndLastReadTimeAsync(
+                    groupUser.GroupId, groupUser.LastReadTime, cancellationToken);
+            conversationDto.LastMessage = _mapper.Map<MessageDto>(
+                await _conversationDataProvider.GetLastMessageByGroupIdAsync(groupUser.GroupId, cancellationToken));
+            var groupDto =
+                _mapper.Map<GroupDto>(await _groupDataProvider.GetByIdAsync(groupUser.GroupId, cancellationToken));
+            groupDto.MemberCount =
+                await _groupUserDataProvider.GetGroupMemberCountAsync(groupUser.GroupId, cancellationToken);
             conversationDto.GroupProfile = groupDto;
 
             return new GetConversationProfileResponse
@@ -86,24 +104,33 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken)
+        public async Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId,
+                    cancellationToken);
             groupUser.CheckExist(command.UserId, command.ConversationId);
 
-            var lastMessage = await _conversationDataProvider.GetLastMessageByGroupIdAsync(command.ConversationId, cancellationToken);
+            var lastMessage =
+                await _conversationDataProvider.GetLastMessageByGroupIdAsync(command.ConversationId, cancellationToken);
             groupUser.LastReadTime = lastMessage.SentTime;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
 
             return _mapper.Map<MessageReadedEvent>(command);
         }
 
-        public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken)
+        public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
+            CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId,
+                    cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
-            var (messages, nextReqMessageId) = await _conversationDataProvider.GetPagingMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Count, cancellationToken).ConfigureAwait(false);
+            var (messages, nextReqMessageId) = await _conversationDataProvider
+                .GetPagingMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Count,
+                    cancellationToken).ConfigureAwait(false);
 
             return new GetMessageListResponse
             {
@@ -115,16 +142,17 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken)
+        public async Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(
+            DeleteConversationCommand command, CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId,
+                    cancellationToken);
             groupUser.CheckExist(command.UserId, command.ConversationId);
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
             return _mapper.Map<ConversationDeletedEvent>(command);
         }
-
-
     }
 }

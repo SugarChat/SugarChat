@@ -15,30 +15,23 @@ namespace SugarChat.Core.Services.Messages
         Task RemoveAsync(Domain.Message message, CancellationToken cancellation = default);
         Task<IEnumerable<Domain.Message>> GetUnreadToUserWithFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default);
-
         Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
             CancellationToken cancellationToken = default);
-
         Task<IEnumerable<Domain.Message>> GetAllHistoryToUserWithFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default);
-
         Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
             CancellationToken cancellationToken = default);
-
         Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken = default);
-
         Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken = default);
-        
         Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count,
             CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string groupId, int count, CancellationToken cancellationToken = default);
-        Task<Domain.Message> GetLatestMessageOfGroupAsync(string groupId, CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken);
-
-        Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken);
+        Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string groupId, int count,
+            CancellationToken cancellationToken = default);
+        Task<Domain.Message>
+            GetLatestMessageOfGroupAsync(string groupId, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
+        Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default);
     }
 }

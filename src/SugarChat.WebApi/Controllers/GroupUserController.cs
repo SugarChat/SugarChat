@@ -40,50 +40,50 @@ namespace SugarChat.WebApi.Controllers
         [Route("join"), HttpPost]
         public async Task<IActionResult> JoinGroup(JoinGroupCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<JoinGroupCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("quit"), HttpPost]
         public async Task<IActionResult> QuitGroup(QuitGroupCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<QuitGroupCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("changeGroupOwner"), HttpPost]
         public async Task<IActionResult> ChangeGroupOwner(ChangeGroupOwnerCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("addGroupMember"), HttpPost]
         public async Task<IActionResult> AddGroupMember(AddGroupMemberCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("deleteGroupMember"), HttpPost]
         public async Task<IActionResult> DeleteGroupMember(AddGroupMemberCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("setMessageRemindType"), HttpPost]
         public async Task<IActionResult> SetMessageRemindType(SetMessageRemindTypeCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("setGroupMemberRole"), HttpPost]
         public async Task<IActionResult> SetGroupMemberRole(SetGroupMemberRoleCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
     }
 }

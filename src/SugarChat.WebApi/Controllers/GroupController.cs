@@ -34,8 +34,8 @@ namespace SugarChat.WebApi.Controllers
         [Route("dismiss"), HttpPost]
         public async Task<IActionResult> DismissGroup(DismissGroupCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<DismissGroupCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("getGroupList"), HttpGet]

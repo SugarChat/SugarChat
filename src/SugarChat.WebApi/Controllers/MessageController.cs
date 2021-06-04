@@ -1,5 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
+using SugarChat.Core.Basic;
 using SugarChat.Message.Command;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.Message;
@@ -24,15 +25,15 @@ namespace SugarChat.WebApi.Controllers
         [Route("send"), HttpPost]
         public async Task<IActionResult> SendMessage(SendMessageCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<SendMessageCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("revoke"), HttpPost]
         public async Task<IActionResult> RevokeMessage(RevokeMessageCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<RevokeMessageCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
     }
 }

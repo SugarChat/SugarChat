@@ -91,7 +91,8 @@ namespace SugarChat.Core.Services.Conversations
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.ConversationId);
 
-            groupUser.LastReadTime = DateTimeOffset.Now;
+            var lastMessage = await _conversationDataProvider.GetLastMessageByGroupIdAsync(command.ConversationId, cancellationToken);
+            groupUser.LastReadTime = lastMessage.SentTime;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
 
             return _mapper.Map<MessageReadedEvent>(command);

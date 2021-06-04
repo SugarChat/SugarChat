@@ -55,5 +55,7 @@ namespace SugarChat.Core.Services.Conversations
             }
             return (messages, messages?.Last()?.Id);
         }
+
+        
     }
 }

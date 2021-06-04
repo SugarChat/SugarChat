@@ -30,7 +30,7 @@ namespace SugarChat.IntegrationTest.Services.Users
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                await mediator.SendAsync(new UpdateUserCommand
+                await mediator.SendAsync<UpdateUserCommand, SugarChatResponse<object>> (new UpdateUserCommand
                 {
                     Id = userId,
                     DisplayName = "UpdateUserProfileTest",                   

@@ -46,8 +46,8 @@ namespace SugarChat.WebApi.Controllers
         [Route("updateGroupProfile"), HttpPost]
         public async Task<IActionResult> UpdateGroupProfile(UpdateGroupProfileCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();            
+            var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
     }

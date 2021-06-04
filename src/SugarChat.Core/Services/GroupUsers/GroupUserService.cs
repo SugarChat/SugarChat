@@ -6,21 +6,14 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
-using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
-using SugarChat.Core.Services.Groups;
-using SugarChat.Core.Services.Users;
 using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Core.Exceptions;
 using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SugarChat.Core.Services.GroupUsers
 {

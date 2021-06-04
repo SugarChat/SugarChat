@@ -126,7 +126,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.InGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.GroupUserExists, command.UserId, command.GroupId));
                 }
             });
         }
@@ -255,7 +255,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.InGroup, command.UserIdList[0], command.GroupId));
+                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.GroupUserExists, command.UserIdList[0], command.GroupId));
                 }
             });
         }

@@ -7,16 +7,16 @@ namespace SugarChat.Core.Services
 {
     public static class ServiceCheckExtensions
     {
-        private const string UserExists = "User with Id {0} already exists.";
-        private const string UserNoExists = "User with Id {0} Dose not exist.";
-        private const string FriendAlreadyMade = "User with Id {0} has already made friend with Id {1}.";
-        private const string AddSelfAsFiend = "User with Id {0} Should not add self as friend.";
-        private const string NotFriend = "User with Id {0} has not been friend with Id {1} yet.";
-        private const string GroupExists = "Group with Id {0} already exists.";
-        private const string GroupNoExists = "Group with Id {0} Dose not exist.";
-        private const string NotInGroup = "User with Id {0} is not member of Group with Id {1}.";
-        private const string GroupUserExists = "User with Id {0} is already member of Group with Id {1}.";
-        private const string MessageNoExists = "Message with Id {0} Dose not exist.";
+        public const string UserExists = "User with Id {0} already exists.";
+        public const string UserNoExists = "User with Id {0} Dose not exist.";
+        public const string FriendAlreadyMade = "User with Id {0} has already made friend with Id {1}.";
+        public const string AddSelfAsFiend = "User with Id {0} Should not add self as friend.";
+        public const string NotFriend = "User with Id {0} has not been friend with Id {1} yet.";
+        public const string GroupExists = "Group with Id {0} already exists.";
+        public const string GroupNoExists = "Group with Id {0} Dose not exist.";
+        public const string NotInGroup = "User with Id {0} is not member of Group with Id {1}.";
+        public const string GroupUserExists = "User with Id {0} is already member of Group with Id {1}.";
+        public const string MessageNoExists = "Message with Id {0} Dose not exist.";
         public const string InGroup = "User with Id {0} is member of Group with Id {1}.";
         public const string NotAdmin = "User with Id {0} is not administrator of Group with Id {1}.";
         public const string IsOwner = "User with Id {0} is owner of Group with Id {1}.";
@@ -57,7 +57,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(NotFriend, userId, friendId));
             }
         }
-        
+
         public static void CheckNotExist(this Group group)
         {
             if (group is not null)
@@ -74,7 +74,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(AddSelfAsFiend, user.Id));
             }
         }
-        
+
         public static void CheckExist(this Group group, string groupId)
         {
             if (group is null)
@@ -82,7 +82,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(string.Format(GroupNoExists, groupId));
             }
         }
-        
+
         public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
         {
             if (groupUser is null)
@@ -115,7 +115,7 @@ namespace SugarChat.Core.Services
                     groupUser.GroupId, sentTime));
             }
         }
-        
+
         public static void CheckIsOwner(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);

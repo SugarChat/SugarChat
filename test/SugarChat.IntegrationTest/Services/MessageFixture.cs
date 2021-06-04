@@ -1,16 +1,12 @@
 ﻿using Mediator.Net;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Command;
+using SugarChat.Message.Commands;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
 using SugarChat.Message;
 using SugarChat.Message.Commands.Message;
-using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
 

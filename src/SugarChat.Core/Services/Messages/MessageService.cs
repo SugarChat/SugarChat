@@ -13,7 +13,6 @@ using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Commands.Message;
-using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
@@ -62,6 +61,28 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+        public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
+            GetUnreadToUserFromFriendRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            User user = await GetUserAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+
+            user = await GetUserAsync(request.FriendId, cancellationToken);
+            user.CheckExist(request.FriendId);
+
+            Friend friend =
+                await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
+            friend.CheckExist(request.UserId, request.FriendId);
+
+            return new GetUnreadToUserFromFriendResponse
+            {
+                Messages = _mapper.Map<IEnumerable<MessageDto>>(
+                    await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId,
+                        cancellationToken))
+            };
+        }
+
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -75,11 +96,11 @@ namespace SugarChat.Core.Services.Messages
             Friend friend =
                 await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
-
+            
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllHistoryToUserFromFriendAsync(request.UserId, request.FriendId,
+                    await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId,
                         cancellationToken))
             };
         }

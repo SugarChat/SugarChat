@@ -117,7 +117,7 @@ namespace SugarChat.Core.Services.GroupUsers
             List<GroupUser> groupUsers = new();
             foreach (var userId in command.UserIdList)
             {
-                var user = await _userDataProvider.GetByIdAsync(userId);
+                var user = await _userDataProvider.GetByIdAsync(userId, cancellationToken);
                 user.CheckExist(userId);
 
                 var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(userId, command.GroupId, cancellationToken);

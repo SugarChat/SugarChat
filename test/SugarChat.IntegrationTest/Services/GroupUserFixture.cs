@@ -240,8 +240,8 @@ namespace SugarChat.IntegrationTest.Services
                 }
                 {
                     command.AdminId = groupAdminIds[0];
-                    await mediator.SendAsync(command);
-                    (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBe(2);
+                    var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse<object>>(command);
+                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.UserNoExists, command.UserIdList[0], command.GroupId));
                 }
 
                 command.UserIdList = userIds.Take(2).ToList();

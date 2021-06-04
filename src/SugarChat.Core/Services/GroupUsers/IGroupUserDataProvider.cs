@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Shared.Dtos.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -14,5 +15,8 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
         Task<GroupUser> GetByUserAndGroupIdAsync(string userId, string groupId, CancellationToken cancellationToken = default);
         Task SetMessageReadAsync(string userId, string groupId, DateTimeOffset messageSentTime, CancellationToken cancellationToken = default);
+        Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation);
+        Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id, CancellationToken cancellationToken);
+        Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken);
     }
 }

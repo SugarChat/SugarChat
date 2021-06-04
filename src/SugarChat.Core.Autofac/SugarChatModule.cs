@@ -42,7 +42,7 @@ namespace SugarChat.Core.Autofac
             mediaBuilder
                 .ConfigureGlobalReceivePipe(config => config.UnifyResponseMiddleware())
                 .RegisterHandlers(_assemblies.ToArray());
-            
+
             builder.RegisterMediator(mediaBuilder);
         }
 

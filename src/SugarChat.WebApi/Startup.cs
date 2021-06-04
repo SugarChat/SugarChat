@@ -1,27 +1,21 @@
 using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Mediator.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MongoDB.Bson.Serialization;
-using SugarChat.Core;
 using SugarChat.Core.Autofac;
-using SugarChat.Core.Mediator.CommandHandler;
 using System.Reflection;
-using SugarChat.Data.MongoDb;
 using SugarChat.Data.MongoDb.Autofac;
-using SugarChat.Data.MongoDb.Settings;
+using SugarChat.Core.Services;
 
 namespace SugarChat.WebApi
 {
     public class Startup
     {
         public IConfiguration Configuration { get; set; }
-        private IServiceCollection services;
+        private IServiceCollection services;    
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -42,8 +36,8 @@ namespace SugarChat.WebApi
             builder.RegisterMongoDbRepository(() => Configuration.GetSection("MongoDb"));
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
-                typeof(SugarChat.Core.Services.IService).Assembly
-            }));
+                typeof(IService).Assembly
+            }));            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,7 +47,7 @@ namespace SugarChat.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
-
+           
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

@@ -62,29 +62,6 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
-            GetUnreadToUserFromFriendRequest request,
-            CancellationToken cancellationToken = default)
-        {
-            User user = await GetUserAsync(request.UserId, cancellationToken);
-            user.CheckExist(request.UserId);
-
-            user = await GetUserAsync(request.FriendId, cancellationToken);
-            user.CheckExist(request.FriendId);
-
-            Friend friend =
-                await _friendDataProvider.GetByBothIdsAsync(request.FriendId, request.FriendId, cancellationToken);
-            friend.CheckExist(request.UserId, request.FriendId);
-
-            return new GetUnreadToUserFromFriendResponse
-            {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserFromFriendAsync(request.UserId, request.FriendId,
-                        cancellationToken))
-            };
-        }
-       
-        
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -98,7 +75,7 @@ namespace SugarChat.Core.Services.Messages
             Friend friend =
                 await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
-            
+
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
@@ -197,7 +174,8 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<SetMessageReadByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(SetMessageReadByUserBasedOnMessageIdCommand command,
+        public async Task<SetMessageReadByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
+            SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken)
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
@@ -218,7 +196,8 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<SetMessageReadByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(SetMessageReadByUserBasedOnGroupIdCommand command,
+        public async Task<SetMessageReadByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
+            SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken)
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
@@ -229,10 +208,12 @@ namespace SugarChat.Core.Services.Messages
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
                     cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
+            Domain.Message lastMessageOfGroup =
+                await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
             groupUser.CheckLastReadTimeEarlierThan(lastMessageOfGroup.SentTime);
 
-            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageOfGroup.SentTime,
+            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId,
+                lastMessageOfGroup.SentTime,
                 cancellationToken);
             return new()
             {
@@ -240,7 +221,8 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command, CancellationToken cancellationToken = default)
+        public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command,
+            CancellationToken cancellationToken = default)
         {
             var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
             message.CheckExist(command.MessageId);
@@ -248,10 +230,12 @@ namespace SugarChat.Core.Services.Messages
             {
                 throw new BusinessWarningException("no authorization");
             }
+
             if (message.SentTime.AddMinutes(2) < DateTime.Now)
             {
                 throw new BusinessWarningException("the sending time is more than two minutes and cannot be withdrawn");
             }
+
             message.IsRevoked = true;
             await _messageDataProvider.UpdateAsync(message, cancellationToken);
 

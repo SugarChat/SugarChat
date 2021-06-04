@@ -15,9 +15,6 @@ namespace SugarChat.Core.Services.Messages
         Task<GetAllUnreadToUserResponse> GetAllUnreadToUserAsync(GetAllUnreadToUserRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(GetUnreadToUserFromFriendRequest request,
-            CancellationToken cancellationToken = default);
-
         Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default);

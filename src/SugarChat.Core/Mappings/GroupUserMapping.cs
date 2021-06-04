@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SugarChat.Core.Domain;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 
@@ -8,6 +9,8 @@ namespace SugarChat.Core.Mappings
     {
         public GroupUserMapping()
         {
+            CreateMap<AddUserToGroupCommand, GroupUser>();
+
             CreateMap<SetGroupMemberCustomFieldCommand, GroupMemberCustomFieldBeSetEvent>();
             CreateMap<JoinGroupCommand, GroupJoinedEvent>();
             CreateMap<QuitGroupCommand, GroupQuittedEvent>();

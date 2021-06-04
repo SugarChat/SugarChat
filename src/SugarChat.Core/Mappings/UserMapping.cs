@@ -11,6 +11,7 @@ namespace SugarChat.Core.Mappings
         public UserMapping()
         {
             CreateMap<User, UserDto>();
+            CreateMap<AddUserCommand, User>();
             CreateMap<UpdateUserCommand, User>();
             CreateMap<UpdateUserCommand, UpdateUserEvent>();
         }

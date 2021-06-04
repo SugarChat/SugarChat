@@ -18,8 +18,6 @@ namespace SugarChat.Core.Services.GroupUsers
         Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation);
         Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id, CancellationToken cancellationToken);
         Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken);
-        Task AddAsync(GroupUser groupUser, CancellationToken cancellation);
-        Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken);
         Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken);
         Task AddRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellation);
     }

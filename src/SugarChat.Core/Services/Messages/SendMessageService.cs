@@ -9,7 +9,6 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Commands;
 using SugarChat.Core.Services.Messages;
-using SugarChat.Message.Command;
 using SugarChat.Message.Messages.Events;
 
 namespace SugarChat.Core.Services

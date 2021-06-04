@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using SugarChat.Message.Command;
+using SugarChat.Message.Commands;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Messages.Events;

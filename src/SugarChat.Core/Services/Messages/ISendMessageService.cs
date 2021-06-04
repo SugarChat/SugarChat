@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands;
-using SugarChat.Message.Command;
 using SugarChat.Message.Messages.Events;
 
 namespace SugarChat.Core.Services

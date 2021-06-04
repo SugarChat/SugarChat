@@ -92,7 +92,8 @@ private readonly IMapper _mapper;
             {
                 MemberIds = memberIds
             };
-        
+        }
+
         public async Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request, CancellationToken cancellationToken)
         {
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);

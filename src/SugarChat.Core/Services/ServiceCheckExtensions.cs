@@ -1,5 +1,7 @@
-﻿using SugarChat.Core.Domain;
+﻿using System;
+using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
+using SugarChat.Message;
 
 namespace SugarChat.Core.Services
 {
@@ -138,14 +140,6 @@ namespace SugarChat.Core.Services
             if (groupUser.Role != UserRole.Admin && groupUser.Role != UserRole.Owner)
             {
                 throw new BusinessWarningException(string.Format(NotAdmin, userId, groupId));
-            }
-        }
-
-        public static void CheckExist(this Domain.Message message, string messageId)
-        {
-            if (message is null)
-            {
-                throw new BusinessWarningException(string.Format(MessageExists, messageId));
             }
         }
     }

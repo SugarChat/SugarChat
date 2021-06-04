@@ -11,8 +11,8 @@ namespace SugarChat.Core.Domain
         public int SubType { get; set; }
         public string SentBy { get; set; }
         public DateTimeOffset SentTime { get; set; }
-        public bool IsDel { get; set; }
         public bool IsSystem { get; set; }
+        public object Payload { get; set; }
     }
 
     public enum MessageType

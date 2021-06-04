@@ -8,7 +8,7 @@ using SugarChat.Message.Responses;
 
 namespace SugarChat.Core.Services.Users
 {
-    public interface IUserService
+    public interface IUserService:IService
     {
         Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default);
         Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellation = default);

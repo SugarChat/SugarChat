@@ -178,5 +178,16 @@ namespace SugarChat.Core.Services.Messages
                 .OrderByDescending(o => o.SentTime).FirstOrDefault();
             return await Task.FromResult(message);
         }
+
+        public async Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken)
+        {
+            return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == id, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        public async Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
+        {
+            await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

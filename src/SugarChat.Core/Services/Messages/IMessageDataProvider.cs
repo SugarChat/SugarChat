@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Core.Domain;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -33,5 +34,10 @@ namespace SugarChat.Core.Services.Messages
 
         Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string groupId, int count, CancellationToken cancellationToken = default);
         Task<Domain.Message> GetLatestMessageOfGroupAsync(string groupId, CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
+
+        Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken);
+
+        Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken);
     }
 }

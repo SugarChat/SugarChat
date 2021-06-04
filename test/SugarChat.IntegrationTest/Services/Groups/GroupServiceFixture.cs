@@ -44,7 +44,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                await mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse<object>> (new UpdateGroupProfileCommand
+                await mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse> (new UpdateGroupProfileCommand
                 {
                     Id = conversationId,
                     Name = "内部沟通群",

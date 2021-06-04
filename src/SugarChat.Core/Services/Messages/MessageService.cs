@@ -3,12 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;
+using SugarChat.Message.Events.Messages;
+using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -69,17 +72,17 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(request.FriendId);
 
             Friend friend =
-                await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
+                await _friendDataProvider.GetByBothIdsAsync(request.FriendId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
 
             return new GetUnreadToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId,
+                    await _messageDataProvider.GetUnreadToUserFromFriendAsync(request.UserId, request.FriendId,
                         cancellationToken))
             };
         }
-
+       
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -97,7 +100,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId,
+                    await _messageDataProvider.GetAllHistoryToUserFromFriendAsync(request.UserId, request.FriendId,
                         cancellationToken))
             };
         }
@@ -233,6 +236,24 @@ namespace SugarChat.Core.Services.Messages
             {
                 Status = EventStatus.Success
             };
+        }
+
+        public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
+            message.CheckExist(command.MessageId);
+            if (message.SentBy != command.UserId)
+            {
+                throw new BusinessWarningException("no authorization");
+            }
+            if (message.SentTime.AddMinutes(2) < DateTime.Now)
+            {
+                throw new BusinessWarningException("the sending time is more than two minutes and cannot be withdrawn");
+            }
+            message.IsRevoked = true;
+            await _messageDataProvider.UpdateAsync(message, cancellationToken);
+
+            return new MessageRevokedEvent { };
         }
     }
 }

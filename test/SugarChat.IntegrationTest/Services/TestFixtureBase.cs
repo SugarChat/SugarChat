@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Message;
 using System;
 using System.Collections.Generic;
 using System.Threading;

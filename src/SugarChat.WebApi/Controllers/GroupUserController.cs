@@ -33,8 +33,8 @@ namespace SugarChat.WebApi.Controllers
         [Route("setGroupMemberCustomField"), HttpPost]
         public async Task<IActionResult> SetGroupMemberCustomField(SetGroupMemberCustomFieldCommand command)
         {
-            await _mediator.SendAsync(command);
-            return Ok();
+            var response = await _mediator.SendAsync<SetGroupMemberCustomFieldCommand, SugarChatResponse<object>>(command);
+            return Ok(response);
         }
 
         [Route("join"), HttpPost]

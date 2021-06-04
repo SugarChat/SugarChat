@@ -22,8 +22,8 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId });
-                reponse.Data.Count().ShouldBe(4);
+                var response = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId });
+                response.Data.Count().ShouldBe(4);
             });
         }
 
@@ -32,9 +32,9 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
-                reponse.Data.Name.ShouldBe("TestGroup3");
-                reponse.Data.MemberCount.ShouldBe(2);
+                var response = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
+                response.Data.Name.ShouldBe("TestGroup3");
+                response.Data.MemberCount.ShouldBe(2);
             });
         }
 
@@ -51,8 +51,8 @@ namespace SugarChat.IntegrationTest.Services.Groups
 
                 }, default(CancellationToken));
 
-                var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
-                reponse.Data.Name.ShouldBe("内部沟通群");                
+                var response = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
+                response.Data.Name.ShouldBe("内部沟通群");                
             });
         }
 

@@ -292,7 +292,7 @@ namespace SugarChat.IntegrationTest.Services
                     command.AdminId = groupAdminIds[0];
                     command.UserIdList = new List<string> { groupAdminIds[1] };
                     var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"amdin can't delete amdin with Id {command.UserIdList[0]}.");
+                    response.Message.ShouldBe($"admin can't delete admin with Id {command.UserIdList[0]}.");
                 }
                 {
                     command.UserIdList = new List<string> { groupOwnerId };

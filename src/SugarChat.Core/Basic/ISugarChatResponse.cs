@@ -9,7 +9,7 @@ namespace SugarChat.Core.Basic
 {
     public interface ISugarChatResponse : IResponse
     {
-        public int Code { get; set;  }
+        public StatusCode Code { get; set;  }
 
         public string Message { get; set; }
         

@@ -1,4 +1,5 @@
 ﻿using Serilog.Events;
+using SugarChat.Core.Basic;
 
 namespace SugarChat.Core.Exceptions
 {
@@ -6,7 +7,7 @@ namespace SugarChat.Core.Exceptions
     {
         LogEventLevel LogLevel { get; }
 
-        int Code { get; set; }
+        StatusCode Code { get; set; }
 
         string Message { get; }
     }

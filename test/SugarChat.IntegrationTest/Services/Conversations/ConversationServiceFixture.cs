@@ -23,10 +23,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
+                var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
                 (new GetConversationListRequest { UserId = userId });
 
-                reponse.Data.Count().ShouldBe(2);
+                response.Data.Count().ShouldBe(2);
             });
         }
 

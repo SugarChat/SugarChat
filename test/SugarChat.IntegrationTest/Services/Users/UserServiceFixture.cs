@@ -20,8 +20,8 @@ namespace SugarChat.IntegrationTest.Services.Users
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                var reponse = await mediator.RequestAsync<GetUserRequest, SugarChatResponse<UserDto>>(new GetUserRequest { Id = userId });
-                reponse.Data.DisplayName.ShouldBe("TestUser10");
+                var response = await mediator.RequestAsync<GetUserRequest, SugarChatResponse<UserDto>>(new GetUserRequest { Id = userId });
+                response.Data.DisplayName.ShouldBe("TestUser10");
             });
         }      
 

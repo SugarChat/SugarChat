@@ -25,7 +25,7 @@ namespace SugarChat.Core.UnitTest
             var response = await
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
-            Assert.Equal(0, response.Code);
+            Assert.Equal(0, (int)response.Code);
             Assert.Equal("Test", response.Message);
         }
         [Fact]
@@ -37,7 +37,7 @@ namespace SugarChat.Core.UnitTest
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
 
-            Assert.Equal(0, response.Code);
+            Assert.Equal(0, (int)response.Code);
             Assert.Equal("TestMessage", response.Message);
             Assert.Equal("TestData", response.Data);
         }

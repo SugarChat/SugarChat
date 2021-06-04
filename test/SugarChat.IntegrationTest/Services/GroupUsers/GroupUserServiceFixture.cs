@@ -42,8 +42,8 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
-                reponse.Data.Count().ShouldBe(2);
+                var response = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                response.Data.Count().ShouldBe(2);
             });
         }
 

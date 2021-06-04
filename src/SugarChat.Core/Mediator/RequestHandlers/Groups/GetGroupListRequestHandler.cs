@@ -21,7 +21,7 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Groups
         public async Task<SugarChatResponse<IEnumerable<GroupDto>>> Handle(IReceiveContext<GetGroupsOfUserRequest> context, CancellationToken cancellationToken)
         {
             var response = await _groupService.GetGroupsOfUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<IEnumerable<GroupDto>>() { Code = 0, Message = "Success", Data = response.Groups };
+            return new SugarChatResponse<IEnumerable<GroupDto>>() { Code = StatusCode.Ok, Message = "Success", Data = response.Groups };
         }
     }
 }

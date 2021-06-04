@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
+using SugarChat.Message.Requests;
+using SugarChat.Message.Responses;
+using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -69,6 +72,28 @@ namespace SugarChat.Core.Services.Messages
             return await Task.FromResult(messages);
         }
 
+        public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
+            GetUnreadToUserFromFriendRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            User user = await GetUserAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+
+            user = await GetUserAsync(request.FriendId, cancellationToken);
+            user.CheckExist(request.FriendId);
+
+            Friend friend =
+                await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
+            friend.CheckExist(request.UserId, request.FriendId);
+
+            return new GetUnreadToUserFromFriendResponse
+            {
+                Messages = _mapper.Map<IEnumerable<MessageDto>>(
+                    await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId,
+                        cancellationToken))
+            };
+        }
+        
         public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
             CancellationToken cancellationToken = default)
         {

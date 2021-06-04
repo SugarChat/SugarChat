@@ -133,7 +133,7 @@ private readonly IMapper _mapper;
             user.CheckExist(command.UserId);
 
             GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
-            groupUser.CheckNotExist(command.UserId, command.GroupId);
+            groupUser.CheckNotExist();
 
             await _groupUserDataProvider.AddAsync(new GroupUser
             {
@@ -184,7 +184,7 @@ private readonly IMapper _mapper;
                 user.CheckExist(userId);
 
                 var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(userId, command.GroupId, cancellationToken);
-                member.CheckNotExist(userId, command.GroupId);
+                member.CheckNotExist();
                 groupUsers.Add(new()
                 {
                     Id = Guid.NewGuid().ToString(),

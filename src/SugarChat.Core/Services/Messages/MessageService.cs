@@ -84,6 +84,7 @@ namespace SugarChat.Core.Services.Messages
             };
         }
        
+        
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)

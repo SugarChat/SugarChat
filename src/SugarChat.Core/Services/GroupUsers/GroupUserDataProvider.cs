@@ -33,7 +33,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(groupUser, cancellation);
+            await _repository.UpdateAsync(groupUser, cancellation).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id, CancellationToken cancellationToken)
@@ -56,7 +56,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellation = default)
         {
-            await _repository.RemoveAsync(groupUser, cancellation);
+            await _repository.RemoveAsync(groupUser, cancellation).ConfigureAwait(false);
         }
 
         public async Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken)
@@ -66,12 +66,12 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task AddAsync(GroupUser groupUser, CancellationToken cancellation)
         {
-            await _repository.AddAsync(groupUser, cancellation);
+            await _repository.AddAsync(groupUser, cancellation).ConfigureAwait(false);
         }
 
         public async Task AddRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellation)
         {
-            await _repository.AddRangeAsync(groupUsers, cancellation);
+            await _repository.AddRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken)
@@ -82,7 +82,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken)
         {
-            await _repository.RemoveRangeAsync(groupUsers, cancellationToken);
+            await _repository.RemoveRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
     }
 }

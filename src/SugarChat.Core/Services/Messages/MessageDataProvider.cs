@@ -18,22 +18,22 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task AddAsync(Domain.Message message, CancellationToken cancellation)
         {
-            await _repository.AddAsync(message, cancellation);
+            await _repository.AddAsync(message, cancellation).ConfigureAwait(false);
         }
 
         public async Task UpdateAsync(Domain.Message message, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(message, cancellation);
+            await _repository.UpdateAsync(message, cancellation).ConfigureAwait(false);
         }
 
         public async Task RemoveAsync(Domain.Message message, CancellationToken cancellation)
         {
-            await _repository.RemoveAsync(message, cancellation);
+            await _repository.RemoveAsync(message, cancellation).ConfigureAwait(false);
         }
 
         public async Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await _repository.FirstOrDefaultAsync<Domain.Message>(x => x.Id == id, cancellationToken);
+            return await _repository.FirstOrDefaultAsync<Domain.Message>(x => x.Id == id, cancellationToken).ConfigureAwait(false);
         }
 
         public Task<IEnumerable<Domain.Message>> GetUnreadToUserFromFriendAsync(string userId, string friendId, CancellationToken cancellationToken = default)
@@ -74,7 +74,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
         {
-            await _repository.RemoveRangeAsync(messages, cancellationToken);
+            await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
     }
 }

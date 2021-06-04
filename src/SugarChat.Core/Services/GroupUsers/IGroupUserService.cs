@@ -1,16 +1,9 @@
-﻿
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Message.Commands.GroupUsers;
-using SugarChat.Message.Events.GroupUsers;
-using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
-using System.Threading;
-using System.Threading.Tasks;
 
 
 namespace SugarChat.Core.Services.GroupUsers

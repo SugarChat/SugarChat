@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
-using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Messages

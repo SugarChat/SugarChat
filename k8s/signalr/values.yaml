@@ -4,7 +4,7 @@ signalr:
     - "localhost"
   image:
     repository: "registry.cn-hangzhou.aliyuncs.com/funshow/sugarchat-signalr-server"
-    tag: "1.1.0"
+    tag: "1.1.1"
     pullPolicy: "IfNotPresent"
   redisConnectionString: "127.0.0.1:6379"
   signalRRedisConnectionString: "127.0.0.1:6379"

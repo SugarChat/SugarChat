@@ -33,6 +33,6 @@
         AdminCanNotDeleteAdmin = 50016,
         CanNotSetGroupMemberRoleToOwner = 50017,
         NoAuthorization = 50018,
-        TheSendingTimeIsMoreThanTwoMinutesandCannotBeWithdrawn = 50019
+        TheSendingTimeIsMoreThanTwoMinutesAndCannotBeWithdrawn = 50019
     }
 }

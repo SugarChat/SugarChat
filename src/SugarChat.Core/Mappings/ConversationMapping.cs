@@ -8,8 +8,7 @@ namespace SugarChat.Core.Mappings
     {
         public ConversationMapping()
         {
-            CreateMap<DeleteConversationCommand, ConversationDeletedEvent>();
-            CreateMap<SetMessageAsReadCommand, ConversationDeletedEvent>();
+            CreateMap<DeleteConversationCommand, ConversationDeletedEvent>();           
         }
     }
 }

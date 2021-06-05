@@ -12,10 +12,6 @@ namespace SugarChat.Core.Services.Groups
 {
     public class GroupDataProvider : IGroupDataProvider
     {
-        private const string UpdateGroupFailed = "Group with Id {0} Update Failed.";
-        private const string AddGroupFailed = "Group with Id {0} Add Failed.";
-        private const string RemoveGroupFailed = "Group with Id {0} Remove Failed.";
-
         private readonly IRepository _repository;
 
         public GroupDataProvider(IRepository repository)
@@ -45,7 +41,7 @@ namespace SugarChat.Core.Services.Groups
             int affectedLineNum = await _repository.AddAsync(group, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(AddGroupFailed, group.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddGroupFailed, group.Id));
             }
         }
 
@@ -54,7 +50,7 @@ namespace SugarChat.Core.Services.Groups
             int affectedLineNum = await _repository.UpdateAsync(group, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(UpdateGroupFailed, group.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.UpdateGroupFailed, group.Id));
             }
         }
 
@@ -63,7 +59,7 @@ namespace SugarChat.Core.Services.Groups
             int affectedLineNum = await _repository.RemoveAsync(group, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(RemoveGroupFailed, group.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.RemoveGroupFailed, group.Id));
             }
         }
     }

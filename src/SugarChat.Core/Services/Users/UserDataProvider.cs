@@ -10,10 +10,6 @@ namespace SugarChat.Core.Services.Users
 {
     public class UserDataProvider : IUserDataProvider
     {
-        private const string UpdateUserFailed = "User with Id {0} Update Failed.";
-        private const string AddUserFailed = "User with Id {0} Add Failed.";
-        private const string RemoveUserFailed = "User with Id {0} Remove Failed.";
-
         private readonly IRepository _repository;
 
         public UserDataProvider(IRepository repository)
@@ -39,7 +35,7 @@ namespace SugarChat.Core.Services.Users
             int affectedLineNum = await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(AddUserFailed, user.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddUserFailed, user.Id));
             }
         }
 
@@ -48,7 +44,7 @@ namespace SugarChat.Core.Services.Users
             int affectedLineNum = await _repository.UpdateAsync(user, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(UpdateUserFailed, user.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.UpdateUserFailed, user.Id));
             }
         }
 
@@ -57,7 +53,7 @@ namespace SugarChat.Core.Services.Users
             int affectedLineNum = await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(RemoveUserFailed, user.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.RemoveUserFailed, user.Id));
             }
         }
     }

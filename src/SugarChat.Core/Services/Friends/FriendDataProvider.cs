@@ -11,10 +11,6 @@ namespace SugarChat.Core.Services.Friends
 {
     public class FriendDataProvider : IFriendDataProvider
     {
-        private const string UpdateFriendFailed = "Friend with Id {0} Update Failed.";
-        private const string AddFriendFailed = "Friend with Id {0} Add Failed.";
-        private const string RemoveFriendFailed = "Friend with Id {0} Remove Failed.";
-
         private readonly IRepository _repository;
 
         public FriendDataProvider(IRepository repository)
@@ -63,7 +59,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(AddFriendFailed, friend.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddFriendFailed, friend.Id));
             }
         }
 
@@ -72,7 +68,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(UpdateFriendFailed, friend.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.UpdateFriendFailed, friend.Id));
             }
         }
 
@@ -81,7 +77,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(RemoveFriendFailed, friend.Id));
+                throw new BusinessWarningException(string.Format(ExceptionPrompt.RemoveFriendFailed, friend.Id));
             }
         }
 

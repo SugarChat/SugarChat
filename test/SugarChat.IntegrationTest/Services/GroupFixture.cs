@@ -77,7 +77,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(string.Format(ServiceCheckExtensions.GroupNoExists, command.GroupId)));
+                    response.Message.ShouldBe(string.Format(string.Format(ExceptionPrompt.GroupNoExists, command.GroupId)));
                 }
 
                 command.GroupId = groups[0].Id;

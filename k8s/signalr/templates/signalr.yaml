@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "signalr.fullname" . }}-server
+  labels:
+    app: {{ template "signalr.name" . }}
+    component: {{ template "signalr.fullname" . }}-server
+    tier: {{ template "signalr.fullname" . }}-server
+    chart: {{ template "signalr.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      component: {{ template "signalr.fullname" . }}-server
+  template:
+    metadata:
+      labels:
+        app: {{ template "signalr.name" . }}
+        component: {{ template "signalr.fullname" . }}-server
+        tier: {{ template "signalr.fullname" . }}-server
+        chart: {{ template "signalr.chart" . }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ template "signalr.name" . }}-server
+          image: "{{ .Values.signalr.image.repository }}:{{ .Values.signalr.image.tag }}"
+          imagePullPolicy: {{ .Values.signalr.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /HealthCheck/health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /HealthCheck/ready
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 100m
+            limits:
+              memory: 1200Mi
+              cpu: 500m
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ template "signalr.fullname" . }}-config
+          env:
+            - name: SUGARCHAT_SIGNAL_HUB_URL
+              value: "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}"
+            - name: SUGARCHAT_SIGNAL_HUB_INTERIOR_URL
+              value: "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_INTERIOR_URL }}"  
+          volumeMounts:
+          - mountPath: /app/appsettings.json
+            name: appsettings-volume
+            readOnly: true
+            subPath: appsettings.json
+      volumes:
+        - name: appsettings-volume
+          configMap:
+            name: {{ template "signalr.fullname" . }}-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "signalr.fullname" . }}-server
+  labels:
+    app: {{ template "signalr.name" . }}
+    component: {{ template "signalr.fullname" . }}-server
+    chart: {{ template "signalr.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.signalr.type }}
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    component: {{ template "signalr.fullname" . }}-server
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "signalr.fullname" . }}-server-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,If-Modified-Since,Cache-Control,Content-Type,Authorization,ETag,Link,v,X-Requested-With,X-signalr-Client,X-Result-Count,X-RateLimit-Limit,X-RateLimit-Remaining,X-signalr-ConfigVersion"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade "websocket";
+      proxy_set_header Connection "Upgrade";
+spec:
+  tls:
+  - hosts:
+    {{- range .Values.signalr.domains }}
+    - {{ . }}
+    {{- end }}
+    secretName: {{ template "signalr.fullname" . }}-server-tls
+  rules:
+  {{- range .Values.signalr.domains }}
+  - host: {{ . }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ template "signalr.fullname" $ }}-server
+          servicePort: 80
+  {{- end }}

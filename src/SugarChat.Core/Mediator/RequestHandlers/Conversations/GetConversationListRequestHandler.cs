@@ -21,7 +21,7 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
         public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> Handle(IReceiveContext<GetConversationListRequest> context, CancellationToken cancellationToken)
         {
             var response = await _conversationService.GetConversationListByUserIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<IEnumerable<ConversationDto>>() { Code = StatusCode.Ok, Message = "Success", Data = response.Result };
+            return new SugarChatResponse<IEnumerable<ConversationDto>>() { Data = response.Result };
         }
     }
 }

@@ -2,14 +2,14 @@
 {
     public class SugarChatResponse<T> : ISugarChatResponse<T>
     {
-        public StatusCode Code { get; set; }
+        public StatusCode Code { get; set; } = StatusCode.Ok;
         public string Message { get; set; }
         public T Data { get; set; }
     }
 
     public class SugarChatResponse : ISugarChatResponse
     {
-        public StatusCode Code { get; set; }
+        public StatusCode Code { get; set; } = StatusCode.Ok;
         public string Message { get; set; }
     }
     public enum StatusCode
@@ -31,6 +31,8 @@
         CustomPropertiesCanNotBeEmpty = 50014,
         TheDeletedMemberCanNotBeOwner = 50015,
         AdminCanNotDeleteAdmin = 50016,
-        CanNotSetGroupMemberRoleToOwner = 50017
+        CanNotSetGroupMemberRoleToOwner = 50017,
+        NoAuthorization = 50018,
+        TheSendingTimeIsMoreThanTwoMinutesandCannotBeWithdrawn = 50019
     }
 }

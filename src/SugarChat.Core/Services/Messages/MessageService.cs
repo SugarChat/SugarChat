@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
@@ -57,7 +58,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken))
             };
         }
-       
+
         public async Task<GetUnreadToUserFromFriendResponse> GetUnreadToUserFromFriendAsync(
             GetUnreadToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -79,7 +80,7 @@ namespace SugarChat.Core.Services.Messages
                         cancellationToken))
             };
         }
-       
+
         public async Task<GetAllHistoryToUserFromFriendResponse> GetAllHistoryToUserFromFriendAsync(
             GetAllHistoryToUserFromFriendRequest request,
             CancellationToken cancellationToken = default)
@@ -111,7 +112,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken))
             };
         }
-       
+
         public async Task<GetUnreadToUserFromGroupResponse> GetUnreadToUserFromGroupAsync(
             GetUnreadToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
@@ -131,7 +132,7 @@ namespace SugarChat.Core.Services.Messages
                     await _messageDataProvider.GetUnreadToUserFromGroupAsync(request.UserId, request.GroupId, cancellationToken))
             };
         }
-      
+
         public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -157,11 +158,11 @@ namespace SugarChat.Core.Services.Messages
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {
-                throw new BusinessException("no authorization");
+                throw new BusinessException(StatusCode.NoAuthorization, "no authorization");
             }
             if (message.SentTime.AddMinutes(2) < DateTime.Now)
             {
-                throw new BusinessException("the sending time is more than two minutes and cannot be withdrawn");
+                throw new BusinessException(StatusCode.TheSendingTimeIsMoreThanTwoMinutesandCannotBeWithdrawn, "the sending time is more than two minutes and cannot be withdrawn");
             }
             message.IsRevoked = true;
             await _messageDataProvider.UpdateAsync(message, cancellationToken);

@@ -35,7 +35,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                await mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse<object>>(new SetMessageAsReadCommand
+                await mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse>(new SetMessageAsReadCommand
                 {
                     ConversationId = conversationId,
                     UserId = userId
@@ -90,7 +90,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                await mediator.SendAsync<DeleteConversationCommand, SugarChatResponse<object>> (new DeleteConversationCommand
+                await mediator.SendAsync<DeleteConversationCommand, SugarChatResponse> (new DeleteConversationCommand
                 {
                     ConversationId = conversationId,
                     UserId = userId

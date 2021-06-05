@@ -8,18 +8,18 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class SetGroupMemberCustomFieldCommandHandler : ICommandHandler<SetGroupMemberCustomFieldCommand, SugarChatResponse<object>>
+    public class SetGroupMemberCustomFieldCommandHandler : ICommandHandler<SetGroupMemberCustomFieldCommand, SugarChatResponse>
     {
         public IGroupUserService _groupUserService;
         public SetGroupMemberCustomFieldCommandHandler(IGroupUserService groupUserService)
         {
             _groupUserService = groupUserService;
         }
-        public async Task<SugarChatResponse<object>> Handle(IReceiveContext<SetGroupMemberCustomFieldCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<SetGroupMemberCustomFieldCommand> context, CancellationToken cancellationToken)
         {
             var groupMemberCustomFieldBeSetEvent = await _groupUserService.SetGroupMemberCustomFieldAsync(context.Message, cancellationToken);
             await context.PublishAsync(groupMemberCustomFieldBeSetEvent, cancellationToken);
-            return new SugarChatResponse<object>();
+            return new SugarChatResponse();
         }
     }
 }

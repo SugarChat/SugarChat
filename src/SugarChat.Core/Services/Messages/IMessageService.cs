@@ -1,13 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Groups;
+using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Events.Groups;
+using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 
 namespace SugarChat.Core.Services.Messages
 {
-    public interface IMessageService
+    public interface IMessageService : IService
     {
         Task<GetAllUnreadToUserResponse> GetAllUnreadToUserAsync(GetAllUnreadToUserRequest request,
             CancellationToken cancellationToken = default);
@@ -27,5 +29,7 @@ namespace SugarChat.Core.Services.Messages
 
         Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command, CancellationToken cancellationToken = default);
     }
 }

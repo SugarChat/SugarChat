@@ -21,7 +21,7 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                await mediator.SendAsync<SetGroupMemberCustomFieldCommand, SugarChatResponse<object>>(new SetGroupMemberCustomFieldCommand
+                await mediator.SendAsync<SetGroupMemberCustomFieldCommand, SugarChatResponse>(new SetGroupMemberCustomFieldCommand
                 {
                     GroupId = conversationId,
                     UserId = userId,

@@ -8,7 +8,14 @@ namespace SugarChat.Core.Mappings
     {
         public GroupUserMapping()
         {
-            CreateMap<SetGroupMemberCustomFieldCommand, GroupMemberCustomFieldBeSetEvent>();           
+            CreateMap<SetGroupMemberCustomFieldCommand, GroupMemberCustomFieldBeSetEvent>();
+            CreateMap<JoinGroupCommand, GroupJoinedEvent>();
+            CreateMap<QuitGroupCommand, GroupQuittedEvent>();
+            CreateMap<ChangeGroupOwnerCommand, GroupOwnerChangedEvent>();
+            CreateMap<AddGroupMemberCommand, GroupMemberAddedEvent>();
+            CreateMap<DeleteGroupMemberCommand, GroupMemberDeletedEvent>();
+            CreateMap<SetMessageRemindTypeCommand, MessageRemindTypeSetEvent>();
+            CreateMap<SetGroupMemberRoleCommand, GroupMemberRoleSetEvent>();
         }
     }
 }

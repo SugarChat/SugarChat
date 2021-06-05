@@ -1,6 +1,7 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
+using SugarChat.Core.Mediator.CommandHandlers.Groups;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
@@ -21,6 +22,20 @@ namespace SugarChat.WebApi.Controllers
         public GroupController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [Route("create"), HttpPost]
+        public async Task<IActionResult> CreateGroup(AddGroupCommand command)
+        {
+            var response = await _mediator.SendAsync<AddGroupCommand, AddGroupResponse>(command);
+            return Ok(response);
+        }
+
+        [Route("dismiss"), HttpPost]
+        public async Task<IActionResult> DismissGroup(DismissGroupCommand command)
+        {
+            var response = await _mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
+            return Ok(response);
         }
 
         [Route("getGroupList"), HttpGet]
@@ -46,7 +61,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("updateGroupProfile"), HttpPost]
         public async Task<IActionResult> UpdateGroupProfile(UpdateGroupProfileCommand command)
         {
-            var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse<object>>(command);
+            var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

@@ -12,4 +12,10 @@ namespace SugarChat.Core.Basic
         public string Message { get; set; }
         public T Data { get; set; }
     }
+
+    public class SugarChatResponse : ISugarChatResponse
+    {
+        public int Code { get; set; }
+        public string Message { get; set; }
+    }
 }

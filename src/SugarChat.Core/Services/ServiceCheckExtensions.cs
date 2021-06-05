@@ -11,7 +11,7 @@ namespace SugarChat.Core.Services
         {
             if (user is not null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.UserExists, user.Id));
+                throw new BusinessWarningException(Prompt.UserExists.WithParams(user.Id));
             }
         }
 
@@ -19,7 +19,7 @@ namespace SugarChat.Core.Services
         {
             if (user is null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.UserNoExists, id));
+                throw new BusinessWarningException(Prompt.UserNoExists.WithParams(id));
             }
         }
 
@@ -27,7 +27,7 @@ namespace SugarChat.Core.Services
         {
             if (friend is not null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.FriendAlreadyMade, userId, friendId));
+                throw new BusinessWarningException(Prompt.FriendAlreadyMade.WithParams(userId, friendId));
             }
         }
 
@@ -35,7 +35,7 @@ namespace SugarChat.Core.Services
         {
             if (friend is null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.NotFriend, userId, friendId));
+                throw new BusinessWarningException(Prompt.NotFriend.WithParams(userId, friendId));
             }
         }
 
@@ -43,7 +43,7 @@ namespace SugarChat.Core.Services
         {
             if (group is not null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.GroupExists, group.Id));
+                throw new BusinessWarningException(Prompt.GroupExists.WithParams(group.Id));
             }
         }
 
@@ -52,7 +52,7 @@ namespace SugarChat.Core.Services
             user.CheckExist(userId);
             if (user.Id == friendId)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddSelfAsFiend, user.Id));
+                throw new BusinessWarningException(Prompt.AddSelfAsFiend.WithParams(user.Id));
             }
         }
 
@@ -60,7 +60,7 @@ namespace SugarChat.Core.Services
         {
             if (group is null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.GroupNoExists, groupId));
+                throw new BusinessWarningException(Prompt.GroupNoExists.WithParams(groupId));
             }
         }
 
@@ -68,7 +68,7 @@ namespace SugarChat.Core.Services
         {
             if (groupUser is null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.NotInGroup, userId, groupId));
+                throw new BusinessWarningException(Prompt.NotInGroup.WithParams(userId, groupId));
             }
         }
 
@@ -76,7 +76,7 @@ namespace SugarChat.Core.Services
         {
             if (groupUser is not null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.GroupUserExists, groupUser.UserId, groupUser.GroupId));
+                throw new BusinessWarningException(Prompt.GroupUserExists.WithParams(groupUser.UserId, groupUser.GroupId));
             }
         }
 
@@ -84,7 +84,7 @@ namespace SugarChat.Core.Services
         {
             if (message is null)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.MessageNoExists, messageId));
+                throw new BusinessWarningException(Prompt.MessageNoExists.WithParams(messageId));
             }
         }
 
@@ -92,8 +92,8 @@ namespace SugarChat.Core.Services
         {
             if (groupUser.LastReadTime >= sentTime)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.LastReadTimeLaterThanOrEqualTo, groupUser.UserId,
-                    groupUser.GroupId, sentTime));
+                throw new BusinessWarningException(Prompt.LastReadTimeLaterThanOrEqualTo.WithParams(groupUser.UserId,
+                    groupUser.GroupId, sentTime.ToString()));
             }
         }
 
@@ -102,7 +102,7 @@ namespace SugarChat.Core.Services
             CheckExist(groupUser, userId, groupId);
             if (groupUser.Role != UserRole.Owner)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.IsNotOwner, userId, groupId));
+                throw new BusinessWarningException(Prompt.IsNotOwner.WithParams(userId, groupId));
             }
         }
 
@@ -111,7 +111,7 @@ namespace SugarChat.Core.Services
             CheckExist(groupUser, userId, groupId);
             if (groupUser.Role == UserRole.Owner)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.IsOwner, userId, groupId));
+                throw new BusinessWarningException(Prompt.IsOwner.WithParams(userId, groupId));
             }
         }
 
@@ -120,7 +120,7 @@ namespace SugarChat.Core.Services
             CheckExist(groupUser, userId, groupId);
             if (groupUser.Role != UserRole.Admin && groupUser.Role != UserRole.Owner)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.NotAdmin, userId, groupId));
+                throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
             }
         }
     }

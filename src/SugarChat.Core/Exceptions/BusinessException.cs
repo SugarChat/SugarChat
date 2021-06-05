@@ -10,20 +10,20 @@ namespace SugarChat.Core.Exceptions
         {
             LogLevel = logLevel;
         }
-        public BusinessException(LogEventLevel logLevel, int code, string message) : base(message)
+        public BusinessException(LogEventLevel logLevel, ExceptionPrompt prompt) : base(prompt.Message)
         {
             LogLevel = logLevel;
-            Code = code;
+            Code = prompt.Code;
         }
         
-        public BusinessException(LogEventLevel logLevel, int code, string message, Exception innerException) : base(message, innerException)
+        public BusinessException(LogEventLevel logLevel, ExceptionPrompt prompt, Exception innerException) : base(prompt.Message, innerException)
         {
             LogLevel = logLevel;
-            Code = code;
+            Code = prompt.Code;
         }
 
         public LogEventLevel LogLevel { get; }
 
-        public int Code { get; set; } = 0;
+        public int Code { get; }
     }
 }

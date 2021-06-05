@@ -112,12 +112,12 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.GroupNoExists, command.GroupId));
+                    response.Message.ShouldBe(Prompt.GroupNoExists.WithParams(command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.UserNoExists, command.UserId));
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(command.UserId).Message);
                 }
 
                 command.UserId = userIds[0];
@@ -126,7 +126,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.GroupUserExists, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.GroupUserExists.WithParams(command.UserId, command.GroupId).Message);
                 }
             });
         }
@@ -146,17 +146,17 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserId, command.GroupId).Message);
                 }
                 {
                     command.UserId = groupOwnerId;
                     var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.IsOwner, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.IsOwner.WithParams( command.UserId, command.GroupId).Message);
                 }
 
                 command.UserId = userIds[0];
@@ -166,7 +166,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserId, command.GroupId).Message);
                 }
             });
         }
@@ -187,22 +187,22 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.OwnerId = userIds[0];
                     var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.IsNotOwner, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.IsNotOwner.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.OwnerId = groupOwnerId;
                     var response = await mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.MewOwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.MewOwnerId, command.GroupId).Message);
                 }
 
                 command.MewOwnerId = userIds[0];
@@ -231,17 +231,17 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.AdminId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.AdminId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.AdminId = groupAdminIds[0];
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.UserNoExists, command.UserIdList[0], command.GroupId));
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams( command.UserIdList[0], command.GroupId).Message);
                 }
 
                 command.UserIdList = userIds.Take(2).ToList();
@@ -255,7 +255,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.GroupUserExists, command.UserIdList[0], command.GroupId));
+                    response.Message.ShouldBe(Prompt.GroupUserExists.WithParams( command.UserIdList[0], command.GroupId).Message);
                 }
             });
         }
@@ -281,12 +281,12 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.AdminId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.AdminId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.AdminId = groupAdminIds[0];
@@ -306,7 +306,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserIdList[0], command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserIdList[0], command.GroupId).Message);
                 }
             });
         }
@@ -327,12 +327,12 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.UserId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.UserId, command.GroupId).Message);
                 }
 
                 command.UserId = userIds[0];
@@ -363,22 +363,22 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.OwnerId = userIds[0];
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.IsNotOwner, command.OwnerId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.IsNotOwner.WithParams( command.OwnerId, command.GroupId).Message);
                 }
                 {
                     command.OwnerId = groupOwnerId;
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.NotInGroup, command.MemberId, command.GroupId));
+                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams( command.MemberId, command.GroupId).Message);
                 }
 
                 command.MemberId = userIds[0];

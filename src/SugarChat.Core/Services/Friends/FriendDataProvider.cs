@@ -59,7 +59,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddFriendFailed, friend.Id));
+                throw new BusinessWarningException(Prompt.AddFriendFailed.WithParams(friend.Id));
             }
         }
 
@@ -68,7 +68,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.UpdateFriendFailed, friend.Id));
+                throw new BusinessWarningException(Prompt.UpdateFriendFailed.WithParams(friend.Id));
             }
         }
 
@@ -77,7 +77,7 @@ namespace SugarChat.Core.Services.Friends
             int affectedLineNum = await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.RemoveFriendFailed, friend.Id));
+                throw new BusinessWarningException(Prompt.RemoveFriendFailed.WithParams(friend.Id));
             }
         }
 

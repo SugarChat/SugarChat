@@ -24,7 +24,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.AddAsync(groupUser, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.AddGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.AddGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 
@@ -66,7 +66,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.UpdateGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 
@@ -75,7 +75,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(ExceptionPrompt.RemoveGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.RemoveGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 

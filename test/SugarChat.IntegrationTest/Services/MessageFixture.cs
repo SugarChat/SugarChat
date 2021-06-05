@@ -72,7 +72,7 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ExceptionPrompt.MessageNoExists, command.MessageId));
+                    response.Message.ShouldBe(Prompt.MessageNoExists.WithParams(command.MessageId).Message);
                 }
                 {
                     command.MessageId = messageId1;

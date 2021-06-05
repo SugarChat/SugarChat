@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SugarChat.Core.Basic
+﻿namespace SugarChat.Core.Basic
 {
     public class SugarChatResponse<T> : ISugarChatResponse<T>
     {
@@ -19,21 +13,21 @@ namespace SugarChat.Core.Basic
         public string Message { get; set; }
     }
     public enum StatusCode
-    {        
+    {
         Ok = 20000,
-        UserExists = 50001,
-        UserNoExists = 50002,
-        FriendAlreadyMade = 50003,
-        AddSelfAsFiend = 50004,
-        NotFriend = 50005,
-        GroupExists = 50006,
-        GroupNoExists = 50007,
-        NotInGroup = 50008,
-        InGroup = 50009,
-        NotAdmin = 50010,
-        IsOwner = 50011,
-        IsNotOwner = 50012,
-        MessageExists = 50013,
+        UserAlreadyExist = 50001,
+        UserDoseNotExist = 50002,
+        AlreadyAddedThisFriend = 50003,
+        ShouldNotAddSelfAsFriend = 50004,
+        NotYetFriend = 50005,
+        GroupAlreadyExist = 50006,
+        GroupDoesNotExist = 50007,
+        UserIsNotMemberOfGroup = 50008,
+        UserIsAlreadyAMemberOfTheGroup = 50009,
+        UserIsNotAdministratorOfGroup = 50010,
+        GroupOwnerNeedsToTransferTheIdentityFirst = 50011,
+        UserIsNotOwnerOfGroup = 50012,
+        MessageDoseNotExist = 50013,
         CustomPropertiesCanNotBeEmpty = 50014,
         TheDeletedMemberCanNotBeOwner = 50015,
         AdminCanNotDeleteAdmin = 50016,

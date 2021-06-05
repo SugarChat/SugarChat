@@ -58,7 +58,7 @@ namespace SugarChat.Core.Services.GroupUsers
             }
             else
             {
-                throw new BusinessWarningException(StatusCode.CustomPropertiesCanNotBeEmpty, "Custom properties cannot be empty");
+                throw new BusinessException(StatusCode.CustomPropertiesCanNotBeEmpty, "Custom properties cannot be empty");
             }
         }
 
@@ -148,12 +148,12 @@ namespace SugarChat.Core.Services.GroupUsers
 
                 if (member.Role == UserRole.Owner)
                 {
-                    throw new BusinessWarningException(StatusCode.TheDeletedMemberCanNotBeOwner, $"the deleted member cannot be owner with Id {member.UserId}.");
+                    throw new BusinessException(StatusCode.TheDeletedMemberCanNotBeOwner, $"the deleted member cannot be owner with Id {member.UserId}.");
                 }
 
                 if (admin.Role == UserRole.Admin && member.Role == UserRole.Admin)
                 {
-                    throw new BusinessWarningException(StatusCode.AdminCanNotDeleteAdmin, $"admin can't delete admin with Id {member.UserId}.");
+                    throw new BusinessException(StatusCode.AdminCanNotDeleteAdmin, $"admin can't delete admin with Id {member.UserId}.");
                 }
                 await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
             }
@@ -176,7 +176,7 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             if (command.Role == UserRole.Owner)
             {
-                throw new BusinessWarningException(StatusCode.CanNotSetGroupMemberRoleToOwner, $"can't set group member role to owner with Id {command.MemberId}.");
+                throw new BusinessException(StatusCode.CanNotSetGroupMemberRoleToOwner, $"can't set group member role to owner with Id {command.MemberId}.");
             }
             var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellationToken);
             owner.CheckIsOwner(command.OwnerId, command.GroupId);

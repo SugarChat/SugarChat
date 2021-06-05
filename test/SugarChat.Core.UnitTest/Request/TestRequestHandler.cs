@@ -12,7 +12,7 @@ namespace SugarChat.Core.UnitTest.Request
     {
         public Task<SugarChatResponse> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
         {
-            throw new BusinessWarningException("Test");
+            throw new BusinessException("Test");
         }
     }
 }

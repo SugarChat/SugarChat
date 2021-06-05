@@ -157,11 +157,11 @@ namespace SugarChat.Core.Services.Messages
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {
-                throw new BusinessWarningException("no authorization");
+                throw new BusinessException("no authorization");
             }
             if (message.SentTime.AddMinutes(2) < DateTime.Now)
             {
-                throw new BusinessWarningException("the sending time is more than two minutes and cannot be withdrawn");
+                throw new BusinessException("the sending time is more than two minutes and cannot be withdrawn");
             }
             message.IsRevoked = true;
             await _messageDataProvider.UpdateAsync(message, cancellationToken);

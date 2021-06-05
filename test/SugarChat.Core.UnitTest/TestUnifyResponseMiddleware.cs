@@ -59,7 +59,7 @@ namespace SugarChat.Core.UnitTest
             }
             catch(Exception ex)
             {
-                Assert.True(ex is BusinessWarningException);
+                Assert.True(ex is BusinessException);
             }
         }
         MediatorBuilder SetupMediatorBuilderWithMiddleware()

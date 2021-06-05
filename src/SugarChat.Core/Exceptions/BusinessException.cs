@@ -7,17 +7,17 @@ namespace SugarChat.Core.Exceptions
     public class BusinessException : Exception, IBusinessException
     {
 
-        public BusinessException(LogEventLevel logLevel, string message) : base(message)
+        public BusinessException(string message, LogEventLevel logLevel = LogEventLevel.Error) : base(message)
         {
             LogLevel = logLevel;
         }
-        public BusinessException(LogEventLevel logLevel, StatusCode code, string message) : base(message)
+        public BusinessException(StatusCode code, string message, LogEventLevel logLevel = LogEventLevel.Error) : base(message)
         {
             LogLevel = logLevel;
             Code = code;
         }
-        
-        public BusinessException(LogEventLevel logLevel, StatusCode code, string message, Exception innerException) : base(message, innerException)
+
+        public BusinessException(StatusCode code, string message, Exception innerException, LogEventLevel logLevel = LogEventLevel.Error) : base(message, innerException)
         {
             LogLevel = logLevel;
             Code = code;

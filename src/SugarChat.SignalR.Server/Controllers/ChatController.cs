@@ -32,13 +32,13 @@ namespace SugarChat.SignalR.Server.Controllers
             Security = configuration.GetValue<bool>("Security");
         }
         [HttpGet("ConnectionUrl")]
-        public async Task<IActionResult> GetConnectionUrl(string userIdentifier)
+        public async Task<IActionResult> GetConnectionUrl(string userIdentifier, bool isInterior = false)
         {
             if (!Check())
             {
                 return Unauthorized();
             }
-            var url = await _connectService.GetConnectionUrl(userIdentifier);
+            var url = await _connectService.GetConnectionUrl(userIdentifier, isInterior);
             return Ok(url);
         }
 

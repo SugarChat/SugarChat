@@ -22,7 +22,7 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IRedisClient, RedisClient>(sp => new RedisClient(Configuration.GetSection("Redis").Value));
+            services.AddSingleton<IRedisClient, RedisClient>(sp => new RedisClient(Configuration.GetSection("SignalRRedis").Value));
             services.AddHttpContextAccessor();
             services.AddControllers();
             services.AddSugarChatSignalR()

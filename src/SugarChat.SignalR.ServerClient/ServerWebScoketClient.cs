@@ -30,9 +30,9 @@ namespace SugarChat.SignalR.ServerClient
             HubConnection.StartAsync();
         }
 
-        public async Task<string> GetConnectionUrl(string userIdentifier)
+        public async Task<string> GetConnectionUrl(string userIdentifier, bool isInterior = false)
         {
-            var url = await HubConnection.InvokeAsync<string>("GetConnectionUrl", userIdentifier).ConfigureAwait(false);
+            var url = await HubConnection.InvokeAsync<string>("GetConnectionUrl", userIdentifier, isInterior).ConfigureAwait(false);
             return url;
         }
 

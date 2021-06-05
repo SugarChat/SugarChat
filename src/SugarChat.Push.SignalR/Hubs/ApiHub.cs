@@ -25,9 +25,9 @@ namespace SugarChat.Push.SignalR.Hubs
             Security = configuration.GetValue<bool>("Security");
         }
 
-        public async Task<string> GetConnectionUrl(string userIdentifier)
+        public async Task<string> GetConnectionUrl(string userIdentifier, bool isInterior = false)
         {
-            var url = await _connectService.GetConnectionUrl(userIdentifier);
+            var url = await _connectService.GetConnectionUrl(userIdentifier, isInterior);
             return url;
         }
 

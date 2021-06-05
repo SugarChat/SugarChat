@@ -21,13 +21,26 @@ namespace SugarChat.Push.SignalR.Services
         private IConfiguration Configuration;
         private IHostEnvironment Env;
 
-        public Task<string> GetConnectionUrl(string userIdentifier)
+        public Task<string> GetConnectionUrl(string userIdentifier, bool isInterior = false)
         {
-            var baseUrl = Environment.GetEnvironmentVariable("SUGARCHAT_SIGNAL_HUB_URL");
-            if (string.IsNullOrWhiteSpace(baseUrl))
+            string baseUrl = "";
+            if (isInterior)
             {
-                baseUrl = Configuration.GetSection("SUGARCHAT_SIGNAL_HUB_URL").Value;
+                baseUrl = Environment.GetEnvironmentVariable("SUGARCHAT_SIGNAL_HUB_INTERIOR_URL");
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    baseUrl = Configuration.GetSection("SUGARCHAT_SIGNAL_HUB_INTERIOR_URL").Value;
+                }
             }
+            else
+            {
+                baseUrl = Environment.GetEnvironmentVariable("SUGARCHAT_SIGNAL_HUB_URL");
+                if (string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    baseUrl = Configuration.GetSection("SUGARCHAT_SIGNAL_HUB_URL").Value;
+                }
+            }
+            
             var key = Guid.NewGuid().ToString("N");
             _redis.Set("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromMinutes(5));
             return Task.FromResult($"{baseUrl}?connectionkey={key}");

@@ -9,7 +9,7 @@ namespace SugarChat.SignalR.ServerClient
     public interface IServerClient
     {
 
-        Task<string> GetConnectionUrl(string userIdentifier);
+        Task<string> GetConnectionUrl(string userIdentifier, bool isInterior = false);
 
         Task Group(GroupActionModel model);
 

@@ -58,6 +58,8 @@ spec:
           env:
             - name: SUGARCHAT_SIGNAL_HUB_URL
               value: "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}"
+            - name: SUGARCHAT_SIGNAL_HUB_INTERIOR_URL
+              value: "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_INTERIOR_URL }}"  
           volumeMounts:
           - mountPath: /app/appsettings.json
             name: appsettings-volume

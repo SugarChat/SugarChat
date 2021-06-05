@@ -24,9 +24,14 @@ namespace SugarChat.SignalR.ServerClient
             Client = httpClient;
         }
 
-        public async Task<string> GetConnectionUrl(string userIdentifier)
+        public async Task<string> GetConnectionUrl(string userIdentifier, bool isInterior = false)
         {
-            var result = await Client.GetStringAsync($"{ConnectionUrl}?userIdentifier={userIdentifier}").ConfigureAwait(false);
+            var request = $"{ConnectionUrl}?userIdentifier={userIdentifier}";
+            if (isInterior)
+            {
+                request = $"{ConnectionUrl}?userIdentifier={userIdentifier}&isInterior={isInterior}";
+            }
+            var result = await Client.GetStringAsync(request).ConfigureAwait(false);
             return result;
         }
 

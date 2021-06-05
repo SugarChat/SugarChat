@@ -1,0 +1,13 @@
+signalr:
+  type: ClusterIP
+  domains: 
+    - "localhost"
+  image:
+    repository: "registry.cn-hangzhou.aliyuncs.com/funshow/sugarchat-signalr-server"
+    tag: "1.1.1"
+    pullPolicy: "IfNotPresent"
+  signalRRedisConnectionString: "127.0.0.1:6379"
+  SUGARCHAT_SIGNAL_HUB_URL: "http://127.0.0.1"
+  SUGARCHAT_SIGNAL_HUB_INTERIOR_URL: "http://localhost:9875/hubs/chat"
+  ServerClientKey: "key"
+  Security: true

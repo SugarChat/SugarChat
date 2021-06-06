@@ -13,7 +13,7 @@ namespace SugarChat.Core.Services.Conversations
             CancellationToken cancellationToken = default);
 
         Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default);      
 
         Task<MessageReadEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command,
             CancellationToken cancellationToken = default);

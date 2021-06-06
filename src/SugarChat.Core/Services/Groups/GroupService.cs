@@ -107,14 +107,18 @@ namespace SugarChat.Core.Services.Groups
         }
 
         public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken)
-        {           
+        {
             var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken);
             group.CheckExist(command.Id);
 
             group = _mapper.Map<Group>(command);
-            await _groupDataProvider.UpdateAsync(group,cancellationToken);
+            await _groupDataProvider.UpdateAsync(group, cancellationToken);
 
-            return _mapper.Map<GroupProfileUpdatedEvent>(command);
+            return new()
+            {
+                Id = group.Id,
+                Status = EventStatus.Success
+            };
         }
 
         public async Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation)

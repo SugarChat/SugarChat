@@ -110,23 +110,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<MessageReadEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command,
-            CancellationToken cancellationToken = default)
-        {
-            var groupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId,
-                    cancellationToken);
-            groupUser.CheckExist(command.UserId, command.ConversationId);
-
-            var lastMessage =
-                await _conversationDataProvider.GetLastMessageByGroupIdAsync(command.ConversationId, cancellationToken);
-            groupUser.LastReadTime = lastMessage.SentTime;
-            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-
-            return _mapper.Map<MessageReadEvent>(command);
-        }
-
-        public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
+    public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
             CancellationToken cancellationToken = default)
         {
             var groupUser =

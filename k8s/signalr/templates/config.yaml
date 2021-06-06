@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "signalr.fullname" . }}-config
+data:
+  appsettings.json: |-
+    {
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft": "Warning",
+          "Microsoft.Hosting.Lifetime": "Information"
+        }
+      },
+      "AllowedHosts": "*",
+      "SignalRRedis": "{{ .Values.signalr.signalRRedisConnectionString }}",
+      "SUGARCHAT_SIGNAL_HUB_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}",
+      "SUGARCHAT_SIGNAL_HUB_INTERIOR_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_INTERIOR_URL }}",
+      "ServerClientKey": "{{ .Values.signalr.ServerClientKey }}",
+      "Security": {{ .Values.signalr.Security }}
+    }
+

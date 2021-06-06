@@ -213,7 +213,7 @@ namespace SugarChat.Core.Services.Messages
                 cancellationToken);
             return new()
             {
-                Status = EventStatus.Success
+                Status= EventStatus.Success
             };
         }
 

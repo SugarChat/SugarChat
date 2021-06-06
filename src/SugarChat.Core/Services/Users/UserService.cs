@@ -53,7 +53,11 @@ namespace SugarChat.Core.Services.Users
             user = _mapper.Map<User>(command);
             await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
 
-            return _mapper.Map<UpdateUserEvent>(command);
+            return new()
+            {
+                Id = user.Id,
+                Status = EventStatus.Success
+            };
         }
 
         public async Task<RemoveUserEvent> RemoveUserAsync(RemoveUserCommand command,
@@ -85,7 +89,7 @@ namespace SugarChat.Core.Services.Users
         public Task<GetCurrentUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
             CancellationToken cancellation = default)
         {
-            return Task.FromResult(new GetCurrentUserResponse {User = new UserDto()});
+            return Task.FromResult(new GetCurrentUserResponse { User = new UserDto() });
         }
 
 

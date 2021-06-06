@@ -19,7 +19,7 @@ namespace SugarChat.Core.Services.GroupUsers
 {
     public class GroupUserService : IGroupUserService
     {
-private readonly IMapper _mapper;
+        private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
@@ -109,7 +109,10 @@ private readonly IMapper _mapper;
             {
                 groupUser.CustomProperties = command.CustomProperties;
                 await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-                return _mapper.Map<GroupMemberCustomFieldBeSetEvent>(command);
+                return new()
+                {
+                    Status = EventStatus.Success
+                };
             }
             else
             {

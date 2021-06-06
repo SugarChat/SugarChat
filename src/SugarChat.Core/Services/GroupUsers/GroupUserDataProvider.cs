@@ -12,10 +12,6 @@ namespace SugarChat.Core.Services.GroupUsers
 {
     public class GroupUserDataProvider : IGroupUserDataProvider
     {
-        private const string UpdateGroupUserFailed = "GroupUser with Id {0} Update Failed.";
-        private const string AddGroupUserFailed = "GroupUser with Id {0} Add Failed.";
-        private const string RemoveGroupUserFailed = "GroupUser with Id {0} Remove Failed.";
-
         private readonly IRepository _repository;
 
         public GroupUserDataProvider(IRepository repository)
@@ -28,7 +24,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.AddAsync(groupUser, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(AddGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.AddGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 
@@ -70,7 +66,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(UpdateGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 
@@ -79,7 +75,7 @@ namespace SugarChat.Core.Services.GroupUsers
             int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(RemoveGroupUserFailed, groupUser.Id));
+                throw new BusinessWarningException(Prompt.RemoveGroupUserFailed.WithParams(groupUser.Id));
             }
         }
 

@@ -9,6 +9,7 @@ using SugarChat.Message;
 using SugarChat.Message.Commands.Message;
 using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
+using SugarChat.Core.Exceptions;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -71,7 +72,7 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.MessageExists, command.MessageId));
+                    response.Message.ShouldBe(Prompt.MessageNoExists.WithParams(command.MessageId).Message);
                 }
                 {
                     command.MessageId = messageId1;

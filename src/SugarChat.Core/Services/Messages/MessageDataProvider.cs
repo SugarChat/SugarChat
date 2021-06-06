@@ -14,10 +14,7 @@ namespace SugarChat.Core.Services.Messages
 {
     public class MessageDataProvider : IMessageDataProvider
     {
-        private const string UpdateMessageFailed = "Message with Id {0} Update Failed.";
-        private const string AddMessageFailed = "Message with Id {0} Add Failed.";
-        private const string RemoveMessageFailed = "Message with Id {0} Remove Failed.";
-        
+     
         private readonly IRepository _repository;
 
         public MessageDataProvider(IRepository repository)
@@ -30,7 +27,7 @@ namespace SugarChat.Core.Services.Messages
             int affectedLineNum = await _repository.AddAsync(message, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(AddMessageFailed, message.Id));
+                throw new BusinessWarningException(Prompt.AddMessageFailed.WithParams(message.Id));
             }
         }
 
@@ -39,7 +36,7 @@ namespace SugarChat.Core.Services.Messages
             int affectedLineNum = await _repository.UpdateAsync(message, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(UpdateMessageFailed, message.Id));
+                throw new BusinessWarningException(Prompt.UpdateMessageFailed.WithParams(message.Id));
             }
         }
 
@@ -48,7 +45,7 @@ namespace SugarChat.Core.Services.Messages
             int affectedLineNum = await _repository.RemoveAsync(message, cancellation);
             if (affectedLineNum != 1)
             {
-                throw new BusinessWarningException(string.Format(RemoveMessageFailed, message.Id));
+                throw new BusinessWarningException(Prompt.RemoveMessageFailed.WithParams(message.Id));
             }
         }
 

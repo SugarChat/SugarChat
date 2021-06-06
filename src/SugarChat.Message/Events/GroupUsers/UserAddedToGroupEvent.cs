@@ -1,6 +1,6 @@
 ﻿namespace SugarChat.Message.Events.GroupUsers
 {
-    public class AddUserToGroupEvent : EventBase
+    public class UserAddedToGroupEvent : EventBase
     {
         public string Id { get; set; }
     }

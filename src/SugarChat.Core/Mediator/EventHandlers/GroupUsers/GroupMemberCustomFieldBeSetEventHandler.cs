@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.EventHandlers.GroupUsers
 {
-    public class GroupMemberCustomFieldBeSetEventHandler : IEventHandler<GroupMemberCustomFieldBeSetEvent>
+    public class GroupMemberCustomFieldBeSetEventHandler : IEventHandler<GroupMemberCustomFieldSetEvent>
     {
-        public Task Handle(IReceiveContext<GroupMemberCustomFieldBeSetEvent> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<GroupMemberCustomFieldSetEvent> context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

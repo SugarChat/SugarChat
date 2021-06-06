@@ -13,8 +13,7 @@ namespace SugarChat.Core.Mappings
     {
         public MessageMapping()
         {
-            CreateMap<Domain.Message, MessageDto>();         
-            CreateMap<SendMessageCommand, MessageSentEvent>();
+            CreateMap<Domain.Message, MessageDto>();   
         }
     }
 }

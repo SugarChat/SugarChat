@@ -2,7 +2,7 @@
 
 namespace SugarChat.Message.Events.GroupUsers
 {
-    public class GroupMemberCustomFieldBeSetEvent : EventBase
+    public class GroupMemberCustomFieldSetEvent : EventBase
     {
     }
 }

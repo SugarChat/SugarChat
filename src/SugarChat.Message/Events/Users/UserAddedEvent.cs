@@ -1,6 +1,6 @@
 namespace SugarChat.Message.Events.Users
 {
-    public class AddFriendEvent : EventBase
+    public class UserAddedEvent : EventBase
     {
         public string Id { get; set; }
     }

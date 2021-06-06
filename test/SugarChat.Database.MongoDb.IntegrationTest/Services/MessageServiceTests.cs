@@ -397,7 +397,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 UserId = Tom.Id,
                 MessageId = MessageOfGroupTomAndJerry1.Id
             };
-            SetMessageReadByUserBasedOnMessageIdEvent getMessageReadByUserBasedOnMessageIdEvent =
+            MessageReadSetByUserBasedOnMessageIdEvent getMessageReadByUserBasedOnMessageIdEvent =
                 await _messageService.SetMessageReadByUserBasedOnMessageIdAsync(
                     setMessageReadByUserBasedOnMessageIdCommand);
             getMessageReadByUserBasedOnMessageIdEvent.Status.ShouldBe(EventStatus.Success);
@@ -473,7 +473,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 UserId = Tom.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            SetMessageReadByUserBasedOnGroupIdEvent getMessageReadByUserBasedOnGroupIdEvent =
+            MessageReadSetByUserBasedOnGroupIdEvent getMessageReadByUserBasedOnGroupIdEvent =
                 await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(
                     setMessageReadByUserBasedOnGroupIdCommand);
             getMessageReadByUserBasedOnGroupIdEvent.Status.ShouldBe(EventStatus.Success);

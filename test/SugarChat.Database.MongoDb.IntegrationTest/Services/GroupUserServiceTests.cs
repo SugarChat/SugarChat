@@ -31,7 +31,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 UserId = Tyke.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            AddUserToGroupEvent addUserToGroupEvent =
+            UserAddedToGroupEvent addUserToGroupEvent =
                 await _groupUserService.AddUserToGroupAsync(addUserToGroupCommand);
             GroupUser groupUser = await Repository.SingleOrDefaultAsync<GroupUser>(o => o.Id == addUserToGroupEvent.Id);
             groupUser.ShouldNotBeNull();
@@ -86,12 +86,12 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 UserId = Tom.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            RemoveUserFromGroupEvent removeUserFromGroupEvent =
+            UserRemovedFromGroupEvent userRemovedFromGroupEvent =
                 await _groupUserService.RemoveUserFromGroupAsync(removeUserFromGroupCommand);
             GroupUser groupUser =
-                await Repository.SingleOrDefaultAsync<GroupUser>(o => o.Id == removeUserFromGroupEvent.Id);
+                await Repository.SingleOrDefaultAsync<GroupUser>(o => o.Id == userRemovedFromGroupEvent.Id);
             groupUser.ShouldBeNull();
-            removeUserFromGroupEvent.Status.ShouldBe(EventStatus.Success);
+            userRemovedFromGroupEvent.Status.ShouldBe(EventStatus.Success);
         }
         
         [Fact]

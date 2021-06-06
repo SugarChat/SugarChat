@@ -29,10 +29,10 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request,
             CancellationToken cancellationToken = default);
-        Task<SetMessageReadByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
+        Task<MessageReadSetByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
             SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken = default);
-        Task<SetMessageReadByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
+        Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
         Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command,

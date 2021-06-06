@@ -36,7 +36,7 @@ namespace SugarChat.Core.Services
                 Payload = command.Payload
             }, cancellationToken).ConfigureAwait(false);
 
-            return _mapper.Map<MessageSentEvent>(command);
+            return new MessageSentEvent();
         }
     }
 }

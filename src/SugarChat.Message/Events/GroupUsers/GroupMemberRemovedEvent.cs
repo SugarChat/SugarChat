@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Message.Events.GroupUsers
 {
-    public class GroupMemberDeletedEvent : EventBase
+    public class GroupMemberRemovedEvent : EventBase
     {
         public string GroupId { get; set; }
         public string AdminId { get; set; }

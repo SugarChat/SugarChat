@@ -33,7 +33,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 Id = "0",
                 DisplayName = "Micky"
             };
-            AddUserEvent addUserEvent =
+            UserAddedEvent addUserEvent =
                 await _userService.AddUserAsync(addUserCommand);
             User user = await Repository.SingleOrDefaultAsync<User>(o => o.Id == addUserCommand.Id);
             user.ShouldNotBeNull();
@@ -62,7 +62,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 Id = "1",
                 DisplayName = "Micky"
             };
-            UpdateUserEvent updateUserEvent =
+            UserUpdatedEvent updateUserEvent =
                 await _userService.UpdateUserAsync(updateUserCommand);
             User user = await Repository.SingleOrDefaultAsync<User>(o => o.Id == updateUserCommand.Id);
             user.ShouldNotBeNull();
@@ -91,7 +91,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             {
                 Id = Tom.Id
             };
-            RemoveUserEvent removeUserEvent =
+            UserRemovedEvent removeUserEvent =
                 await _userService.RemoveUserAsync(removeUserCommand);
             User user = await Repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserEvent.Id);
             user.ShouldBeNull();

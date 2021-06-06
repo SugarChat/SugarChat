@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.EventHandlers.Users
 {
-    public class UserUpdatedEventHandler : IEventHandler<UpdateUserEvent>
+    public class UserUpdatedEventHandler : IEventHandler<UserUpdatedEvent>
     {
-        public Task Handle(IReceiveContext<UpdateUserEvent> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<UserUpdatedEvent> context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

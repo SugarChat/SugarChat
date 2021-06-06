@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Message.Event;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -109,7 +110,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
+    public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
             CancellationToken cancellationToken = default)
         {
             var groupUser =
@@ -131,7 +132,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(
+        public async Task<ConversationRemovedEvent> DeleteConversationByConversationIdAsync(
             DeleteConversationCommand command, CancellationToken cancellationToken = default)
         {
             var groupUser =

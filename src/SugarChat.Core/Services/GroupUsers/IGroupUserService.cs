@@ -10,10 +10,10 @@ namespace SugarChat.Core.Services.GroupUsers
 {
     public interface IGroupUserService : IService
     {
-        Task<AddUserToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
+        Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
             CancellationToken cancellation = default);
 
-        Task<RemoveUserFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
+        Task<UserRemovedFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
             CancellationToken cancellation = default);
 
         Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,
@@ -22,7 +22,7 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<GroupMemberCustomFieldBeSetEvent> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command,
+        Task<GroupMemberCustomFieldSetEvent> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command,
             CancellationToken cancellationToken = default);
 
         Task<GroupQuittedEvent> QuitGroup(QuitGroupCommand command, CancellationToken cancellation = default);
@@ -35,7 +35,7 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<GroupMemberDeletedEvent> DeleteGroupMember(DeleteGroupMemberCommand command,
+        Task<GroupMemberRemovedEvent> DeleteGroupMember(DeleteGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
         Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command,

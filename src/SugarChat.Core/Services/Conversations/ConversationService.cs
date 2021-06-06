@@ -4,6 +4,7 @@ using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Conversations;
+using SugarChat.Message.Event;
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
@@ -140,7 +141,10 @@ namespace SugarChat.Core.Services.Conversations
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
-            return _mapper.Map<ConversationDeletedEvent>(command);
+            return new()
+            {
+                Status = EventStatus.Success
+            };
         }
     }
 }

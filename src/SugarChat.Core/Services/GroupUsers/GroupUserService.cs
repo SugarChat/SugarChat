@@ -35,7 +35,7 @@ private readonly IMapper _mapper;
         }
 
 
-        public async Task<AddUserToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
+        public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
             CancellationToken cancellation)
         {
             User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation);
@@ -48,14 +48,14 @@ private readonly IMapper _mapper;
 
             groupUser = _mapper.Map<GroupUser>(command);
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
-            return new AddUserToGroupEvent
+            return new UserAddedToGroupEvent
             {
                 Id = groupUser.Id,
                 Status = EventStatus.Success
             };
         }
 
-        public async Task<RemoveUserFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
+        public async Task<UserRemovedFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
             CancellationToken cancellation)
         {
             User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation);
@@ -66,7 +66,7 @@ private readonly IMapper _mapper;
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
             groupUser.CheckExist(command.UserId, command.GroupId);
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
-            return new RemoveUserFromGroupEvent
+            return new UserRemovedFromGroupEvent
             {
                 Id = groupUser.Id,
                 Status = EventStatus.Success
@@ -100,7 +100,7 @@ private readonly IMapper _mapper;
             };
         }
 
-        public async Task<GroupMemberCustomFieldBeSetEvent> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken)
+        public async Task<GroupMemberCustomFieldSetEvent> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken)
         {
             var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
@@ -109,7 +109,7 @@ private readonly IMapper _mapper;
             {
                 groupUser.CustomProperties = command.CustomProperties;
                 await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-                return _mapper.Map<GroupMemberCustomFieldBeSetEvent>(command);
+                return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);
             }
             else
             {
@@ -191,7 +191,7 @@ private readonly IMapper _mapper;
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
 
-        public async Task<GroupMemberDeletedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken)
+        public async Task<GroupMemberRemovedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken)
         {
             var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId, cancellationToken);
             admin.CheckIsAdmin(command.AdminId, command.GroupId);
@@ -213,7 +213,7 @@ private readonly IMapper _mapper;
                 await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
             }
 
-            return _mapper.Map<GroupMemberDeletedEvent>(command);
+            return _mapper.Map<GroupMemberRemovedEvent>(command);
         }
 
         public async Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command, CancellationToken cancellationToken)

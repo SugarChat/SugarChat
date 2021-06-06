@@ -1,6 +1,6 @@
 ﻿namespace SugarChat.Message.Events.Groups
 {
-    public class RemoveGroupEvent : EventBase
+    public class GroupRemovedEvent : EventBase
     {
         public string Id { get; set; }
     }

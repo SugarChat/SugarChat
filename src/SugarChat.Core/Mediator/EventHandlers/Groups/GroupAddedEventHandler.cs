@@ -6,9 +6,9 @@ using SugarChat.Message.Events.Groups;
 
 namespace SugarChat.Core.Mediator.EventHandlers.Groups
 {
-    public class GroupAddedEventHandler : IEventHandler<AddGroupEvent>
+    public class GroupAddedEventHandler : IEventHandler<GroupAddedEvent>
     {
-        public Task Handle(IReceiveContext<AddGroupEvent> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<GroupAddedEvent> context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

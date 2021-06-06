@@ -29,7 +29,7 @@ namespace SugarChat.Core.Services.Users
             _friendDataProvider = friendDataProvider;
         }
 
-        public async Task<AddUserEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
+        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
             user.CheckNotExist();
@@ -44,7 +44,7 @@ namespace SugarChat.Core.Services.Users
             };
         }
 
-        public async Task<UpdateUserEvent> UpdateUserAsync(UpdateUserCommand command,
+        public async Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command,
             CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
@@ -53,10 +53,10 @@ namespace SugarChat.Core.Services.Users
             user = _mapper.Map<User>(command);
             await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
 
-            return _mapper.Map<UpdateUserEvent>(command);
+            return _mapper.Map<UserUpdatedEvent>(command);
         }
 
-        public async Task<RemoveUserEvent> RemoveUserAsync(RemoveUserCommand command,
+        public async Task<UserRemovedEvent> RemoveUserAsync(RemoveUserCommand command,
             CancellationToken cancellation = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);

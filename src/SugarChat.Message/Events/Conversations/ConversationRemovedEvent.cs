@@ -1,6 +1,6 @@
 ﻿namespace SugarChat.Message.Events.Conversations
 {
-    public class MessageReadedEvent : EventBase
+    public class ConversationRemovedEvent : EventBase
     {
         public string ConversationId { get; set; }
         public string UserId { get; set; }

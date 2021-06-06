@@ -13,7 +13,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<User, UserDto>();
             CreateMap<AddUserCommand, User>();
             CreateMap<UpdateUserCommand, User>();
-            CreateMap<UpdateUserCommand, UpdateUserEvent>();
+            CreateMap<UpdateUserCommand, UserUpdatedEvent>();
         }
     }
 }

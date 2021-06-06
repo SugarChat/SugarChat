@@ -36,7 +36,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 Id = "0",
                 Description = "Friend group of Tom and Tyke"
             };
-            AddGroupEvent addGroupEvent =
+            GroupAddedEvent addGroupEvent =
                 await _groupService.AddGroupAsync(addGroupCommand);
             Group group = await Repository.SingleOrDefaultAsync<Group>(o => o.Id == addGroupCommand.Id);
             group.ShouldNotBeNull();
@@ -94,7 +94,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             {
                 Id = "1"
             };
-            RemoveGroupEvent removeGroupEvent =
+            GroupRemovedEvent removeGroupEvent =
                 await _groupService.RemoveGroupAsync(removeGroupCommand);
             Group group = await Repository.SingleOrDefaultAsync<Group>(o => o.Id == removeGroupCommand.Id);
             group.ShouldBeNull();

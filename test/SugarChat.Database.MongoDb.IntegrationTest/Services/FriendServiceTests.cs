@@ -24,13 +24,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Add_Friend_When_They_Are_Not()
         {
-            AddFriendEvent addFriendEvent =
+            FriendAddedEvent friendAddedEvent =
                 await _friendService.AddFriendAsync(new AddFriendCommand {UserId = Tom.Id, FriendId = Tyke.Id});
-            Friend friend = await Repository.SingleOrDefaultAsync<Friend>(o => o.Id == addFriendEvent.Id);
+            Friend friend = await Repository.SingleOrDefaultAsync<Friend>(o => o.Id == friendAddedEvent.Id);
             friend.ShouldNotBeNull();
             friend.UserId.ShouldBe(Tom.Id);
             friend.FriendId.ShouldBe(Tyke.Id);
-            addFriendEvent.Status.ShouldBe(EventStatus.Success);
+            friendAddedEvent.Status.ShouldBe(EventStatus.Success);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Remove_Friend_When_They_Are()
         {
-            RemoveFriendEvent removeFriendEvent =
+            FriendRemovedEvent removeFriendEvent =
                 await _friendService.RemoveFriendAsync(new RemoveFriendCommand {UserId = Tom.Id, FriendId = Jerry.Id});
             Friend friend = await Repository.SingleOrDefaultAsync<Friend>(o => o.Id == removeFriendEvent.Id);
             friend.ShouldBeNull();

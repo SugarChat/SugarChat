@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.EventHandlers.GroupUsers
 {
-    public class GroupMemberDeletedEventHandler : IEventHandler<GroupMemberDeletedEvent>
+    public class GroupMemberDeletedEventHandler : IEventHandler<GroupMemberRemovedEvent>
     {
-        public Task Handle(IReceiveContext<GroupMemberDeletedEvent> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<GroupMemberRemovedEvent> context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

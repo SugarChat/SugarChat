@@ -195,7 +195,7 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<SetMessageReadByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
+        public async Task<MessageReadSetByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
             SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken)
         {
@@ -217,7 +217,7 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<SetMessageReadByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
+        public async Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken)
         {

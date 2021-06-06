@@ -104,7 +104,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command,
+        public async Task<MessageReadEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command,
             CancellationToken cancellationToken = default)
         {
             var groupUser =
@@ -117,7 +117,7 @@ namespace SugarChat.Core.Services.Conversations
             groupUser.LastReadTime = lastMessage.SentTime;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
 
-            return _mapper.Map<MessageReadedEvent>(command);
+            return _mapper.Map<MessageReadEvent>(command);
         }
 
         public async Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
@@ -142,7 +142,7 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
-        public async Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(
+        public async Task<ConversationRemovedEvent> DeleteConversationByConversationIdAsync(
             DeleteConversationCommand command, CancellationToken cancellationToken = default)
         {
             var groupUser =
@@ -152,7 +152,7 @@ namespace SugarChat.Core.Services.Conversations
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
-            return _mapper.Map<ConversationDeletedEvent>(command);
+            return _mapper.Map<ConversationRemovedEvent>(command);
         }
     }
 }

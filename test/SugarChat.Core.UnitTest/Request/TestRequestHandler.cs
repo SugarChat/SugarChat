@@ -8,9 +8,9 @@ using SugarChat.Core.UnitTest.Command;
 
 namespace SugarChat.Core.UnitTest.Request
 {
-    public class TestRequestHandler : IRequestHandler<TestRequest, SugarChatResponse<object>>
+    public class TestRequestHandler : IRequestHandler<TestRequest, SugarChatResponse>
     {
-        public Task<SugarChatResponse<object>> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
+        public Task<SugarChatResponse> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
         {
             throw new BusinessWarningException("Test");
         }

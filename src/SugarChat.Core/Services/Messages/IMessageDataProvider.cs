@@ -5,7 +5,7 @@ using SugarChat.Core.Domain;
 
 namespace SugarChat.Core.Services.Messages
 {
-    public interface IMessageDataProvider
+    public interface IMessageDataProvider : IDataProvider
     {
         Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task AddAsync(Domain.Message user, CancellationToken cancellation);
@@ -28,5 +28,9 @@ namespace SugarChat.Core.Services.Messages
 
         Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
             CancellationToken cancellationToken);
+
+        Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken);
+
+        Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken);
     }
 }

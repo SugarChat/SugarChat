@@ -52,11 +52,7 @@ namespace SugarChat.Core.Services.Users
             user = _mapper.Map<User>(command);
             await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
 
-            return new()
-            {
-                Id = user.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<UserUpdatedEvent>(command);
         }
 
         public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,

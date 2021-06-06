@@ -1,0 +1,8 @@
+apiVersion: v2
+name: signalr
+version: 0.0.1
+appVersion: 0.1
+home: https://github.com/SugarChat/SugarChat
+description: "sugarchat signalR server"
+icon: https://avatars.githubusercontent.com/u/82446650?s=200&v=4
+type: application

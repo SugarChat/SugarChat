@@ -30,17 +30,17 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task AddAsync(Group group, CancellationToken cancellation)
         {
-            await _repository.AddAsync(group, cancellation);
+            await _repository.AddAsync(group, cancellation).ConfigureAwait(false);
         }
 
         public async Task UpdateAsync(Group group, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(group, cancellation);
+            await _repository.UpdateAsync(group, cancellation).ConfigureAwait(false);
         }
 
         public async Task RemoveAsync(Group group, CancellationToken cancellation)
         {
-            await _repository.RemoveAsync(group, cancellation);
-        }
+            await _repository.RemoveAsync(group, cancellation).ConfigureAwait(false);
+        }        
     }
 }

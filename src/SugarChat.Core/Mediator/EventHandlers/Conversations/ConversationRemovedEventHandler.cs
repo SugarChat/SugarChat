@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.EventHandlers.Conversations
 {
-    public class ConversationDeletedEventHandler : IEventHandler<ConversationRemovedEvent>
+    public class ConversationRemovedEventHandler : IEventHandler<ConversationRemovedEvent>
     {
         public Task Handle(IReceiveContext<ConversationRemovedEvent> context, CancellationToken cancellationToken)
         {

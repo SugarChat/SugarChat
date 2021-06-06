@@ -1,14 +1,16 @@
-﻿namespace SugarChat.Core.Exceptions
+﻿using SugarChat.Core.Common;
+
+namespace SugarChat.Core.Exceptions
 {
     public record ExceptionPrompt
     {
         private readonly string _formatString;
         private string[] _contents;
 
-        public ExceptionPrompt(int code, string formatString)
+        public ExceptionPrompt(ExceptionCode code, string formatString)
         {
             _formatString = formatString;
-            Code = code;
+            Code = (int)code;
         }
 
         public int Code { get; }

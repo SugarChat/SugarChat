@@ -19,8 +19,11 @@ namespace SugarChat.Core.Exceptions
             new(ExceptionCode.AddUserFailed, "User with Id {0} adding failed.");
 
         public static readonly ExceptionPrompt RemoveUserFailed =
-            new(ExceptionCode.RemoveUserFailed, "User with Id {0} removing failed.");
-
+            new(ExceptionCode.RemoveUserFailed, "User with Id {0} removing failed.");  
+        
+        public static readonly ExceptionPrompt NotAllUsersExists =
+            new(ExceptionCode.NotAllUsersExists, "Not all users exist.");
+        
         #endregion
 
         #region Friend
@@ -88,14 +91,15 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt UpdateMessageFailed =
             new(ExceptionCode.UpdateMessageFailed, "Message with Id {0} updating failed.");
 
-        public static readonly ExceptionPrompt AddMessageFailed = 
+        public static readonly ExceptionPrompt AddMessageFailed =
             new(ExceptionCode.AddMessageFailed, "Message with Id {0} adding failed.");
 
         public static readonly ExceptionPrompt RemoveMessageFailed =
             new(ExceptionCode.RemoveMessageFailed, "Message with Id {0} removing failed.");
 
         public static readonly ExceptionPrompt LastReadTimeLaterThanOrEqualTo =
-            new(ExceptionCode.LastReadTimeLaterThanOrEqualTo, "User with Id {0} from group with Id {1}'s Last Read Time is later than or equal to {2}.");
+            new(ExceptionCode.LastReadTimeLaterThanOrEqualTo,
+                "User with Id {0} from group with Id {1}'s Last Read Time is later than or equal to {2}.");
 
         #endregion
 
@@ -109,12 +113,25 @@ namespace SugarChat.Core.Exceptions
 
         public static readonly ExceptionPrompt RemoveGroupUserFailed =
             new(ExceptionCode.RemoveGroupUserFailed, "GroupUser with Id {0} removing failed.");
-        
+
         public static readonly ExceptionPrompt AddGroupUsersFailed =
             new(ExceptionCode.AddGroupUsersFailed, "Adding {0} groupUsers failed, only {1} of them added.");
-        
+
         public static readonly ExceptionPrompt RemoveGroupUsersFailed =
             new(ExceptionCode.RemoveGroupUsersFailed, "Removing {0} groupUsers failed, only {1} of them removed.");
+
+        public static readonly ExceptionPrompt NoCustomProperty =
+            new(ExceptionCode.NoCustomProperty, "There is no custom property provided.");
+        
+        public static readonly ExceptionPrompt SameGroupUser =
+            new(ExceptionCode.SameGroupUser, "Both GroupUsers have the same Id.");  
+        
+        public static readonly ExceptionPrompt SomeGroupUsersExist =
+            new(ExceptionCode.SomeGroupUsersExist, "Some of the groupUsers are already exist.");
+        
+
         #endregion
+
+
     }
 }

@@ -118,6 +118,7 @@ namespace SugarChat.Core.Services
         public static void CheckIsAdmin(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);
+            //TODO : What's the logic there?
             if (groupUser.Role != UserRole.Admin && groupUser.Role != UserRole.Owner)
             {
                 throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));

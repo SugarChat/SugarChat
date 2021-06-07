@@ -5,7 +5,7 @@ namespace SugarChat.Core.Exceptions
     public record ExceptionPrompt
     {
         private readonly string _formatString;
-        private string[] _contents;
+        private string[] _contents = {};
 
         public ExceptionPrompt(ExceptionCode code, string formatString)
         {

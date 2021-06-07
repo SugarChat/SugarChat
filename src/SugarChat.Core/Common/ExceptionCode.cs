@@ -16,6 +16,7 @@ namespace SugarChat.Core.Common
         UpdateUserFailed = 50003,
         AddUserFailed = 50004,
         RemoveUserFailed = 50005,
+        NotAllUsersExists = 50006,
         #endregion
         
         #region Group
@@ -53,7 +54,10 @@ namespace SugarChat.Core.Common
         AddGroupUserFailed = 52002,
         RemoveGroupUserFailed = 52003,
         AddGroupUsersFailed = 52004,
-        RemoveGroupUsersFailed = 52005
+        RemoveGroupUsersFailed = 52005,
+        NoCustomProperty = 52006,
+        SameGroupUser = 52007,
+        SomeGroupUsersExist = 52008
         #endregion
         
     }

@@ -6,7 +6,7 @@ namespace SugarChat.Core.Services.Conversations
 {
     public interface IConversationDataProvider : IDataProvider
     {
-        Task<IEnumerable<Domain.Message>> GetPagingMessagesByConversationIdAsync(
+        Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
             string conversationId,
             string nextReqMessageId = null,
             int count = 15,

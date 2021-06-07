@@ -16,7 +16,7 @@ namespace SugarChat.Core.Services.Conversations
             _repository = repository;
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetPagingMessagesByConversationIdAsync(
+        public async Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
             string conversationId,
             string nextReqMessageId = null,
             int count = 15,

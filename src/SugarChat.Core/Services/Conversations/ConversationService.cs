@@ -118,7 +118,7 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
-            var (messages, nextReqMessageId) = await _conversationDataProvider
+            var messages = await _conversationDataProvider
                 .GetPagingMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Count,
                     cancellationToken).ConfigureAwait(false);
 
@@ -127,7 +127,7 @@ namespace SugarChat.Core.Services.Conversations
                 Result = new MessageListResult
                 {
                     Messages = _mapper.Map<IEnumerable<MessageDto>>(messages),
-                    NextReqMessageID = nextReqMessageId
+                    NextReqMessageID = messages.LastOrDefault()?.Id
                 }
             };
         }

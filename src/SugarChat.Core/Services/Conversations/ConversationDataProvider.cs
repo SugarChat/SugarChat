@@ -1,4 +1,5 @@
-﻿using SugarChat.Core.IRepositories;
+﻿using System;
+using SugarChat.Core.IRepositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,31 +16,23 @@ namespace SugarChat.Core.Services.Conversations
             _repository = repository;
         }
 
-        public async Task<(List<Domain.Message> Messages, string NextReqMessageId)>
-            GetPagingMessagesByConversationIdAsync(string conversationId, string nextReqMessageId = "", int count = 15,
-                CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Domain.Message>> GetPagingMessagesByConversationIdAsync(
+            string conversationId,
+            string nextReqMessageId = null,
+            int count = 15,
+            CancellationToken cancellationToken = default)
         {
-            var messages = new List<Domain.Message>();
+            var nextReqMessage =
+                await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId,
+                    cancellationToken);
+            var boundaryTime = nextReqMessage?.CreatedDate ?? DateTime.MaxValue;
+            var messages = _repository.Query<Domain.Message>()
+                .Where(x => x.GroupId == conversationId && x.CreatedDate < boundaryTime)
+                .OrderByDescending(x => x.SentTime)
+                .Take(count)
+                .AsEnumerable();
 
-            if (string.IsNullOrEmpty(nextReqMessageId))
-            {
-                messages = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId)
-                    .OrderByDescending(x => x.SentTime)
-                    .Take(count)
-                    .ToList();
-            }
-            else
-            {
-                var nextReqMessage =
-                    await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId);
-                messages = _repository.Query<Domain.Message>().Where(x =>
-                        x.GroupId == conversationId && x.CreatedDate < nextReqMessage.CreatedDate)
-                    .OrderByDescending(x => x.SentTime)
-                    .Take(count)
-                    .ToList();
-            }
-
-            return (messages, messages?.Last()?.Id);
+            return messages;
         }
     }
 }

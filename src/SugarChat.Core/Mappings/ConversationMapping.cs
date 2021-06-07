@@ -10,7 +10,7 @@ namespace SugarChat.Core.Mappings
     {
         public ConversationMapping()
         {
-            CreateMap<DeleteConversationCommand, ConversationRemovedEvent>();
+            CreateMap<RemoveConversationCommand, ConversationRemovedEvent>();
             CreateMap<SetMessageReadByUserBasedOnMessageIdCommand, MessageReadSetByUserBasedOnMessageIdEvent>();
         }
     }

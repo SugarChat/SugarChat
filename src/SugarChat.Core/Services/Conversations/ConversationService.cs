@@ -133,7 +133,7 @@ namespace SugarChat.Core.Services.Conversations
         }
 
         public async Task<ConversationRemovedEvent> DeleteConversationByConversationIdAsync(
-            DeleteConversationCommand command, CancellationToken cancellationToken = default)
+            RemoveConversationCommand command, CancellationToken cancellationToken = default)
         {
             var groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId,

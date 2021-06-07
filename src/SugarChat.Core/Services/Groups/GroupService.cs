@@ -85,24 +85,32 @@ namespace SugarChat.Core.Services.Groups
             return _userDataProvider.GetByIdAsync(id, cancellation);
         }
 
-        public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request, CancellationToken cancellationToken)
+        public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
+            CancellationToken cancellationToken = default)
         {
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+            
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
 
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
+                    cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
             var groupDto = _mapper.Map<GroupDto>(group);
-            groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken);
+            groupDto.MemberCount =
+                await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken);
 
             return new GetGroupProfileResponse
             {
-                Result = groupDto
+                Group = groupDto
             };
         }
 
-        public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken)
+        public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command,
+            CancellationToken cancellationToken)
         {
             var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken);
             group.CheckExist(command.Id);
@@ -117,13 +125,14 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
             group.CheckExist(command.GroupId);
-            await _groupDataProvider.RemoveAsync(group, cancellation);
+            
+            var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
+            await _messageDataProvider.RemoveRangeAsync(messages, cancellation);
 
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
             await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation);
 
-            var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
-            await _messageDataProvider.RemoveRangeAsync(messages, cancellation);
+            await _groupDataProvider.RemoveAsync(group, cancellation);
 
             return _mapper.Map<GroupDismissedEvent>(command);
         }

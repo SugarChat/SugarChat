@@ -81,40 +81,53 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(groupUser, cancellation);
+            int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellation);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUser.Id));
+            }
         }
 
-        public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id,
+            CancellationToken cancellationToken)
         {
-            return await Task.Run<IEnumerable<GroupUserDto>>(() =>
-              {
-                  return (from a in _repository.Query<GroupUser>()
-                          join b in _repository.Query<User>() on a.UserId equals b.Id
-                          where a.GroupId == id
-                          select new GroupUserDto
-                          {
-                              UserId = a.UserId,
-                              DisplayName = b.DisplayName,
-                              AvatarUrl = b.AvatarUrl,
-                              CustomProperties = b.CustomProperties,
-                              JoinTime = a.CreatedDate
-                          }).ToList();
-              });
+            return await Task.Run<IEnumerable<GroupUserDto>>(() => (from a in _repository.Query<GroupUser>()
+                join b in _repository.Query<User>() on a.UserId equals b.Id
+                where a.GroupId == id
+                select new GroupUserDto
+                {
+                    UserId = a.UserId,
+                    GroupId = a.GroupId,
+                    DisplayName = b.DisplayName,
+                    AvatarUrl = b.AvatarUrl,
+                    CustomProperties = b.CustomProperties,
+                }).ToList(), cancellationToken);
         }
 
-       public async Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken)
+        public async Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken)
         {
-            return await _repository.CountAsync<GroupUser>(x => x.GroupId == groupId, cancellationToken).ConfigureAwait(false);
+            return await _repository.CountAsync<GroupUser>(x => x.GroupId == groupId, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task AddRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellation)
         {
-            await _repository.AddRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.AddRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != groupUsers.Count())
+            {
+                throw new BusinessWarningException(Prompt.AddGroupUsersFailed.WithParams(groupUsers.Count().ToString(),
+                    affectedLineNum.ToString()));
+            }
         }
 
         public async Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken)
         {
-            await _repository.RemoveRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+            int affectedLineNum = await _repository.RemoveRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+            if (affectedLineNum != groupUsers.Count())
+            {
+                throw new BusinessWarningException(Prompt.RemoveGroupUsersFailed.WithParams(groupUsers.Count().ToString(),
+                    affectedLineNum.ToString()));
+            }
         }
     }
 }

@@ -52,6 +52,8 @@ namespace SugarChat.Core.Common
         UpdateGroupUserFailed = 52001,
         AddGroupUserFailed = 52002,
         RemoveGroupUserFailed = 52003,
+        AddGroupUsersFailed = 52004,
+        RemoveGroupUsersFailed = 52005
         #endregion
         
     }

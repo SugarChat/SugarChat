@@ -19,15 +19,14 @@ namespace SugarChat.Core.Services.Groups
             _repository = repository;
         }
 
-        public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _repository.SingleOrDefaultAsync<Group>(x => x.Id == id, cancellationToken)
                 .ConfigureAwait(false);
-            ;
         }
 
         public async Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
                 .OrderByDescending(o => o.LastModifyDate);
@@ -36,7 +35,7 @@ namespace SugarChat.Core.Services.Groups
             return result;
         }
 
-        public async Task AddAsync(Group group, CancellationToken cancellation)
+        public async Task AddAsync(Group group, CancellationToken cancellation = default)
         {
             int affectedLineNum = await _repository.AddAsync(group, cancellation);
             if (affectedLineNum != 1)
@@ -45,7 +44,7 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task UpdateAsync(Group group, CancellationToken cancellation)
+        public async Task UpdateAsync(Group group, CancellationToken cancellation = default)
         {
             int affectedLineNum = await _repository.UpdateAsync(group, cancellation);
             if (affectedLineNum != 1)
@@ -54,7 +53,7 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task RemoveAsync(Group group, CancellationToken cancellation)
+        public async Task RemoveAsync(Group group, CancellationToken cancellation = default)
         {
             int affectedLineNum = await _repository.RemoveAsync(group, cancellation);
             if (affectedLineNum != 1)

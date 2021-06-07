@@ -5,7 +5,7 @@ namespace SugarChat.Message.Events
 {
     public class EventBase : IEvent
     {
-        public EventStatus Status { get; set; }
+        public EventStatus Status { get; set; } = EventStatus.Success;
         public object Information { get; set; }
     }
 }

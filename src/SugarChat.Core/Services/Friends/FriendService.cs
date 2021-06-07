@@ -47,12 +47,8 @@ namespace SugarChat.Core.Services.Friends
 
             Friend makeFriend = _mapper.Map<Friend>(command);
             await _friendDataProvider.AddAsync(makeFriend, cancellation).ConfigureAwait(false);
-
-            return new()
-            {
-                Id = makeFriend.Id,
-                Status = EventStatus.Success
-            };
+            
+            return _mapper.Map<FriendAddedEvent>(command);
         }
 
         public async Task<FriendRemovedEvent> RemoveFriendAsync(RemoveFriendCommand command,
@@ -63,11 +59,8 @@ namespace SugarChat.Core.Services.Friends
 
             await _friendDataProvider.RemoveAsync(friend, cancellation).ConfigureAwait(false);
 
-            return new()
-            {
-                Id = friend.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<FriendRemovedEvent>(command);
+
         }
 
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)

@@ -47,11 +47,7 @@ namespace SugarChat.Core.Services.Groups
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
-            return new GroupAddedEvent
-            {
-                Id = group.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<GroupAddedEvent>(command);
         }
 
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
@@ -81,7 +77,7 @@ namespace SugarChat.Core.Services.Groups
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
             group.CheckExist(command.Id);
             await _groupDataProvider.RemoveAsync(group, cancellation);
-            return new GroupRemovedEvent {Id = group.Id, Status = EventStatus.Success};
+            return _mapper.Map<GroupRemovedEvent>(command);
         }
 
         private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
@@ -114,11 +110,7 @@ namespace SugarChat.Core.Services.Groups
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.UpdateAsync(group, cancellationToken);
 
-            return new()
-            {
-                Id = group.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }
 
         public async Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation)

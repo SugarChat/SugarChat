@@ -142,10 +142,7 @@ namespace SugarChat.Core.Services.Conversations
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
-            return new()
-            {
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<ConversationRemovedEvent>(command);
         }
     }
 }

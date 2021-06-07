@@ -18,7 +18,7 @@ namespace SugarChat.Core.Services.Conversations
         Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request,
             CancellationToken cancellationToken = default);
 
-        Task<ConversationRemovedEvent> DeleteConversationByConversationIdAsync(DeleteConversationCommand command,
+        Task<ConversationRemovedEvent> DeleteConversationByConversationIdAsync(RemoveConversationCommand command,
             CancellationToken cancellationToken = default);
     }
 }

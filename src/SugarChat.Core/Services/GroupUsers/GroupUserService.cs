@@ -48,11 +48,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
             groupUser = _mapper.Map<GroupUser>(command);
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
-            return new UserAddedToGroupEvent
-            {
-                Id = groupUser.Id,
-                Status = EventStatus.Success
-            };
+            
+            return _mapper.Map<UserAddedToGroupEvent>(command);
         }
 
         public async Task<UserRemovedFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
@@ -66,11 +63,8 @@ namespace SugarChat.Core.Services.GroupUsers
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
             groupUser.CheckExist(command.UserId, command.GroupId);
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
-            return new UserRemovedFromGroupEvent
-            {
-                Id = groupUser.Id,
-                Status = EventStatus.Success
-            };
+            
+            return _mapper.Map<UserRemovedFromGroupEvent>(command);
         }
 
         public async Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,

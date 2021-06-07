@@ -89,11 +89,12 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             UserRemovedFromGroupEvent userRemovedFromGroupEvent =
                 await _groupUserService.RemoveUserFromGroupAsync(removeUserFromGroupCommand);
             GroupUser groupUser =
-                await Repository.SingleOrDefaultAsync<GroupUser>(o => o.Id == userRemovedFromGroupEvent.Id);
+                await Repository.SingleOrDefaultAsync<GroupUser>(o =>
+                    o.UserId == removeUserFromGroupCommand.UserId && o.GroupId == removeUserFromGroupCommand.GroupId);
             groupUser.ShouldBeNull();
             userRemovedFromGroupEvent.Status.ShouldBe(EventStatus.Success);
         }
-        
+
         [Fact]
         public async Task Should_Not_Remove_User_From_Group_When_They_Are_Not_In()
         {
@@ -129,7 +130,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _groupUserService.RemoveUserFromGroupAsync(removeUserFromGroupCommand));
         }
-        
+
         [Fact]
         public async Task Should_Get_Group_Member_Ids_Of_Group()
         {
@@ -144,7 +145,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             getGroupMembersResponse.MemberIds.SingleOrDefault(o => o == Jerry.Id).ShouldNotBeNull();
             getGroupMembersResponse.MemberIds.SingleOrDefault(o => o == Tyke.Id).ShouldNotBeNull();
         }
-        
+
         [Fact]
         public async Task Should_Not_Get_Group_Member_Ids_When_Group_Dose_Not_Exist()
         {

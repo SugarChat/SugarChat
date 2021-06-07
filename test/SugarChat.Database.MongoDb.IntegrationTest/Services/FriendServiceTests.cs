@@ -60,7 +60,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         {
             FriendRemovedEvent removeFriendEvent =
                 await _friendService.RemoveFriendAsync(new RemoveFriendCommand {UserId = Tom.Id, FriendId = Jerry.Id});
-            Friend friend = await Repository.SingleOrDefaultAsync<Friend>(o => o.Id == removeFriendEvent.Id);
+            Friend friend = await Repository.SingleOrDefaultAsync<Friend>(o =>
+                o.UserId == removeFriendEvent.UserId && o.FriendId == removeFriendEvent.FriendId);
             friend.ShouldBeNull();
             removeFriendEvent.Status.ShouldBe(EventStatus.Success);
         }

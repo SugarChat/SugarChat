@@ -233,10 +233,8 @@ namespace SugarChat.Core.Services.Messages
             await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId,
                 lastMessageOfGroup.SentTime,
                 cancellationToken);
-            return new()
-            {
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
+
         }
 
         public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command,
@@ -257,7 +255,7 @@ namespace SugarChat.Core.Services.Messages
             message.IsRevoked = true;
             await _messageDataProvider.UpdateAsync(message, cancellationToken);
 
-            return new MessageRevokedEvent { };
+            return _mapper.Map<MessageRevokedEvent>(command);
         }
     }
 }

@@ -211,10 +211,7 @@ namespace SugarChat.Core.Services.Messages
 
             await _groupUserDataProvider.SetMessageReadAsync(command.UserId, message.GroupId, message.SentTime,
                 cancellationToken);
-            return new()
-            {
-                Status= EventStatus.Success
-            };
+            return _mapper.Map<MessageReadSetByUserBasedOnMessageIdEvent>(command);
         }
 
         public async Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(

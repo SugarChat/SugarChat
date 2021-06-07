@@ -114,11 +114,7 @@ namespace SugarChat.Core.Services.Groups
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.UpdateAsync(group, cancellationToken);
 
-            return new()
-            {
-                Id = group.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }
 
         public async Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation)

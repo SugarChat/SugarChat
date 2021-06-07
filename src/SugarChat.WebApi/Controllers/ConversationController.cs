@@ -60,9 +60,9 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("deleteConversation"), HttpPost]
-        public async Task<IActionResult> DeleteConversation(DeleteConversationCommand command)
+        public async Task<IActionResult> DeleteConversation(RemoveConversationCommand command)
         {
-            var response = await _mediator.SendAsync<DeleteConversationCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

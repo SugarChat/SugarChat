@@ -113,7 +113,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                await mediator.SendAsync<DeleteConversationCommand, SugarChatResponse>(new DeleteConversationCommand
+                await mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(new RemoveConversationCommand
                 {
                     ConversationId = conversationId,
                     UserId = userId

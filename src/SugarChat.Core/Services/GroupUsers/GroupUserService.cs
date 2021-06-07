@@ -109,10 +109,7 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 groupUser.CustomProperties = command.CustomProperties;
                 await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-                return new()
-                {
-                    Status = EventStatus.Success
-                };
+                return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);
             }
             else
             {

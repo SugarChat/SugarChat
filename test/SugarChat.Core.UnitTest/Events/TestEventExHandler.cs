@@ -14,7 +14,7 @@ namespace SugarChat.Core.UnitTest.Events
     {
         public Task Handle(IReceiveContext<TestEvent> context, CancellationToken cancellationToken)
         {
-            throw new BusinessWarningException("Test");
+            throw new BusinessWarningException(Prompt.NotAllUsersExists);
         }
     }
 }

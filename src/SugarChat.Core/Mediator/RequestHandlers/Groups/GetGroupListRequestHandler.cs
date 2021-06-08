@@ -7,10 +7,11 @@ using SugarChat.Shared.Dtos;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Groups
 {
-    public class GetGroupListRequestHandler : IRequestHandler<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>
+    public class GetGroupListRequestHandler : IRequestHandler<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>
     {
         private readonly IGroupService _groupService;
 
@@ -18,10 +19,10 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Groups
         {
             _groupService = groupService;
         }
-        public async Task<SugarChatResponse<IEnumerable<GroupDto>>> Handle(IReceiveContext<GetGroupsOfUserRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<PagedResult<GroupDto>>> Handle(IReceiveContext<GetGroupsOfUserRequest> context, CancellationToken cancellationToken)
         {
             var response = await _groupService.GetGroupsOfUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<IEnumerable<GroupDto>>() { Code = 0, Message = "Success", Data = response.Groups };
+            return new SugarChatResponse<PagedResult<GroupDto>>() { Code = 0, Message = "Success", Data = response.Groups };
         }
     }
 }

@@ -3,7 +3,6 @@ using AutoMapper;
 using Mediator.Net;
 using Mediator.Net.Autofac;
 using SugarChat.Core.Services;
-using SugarChat.Message.Command;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;

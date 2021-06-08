@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Driver.Linq;
 using SugarChat.Core.Exceptions;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services
 {

@@ -1,17 +1,17 @@
-﻿using AutoMapper;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
+using SugarChat.Core.Exceptions;
 using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -22,7 +22,8 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
 
-        public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
+        public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
+            IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider)
         {
             _mapper = mapper;
@@ -31,138 +32,222 @@ namespace SugarChat.Core.Services.GroupUsers
             _groupUserDataProvider = groupUserDataProvider;
         }
 
-        public async Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request, CancellationToken cancellationToken)
+
+        public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
-            groupUser.CheckExist(request.UserId, request.GroupId);
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken).ConfigureAwait(false);
+            groupUser.CheckNotExist();
 
-            var groupMembers = await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken);
+            groupUser = _mapper.Map<GroupUser>(command);
+            await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
-            return new GetMembersOfGroupResponse
+            return _mapper.Map<UserAddedToGroupEvent>(command);
+        }
+
+        public async Task<UserRemovedFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken).ConfigureAwait(false);
+            groupUser.CheckExist(command.UserId, command.GroupId);
+            await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken).ConfigureAwait(false);
+
+            return _mapper.Map<UserRemovedFromGroupEvent>(command);
+        }
+
+        public async Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(request.GroupId);
+            IEnumerable<string> memberIds =
+                (await _groupUserDataProvider.GetByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false)).Select(
+                    o => o.UserId);
+            return new()
             {
-                Result = groupMembers
+                MemberIds = memberIds
             };
         }
 
-        public async Task<GroupMemberCustomFieldBeSetEvent> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken)
+        public async Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request,
+            CancellationToken cancellationToken = default)
         {
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
-            groupUser.CheckExist(command.UserId, command.GroupId);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
+                    cancellationToken).ConfigureAwait(false);
+            groupUser.CheckExist(request.UserId, request.GroupId);
 
-            if (command.CustomProperties != null && command.CustomProperties.Count > 0)
+            var groupMembers =
+                await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+
+            return new GetMembersOfGroupResponse
             {
-                groupUser.CustomProperties = command.CustomProperties;
-                await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken);
-                return _mapper.Map<GroupMemberCustomFieldBeSetEvent>(command);
-            }
-            else
-            {
-                throw new BusinessWarningException("Custom properties cannot be empty");
-            }
+                Members = groupMembers
+            };
         }
 
-        public async Task<GroupJoinedEvent> JoinGroup(JoinGroupCommand command, CancellationToken cancellation)
+        public async Task<GroupMemberCustomFieldSetEvent> SetGroupMemberCustomPropertiesAsync(
+            SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
+            CheckProperties(command.CustomProperties);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
+                    cancellationToken).ConfigureAwait(false);
+            groupUser.CheckExist(command.UserId, command.GroupId);
+            groupUser.CustomProperties = command.CustomProperties;
+            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
+
+            return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);
+        }
+
+        public async Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
 
-            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation);
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.UserId);
 
-            GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
-            groupUser.CheckNotExist(command.UserId, command.GroupId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken).ConfigureAwait(false);
+            groupUser.CheckNotExist();
 
             await _groupUserDataProvider.AddAsync(new GroupUser
             {
                 GroupId = command.GroupId,
                 UserId = command.UserId
-            }, cancellation);
+            }, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
         }
 
-        public async Task<GroupQuittedEvent> QuitGroup(QuitGroupCommand command, CancellationToken cancellation)
+        public async Task<GroupQuittedEvent> QuitGroupAsync(QuitGroupCommand command,
+            CancellationToken cancellationToken = default)
         {
-            GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellation);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
+
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
             groupUser.CheckIsNotOwner(command.UserId, command.GroupId);
 
-            await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
+            await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
             return _mapper.Map<GroupQuittedEvent>(command);
         }
 
-        public async Task<GroupOwnerChangedEvent> ChangeGroupOwner(ChangeGroupOwnerCommand command, CancellationToken cancellation)
+        public async Task<GroupOwnerChangedEvent> ChangeGroupOwnerAsync(ChangeGroupOwnerCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var groupOwner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellation);
+            CheckNotSameGroupUser(command.NewOwnerId, command.OwnerId);
+
+            var groupOwner =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellationToken);
             groupOwner.CheckIsOwner(command.OwnerId, command.GroupId);
 
-            var newGroupOwner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MewOwnerId, command.GroupId, cancellation);
-            newGroupOwner.CheckExist(command.MewOwnerId, command.GroupId);
+            var newGroupOwner =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.NewOwnerId, command.GroupId,
+                    cancellationToken);
+            newGroupOwner.CheckExist(command.NewOwnerId, command.GroupId);
+
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
 
             groupOwner.Role = UserRole.Admin;
-            await _groupUserDataProvider.UpdateAsync(groupOwner, cancellation);
-
             newGroupOwner.Role = UserRole.Owner;
-            await _groupUserDataProvider.UpdateAsync(newGroupOwner, cancellation);
+
+            await _groupUserDataProvider.UpdateRangeAsync(new List<GroupUser> {groupOwner, newGroupOwner},
+                cancellationToken);
 
             return _mapper.Map<GroupOwnerChangedEvent>(command);
         }
 
-        public async Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command, CancellationToken cancellationToken)
+
+        public async Task<GroupMemberAddedEvent> AddGroupMembersAsync(AddGroupMemberCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId, cancellationToken);
-            admin.CheckIsAdmin(command.AdminId, command.GroupId);
-
-            List<GroupUser> groupUsers = new();
-            foreach (var userId in command.UserIdList)
+            var groupIds = command.GroupUsers.Select(o => o.GroupId).Distinct();
+            if (groupIds.Count() != 1 || groupIds.FirstOrDefault() != command.GroupId)
             {
-                var user = await _userDataProvider.GetByIdAsync(userId, cancellationToken);
-                user.CheckExist(userId);
-
-                var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(userId, command.GroupId, cancellationToken);
-                member.CheckNotExist(userId, command.GroupId);
-                groupUsers.Add(new()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = userId,
-                    GroupId = command.GroupId
-                });
+                throw new BusinessWarningException(Prompt.AddUsersToWrongGroup);
             }
 
-            await _groupUserDataProvider.AddRangeAsync(groupUsers, cancellationToken);
+            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
+                cancellationToken);
+            admin.CheckIsAdmin(command.AdminId, command.GroupId);
+
+            IEnumerable<User> users =
+                await _userDataProvider.GetRangeByIdAsync(command.GroupUsers.Select(o => o.UserId), cancellationToken);
+            if (users.Count() != command.GroupUsers.Count())
+            {
+                throw new BusinessWarningException(Prompt.NotAllUsersExists);
+            }
+
+            IEnumerable<GroupUser> groupUsers =
+                await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId,
+                    command.GroupUsers.Select(o => o.UserId),
+                    cancellationToken);
+            if (groupUsers.Any())
+            {
+                throw new BusinessWarningException(Prompt.SomeGroupUsersExist);
+            }
+
+            await _groupUserDataProvider.AddRangeAsync(_mapper.Map<IEnumerable<GroupUser>>(command.GroupUsers),
+                cancellationToken);
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
 
-        public async Task<GroupMemberDeletedEvent> DeleteGroupMember(DeleteGroupMemberCommand command, CancellationToken cancellationToken)
+        public async Task<GroupMemberRemovedEvent> RemoveGroupMembersAsync(RemoveGroupMemberCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId, cancellationToken);
+            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
+                cancellationToken);
             admin.CheckIsAdmin(command.AdminId, command.GroupId);
 
-            foreach (var userId in command.UserIdList)
+            IEnumerable<GroupUser> groupUsers =
+                await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIdList,
+                    cancellationToken);
+            if (groupUsers.Count() != command.UserIdList.Count)
             {
-                var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(userId, command.GroupId, cancellationToken);
-                member.CheckExist(userId, command.GroupId);
-
-                if (member.Role == UserRole.Owner)
-                {
-                    throw new BusinessWarningException($"the deleted member cannot be owner with Id {member.UserId}.");
-                }
-
-                if (admin.Role == UserRole.Admin && member.Role == UserRole.Admin)
-                {
-                    throw new BusinessWarningException($"amdin can't delete amdin with Id {member.UserId}.");
-                }
-                await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
+                throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
             }
 
-            return _mapper.Map<GroupMemberDeletedEvent>(command);
+            if (groupUsers.Any(o => o.Role == UserRole.Owner))
+            {
+                throw new BusinessWarningException(Prompt.RemoveOwnerFromGroup);
+            }
+
+            if (admin.Role == UserRole.Admin && groupUsers.Any(o => o.Role == UserRole.Admin))
+            {
+                throw new BusinessWarningException(Prompt.RemoveAdminByAdmin);
+            }
+
+            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellationToken);
+
+            return _mapper.Map<GroupMemberRemovedEvent>(command);
         }
 
-        public async Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command, CancellationToken cancellationToken)
+        public async Task<MessageRemindTypeSetEvent> SetMessageRemindTypeAsync(SetMessageRemindTypeCommand command,
+            CancellationToken cancellationToken = default)
         {
-            var user = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
+            var user = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
+                cancellationToken);
             user.CheckExist(command.UserId, command.GroupId);
 
             user.MessageRemindType = command.MessageRemindType;
@@ -171,22 +256,45 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<MessageRemindTypeSetEvent>(command);
         }
 
-        public async Task<GroupMemberRoleSetEvent> SetGroupMemberRole(SetGroupMemberRoleCommand command, CancellationToken cancellationToken)
+        public async Task<GroupMemberRoleSetEvent> SetGroupMemberRoleAsync(SetGroupMemberRoleCommand command,
+            CancellationToken cancellationToken = default)
         {
             if (command.Role == UserRole.Owner)
             {
-                throw new BusinessWarningException($"can't set group member role to owner with Id {command.MemberId}.");
+                throw new BusinessWarningException(Prompt.SetGroupOwner);
             }
-            var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellationToken);
+
+            var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId,
+                cancellationToken);
             owner.CheckIsOwner(command.OwnerId, command.GroupId);
 
-            var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
+            var member =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId,
+                    cancellationToken);
             member.CheckExist(command.MemberId, command.GroupId);
 
             member.Role = command.Role;
             await _groupUserDataProvider.UpdateAsync(member, cancellationToken);
 
             return _mapper.Map<GroupMemberRoleSetEvent>(command);
+        }
+
+
+        private void CheckProperties(Dictionary<string, string> properties)
+        {
+            if (properties is null || !properties.Any())
+            {
+                throw new BusinessWarningException(Prompt.NoCustomProperty);
+            }
+        }
+
+
+        private void CheckNotSameGroupUser(string newOwnerId, string ownerId)
+        {
+            if (newOwnerId == ownerId)
+            {
+                throw new BusinessWarningException(Prompt.SameGroupUser);
+            }
         }
     }
 }

@@ -5,6 +5,6 @@ namespace SugarChat.Message.Responses.Groups
 {
     public class GetGroupProfileResponse : IResponse
     {
-        public GroupDto Result { get; set; }
+        public GroupDto Group { get; set; }
     }
 }

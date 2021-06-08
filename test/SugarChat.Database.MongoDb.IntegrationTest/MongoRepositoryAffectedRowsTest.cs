@@ -10,12 +10,10 @@ using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
-    public class MongoRepositoryAffectedRowsTest
+    public class MongoRepositoryAffectedRowsTest : TestBase
     {
-        readonly IRepository _repository;
-        public MongoRepositoryAffectedRowsTest()
+        public MongoRepositoryAffectedRowsTest(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            _repository = MongoDbFactory.GetRepository();
         }
 
         [Fact]
@@ -63,12 +61,12 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             try
             {
 
-                var total = await _repository.AddRangeAsync(groups);
+                var total = await Repository.AddRangeAsync(groups);
                 total.ShouldBe(groups.Count);
             }
             finally
             {
-                await _repository.RemoveRangeAsync(groups);
+                await Repository.RemoveRangeAsync(groups);
             }
         }
 
@@ -89,15 +87,15 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             };
             try
             {
-                var addedTotal = await _repository.AddAsync(group);
+                var addedTotal = await Repository.AddAsync(group);
                 addedTotal.ShouldBe(1);
-                var updatedTotal = await _repository.UpdateAsync(group);
+                var updatedTotal = await Repository.UpdateAsync(group);
                 updatedTotal.ShouldBe(1);
 
             }
             finally
             {
-                var deletedTotoal = await _repository.RemoveAsync(group);
+                var deletedTotoal = await Repository.RemoveAsync(group);
                 deletedTotoal.ShouldBe(1);
             }
         }
@@ -146,18 +144,18 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 };
             try
             {
-                var addedTotal = await _repository.AddRangeAsync(groups);
+                var addedTotal = await Repository.AddRangeAsync(groups);
                 groups[0].Id = Guid.NewGuid().ToString();
                 foreach (var group in groups)
                 {
                     group.Name = "New" + group.Name;
                 }
-                var updatedTotal = await _repository.UpdateRangeAsync(groups);
+                var updatedTotal = await Repository.UpdateRangeAsync(groups);
                 updatedTotal.ShouldBe(2);
             }
             finally
             {
-                await _repository.RemoveRangeAsync(groups);
+                await Repository.RemoveRangeAsync(groups);
             }
         }
 
@@ -205,18 +203,18 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 };
             try
             {
-                var addedTotal = await _repository.AddRangeAsync(groups);
+                var addedTotal = await Repository.AddRangeAsync(groups);
                 foreach (var group in groups)
                 {
                     group.Name = "New" + group.Name;
                     group.Id = Guid.NewGuid().ToString();
                 }
-                var updatedTotal = await _repository.UpdateRangeAsync(groups);
+                var updatedTotal = await Repository.UpdateRangeAsync(groups);
                 updatedTotal.ShouldBe(0);
             }
             finally
             {
-                await _repository.RemoveRangeAsync(groups);
+                await Repository.RemoveRangeAsync(groups);
             }
         }
 
@@ -264,17 +262,17 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 };
             try
             {
-                var addedTotal = await _repository.AddRangeAsync(groups);
+                var addedTotal = await Repository.AddRangeAsync(groups);
                 foreach (var group in groups)
                 {
                     group.Name = "New" + group.Name;
                 }
-                var updatedTotal = await _repository.UpdateRangeAsync(groups);
+                var updatedTotal = await Repository.UpdateRangeAsync(groups);
                 updatedTotal.ShouldBe(groups.Count);
             }
             finally
             {
-                await _repository.RemoveRangeAsync(groups);
+                await Repository.RemoveRangeAsync(groups);
             }
         }
 
@@ -320,8 +318,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                         Name = "TestGroup3"
                     },
                 };
-            await _repository.AddRangeAsync(groups);
-            var deletedTotal = await _repository.RemoveRangeAsync(groups);
+            await Repository.AddRangeAsync(groups);
+            var deletedTotal = await Repository.RemoveRangeAsync(groups);
             deletedTotal.ShouldBe(3);
         }
 
@@ -369,13 +367,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 };
             try
             {
-                await _repository.AddRangeAsync(groups);
-                var deletedTotal = await _repository.RemoveRangeAsync(groups);
+                await Repository.AddRangeAsync(groups);
+                var deletedTotal = await Repository.RemoveRangeAsync(groups);
                 deletedTotal.ShouldBe(3);
             }
             finally
             {
-                var deletedTotal = await _repository.RemoveRangeAsync(groups);
+                var deletedTotal = await Repository.RemoveRangeAsync(groups);
                 deletedTotal.ShouldBe(0);
             }
         }

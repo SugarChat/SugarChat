@@ -25,8 +25,8 @@ namespace SugarChat.Core.UnitTest
             var response = await
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
-            Assert.Equal(0, response.Code);
-            Assert.Equal("Test", response.Message);
+            Assert.Equal(Prompt.NotAllUsersExists.Code, response.Code);
+            Assert.Equal(Prompt.NotAllUsersExists.Message, response.Message);
         }
         [Fact]
         public async Task TestUnifyResponseMiddleware2()

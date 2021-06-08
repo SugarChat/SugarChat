@@ -1,18 +1,15 @@
 ﻿using Mediator.Net;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Command;
+using SugarChat.Message.Commands;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
 using SugarChat.Message;
 using SugarChat.Message.Commands.Message;
-using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
+using SugarChat.Core.Exceptions;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -75,17 +72,17 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 {
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(string.Format(ServiceCheckExtensions.MessageExists, command.MessageId));
+                    response.Message.ShouldBe(Prompt.MessageNoExists.WithParams(command.MessageId).Message);
                 }
                 {
                     command.MessageId = messageId1;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe("no authorization");
+                    response.Message.ShouldBe(Prompt.RevokeOthersMessage.WithParams(command.UserId,command.MessageId).Message);
                 }
                 {
                     command.UserId = message.SentBy;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe("the sending time is more than two minutes and cannot be withdrawn");
+                    response.Message.ShouldBe(Prompt.TooLateToRevoke.WithParams(command.UserId,command.MessageId).Message);
                 }
 
                 command.MessageId = messageId2;

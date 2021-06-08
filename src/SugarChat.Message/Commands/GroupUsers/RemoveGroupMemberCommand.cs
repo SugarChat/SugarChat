@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Message.Commands.GroupUsers
 {
-    public class DeleteGroupMemberCommand : ICommand
+    public class RemoveGroupMemberCommand : ICommand
     {
         public string GroupId { get; set; }
         public string AdminId { get; set; }

@@ -32,10 +32,10 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command, CancellationToken cancellation = default);
 
-        Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command,
+        Task<GroupMemberAddedEvent> AddGroupMembers(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<GroupMemberRemovedEvent> DeleteGroupMember(DeleteGroupMemberCommand command,
+        Task<GroupMemberRemovedEvent> RemoveGroupMembers(RemoveGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
         Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command,

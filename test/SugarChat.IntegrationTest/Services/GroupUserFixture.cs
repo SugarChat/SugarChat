@@ -286,30 +286,30 @@ namespace SugarChat.IntegrationTest.Services
                     await addGroupMemberFunctions[i].Invoke(i, repository);
                 }
 
-                DeleteGroupMemberCommand command = new DeleteGroupMemberCommand
+                RemoveGroupMemberCommand command = new RemoveGroupMemberCommand
                 {
                     GroupId = Guid.NewGuid().ToString(),
                     AdminId = Guid.NewGuid().ToString(),
                     UserIdList = new List<string> {Guid.NewGuid().ToString(), Guid.NewGuid().ToString()}
                 };
                 {
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
+                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.NotInGroup.WithParams(command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.GroupId = groupId;
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
+                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.NotInGroup.WithParams(command.AdminId, command.GroupId).Message);
                 }
                 {
                     command.AdminId = groupAdminIds[0];
                     command.UserIdList = new List<string> {groupAdminIds[1]};
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
+                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe($"amdin can't delete amdin with Id {command.UserIdList[0]}.");
                 }
                 {
                     command.UserIdList = new List<string> {groupOwnerId};
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
+                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe($"the deleted member cannot be owner with Id {command.UserIdList[0]}.");
                 }
 
@@ -319,7 +319,7 @@ namespace SugarChat.IntegrationTest.Services
                     x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
 
                 {
-                    var response = await mediator.SendAsync<DeleteGroupMemberCommand, SugarChatResponse>(command);
+                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.NotInGroup.WithParams(command.UserIdList[0], command.GroupId)
                         .Message);
                 }

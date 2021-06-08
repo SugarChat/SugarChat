@@ -183,7 +183,7 @@ namespace SugarChat.Core.Services.GroupUsers
         }
 
 
-        public async Task<GroupMemberAddedEvent> AddGroupMember(AddGroupMemberCommand command,
+        public async Task<GroupMemberAddedEvent> AddGroupMembers(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default)
         {
             var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
@@ -216,31 +216,32 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
 
-        public async Task<GroupMemberRemovedEvent> DeleteGroupMember(DeleteGroupMemberCommand command,
+        public async Task<GroupMemberRemovedEvent> RemoveGroupMembers(RemoveGroupMemberCommand command,
             CancellationToken cancellationToken = default)
         {
             var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
                 cancellationToken);
             admin.CheckIsAdmin(command.AdminId, command.GroupId);
 
-            foreach (var userId in command.UserIdList)
+            IEnumerable<GroupUser> groupUsers =
+                await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIdList,
+                    cancellationToken);
+            if (groupUsers.Count() != command.UserIdList.Count)
             {
-                var member =
-                    await _groupUserDataProvider.GetByUserAndGroupIdAsync(userId, command.GroupId, cancellationToken);
-                member.CheckExist(userId, command.GroupId);
-
-                if (member.Role == UserRole.Owner)
-                {
-                    throw new BusinessWarningException($"the deleted member cannot be owner with Id {member.UserId}.");
-                }
-
-                if (admin.Role == UserRole.Admin && member.Role == UserRole.Admin)
-                {
-                    throw new BusinessWarningException($"amdin can't delete amdin with Id {member.UserId}.");
-                }
-
-                await _groupUserDataProvider.RemoveAsync(member, cancellationToken);
+                throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
             }
+            
+            if (groupUsers.Any(o=>o.Role == UserRole.Owner))
+            {
+                throw new BusinessWarningException(Prompt.RemoveOwnerFromGroup);
+            }
+            
+            if (admin.Role == UserRole.Admin && groupUsers.Any(o=>o.Role == UserRole.Admin))
+            {
+                throw new BusinessWarningException(Prompt.RemoveAdminByAdmin);
+            }
+            
+            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellationToken);
 
             return _mapper.Map<GroupMemberRemovedEvent>(command);
         }
@@ -261,9 +262,10 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<GroupMemberRoleSetEvent> SetGroupMemberRole(SetGroupMemberRoleCommand command,
             CancellationToken cancellationToken = default)
         {
+            //TODO : Why can not this method do the job for "ChangeGroupOwner" ?
             if (command.Role == UserRole.Owner)
             {
-                throw new BusinessWarningException($"can't set group member role to owner with Id {command.MemberId}.");
+                throw new BusinessWarningException(Prompt.SetGroupOwner);
             }
 
             var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId,

@@ -129,6 +129,17 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt SomeGroupUsersExist =
             new(ExceptionCode.SomeGroupUsersExist, "Some of the groupUsers are already exist.");
         
+        public static readonly ExceptionPrompt NotAllGroupUsersExist =
+            new(ExceptionCode.NotAllGroupUsersExist, "Not all of the groupUsers exist."); 
+        
+        public static readonly ExceptionPrompt RemoveOwnerFromGroup =
+            new(ExceptionCode.RemoveOwnerFromGroup, "It's not allowed to remove the owner from a group.");
+        
+        public static readonly ExceptionPrompt RemoveAdminByAdmin =
+            new(ExceptionCode.RemoveAdminByAdmin, "It's not allowed to remove an administrator by another.");
+        
+        public static readonly ExceptionPrompt SetGroupOwner =
+            new(ExceptionCode.SetGroupOwner, "It's not allowed to set an member as owner.");
 
         #endregion
 

@@ -57,7 +57,11 @@ namespace SugarChat.Core.Common
         RemoveGroupUsersFailed = 52005,
         NoCustomProperty = 52006,
         SameGroupUser = 52007,
-        SomeGroupUsersExist = 52008
+        SomeGroupUsersExist = 52008,
+        NotAllGroupUsersExist = 52009,
+        RemoveOwnerFromGroup = 52010,
+        RemoveAdminByAdmin = 52011,
+        SetGroupOwner = 52012
         #endregion
         
     }

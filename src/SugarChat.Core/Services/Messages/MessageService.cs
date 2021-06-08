@@ -240,16 +240,16 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
-            var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId).ConfigureAwait(false);
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {
-                throw new BusinessWarningException("no authorization");
+                throw new BusinessWarningException(Prompt.RevokeOthersMessage.WithParams(command.UserId, command.MessageId));
             }
 
-            if (message.SentTime.AddMinutes(2) < DateTime.Now)
+            if (message.SentTime.Add(command.RevokeTimeLimit) < DateTime.Now)
             {
-                throw new BusinessWarningException("the sending time is more than two minutes and cannot be withdrawn");
+                throw new BusinessWarningException(Prompt.TooLateToRevoke.WithParams(command.UserId, command.MessageId));
             }
 
             message.IsRevoked = true;

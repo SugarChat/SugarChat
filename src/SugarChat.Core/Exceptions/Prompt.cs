@@ -100,6 +100,14 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt LastReadTimeLaterThanOrEqualTo =
             new(ExceptionCode.LastReadTimeLaterThanOrEqualTo,
                 "User with Id {0} from group with Id {1}'s Last Read Time is later than or equal to {2}.");
+        
+        public static readonly ExceptionPrompt RevokeOthersMessage =
+            new(ExceptionCode.RevokeOthersMessage,
+                "User with Id {0} has no right to revoke message with Id {1} which it not sent by him.");
+        
+        public static readonly ExceptionPrompt TooLateToRevoke =
+            new(ExceptionCode.TooLateToRevoke,
+                "User with Id {0} can not revoke message with Id {1} since it's sent quite a time ago.");
 
         #endregion
 

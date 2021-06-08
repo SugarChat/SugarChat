@@ -77,12 +77,12 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     command.MessageId = messageId1;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe("no authorization");
+                    response.Message.ShouldBe(Prompt.RevokeOthersMessage.WithParams(command.UserId,command.MessageId).Message);
                 }
                 {
                     command.UserId = message.SentBy;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe("the sending time is more than two minutes and cannot be withdrawn");
+                    response.Message.ShouldBe(Prompt.TooLateToRevoke.WithParams(command.UserId,command.MessageId).Message);
                 }
 
                 command.MessageId = messageId2;

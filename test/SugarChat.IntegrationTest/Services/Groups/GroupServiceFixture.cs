@@ -23,7 +23,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings{PageNum = 1}});
+                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1 } });
                 reponse.Data.Result.Count().ShouldBe(4);
             });
         }
@@ -44,7 +44,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                await mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse> (new UpdateGroupProfileCommand
+                await mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse>(new UpdateGroupProfileCommand
                 {
                     Id = conversationId,
                     Name = "内部沟通群",
@@ -53,9 +53,17 @@ namespace SugarChat.IntegrationTest.Services.Groups
                 }, default(CancellationToken));
 
                 var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
-                reponse.Data.Name.ShouldBe("内部沟通群");                
+                reponse.Data.Name.ShouldBe("内部沟通群");
             });
         }
 
+        [Fact]
+        public async Task ShouldRemoveGroup()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand());
+            });
+        }
     }
 }

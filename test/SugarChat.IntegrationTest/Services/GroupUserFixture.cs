@@ -305,12 +305,12 @@ namespace SugarChat.IntegrationTest.Services
                     command.AdminId = groupAdminIds[0];
                     command.UserIdList = new List<string> {groupAdminIds[1]};
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"amdin can't delete amdin with Id {command.UserIdList[0]}.");
+                    response.Message.ShouldBe(Prompt.RemoveAdminByAdmin.Message);
                 }
                 {
                     command.UserIdList = new List<string> {groupOwnerId};
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"the deleted member cannot be owner with Id {command.UserIdList[0]}.");
+                    response.Message.ShouldBe(Prompt.RemoveOwnerFromGroup.Message);
                 }
 
                 command.UserIdList = userIds.Take(2).ToList();
@@ -320,8 +320,7 @@ namespace SugarChat.IntegrationTest.Services
 
                 {
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams(command.UserIdList[0], command.GroupId)
-                        .Message);
+                    response.Message.ShouldBe(Prompt.NotAllGroupUsersExist.Message);
                 }
             });
         }
@@ -409,7 +408,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     command.Role = UserRole.Owner;
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"can't set group member role to owner with Id {command.MemberId}.");
+                    response.Message.ShouldBe(Prompt.SetGroupOwner.Message);
                 }
             });
         }

@@ -17,7 +17,7 @@ namespace SugarChat.Core.Services.Users
             _repository = repository;
         }
 
-        public async Task<User> GetByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<User> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _repository.SingleOrDefaultAsync<User>(x => x.Id == id, cancellationToken)
                 .ConfigureAwait(false);
@@ -30,27 +30,27 @@ namespace SugarChat.Core.Services.Users
                 .ConfigureAwait(false);
         }
 
-        public async Task AddAsync(User user, CancellationToken cancellation = default)
+        public async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.AddAsync(user, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.AddAsync(user, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.AddUserFailed.WithParams(user.Id));
             }
         }
 
-        public async Task UpdateAsync(User user, CancellationToken cancellation = default)
+        public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.UpdateAsync(user, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.UpdateAsync(user, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.UpdateUserFailed.WithParams(user.Id));
             }
         }
 
-        public async Task RemoveAsync(User user, CancellationToken cancellation = default)
+        public async Task RemoveAsync(User user, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.RemoveAsync(user, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.RemoveUserFailed.WithParams(user.Id));

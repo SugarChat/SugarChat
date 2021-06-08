@@ -22,27 +22,27 @@ namespace SugarChat.Core.Services.Messages
             _repository = repository;
         }
 
-        public async Task AddAsync(Domain.Message message, CancellationToken cancellation)
+        public async Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.AddAsync(message, cancellation);
+            int affectedLineNum = await _repository.AddAsync(message, cancellationToken);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.AddMessageFailed.WithParams(message.Id));
             }
         }
 
-        public async Task UpdateAsync(Domain.Message message, CancellationToken cancellation)
+        public async Task UpdateAsync(Domain.Message message, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.UpdateAsync(message, cancellation);
+            int affectedLineNum = await _repository.UpdateAsync(message, cancellationToken);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.UpdateMessageFailed.WithParams(message.Id));
             }
         }
 
-        public async Task RemoveAsync(Domain.Message message, CancellationToken cancellation)
+        public async Task RemoveAsync(Domain.Message message, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.RemoveAsync(message, cancellation);
+            int affectedLineNum = await _repository.RemoveAsync(message, cancellationToken);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.RemoveMessageFailed.WithParams(message.Id));
@@ -127,7 +127,7 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUnreadToUserFromGroupAsync(string userId, string groupId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                 cancellationToken)).LastReadTime;
@@ -141,7 +141,7 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<IEnumerable<Domain.Message>> GetAllToUserFromGroupAsync(string userId, string groupId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => o.GroupId == groupId,
@@ -151,7 +151,7 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var message = await _repository.SingleAsync<Domain.Message>(o => o.Id == messageId, cancellationToken);
             var messages =
@@ -163,7 +163,7 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string groupId, int count,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
                 .OrderByDescending(o => o.SentTime).Take(count).ToList();
@@ -172,20 +172,20 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<Domain.Message> GetLatestMessageOfGroupAsync(string groupId,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var message = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
                 .OrderByDescending(o => o.SentTime).FirstOrDefault();
             return await Task.FromResult(message);
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == id, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        public async Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
+        public async Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)
         {
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }

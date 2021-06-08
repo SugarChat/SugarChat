@@ -35,7 +35,7 @@ namespace SugarChat.Core.Services.Messages
         Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
-        Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command,
+        Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default);
     }
 }

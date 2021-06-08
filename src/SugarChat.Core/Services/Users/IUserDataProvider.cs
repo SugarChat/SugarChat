@@ -9,8 +9,8 @@ namespace SugarChat.Core.Services.Users
     {
         Task<User> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task<IEnumerable<User>> GetRangeByIdAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
-        Task AddAsync(User user, CancellationToken cancellation = default);
-        Task UpdateAsync(User user, CancellationToken cancellation = default);
-        Task RemoveAsync(User user, CancellationToken cancellation = default);
+        Task AddAsync(User user, CancellationToken cancellationToken = default);
+        Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+        Task RemoveAsync(User user, CancellationToken cancellationToken = default);
     }
 }

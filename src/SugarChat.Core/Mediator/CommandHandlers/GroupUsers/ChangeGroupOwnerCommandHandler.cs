@@ -23,7 +23,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<ChangeGroupOwnerCommand> context, CancellationToken cancellationToken)
         {
-            var groupOwnerChangedEvent = await _service.ChangeGroupOwner(context.Message, cancellationToken).ConfigureAwait(false);
+            var groupOwnerChangedEvent = await _service.ChangeGroupOwnerAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupOwnerChangedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

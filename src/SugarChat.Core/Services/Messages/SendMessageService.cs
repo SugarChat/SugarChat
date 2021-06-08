@@ -24,7 +24,8 @@ namespace SugarChat.Core.Services
             _messageDataProvider = messageDataProvider;
         }
 
-        public async Task<MessageSentEvent> SendMessage(SendMessageCommand command, CancellationToken cancellationToken = default)
+        public async Task<MessageSentEvent> SendMessageAsync(SendMessageCommand command,
+            CancellationToken cancellationToken = default)
         {
             await _messageDataProvider.AddAsync(new Domain.Message
             {

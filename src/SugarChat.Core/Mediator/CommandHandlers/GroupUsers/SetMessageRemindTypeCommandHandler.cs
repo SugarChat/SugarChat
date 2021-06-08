@@ -23,7 +23,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<SetMessageRemindTypeCommand> context, CancellationToken cancellationToken)
         {
-            var messageRemindTypeSetEvent = await _service.SetMessageRemindType(context.Message, cancellationToken).ConfigureAwait(false);
+            var messageRemindTypeSetEvent = await _service.SetMessageRemindTypeAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageRemindTypeSetEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

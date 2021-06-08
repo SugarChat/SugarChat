@@ -1,4 +1,5 @@
 ﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.GroupUsers;
@@ -21,6 +22,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getGroupMemberList"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupUserDto>>))]
         public async Task<IActionResult> GetGroupMemberList([FromQuery] GetMembersOfGroupRequest request)
         {
             var response =
@@ -31,6 +33,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setGroupMemberCustomField"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> SetGroupMemberCustomField(SetGroupMemberCustomFieldCommand command)
         {
             var response = await _mediator.SendAsync<SetGroupMemberCustomFieldCommand, SugarChatResponse>(command);
@@ -38,6 +41,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("join"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> JoinGroup(JoinGroupCommand command)
         {
             var response = await _mediator.SendAsync<JoinGroupCommand, SugarChatResponse>(command);
@@ -45,6 +49,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("quit"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> QuitGroup(QuitGroupCommand command)
         {
             var response = await _mediator.SendAsync<QuitGroupCommand, SugarChatResponse>(command);
@@ -52,6 +57,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("changeGroupOwner"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> ChangeGroupOwner(ChangeGroupOwnerCommand command)
         {
             var response = await _mediator.SendAsync<ChangeGroupOwnerCommand, SugarChatResponse>(command);
@@ -59,6 +65,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("addGroupMember"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> AddGroupMember(AddGroupMemberCommand command)
         {
             var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
@@ -66,6 +73,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("deleteGroupMember"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> DeleteGroupMember(AddGroupMemberCommand command)
         {
             var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
@@ -73,6 +81,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setMessageRemindType"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> SetMessageRemindType(SetMessageRemindTypeCommand command)
         {
             var response = await _mediator.SendAsync<SetMessageRemindTypeCommand, SugarChatResponse>(command);
@@ -80,6 +89,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setGroupMemberRole"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> SetGroupMemberRole(SetGroupMemberRoleCommand command)
         {
             var response = await _mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);

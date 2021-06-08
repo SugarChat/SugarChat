@@ -14,6 +14,8 @@ using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using System;
+using Mediator.Net;
+using SugarChat.Message.Commands.Groups;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -23,15 +25,17 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IMediator _mediator;
 
         public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMediator mediator)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _mediator = mediator;
         }
 
 
@@ -148,7 +152,6 @@ namespace SugarChat.Core.Services.GroupUsers
             groupUser.CheckExist(command.UserId, command.GroupId);
             groupUser.CheckIsNotOwner(command.UserId, command.GroupId);
 
-            //TODO : Is there single member group allowed?
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellation);
 
             return _mapper.Map<GroupQuittedEvent>(command);
@@ -171,13 +174,11 @@ namespace SugarChat.Core.Services.GroupUsers
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
             group.CheckExist(command.GroupId);
 
-            //TODO : Should we check if the groupOwner is the legal one?
             groupOwner.Role = UserRole.Admin;
-            await _groupUserDataProvider.UpdateAsync(groupOwner, cancellation);
-
-            //TODO : Should we check if the newGroupOwner is already the owner?
             newGroupOwner.Role = UserRole.Owner;
-            await _groupUserDataProvider.UpdateAsync(newGroupOwner, cancellation);
+
+            await _groupUserDataProvider.UpdateRangeAsync(new List<GroupUser> {groupOwner, newGroupOwner},
+                cancellation);
 
             return _mapper.Map<GroupOwnerChangedEvent>(command);
         }
@@ -186,32 +187,34 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<GroupMemberAddedEvent> AddGroupMembers(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default)
         {
+            var groupIds = command.GroupUsers.Select(o => o.GroupId).Distinct();
+            if (groupIds.Count() != 1 || groupIds.FirstOrDefault() != command.GroupId)
+            {
+                throw new BusinessWarningException(Prompt.AddUsersToWrongGroup);
+            }
+
             var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
                 cancellationToken);
             admin.CheckIsAdmin(command.AdminId, command.GroupId);
 
-            IEnumerable<User> users = await _userDataProvider.GetRangeByIdAsync(command.UserIdList, cancellationToken);
-            if (users.Count() != command.UserIdList.Count)
+            IEnumerable<User> users =
+                await _userDataProvider.GetRangeByIdAsync(command.GroupUsers.Select(o => o.UserId), cancellationToken);
+            if (users.Count() != command.GroupUsers.Count())
             {
                 throw new BusinessWarningException(Prompt.NotAllUsersExists);
             }
 
             IEnumerable<GroupUser> groupUsers =
-                await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIdList,
+                await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId,
+                    command.GroupUsers.Select(o => o.UserId),
                     cancellationToken);
             if (groupUsers.Any())
             {
                 throw new BusinessWarningException(Prompt.SomeGroupUsersExist);
             }
 
-            // TODO : Why is the Id must be Guid?
-            var newGroupUsers = command.UserIdList.Select(o => new GroupUser
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = o,
-                GroupId = command.GroupId
-            });
-            await _groupUserDataProvider.AddRangeAsync(newGroupUsers, cancellationToken);
+            await _groupUserDataProvider.AddRangeAsync(_mapper.Map<IEnumerable<GroupUser>>(command.GroupUsers),
+                cancellationToken);
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
@@ -230,17 +233,17 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
             }
-            
-            if (groupUsers.Any(o=>o.Role == UserRole.Owner))
+
+            if (groupUsers.Any(o => o.Role == UserRole.Owner))
             {
                 throw new BusinessWarningException(Prompt.RemoveOwnerFromGroup);
             }
-            
-            if (admin.Role == UserRole.Admin && groupUsers.Any(o=>o.Role == UserRole.Admin))
+
+            if (admin.Role == UserRole.Admin && groupUsers.Any(o => o.Role == UserRole.Admin))
             {
                 throw new BusinessWarningException(Prompt.RemoveAdminByAdmin);
             }
-            
+
             await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellationToken);
 
             return _mapper.Map<GroupMemberRemovedEvent>(command);
@@ -262,7 +265,6 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<GroupMemberRoleSetEvent> SetGroupMemberRole(SetGroupMemberRoleCommand command,
             CancellationToken cancellationToken = default)
         {
-            //TODO : Why can not this method do the job for "ChangeGroupOwner" ?
             if (command.Role == UserRole.Owner)
             {
                 throw new BusinessWarningException(Prompt.SetGroupOwner);

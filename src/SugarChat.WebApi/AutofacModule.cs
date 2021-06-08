@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SugarChat.WebApi
 {

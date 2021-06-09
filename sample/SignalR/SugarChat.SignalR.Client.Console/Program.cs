@@ -47,7 +47,7 @@ namespace SugarChat.SignalR.Client.ConsoleSample
         private static async Task<HubConnection> build()
         {
             var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri("http://localhost:7777");
+            httpClient.BaseAddress = new Uri("http://localhost:5000");
             var connectionUrl = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userIdentifier=console");
 
             HubConnection hubConnection = new HubConnectionBuilder()

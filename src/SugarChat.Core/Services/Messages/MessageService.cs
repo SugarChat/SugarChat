@@ -9,6 +9,7 @@ using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Commands;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
@@ -256,6 +257,24 @@ namespace SugarChat.Core.Services.Messages
             await _messageDataProvider.UpdateAsync(message, cancellationToken);
 
             return _mapper.Map<MessageRevokedEvent>(command);
+        }
+
+        public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            User user = await GetUserAsync(command.SentBy, cancellationToken);
+            user.CheckExist(command.SentBy);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
+            GroupUser groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.SentBy, command.GroupId,
+                    cancellationToken);
+            groupUser.CheckExist(command.SentBy, command.GroupId);
+            
+            Domain.Message message = _mapper.Map<Domain.Message>(command);
+            message.SentTime = DateTimeOffset.UtcNow;
+            await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+            
+            return _mapper.Map<MessageSavedEvent>(command);
         }
     }
 }

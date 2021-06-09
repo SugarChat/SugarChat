@@ -35,6 +35,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+        
+        [Route("add"), HttpPost]
+        public async Task<IActionResult> AddUser(AddUserCommand command)
+        {
+            var response = await _mediator.SendAsync<AddUserCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
 
 
     }

@@ -5,24 +5,29 @@ using Mediator.Net.Context;
 using Mediator.Net.Contracts;
 using SugarChat.Core.Services.Push;
 using SugarChat.Message.Events.Messages;
+using SugarChat.SignalR.Enums;
+using SugarChat.SignalR.Server.Models;
+using SugarChat.SignalR.ServerClient;
 
 namespace SugarChat.Core.Mediator.EventHandlers.Messages
 {
     public class MessageSavedEventHandler : IEventHandler<MessageSavedEvent>
     {
-        private readonly List<IPushService> _pushServices;
+        private readonly IServerClient _client;
 
-        public MessageSavedEventHandler(List<IPushService> pushServices)
+        public MessageSavedEventHandler(IServerClient client)
         {
-            _pushServices = pushServices;
+            _client = client;
         }
 
         public async Task Handle(IReceiveContext<MessageSavedEvent> context, CancellationToken cancellationToken)
         {
-            foreach (var pushService in _pushServices)
+            await _client.SendMessage(new SendMessageModel()
             {
-                await pushService.Push(context.Message, cancellationToken);
-            }
+                SendTo = context.Message.GroupId,
+                Messages = new[] {context.Message.SentBy, context.Message.Content},
+                SendWay = SendWay.All
+            });
         }
     }
 }

@@ -1,26 +1,24 @@
-﻿using Mediator.Net.Context;
-using Mediator.Net.Contracts;
-using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Core.Services;
-using SugarChat.Message.Commands;
-using SugarChat.Message.Messages.Events;
+using Mediator.Net.Context;
+using Mediator.Net.Contracts;
+using SugarChat.Core.Services.Messages;
+using SugarChat.Message.Commands.Message;
 
-namespace SugarChat.Core.Mediator.CommandHandler.Messages
+namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 {
     public class SendMessageCommandHandler : ICommandHandler<SendMessageCommand>
     {
-        private readonly ISendMessageService _sendMessageService;
-        public SendMessageCommandHandler(ISendMessageService sendMessageService)
+        private readonly IMessageService _messageService;
+        public SendMessageCommandHandler(IMessageService messageService)
         {
-            _sendMessageService = sendMessageService;
+            _messageService = messageService;
         }
 
         public async Task Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
         {
-            var messageSentEvent = await _sendMessageService.SendMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            //await context.PublishAsync(messageSentEvent, cancellationToken).ConfigureAwait(false);
+            var messageSavedEvent = await _messageService.SaveMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            await context.PublishAsync(messageSavedEvent, cancellationToken).ConfigureAwait(false);
         }
     }
 }

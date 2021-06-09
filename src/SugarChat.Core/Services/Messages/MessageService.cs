@@ -257,5 +257,13 @@ namespace SugarChat.Core.Services.Messages
 
             return _mapper.Map<MessageRevokedEvent>(command);
         }
+
+        public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            Domain.Message message = _mapper.Map<Domain.Message>(command);
+            await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+
+            return _mapper.Map<MessageSavedEvent>(command);
+        }
     }
 }

@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["src/SugarChat.WebApi/SugarChat.WebApi.csproj", "SugarChat.WebApi/"]
-RUN dotnet restore "src/SugarChat.WebApi/SugarChat.WebApi.csproj"
+COPY ["SugarChat.WebApi.csproj", "./"]
+RUN dotnet restore "SugarChat.WebApi.csproj"
 COPY . .
-WORKDIR "/src/SugarChat.WebApi"
+WORKDIR "/src"
 RUN dotnet build "SugarChat.WebApi.csproj" -c Release -o /app/build
 
 FROM build AS publish

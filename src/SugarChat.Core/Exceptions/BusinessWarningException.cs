@@ -5,9 +5,6 @@ namespace SugarChat.Core.Exceptions
 {
     public class BusinessWarningException : BusinessException
     {
-        public BusinessWarningException(string message) : base(LogEventLevel.Warning, message)
-        {
-        }
         public BusinessWarningException(ExceptionPrompt prompt) : base(LogEventLevel.Warning, prompt)
         {
         }

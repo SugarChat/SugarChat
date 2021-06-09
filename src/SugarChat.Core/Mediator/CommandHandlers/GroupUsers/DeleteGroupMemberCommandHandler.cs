@@ -23,7 +23,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<RemoveGroupMemberCommand> context, CancellationToken cancellationToken)
         {
-            var groupMemberDeletedEvent = await _service.RemoveGroupMembers(context.Message, cancellationToken).ConfigureAwait(false);
+            var groupMemberDeletedEvent = await _service.RemoveGroupMembersAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupMemberDeletedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

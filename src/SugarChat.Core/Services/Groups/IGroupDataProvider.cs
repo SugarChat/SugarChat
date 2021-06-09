@@ -14,8 +14,8 @@ namespace SugarChat.Core.Services.Groups
         Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
             CancellationToken cancellationToken = default);
 
-        Task AddAsync(Group group, CancellationToken cancellation = default);
-        Task UpdateAsync(Group group, CancellationToken cancellation = default);
-        Task RemoveAsync(Group group, CancellationToken cancellation = default);
+        Task AddAsync(Group group, CancellationToken cancellationToken = default);
+        Task UpdateAsync(Group group, CancellationToken cancellationToken = default);
+        Task RemoveAsync(Group group, CancellationToken cancellationToken = default);
     }
 }

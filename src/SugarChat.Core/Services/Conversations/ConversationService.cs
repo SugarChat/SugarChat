@@ -55,7 +55,8 @@ namespace SugarChat.Core.Services.Conversations
             {
                 //Get the groups that have had conversations
                 var groupMessages =
-                    await _messageDataProvider.GetByGroupIdAsync(groupUser.GroupId, cancellationToken).ConfigureAwait(false);
+                    await _messageDataProvider.GetByGroupIdAsync(groupUser.GroupId, cancellationToken)
+                        .ConfigureAwait(false);
                 if (groupMessages.Any())
                 {
                     conversations.Add(await GetConversationDto(groupUser, cancellationToken));
@@ -118,9 +119,10 @@ namespace SugarChat.Core.Services.Conversations
 
             return _mapper.Map<ConversationRemovedEvent>(command);
         }
-        
-        
-        private async Task<ConversationDto> GetConversationDto(GroupUser groupUser, CancellationToken cancellationToken)
+
+
+        private async Task<ConversationDto> GetConversationDto(GroupUser groupUser,
+            CancellationToken cancellationToken = default)
         {
             var conversationDto = new ConversationDto();
             conversationDto.ConversationID = groupUser.GroupId;

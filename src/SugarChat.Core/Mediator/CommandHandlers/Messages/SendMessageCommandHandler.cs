@@ -20,7 +20,7 @@ namespace SugarChat.Core.Mediator.CommandHandler.Messages
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
         {
-            var messageSentEvent = await _sendMessageService.SendMessage(context.Message, cancellationToken).ConfigureAwait(false);
+            var messageSentEvent = await _sendMessageService.SendMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageSentEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

@@ -100,6 +100,14 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt LastReadTimeLaterThanOrEqualTo =
             new(ExceptionCode.LastReadTimeLaterThanOrEqualTo,
                 "User with Id {0} from group with Id {1}'s Last Read Time is later than or equal to {2}.");
+        
+        public static readonly ExceptionPrompt RevokeOthersMessage =
+            new(ExceptionCode.RevokeOthersMessage,
+                "User with Id {0} has no right to revoke message with Id {1} which it not sent by him.");
+        
+        public static readonly ExceptionPrompt TooLateToRevoke =
+            new(ExceptionCode.TooLateToRevoke,
+                "User with Id {0} can not revoke message with Id {1} since it's sent quite a time ago.");
 
         #endregion
 
@@ -115,7 +123,10 @@ namespace SugarChat.Core.Exceptions
             new(ExceptionCode.RemoveGroupUserFailed, "GroupUser with Id {0} removing failed.");
 
         public static readonly ExceptionPrompt AddGroupUsersFailed =
-            new(ExceptionCode.AddGroupUsersFailed, "Adding {0} groupUsers failed, only {1} of them added.");
+            new(ExceptionCode.AddGroupUsersFailed, "Adding {0} groupUsers failed, only {1} of them added."); 
+        
+        public static readonly ExceptionPrompt UpdateGroupUsersFailed =
+            new(ExceptionCode.UpdateGroupUsersFailed, "Updating {0} groupUsers failed, only {1} of them updated.");
 
         public static readonly ExceptionPrompt RemoveGroupUsersFailed =
             new(ExceptionCode.RemoveGroupUsersFailed, "Removing {0} groupUsers failed, only {1} of them removed.");
@@ -140,6 +151,9 @@ namespace SugarChat.Core.Exceptions
         
         public static readonly ExceptionPrompt SetGroupOwner =
             new(ExceptionCode.SetGroupOwner, "It's not allowed to set an member as owner.");
+
+        public static readonly ExceptionPrompt AddUsersToWrongGroup =
+            new(ExceptionCode.AddUsersToWrongGroup, "Should not add users to a different group.");
 
         #endregion
 

@@ -31,31 +31,31 @@ namespace SugarChat.Core.Services.Groups
             var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
                 .OrderByDescending(o => o.LastModifyDate);
 
-            var result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken);
+            var result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
             return result;
         }
 
-        public async Task AddAsync(Group group, CancellationToken cancellation = default)
+        public async Task AddAsync(Group group, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.AddAsync(group, cancellation);
+            int affectedLineNum = await _repository.AddAsync(group, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.AddGroupFailed.WithParams(group.Id));
             }
         }
 
-        public async Task UpdateAsync(Group group, CancellationToken cancellation = default)
+        public async Task UpdateAsync(Group group, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.UpdateAsync(group, cancellation);
+            int affectedLineNum = await _repository.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.UpdateGroupFailed.WithParams(group.Id));
             }
         }
 
-        public async Task RemoveAsync(Group group, CancellationToken cancellation = default)
+        public async Task RemoveAsync(Group group, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.RemoveAsync(group, cancellation);
+            int affectedLineNum = await _repository.RemoveAsync(group, cancellationToken).ConfigureAwait(false);
             if (affectedLineNum != 1)
             {
                 throw new BusinessWarningException(Prompt.RemoveGroupFailed.WithParams(group.Id));

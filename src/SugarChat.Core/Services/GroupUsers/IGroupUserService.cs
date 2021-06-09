@@ -11,13 +11,13 @@ namespace SugarChat.Core.Services.GroupUsers
     public interface IGroupUserService : IService
     {
         Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
-            CancellationToken cancellation = default);
+            CancellationToken cancellationToken = default);
 
         Task<UserRemovedFromGroupEvent> RemoveUserFromGroupAsync(RemoveUserFromGroupCommand command,
-            CancellationToken cancellation = default);
+            CancellationToken cancellationToken = default);
 
         Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,
-            CancellationToken cancellation = default);
+            CancellationToken cancellationToken = default);
 
         Task<GetMembersOfGroupResponse> GetGroupMembersByIdAsync(GetMembersOfGroupRequest request,
             CancellationToken cancellationToken = default);
@@ -25,23 +25,23 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<GroupMemberCustomFieldSetEvent> SetGroupMemberCustomPropertiesAsync(SetGroupMemberCustomFieldCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<GroupQuittedEvent> QuitGroup(QuitGroupCommand command, CancellationToken cancellation = default);
+        Task<GroupQuittedEvent> QuitGroupAsync(QuitGroupCommand command, CancellationToken cancellationToken = default);
 
-        Task<GroupOwnerChangedEvent> ChangeGroupOwner(ChangeGroupOwnerCommand command,
-            CancellationToken cancellation = default);
-
-        Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command, CancellationToken cancellation = default);
-
-        Task<GroupMemberAddedEvent> AddGroupMembers(AddGroupMemberCommand command,
+        Task<GroupOwnerChangedEvent> ChangeGroupOwnerAsync(ChangeGroupOwnerCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<GroupMemberRemovedEvent> RemoveGroupMembers(RemoveGroupMemberCommand command,
+        Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command, CancellationToken cancellationToken = default);
+
+        Task<GroupMemberAddedEvent> AddGroupMembersAsync(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<MessageRemindTypeSetEvent> SetMessageRemindType(SetMessageRemindTypeCommand command,
+        Task<GroupMemberRemovedEvent> RemoveGroupMembersAsync(RemoveGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 
-        Task<GroupMemberRoleSetEvent> SetGroupMemberRole(SetGroupMemberRoleCommand command,
+        Task<MessageRemindTypeSetEvent> SetMessageRemindTypeAsync(SetMessageRemindTypeCommand command,
+            CancellationToken cancellationToken = default);
+
+        Task<GroupMemberRoleSetEvent> SetGroupMemberRoleAsync(SetGroupMemberRoleCommand command,
             CancellationToken cancellationToken = default);
     }
 }

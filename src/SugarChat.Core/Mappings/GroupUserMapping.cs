@@ -2,6 +2,7 @@
 using SugarChat.Core.Domain;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
+using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
 {
@@ -10,6 +11,7 @@ namespace SugarChat.Core.Mappings
         public GroupUserMapping()
         {
             CreateMap<AddUserToGroupCommand, GroupUser>();
+            CreateMap<AddGroupUserDto, GroupUser>();
 
             CreateMap<SetGroupMemberCustomFieldCommand, GroupMemberCustomFieldSetEvent>();
             CreateMap<JoinGroupCommand, GroupJoinedEvent>();

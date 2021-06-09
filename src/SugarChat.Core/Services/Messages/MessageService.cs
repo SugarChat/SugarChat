@@ -42,9 +42,9 @@ namespace SugarChat.Core.Services.Messages
         }
 
 
-        private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
+        private Task<User> GetUserAsync(string id, CancellationToken cancellationToken = default)
         {
-            return _userDataProvider.GetByIdAsync(id, cancellation);
+            return _userDataProvider.GetByIdAsync(id, cancellationToken);
         }
 
         public async Task<GetAllUnreadToUserResponse> GetAllUnreadToUserAsync(GetAllUnreadToUserRequest request,
@@ -166,7 +166,7 @@ namespace SugarChat.Core.Services.Messages
         }
 
         public async Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
@@ -181,7 +181,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(
             GetMessagesOfGroupBeforeRequest request,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             Domain.Message message = await _messageDataProvider.GetByIdAsync(request.MessageId, cancellationToken);
             message.CheckExist(request.MessageId);
@@ -197,7 +197,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<MessageReadSetByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
             SetMessageReadByUserBasedOnMessageIdCommand command,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);
@@ -216,7 +216,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);
@@ -237,19 +237,19 @@ namespace SugarChat.Core.Services.Messages
 
         }
 
-        public async Task<MessageRevokedEvent> RevokeMessage(RevokeMessageCommand command,
+        public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
-            var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId).ConfigureAwait(false);
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {
-                throw new BusinessWarningException("no authorization");
+                throw new BusinessWarningException(Prompt.RevokeOthersMessage.WithParams(command.UserId, command.MessageId));
             }
 
-            if (message.SentTime.AddMinutes(2) < DateTime.Now)
+            if (message.SentTime.Add(command.RevokeTimeLimit) < DateTime.Now)
             {
-                throw new BusinessWarningException("the sending time is more than two minutes and cannot be withdrawn");
+                throw new BusinessWarningException(Prompt.TooLateToRevoke.WithParams(command.UserId, command.MessageId));
             }
 
             message.IsRevoked = true;

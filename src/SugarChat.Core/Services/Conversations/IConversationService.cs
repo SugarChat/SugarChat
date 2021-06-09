@@ -9,10 +9,16 @@ namespace SugarChat.Core.Services.Conversations
 {
     public interface IConversationService : IService
     {
-        Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken);
-        Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request, CancellationToken cancellationToken);
-        Task<MessageReadedEvent> SetMessageAsReadByConversationIdAsync(SetMessageAsReadCommand command, CancellationToken cancellationToken);
-        Task<GetMessageListResponse> GetPagingMessagesByConversationIdAsync(GetMessageListRequest request, CancellationToken cancellationToken);
-        Task<ConversationDeletedEvent> DeleteConversationByConversationIdAsync(DeleteConversationCommand command, CancellationToken cancellationToken);
+        Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<GetMessageListResponse> GetPagedMessagesByConversationIdAsync(GetMessageListRequest request,
+            CancellationToken cancellationToken = default);
+
+        Task<ConversationRemovedEvent> RemoveConversationByConversationIdAsync(RemoveConversationCommand command,
+            CancellationToken cancellationToken = default);
     }
 }

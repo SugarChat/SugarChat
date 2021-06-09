@@ -8,5 +8,8 @@ namespace SugarChat.Message.Events.Messages
 {
     public class MessageRevokedEvent : EventBase
     {
+        public string UserId { get; set; }
+        public string MessageId { get; set; }
+        public TimeSpan RevokeTimeLimit { get; set; }
     }
 }

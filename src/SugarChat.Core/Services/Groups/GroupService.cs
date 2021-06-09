@@ -12,6 +12,7 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.IRepositories;
@@ -37,81 +38,101 @@ namespace SugarChat.Core.Services.Groups
             _messageDataProvider = messageDataProvider;
         }
 
-        public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation)
+        public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
+            CancellationToken cancellation = default)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation);
+            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
-            return new GroupAddedEvent
-            {
-                Id = group.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<GroupAddedEvent>(command);
         }
 
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {
-            User user = await GetUserAsync(request.Id, cancellation);
+            User user = await GetUserAsync(request.Id, cancellation).ConfigureAwait(false);
             user.CheckExist(request.Id);
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation);
-            IEnumerable<Group> groups =
-                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), cancellation);
-            IEnumerable<GroupDto> groupsDto = _mapper.Map<IEnumerable<GroupDto>>(groups);
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation).ConfigureAwait(false);
+            PagedResult<Group> groups =
+                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings,
+                    cancellation).ConfigureAwait(false);
+            PagedResult<GroupDto> groupsDto = new()
+            {
+                Result = _mapper.Map<IEnumerable<GroupDto>>(groups.Result),
+                Total = groups.Total
+            };
             return new()
             {
                 Groups = groupsDto
             };
         }
 
-        private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
+        public async Task<GroupRemovedEvent> RemoveGroupAsync(RemoveGroupCommand command,
+            CancellationToken cancellation = default)
         {
-            return _userDataProvider.GetByIdAsync(id, cancellation);
+            Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
+            group.CheckExist(command.Id);
+            await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+            return _mapper.Map<GroupRemovedEvent>(command);
         }
 
-        public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request, CancellationToken cancellationToken)
+        private async Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
         {
-            var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
+            return await _userDataProvider.GetByIdAsync(id, cancellation).ConfigureAwait(false);
+        }
+
+        public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(request.UserId);
+            
+            var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(request.GroupId);
 
-            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId, cancellationToken);
+            var groupUser =
+                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
+                    cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
             var groupDto = _mapper.Map<GroupDto>(group);
-            groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken);
+            groupDto.MemberCount =
+                await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
             return new GetGroupProfileResponse
             {
-                Result = groupDto
+                Group = groupDto
             };
         }
 
-        public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken)
-        {           
-            var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken);
+        public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command,
+            CancellationToken cancellationToken)
+        {
+            var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.Id);
 
             group = _mapper.Map<Group>(command);
-            await _groupDataProvider.UpdateAsync(group,cancellationToken);
+            await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }
 
-        public async Task<GroupDismissedEvent> DismissGroup(DismissGroupCommand command, CancellationToken cancellation)
+        public async Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellation)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation);
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
-            await _groupDataProvider.RemoveAsync(group, cancellation);
+            
+            var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
+            await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 
-            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
-            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation);
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
+            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
 
-            var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation);
-            await _messageDataProvider.RemoveRangeAsync(messages, cancellation);
+            await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
 
             return _mapper.Map<GroupDismissedEvent>(command);
         }

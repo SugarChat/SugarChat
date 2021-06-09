@@ -10,7 +10,7 @@ namespace SugarChat.Message.Commands.GroupUsers
     public class ChangeGroupOwnerCommand : ICommand
     {
         public string OwnerId { get; set; }
-        public string MewOwnerId { get; set; }
+        public string NewOwnerId { get; set; }
         public string GroupId { get; set; }
     }
 }

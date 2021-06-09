@@ -3,7 +3,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Friends
 {
@@ -37,26 +39,46 @@ namespace SugarChat.Core.Services.Friends
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Friend>> GetAllFriendsByUserIdAsync(string userId,
+        public Task<PagedResult<Friend>> GetAllFriendsByUserIdAsync(string userId,
+            PageSettings pageSettings,
             CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<Friend>(x => x.UserId == userId, cancellationToken)
-                .ConfigureAwait(false);
+            IQueryable<Friend> query = _repository.Query<Friend>().Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.BecomeFriendAt);
+            int total = query.Count();
+            IEnumerable<Friend> friends = query.Paging(pageSettings).ToList();
+            return Task.FromResult(new PagedResult<Friend>
+            {
+                Result = friends,
+                Total = total
+            });
         }
 
         public async Task AddAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.AddAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.AddFriendFailed.WithParams(friend.Id));
+            }
         }
 
         public async Task UpdateAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.UpdateAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.UpdateFriendFailed.WithParams(friend.Id));
+            }
         }
 
         public async Task RemoveAsync(Friend friend, CancellationToken cancellation)
         {
-            await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.RemoveAsync(friend, cancellation).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.RemoveFriendFailed.WithParams(friend.Id));
+            }
         }
 
         public async Task<bool> AreFriendsAsync(string userId, string friendId,

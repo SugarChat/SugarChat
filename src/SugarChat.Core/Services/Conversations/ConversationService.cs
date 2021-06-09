@@ -100,8 +100,8 @@ namespace SugarChat.Core.Services.Conversations
             return new GetMessageListResponse
             {
                 Result = new MessageListResult
-                {
-                    Messages = _mapper.Map<IEnumerable<MessageDto>>(messages),
+                {                    
+                    Messages = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList(),
                     NextReqMessageID = messages.LastOrDefault()?.Id
                 }
             };

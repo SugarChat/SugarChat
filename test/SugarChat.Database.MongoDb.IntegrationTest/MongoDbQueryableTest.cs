@@ -13,16 +13,11 @@ using Shouldly;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
-    public class MongoDbQueryableTest : TestBase, IDisposable
+    public class MongoDbQueryableTest : TestBase
     {
-        readonly IRepository _repository;
         Group _group;
-        public MongoDbQueryableTest()
+        public MongoDbQueryableTest(DatabaseFixture dbFixture) : base(dbFixture)
         {
-            MongoDbSettings settings = new MongoDbSettings();
-            _configuration.GetSection("MongoDb")
-                          .Bind(settings);
-            _repository = new MongoDbRepository(settings);
             InsertOneGroup().Wait();
         }
 
@@ -40,13 +35,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 LastModifyBy = Guid.NewGuid().ToString(),
                 Name = "TestGroup"
             };
-            return _repository.AddAsync(_group);
+            return Repository.AddAsync(_group);
         }
 
         [Fact]
         public async Task Should_Select_Specified_Property()
         {
-            var group = await _repository
+            var group = await Repository
                 .Query<Group>()
                 .Select(e => new
                 {
@@ -62,7 +57,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public async Task Should_Query_With_ListAsync()
         {
-            var group = await _repository
+            var group = await Repository
                      .Query<Group>()
                      .Where(e => e.Id == _group.Id)
                      .ToListAsync();
@@ -72,16 +67,11 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         [Fact]
         public async Task Should_Query_With_FirstOrDefaultAsync()
         {
-            var group = await _repository
+            var group = await Repository
                      .Query<Group>()
                      .Where(e => e.Id == _group.Id)
                      .FirstOrDefaultAsync();
             group.Id.ShouldBe(_group.Id);
-        }
-
-        public async void Dispose()
-        {
-            await _repository.RemoveAsync(_group);
         }
     }
 }

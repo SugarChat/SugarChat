@@ -23,7 +23,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
         }
         public async Task<SugarChatResponse> Handle(IReceiveContext<QuitGroupCommand> context, CancellationToken cancellationToken)
         {
-            var groupQuittedEvent = await _groupUserService.QuitGroup(context.Message, cancellationToken).ConfigureAwait(false);
+            var groupQuittedEvent = await _groupUserService.QuitGroupAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupQuittedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

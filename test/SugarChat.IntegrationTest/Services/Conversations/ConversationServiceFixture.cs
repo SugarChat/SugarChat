@@ -4,10 +4,13 @@ using Shouldly;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Message;
 using SugarChat.Message.Commands.Conversations;
+using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos.Conversations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,23 +36,43 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldSetConversationMessagesRead()
         {
-            await Run<IMediator>(async (mediator) =>
-            {
-                await mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse>(new SetMessageAsReadCommand
-                {
-                    ConversationId = conversationId,
-                    UserId = userId
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+             {
+                 var messageId = Guid.NewGuid().ToString();
+                 await repository.AddAsync(new Core.Domain.Message
+                 {
+                     Id = messageId,
+                     CreatedBy = Guid.NewGuid().ToString(),
+                     CreatedDate = DateTimeOffset.Now,
+                     LastModifyBy = Guid.NewGuid().ToString(),
+                     CustomProperties = new Dictionary<string, string>(),
+                     LastModifyDate = DateTimeOffset.Now,
+                     GroupId = conversationId,
+                     Content = "TestGroupMessageReaded",
+                     ParsedContent = "TestGroupMessageReaded",
+                     Type = MessageType.Text,
+                     SubType = 0,
+                     SentBy = Guid.NewGuid().ToString(), //用户3
+                     SentTime = DateTimeOffset.Now,
+                     IsSystem = true,
+                     Payload = new { Text = "TestGroupMessageReaded" }
+                 });
 
-                }, default(CancellationToken));
+                 await mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(new SetMessageReadByUserBasedOnMessageIdCommand
+                 {
+                     MessageId = messageId,
+                     UserId = userId
 
-                var request = new GetConversationListRequest()
-                {
-                    UserId = userId
-                };
-                var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
-                response.Data.Where(x => x.ConversationID == conversationId)
-                .FirstOrDefault().UnreadCount.ShouldBe(0);
-            });
+                 }, default(CancellationToken));
+
+                 var request = new GetConversationListRequest()
+                 {
+                     UserId = userId
+                 };
+                 var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+                 response.Data.Where(x => x.ConversationID == conversationId)
+                 .FirstOrDefault().UnreadCount.ShouldBe(0);
+             });
         }
 
         [Fact]
@@ -90,7 +113,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                await mediator.SendAsync<DeleteConversationCommand, SugarChatResponse> (new DeleteConversationCommand
+                await mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(new RemoveConversationCommand
                 {
                     ConversationId = conversationId,
                     UserId = userId

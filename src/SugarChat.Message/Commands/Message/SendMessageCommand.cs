@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Mediator.Net.Contracts;
+﻿using Mediator.Net.Contracts;
 
-namespace SugarChat.Message.Command
+namespace SugarChat.Message.Commands
 {
     public class SendMessageCommand : ICommand
     {

@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
+using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -17,30 +19,47 @@ namespace SugarChat.Core.Services.Groups
             _repository = repository;
         }
 
-        public Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken)
+        public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return _repository.SingleOrDefaultAsync<Group>(x => x.Id == id);
+            return await _repository.SingleOrDefaultAsync<Group>(x => x.Id == id, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken)
+        public async Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
+            CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<Group>(o => ids.Contains(o.Id)).ConfigureAwait(false);
+            var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
+                .OrderByDescending(o => o.LastModifyDate);
 
+            var result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
+            return result;
         }
 
-        public async Task AddAsync(Group group, CancellationToken cancellation)
+        public async Task AddAsync(Group group, CancellationToken cancellationToken = default)
         {
-            await _repository.AddAsync(group, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.AddAsync(group, cancellationToken).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.AddGroupFailed.WithParams(group.Id));
+            }
         }
 
-        public async Task UpdateAsync(Group group, CancellationToken cancellation)
+        public async Task UpdateAsync(Group group, CancellationToken cancellationToken = default)
         {
-            await _repository.UpdateAsync(group, cancellation).ConfigureAwait(false);
+            int affectedLineNum = await _repository.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.UpdateGroupFailed.WithParams(group.Id));
+            }
         }
 
-        public async Task RemoveAsync(Group group, CancellationToken cancellation)
+        public async Task RemoveAsync(Group group, CancellationToken cancellationToken = default)
         {
-            await _repository.RemoveAsync(group, cancellation).ConfigureAwait(false);
-        }        
+            int affectedLineNum = await _repository.RemoveAsync(group, cancellationToken).ConfigureAwait(false);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.RemoveGroupFailed.WithParams(group.Id));
+            }
+        }
     }
 }

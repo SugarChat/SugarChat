@@ -12,6 +12,7 @@ using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Services.Users
 {
@@ -28,13 +29,13 @@ namespace SugarChat.Core.Services.Users
             _friendDataProvider = friendDataProvider;
         }
 
-        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellation = default)
+        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellationToken = default)
         {
-            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckNotExist();
 
             user = _mapper.Map<User>(command);
-            await _userDataProvider.AddAsync(user, cancellation).ConfigureAwait(false);
+            await _userDataProvider.AddAsync(user, cancellationToken).ConfigureAwait(false);
 
             return new()
             {
@@ -44,24 +45,24 @@ namespace SugarChat.Core.Services.Users
         }
 
         public async Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command,
-            CancellationToken cancellation = default)
+            CancellationToken cancellationToken = default)
         {
-            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.Id);
 
             user = _mapper.Map<User>(command);
-            await _userDataProvider.UpdateAsync(user, cancellation).ConfigureAwait(false);
+            await _userDataProvider.UpdateAsync(user, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<UserUpdatedEvent>(command);
         }
 
-        public async Task<UserDeletedEvent> DeleteUserAsync(DeleteUserCommand command,
-            CancellationToken cancellation = default)
+        public async Task<UserRemovedEvent> RemoveUserAsync(RemoveUserCommand command,
+            CancellationToken cancellationToken = default)
         {
-            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellation);
+            User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.Id);
 
-            await _userDataProvider.RemoveAsync(user, cancellation).ConfigureAwait(false);
+            await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
 
             return new()
             {
@@ -71,49 +72,48 @@ namespace SugarChat.Core.Services.Users
         }
 
         public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,
-            CancellationToken cancellation = default)
+            CancellationToken cancellationToken = default)
         {
+            User user = await _userDataProvider.GetByIdAsync(request.Id, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(request.Id);
             return new()
             {
-                User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellation))
+                User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellationToken).ConfigureAwait(false))
             };
         }
 
-        public Task<GetUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
-            CancellationToken cancellation = default)
+        public Task<GetCurrentUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
+            CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new GetUserResponse {User = new UserDto()});
+            return Task.FromResult(new GetCurrentUserResponse {User = new UserDto()});
         }
 
 
         public async Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request,
-            CancellationToken cancellation = default)
+            CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(request.Id, cancellation);
+            User user = await GetUserAsync(request.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(request.Id);
 
-            IEnumerable<User> friends = await
-                _userDataProvider.GetRangeByIdAsync(
-                    (await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id, cancellation)).Select(o =>
-                        o.FriendId),
-                    cancellation);
+            PagedResult<Friend> friends = await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id,
+                request.PageSettings, cancellationToken).ConfigureAwait(false);
+            IEnumerable<User> users = await
+                _userDataProvider.GetRangeByIdAsync(friends.Result.Select(o => o.FriendId), cancellationToken).ConfigureAwait(false);
 
-            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(friends);
+            IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(users);
             return new()
             {
-                Friends = friendsDto
+                Friends = new PagedResult<UserDto>
+                {
+                    Result = friendsDto,
+                    Total = friends.Total
+                }
             };
         }
 
-        public Task<GetMembersOfGroupResponse> GetMembersOfGroupAsync(GetMembersOfGroupRequest request,
-            CancellationToken cancellation = default)
+        private async Task<User> GetUserAsync(string id, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
-        }
-
-        private Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
-        {
-            return _userDataProvider.GetByIdAsync(id, cancellation);
+            return await _userDataProvider.GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
         }
     }
 }

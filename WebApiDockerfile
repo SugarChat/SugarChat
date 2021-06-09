@@ -5,6 +5,10 @@ EXPOSE 443
 
 # Copy everything else and build
 COPY ./src/SugarChat.Core ./build/SugarChat.Core
+COPY ./src/SugarChat.Core.Autofac ./build/SugarChat.Core.Autofac
+COPY ./src/SugarChat.MongoDb ./build/SugarChat.MongoDb
+COPY ./src/SugarChat.Database.MongoDb.Autofac ./build/SugarChat.Database.MongoDb.Autofac
+COPY ./src/SugarChat.Shared ./build/SugarChat.Shared
 COPY ./src/SugarChat.WebApi ./build/SugarChat.WebApi
 COPY ./src/SugarChat.Message ./build/SugarChat.Message
 

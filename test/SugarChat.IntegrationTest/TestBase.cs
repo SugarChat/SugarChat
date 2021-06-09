@@ -23,9 +23,9 @@ namespace SugarChat.IntegrationTest
             LoadThisConfiguration();
             var containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
-            // containerBuilder.RegisterType<SignalRClientMock>()
-            //     .As<IServerClient>()
-            //     .InstancePerLifetimeScope();
+            containerBuilder.RegisterType<SignalRClientMock>()
+                .As<IServerClient>()
+                .InstancePerLifetimeScope();
             RegisterBaseContainer(containerBuilder);
         }
 

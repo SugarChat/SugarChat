@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Shared.Paging;
 using Xunit;
 
 namespace SugarChat.IntegrationTest.Services.Groups
@@ -22,8 +23,8 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId });
-                reponse.Data.Count().ShouldBe(4);
+                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings{PageNum = 1}});
+                reponse.Data.Result.Count().ShouldBe(4);
             });
         }
 

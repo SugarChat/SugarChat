@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Message.Commands;
 using SugarChat.Core.Services.Messages;
-using SugarChat.Message.Command;
 using SugarChat.Message.Messages.Events;
 
 namespace SugarChat.Core.Services
@@ -24,7 +24,8 @@ namespace SugarChat.Core.Services
             _messageDataProvider = messageDataProvider;
         }
 
-        public async Task<MessageSentEvent> SendMessage(SendMessageCommand command, CancellationToken cancellationToken)
+        public async Task<MessageSentEvent> SendMessageAsync(SendMessageCommand command,
+            CancellationToken cancellationToken = default)
         {
             await _messageDataProvider.AddAsync(new Domain.Message
             {
@@ -36,7 +37,7 @@ namespace SugarChat.Core.Services
                 Payload = command.Payload
             }, cancellationToken).ConfigureAwait(false);
 
-            return _mapper.Map<MessageSentEvent>(command);
+            return new MessageSentEvent();
         }
     }
 }

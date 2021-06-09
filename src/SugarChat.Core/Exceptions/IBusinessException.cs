@@ -5,9 +5,7 @@ namespace SugarChat.Core.Exceptions
     public interface IBusinessException
     {
         LogEventLevel LogLevel { get; }
-
-        int Code { get; set; }
-
+        int Code { get; }
         string Message { get; }
     }
 }

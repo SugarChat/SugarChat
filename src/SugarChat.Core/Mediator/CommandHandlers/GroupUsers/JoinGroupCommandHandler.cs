@@ -23,7 +23,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<JoinGroupCommand> context, CancellationToken cancellationToken)
         {
-            var groupJoinedEvent = await _service.JoinGroup(context.Message, cancellationToken).ConfigureAwait(false); 
+            var groupJoinedEvent = await _service.JoinGroupAsync(context.Message, cancellationToken).ConfigureAwait(false); 
             await context.PublishAsync(groupJoinedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

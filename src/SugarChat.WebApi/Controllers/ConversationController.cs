@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Conversations;
+using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos.Conversations;
@@ -52,16 +53,16 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setMessageRead"), HttpPost]
-        public async Task<IActionResult> SetMessageRead(SetMessageAsReadCommand command)
+        public async Task<IActionResult> SetMessageRead(SetMessageReadByUserBasedOnMessageIdCommand command)
         {
-            var response = await _mediator.SendAsync<SetMessageAsReadCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
         [Route("deleteConversation"), HttpPost]
-        public async Task<IActionResult> DeleteConversation(DeleteConversationCommand command)
+        public async Task<IActionResult> DeleteConversation(RemoveConversationCommand command)
         {
-            var response = await _mediator.SendAsync<DeleteConversationCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

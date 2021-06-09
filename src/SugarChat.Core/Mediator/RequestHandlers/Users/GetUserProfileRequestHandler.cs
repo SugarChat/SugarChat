@@ -20,7 +20,7 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Users
         public async Task<SugarChatResponse<UserDto>> Handle(IReceiveContext<GetUserRequest> context, CancellationToken cancellationToken)
         {
             var response = await _userService.GetUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<UserDto>() { Code = 0, Message = "Success", Data = response.User };
+            return new SugarChatResponse<UserDto>() { Data = response.User };
         }
     }
 }

@@ -21,7 +21,7 @@ namespace SugarChat.IntegrationTest.Services
         private string groupId = Guid.NewGuid().ToString();
         private string groupOwnerId = Guid.NewGuid().ToString();
 
-        private string[] groupAdminIds = new string[] {Guid.NewGuid().ToString(), Guid.NewGuid().ToString()};
+        private string[] groupAdminIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
         private string[] userIds = new string[]
             {Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()};
@@ -237,7 +237,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = Guid.NewGuid().ToString(),
                     AdminId = Guid.NewGuid().ToString(),
-                    UserIdList = new List<string> {Guid.NewGuid().ToString(), Guid.NewGuid().ToString()}
+                    UserIdList = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
@@ -260,7 +260,7 @@ namespace SugarChat.IntegrationTest.Services
                     x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBe(2);
 
                 command.AdminId = groupOwnerId;
-                command.UserIdList = new List<string> {userIds[2]};
+                command.UserIdList = new List<string> { userIds[2] };
                 await mediator.SendAsync(command);
                 (await repository.CountAsync<GroupUser>(x =>
                     x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBe(1);
@@ -290,7 +290,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = Guid.NewGuid().ToString(),
                     AdminId = Guid.NewGuid().ToString(),
-                    UserIdList = new List<string> {Guid.NewGuid().ToString(), Guid.NewGuid().ToString()}
+                    UserIdList = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
                 };
                 {
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
@@ -303,25 +303,23 @@ namespace SugarChat.IntegrationTest.Services
                 }
                 {
                     command.AdminId = groupAdminIds[0];
-                    command.UserIdList = new List<string> {groupAdminIds[1]};
+                    command.UserIdList = new List<string> { groupAdminIds[1] };
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"amdin can't delete amdin with Id {command.UserIdList[0]}.");
+                    response.Message.ShouldBe(Prompt.RemoveAdminByAdmin.Message);
                 }
                 {
-                    command.UserIdList = new List<string> {groupOwnerId};
+                    command.UserIdList = new List<string> { groupOwnerId };
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"the deleted member cannot be owner with Id {command.UserIdList[0]}.");
+                    response.Message.ShouldBe(Prompt.RemoveOwnerFromGroup.Message);
                 }
 
                 command.UserIdList = userIds.Take(2).ToList();
                 await mediator.SendAsync(command);
-                (await repository.AnyAsync<GroupUser>(x =>
-                    x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
+                (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
 
                 {
                     var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(Prompt.NotInGroup.WithParams(command.UserIdList[0], command.GroupId)
-                        .Message);
+                    response.Message.ShouldBe(Prompt.NotAllGroupUsersExist.Message);
                 }
             });
         }
@@ -409,7 +407,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     command.Role = UserRole.Owner;
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe($"can't set group member role to owner with Id {command.MemberId}.");
+                    response.Message.ShouldBe(Prompt.SetGroupOwner.Message);
                 }
             });
         }

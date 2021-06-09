@@ -7,7 +7,7 @@ namespace SugarChat.Core.Services.Push
     /// <summary>
     /// use to notification or signalr
     /// </summary>
-    public interface IPushService
+    public interface IPushService : IService
     {
         Task Push(IEvent @event, CancellationToken cancellationToken);
     }

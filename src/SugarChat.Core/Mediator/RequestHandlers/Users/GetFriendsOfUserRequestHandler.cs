@@ -26,7 +26,7 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Users
         public async Task<SugarChatResponse<PagedResult<UserDto>>> Handle(IReceiveContext<GetFriendsOfUserRequest> context, CancellationToken cancellationToken)
         {
             var response = await _userService.GetFriendsOfUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<PagedResult<UserDto>>() { Code = 0, Message = "Success", Data = response.Friends };
+            return new SugarChatResponse<PagedResult<UserDto>>() { Data = response.Friends };
         }
     }
 }

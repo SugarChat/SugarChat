@@ -35,46 +35,6 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getAllUnreadToUser"), HttpGet]
-        public async Task<IActionResult> GetAllUnreadToUser([FromQuery] GetAllUnreadToUserRequest request)
-        {
-            var response =
-                 await _mediator
-                     .RequestAsync<GetAllUnreadToUserRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-
-            return Ok(response);
-        }
-
-        [Route("getAllHistoryToUser"), HttpGet]
-        public async Task<IActionResult> GetAllHistoryToUser([FromQuery] GetAllHistoryToUserRequest request)
-        {
-            var response =
-                 await _mediator
-                     .RequestAsync<GetAllHistoryToUserRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-
-            return Ok(response);
-        }
-
-        [Route("getUnreadToUserFromGroup"), HttpGet]
-        public async Task<IActionResult> GetUnreadToUserFromGroup([FromQuery] GetUnreadToUserFromGroupRequest request)
-        {
-            var response =
-                 await _mediator
-                     .RequestAsync<GetUnreadToUserFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-
-            return Ok(response);
-        }
-
-        [Route("getAllToUserFromGroup"), HttpGet]
-        public async Task<IActionResult> GetAllToUserFromGroup([FromQuery] GetAllToUserFromGroupRequest request)
-        {
-            var response =
-                 await _mediator
-                     .RequestAsync<GetAllToUserFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-
-            return Ok(response);
-        }
-
         [Route("getMessagesOfGroup"), HttpGet]
         public async Task<IActionResult> GetMessagesOfGroup([FromQuery] GetMessagesOfGroupRequest request)
         {
@@ -84,7 +44,6 @@ namespace SugarChat.WebApi.Controllers
 
             return Ok(response);
         }
-
 
         [Route("getMessagesOfGroupBefore"), HttpGet]
         public async Task<IActionResult> GetMessagesOfGroupBefore([FromQuery] GetMessagesOfGroupBeforeRequest request)

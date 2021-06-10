@@ -165,6 +165,13 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+        /// <summary>
+        /// Called when getting the message in the group for the first time
+        /// Call the GetMessagesOfGroupBeforeAsync method when pulling up to get historical messages
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
             CancellationToken cancellationToken = default)
         {

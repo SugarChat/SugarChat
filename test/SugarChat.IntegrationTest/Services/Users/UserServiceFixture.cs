@@ -73,7 +73,7 @@ namespace SugarChat.IntegrationTest.Services.Users
                     DisplayName = "Micky"
                 };
                 var response = await mediator.SendAsync<AddUserCommand, SugarChatResponse>(addUserCommand);
-                response.Code.ShouldBe(2000);
+                response.Code.ShouldBe(20000);
                 User user = await repository.SingleOrDefaultAsync<User>(o => o.Id == addUserCommand.Id);
                 user.ShouldNotBeNull();
                 user.Id.ShouldBe(addUserCommand.Id);

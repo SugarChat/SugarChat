@@ -8,14 +8,14 @@ namespace SugarChat.Core.Basic
 {
     public class SugarChatResponse<T> : ISugarChatResponse<T>
     {
-        public int Code { get; set; } = 0;
+        public int Code { get; set; } = 2000;
         public string Message { get; set; } = "Success";
         public T Data { get; set; }
     }
 
     public class SugarChatResponse : ISugarChatResponse
     {
-        public int Code { get; set; }
-        public string Message { get; set; }
+        public int Code { get; set; } = 2000;
+        public string Message { get; set; } = "Success";
     }
 }

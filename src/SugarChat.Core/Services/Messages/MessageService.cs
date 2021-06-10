@@ -240,7 +240,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
-            var message = await _messageDataProvider.GetByIdAsync(command.MessageId).ConfigureAwait(false);
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId, cancellationToken).ConfigureAwait(false);
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {

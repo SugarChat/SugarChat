@@ -123,11 +123,8 @@ namespace SugarChat.Core.Services.GroupUsers
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken).ConfigureAwait(false);
             groupUser.CheckNotExist();
 
-            await _groupUserDataProvider.AddAsync(new GroupUser
-            {
-                GroupId = command.GroupId,
-                UserId = command.UserId
-            }, cancellationToken).ConfigureAwait(false);
+            groupUser = _mapper.Map<GroupUser>(command);
+            await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
         }

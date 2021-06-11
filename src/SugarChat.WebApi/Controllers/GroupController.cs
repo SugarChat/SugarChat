@@ -1,4 +1,5 @@
 ﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Mediator.CommandHandlers.Groups;
@@ -25,6 +26,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("create"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AddGroupResponse))]
         public async Task<IActionResult> CreateGroup(AddGroupCommand command)
         {
             var response = await _mediator.SendAsync<AddGroupCommand, AddGroupResponse>(command);
@@ -32,6 +34,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("dismiss"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> DismissGroup(DismissGroupCommand command)
         {
             var response = await _mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
@@ -39,6 +42,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getGroupList"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupDto>>))]
         public async Task<IActionResult> GetGroupList([FromQuery] GetGroupsOfUserRequest request)
         {
             var response =
@@ -49,6 +53,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getGroupProfile"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<GroupDto>))]
         public async Task<IActionResult> GetGroupProfile([FromQuery] GetGroupProfileRequest request)
         {
             var response =
@@ -59,6 +64,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("updateGroupProfile"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> UpdateGroupProfile(UpdateGroupProfileCommand command)
         {
             var response = await _mediator.SendAsync<UpdateGroupProfileCommand, SugarChatResponse>(command);

@@ -196,20 +196,20 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Get_Unread_To_User_From_Group()
         {
-            GetUnreadToUserFromGroupRequest getUnreadToUserFromGroupRequest = new()
+            GetUnreadMessagesFromGroupRequest getUnreadToUserFromGroupRequest = new()
             {
                 UserId = Tom.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            GetUnreadToUserFromGroupResponse getUnreadToUserFromGroupResponse =
-                await _messageService.GetUnreadToUserFromGroupAsync(getUnreadToUserFromGroupRequest);
+            GetUnreadMessagesFromGroupResponse getUnreadToUserFromGroupResponse =
+                await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest);
             getUnreadToUserFromGroupResponse.Messages.Count().ShouldBe(2);
             getUnreadToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
 
             TomInTomAndJerry.LastReadTime = BaseTime;
             await Repository.UpdateAsync(TomInTomAndJerry);
             getUnreadToUserFromGroupResponse =
-                await _messageService.GetUnreadToUserFromGroupAsync(getUnreadToUserFromGroupRequest);
+                await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest);
             getUnreadToUserFromGroupResponse.Messages.Count().ShouldBe(1);
             getUnreadToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
             getUnreadToUserFromGroupResponse.Messages.All(o => o.SentTime > TomInTomAndJerry.LastReadTime)
@@ -219,56 +219,56 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Not_Get_Unread_To_User_From_Group_When_User_Dose_Not_Exist()
         {
-            GetUnreadToUserFromGroupRequest getUnreadToUserFromGroupRequest = new()
+            GetUnreadMessagesFromGroupRequest getUnreadToUserFromGroupRequest = new()
             {
                 UserId = "0",
                 GroupId = TomAndJerryGroup.Id
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetUnreadToUserFromGroupAsync(getUnreadToUserFromGroupRequest));
+                await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest));
         }
 
         [Fact]
         public async Task Should_Not_Get_Unread_To_User_From_Group_When_Group_Dose_Not_Exist()
         {
-            GetUnreadToUserFromGroupRequest getUnreadToUserFromGroupRequest = new()
+            GetUnreadMessagesFromGroupRequest getUnreadToUserFromGroupRequest = new()
             {
                 UserId = Tom.Id,
                 GroupId = "0"
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetUnreadToUserFromGroupAsync(getUnreadToUserFromGroupRequest));
+                await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest));
         }
 
         [Fact]
         public async Task Should_Not_Get_Unread_To_User_From_Group_When_User_Is_Not_In()
         {
-            GetUnreadToUserFromGroupRequest getUnreadToUserFromGroupRequest = new()
+            GetUnreadMessagesFromGroupRequest getUnreadToUserFromGroupRequest = new()
             {
                 UserId = Tyke.Id,
                 GroupId = TomAndJerryGroup.Id
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetUnreadToUserFromGroupAsync(getUnreadToUserFromGroupRequest));
+                await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest));
         }
 
         [Fact]
         public async Task Should_Get_All_To_User_From_Group()
         {
-            GetAllToUserFromGroupRequest getAllToUserFromGroupRequest = new()
+            GetAllMessagesFromGroupRequest getAllToUserFromGroupRequest = new()
             {
                 UserId = Tom.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            GetAllToUserFromGroupResponse getAllToUserFromGroupResponse =
-                await _messageService.GetAllToUserFromGroupAsync(getAllToUserFromGroupRequest);
+            GetAllMessagesFromGroupResponse getAllToUserFromGroupResponse =
+                await _messageService.GetAllMessagesFromGroupAsync(getAllToUserFromGroupRequest);
             getAllToUserFromGroupResponse.Messages.Count().ShouldBe(2);
             getAllToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
 
             TomInTomAndJerry.LastReadTime = BaseTime;
             await Repository.UpdateAsync(TomInTomAndJerry);
             getAllToUserFromGroupResponse =
-                await _messageService.GetAllToUserFromGroupAsync(getAllToUserFromGroupRequest);
+                await _messageService.GetAllMessagesFromGroupAsync(getAllToUserFromGroupRequest);
             getAllToUserFromGroupResponse.Messages.Count().ShouldBe(2);
             getAllToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
         }
@@ -276,37 +276,37 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Not_Get_All_To_User_From_Group_When_User_Dose_Not_Exist()
         {
-            GetAllToUserFromGroupRequest getAllToUserFromGroupRequest = new()
+            GetAllMessagesFromGroupRequest getAllToUserFromGroupRequest = new()
             {
                 UserId = "0",
                 GroupId = TomAndJerryGroup.Id
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetAllToUserFromGroupAsync(getAllToUserFromGroupRequest));
+                await _messageService.GetAllMessagesFromGroupAsync(getAllToUserFromGroupRequest));
         }
 
         [Fact]
         public async Task Should_Not_Get_All_To_User_From_Group_When_Group_Dose_Not_Exist()
         {
-            GetAllToUserFromGroupRequest getAllToUserFromGroupRequest = new()
+            GetAllMessagesFromGroupRequest getAllToUserFromGroupRequest = new()
             {
                 UserId = Tom.Id,
                 GroupId = "0"
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetAllToUserFromGroupAsync(getAllToUserFromGroupRequest));
+                await _messageService.GetAllMessagesFromGroupAsync(getAllToUserFromGroupRequest));
         }
 
         [Fact]
         public async Task Should_Not_Get_All_To_User_From_Group_When_User_Is_Not_In()
         {
-            GetAllToUserFromGroupRequest getAllToUserFromGroupRequest = new()
+            GetAllMessagesFromGroupRequest getAllToUserFromGroupRequest = new()
             {
                 UserId = Tyke.Id,
                 GroupId = TomAndJerryGroup.Id
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.GetAllToUserFromGroupAsync(getAllToUserFromGroupRequest));
+                await _messageService.GetAllMessagesFromGroupAsync(getAllToUserFromGroupRequest));
         }
 
         [Fact]

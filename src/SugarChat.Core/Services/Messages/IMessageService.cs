@@ -7,6 +7,8 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
+using SugarChat.Message.Responses.Messages;
+using SugarChat.Message.Requests.Messages;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -21,9 +23,9 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<GetAllHistoryToUserResponse> GetAllHistoryToUserAsync(GetAllHistoryToUserRequest request,
             CancellationToken cancellationToken = default);
-        Task<GetUnreadToUserFromGroupResponse> GetUnreadToUserFromGroupAsync(GetUnreadToUserFromGroupRequest request,
+        Task<GetUnreadMessagesFromGroupResponse> GetUnreadMessagesFromGroupAsync(GetUnreadMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default);
-        Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(GetAllToUserFromGroupRequest request,
+        Task<GetAllMessagesFromGroupResponse> GetAllMessagesFromGroupAsync(GetAllMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default);
         Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
             CancellationToken cancellationToken = default);
@@ -37,5 +39,6 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default);
+        Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
     }
 }

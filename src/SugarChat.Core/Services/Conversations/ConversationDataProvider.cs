@@ -28,11 +28,11 @@ namespace SugarChat.Core.Services.Conversations
                 var nextReqMessage =
                     await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId,
                         cancellationToken);
-                query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.CreatedDate < nextReqMessage.CreatedDate);
+                query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.SentTime < nextReqMessage.SentTime);
             }
             var messages = query.OrderByDescending(x => x.SentTime)
-                .Take(count)
-                .AsEnumerable();
+                                .Take(count)
+                                .AsEnumerable();
             return messages;
         }
     }

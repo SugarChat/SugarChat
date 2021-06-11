@@ -4,6 +4,7 @@ using SugarChat.Core.Basic;
 using SugarChat.Message.Commands;
 using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Requests;
+using SugarChat.Message.Requests.Messages;
 using SugarChat.Shared.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -35,42 +36,32 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getAllUnreadToUser"), HttpGet]
-        public async Task<IActionResult> GetAllUnreadToUser([FromQuery] GetAllUnreadToUserRequest request)
+        [Route("getUnreadMessageCount"), HttpGet]
+        public async Task<IActionResult> GetUnreadMessageCount([FromQuery] GetUnreadMessageCountRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetAllUnreadToUserRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+                     .RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
 
             return Ok(response);
         }
 
-        [Route("getAllHistoryToUser"), HttpGet]
-        public async Task<IActionResult> GetAllHistoryToUser([FromQuery] GetAllHistoryToUserRequest request)
+        [Route("getUnreadMessagesFromGroupRequest"), HttpGet]
+        public async Task<IActionResult> GetUnreadMessagesFromGroup([FromQuery] GetUnreadMessagesFromGroupRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetAllHistoryToUserRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-
-            return Ok(response);
-        }
-
-        [Route("getUnreadToUserFromGroup"), HttpGet]
-        public async Task<IActionResult> GetUnreadToUserFromGroup([FromQuery] GetUnreadToUserFromGroupRequest request)
-        {
-            var response =
-                 await _mediator
-                     .RequestAsync<GetUnreadToUserFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+                     .RequestAsync<GetUnreadMessagesFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
 
             return Ok(response);
         }
 
         [Route("getAllToUserFromGroup"), HttpGet]
-        public async Task<IActionResult> GetAllToUserFromGroup([FromQuery] GetAllToUserFromGroupRequest request)
+        public async Task<IActionResult> GetAllToUserFromGroup([FromQuery] GetAllMessagesFromGroupRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetAllToUserFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+                     .RequestAsync<GetAllMessagesFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
 
             return Ok(response);
         }
@@ -85,7 +76,6 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-
         [Route("getMessagesOfGroupBefore"), HttpGet]
         public async Task<IActionResult> GetMessagesOfGroupBefore([FromQuery] GetMessagesOfGroupBeforeRequest request)
         {
@@ -95,5 +85,6 @@ namespace SugarChat.WebApi.Controllers
 
             return Ok(response);
         }
+       
     }
 }

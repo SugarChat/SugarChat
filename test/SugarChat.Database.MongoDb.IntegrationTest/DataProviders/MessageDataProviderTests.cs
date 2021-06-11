@@ -176,14 +176,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_Unread_To_User_From_Group()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetUnreadToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
 
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
-            messages = await _messageDataProvider.GetUnreadToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(1);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
@@ -192,14 +192,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_All_To_User_From_Group()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
 
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
-            messages = await _messageDataProvider.GetAllToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);

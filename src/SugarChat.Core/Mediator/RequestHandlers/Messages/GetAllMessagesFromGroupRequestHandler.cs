@@ -10,17 +10,17 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Messages
 {
-    public class GetAllToUserFromGroupRequestHandler : IRequestHandler<GetAllToUserFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>
+    public class GetAllMessagesFromGroupRequestHandler : IRequestHandler<GetAllMessagesFromGroupRequest, SugarChatResponse<IEnumerable<MessageDto>>>
     {
         private readonly IMessageService _messageService;
-        public GetAllToUserFromGroupRequestHandler(IMessageService messageService)
+        public GetAllMessagesFromGroupRequestHandler(IMessageService messageService)
         {
             _messageService = messageService;
         }
 
-        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> Handle(IReceiveContext<GetAllToUserFromGroupRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> Handle(IReceiveContext<GetAllMessagesFromGroupRequest> context, CancellationToken cancellationToken)
         {
-            var response = await _messageService.GetAllToUserFromGroupAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            var response = await _messageService.GetAllMessagesFromGroupAsync(context.Message, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse<IEnumerable<MessageDto>>() { Data = response.Messages };
         }
     }

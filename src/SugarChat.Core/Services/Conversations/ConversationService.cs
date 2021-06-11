@@ -100,7 +100,7 @@ namespace SugarChat.Core.Services.Conversations
             return new GetMessageListResponse
             {
                 Result = new MessageListResult
-                {                    
+                {
                     Messages = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList(),
                     NextReqMessageID = messages.LastOrDefault()?.Id
                 }
@@ -127,8 +127,8 @@ namespace SugarChat.Core.Services.Conversations
             var conversationDto = new ConversationDto();
             conversationDto.ConversationID = groupUser.GroupId;
             conversationDto.UnreadCount =
-                (await _messageDataProvider.GetUnreadToUserFromGroupAsync(
-                    groupUser.UserId, groupUser.GroupId, cancellationToken)).Count();
+                (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(
+                    groupUser.UserId, groupUser.GroupId, cancellationToken: cancellationToken)).Count();
             conversationDto.LastMessage = _mapper.Map<MessageDto>(
                 await _messageDataProvider.GetLatestMessageOfGroupAsync(groupUser.GroupId, cancellationToken));
             var groupDto =

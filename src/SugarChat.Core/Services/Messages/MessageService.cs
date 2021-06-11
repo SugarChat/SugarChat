@@ -18,6 +18,7 @@ using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
+using System.Linq;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -138,9 +139,9 @@ namespace SugarChat.Core.Services.Messages
 
             return new GetUnreadMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count,
-                        cancellationToken))
+                Messages =
+                    (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count,
+                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
 
@@ -161,9 +162,9 @@ namespace SugarChat.Core.Services.Messages
 
             return new GetAllMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.MessageId, request.Count,
-                        cancellationToken))
+                Messages =
+                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.MessageId, request.Count,
+                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
 

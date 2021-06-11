@@ -1,4 +1,5 @@
 ﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Users;
@@ -20,6 +21,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getUserProfile"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<UserDto>))]
         public async Task<IActionResult> GetUserProfile([FromQuery] GetUserRequest request)
         {
             var response =
@@ -30,6 +32,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("updateMyProfile"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> UpdateMyProfile(UpdateUserCommand command)
         {
             var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse>(command);

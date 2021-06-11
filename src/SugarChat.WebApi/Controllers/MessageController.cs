@@ -1,4 +1,5 @@
 ﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands;
@@ -23,6 +24,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("send"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> SendMessage(SendMessageCommand command)
         {
             var response = await _mediator.SendAsync<SendMessageCommand, SugarChatResponse>(command);
@@ -30,6 +32,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("revoke"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> RevokeMessage(RevokeMessageCommand command)
         {
             var response = await _mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);

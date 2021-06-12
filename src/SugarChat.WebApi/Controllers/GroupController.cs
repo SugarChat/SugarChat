@@ -71,5 +71,11 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("remove"), HttpPost]
+        public async Task<IActionResult> RemoveGroup(RemoveGroupCommand command)
+        {
+            var response = await _mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

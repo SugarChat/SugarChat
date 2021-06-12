@@ -11,9 +11,9 @@ namespace SugarChat.Core.Mediator.EventHandler
 {
     public class MessageSentEventHandler : IEventHandler<MessageSentEvent>
     {
-        private readonly List<IPushService> _pushServices;
+        private readonly IEnumerable<IPushService> _pushServices;
 
-        public MessageSentEventHandler(List<IPushService> pushServices)
+        public MessageSentEventHandler(IEnumerable<IPushService> pushServices)
         {
             _pushServices = pushServices;
         }

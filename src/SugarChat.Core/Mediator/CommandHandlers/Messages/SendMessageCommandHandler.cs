@@ -5,10 +5,6 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Commands.Message;
-using SugarChat.Core.Services;
-using SugarChat.Message.Commands;
-using SugarChat.Message.Messages.Events;
-using SugarChat.Core.Basic;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 {

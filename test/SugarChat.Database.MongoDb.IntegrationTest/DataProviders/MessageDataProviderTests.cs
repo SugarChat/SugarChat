@@ -143,7 +143,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
-            
+
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
             messages = await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(Tom.Id, Jerry.Id);
@@ -151,7 +151,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
         }
-        
+
         [Fact]
         public async Task Should_Get_All_History_To_User()
         {
@@ -171,40 +171,40 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             messages.Where(o => o.GroupId == TomAndJerryAndTykeGroup.Id).OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerryAndTyke1);
         }
-        
-                
+
+
         [Fact]
         public async Task Should_Get_Unread_To_User_From_Group()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetUnreadToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
 
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
-            messages = await _messageDataProvider.GetUnreadToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
             messages.Count().ShouldBe(1);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
         }
-        
+
         [Fact]
         public async Task Should_Get_All_To_User_From_Group()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
 
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
-            messages = await _messageDataProvider.GetAllToUserFromGroupAsync(Tom.Id, TomAndJerryGroup.Id);
+            messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(TomAndJerryGroup.Id);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
         }
-        
+
         [Fact]
         public async Task Should_Get_Messages_Of_Group_Before()
         {
@@ -212,14 +212,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             messages.Count().ShouldBe(1);
             messages.First().ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
         }
-        
+
         [Fact]
         public async Task Should_Get_Messages_Of_Group()
         {
             IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, 1);
             messages.Count().ShouldBe(1);
             messages.First().ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
-            
+
             messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, 2);
             messages.Count().ShouldBe(2);
             messages.OrderByDescending(o => o.SentTime).Last()
@@ -227,13 +227,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             messages.OrderByDescending(o => o.SentTime).First()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
         }
-        
+
         [Fact]
         public async Task Should_Get_Latest_Message_Of_Group()
         {
             Core.Domain.Message message = await _messageDataProvider.GetLatestMessageOfGroupAsync(TomAndJerryGroup.Id);
             message.ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
-            
+
             await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id,
                 MessageOfGroupTomAndJerry1.SentTime);
             message = await _messageDataProvider.GetLatestMessageOfGroupAsync(TomAndJerryGroup.Id);

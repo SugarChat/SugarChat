@@ -1,4 +1,5 @@
 ﻿using Mediator.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Conversations;
@@ -23,6 +24,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<MessageListResult>))]
         public async Task<IActionResult> GetPagingMessageList([FromQuery] GetMessageListRequest request)
         {
             var response =
@@ -33,6 +35,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getConversationList"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
         public async Task<IActionResult> GetConversationListByUserId([FromQuery] GetConversationListRequest request)
         {
             var response =
@@ -43,6 +46,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getConversationProfile"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<ConversationDto>))]
         public async Task<IActionResult> GetConversationProfileById([FromQuery] GetConversationProfileRequest request)
         {
             var response =
@@ -53,6 +57,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("setMessageRead"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> SetMessageRead(SetMessageReadByUserBasedOnMessageIdCommand command)
         {
             var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(command);
@@ -60,6 +65,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("deleteConversation"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> DeleteConversation(RemoveConversationCommand command)
         {
             var response = await _mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(command);

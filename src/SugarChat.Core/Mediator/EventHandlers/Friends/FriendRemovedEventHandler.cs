@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SugarChat.Core.Mediator.EventHandlers.Users
+namespace SugarChat.Core.Mediator.EventHandlers.Friends
 {
-    public class UserAddedEventHandler : IEventHandler<UserAddedEvent>
+    public class FriendRemovedEventHandler : IEventHandler<FriendRemovedEvent>
     {
-        public Task Handle(IReceiveContext<UserAddedEvent> context, CancellationToken cancellationToken)
+        public Task Handle(IReceiveContext<FriendRemovedEvent> context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

@@ -15,7 +15,7 @@ namespace SugarChat.Core.UnitTest.Request
     {
         public Task<SugarChatResponse<string>> Handle(IReceiveContext<TestRequest> context, CancellationToken cancellationToken)
         {
-            return Task.FromResult(new SugarChatResponse<string>() { Code = 0, Message = "TestMessage", Data = "TestData" });
+            return Task.FromResult(new SugarChatResponse<string>() { Data = "TestData" });
         }
     }
 }

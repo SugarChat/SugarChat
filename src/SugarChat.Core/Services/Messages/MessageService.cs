@@ -16,6 +16,9 @@ using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;
+using SugarChat.Message.Requests.Messages;
+using SugarChat.Message.Responses.Messages;
+using System.Linq;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -96,7 +99,7 @@ namespace SugarChat.Core.Services.Messages
             Friend friend =
                 await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
-            
+
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
@@ -119,8 +122,8 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<GetUnreadToUserFromGroupResponse> GetUnreadToUserFromGroupAsync(
-            GetUnreadToUserFromGroupRequest request,
+        public async Task<GetUnreadMessagesFromGroupResponse> GetUnreadMessagesFromGroupAsync(
+            GetUnreadMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);
@@ -134,16 +137,16 @@ namespace SugarChat.Core.Services.Messages
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
-            return new GetUnreadToUserFromGroupResponse
+            return new GetUnreadMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserFromGroupAsync(request.UserId, request.GroupId,
-                        cancellationToken))
+                Messages =
+                    (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count,
+                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
 
-        public async Task<GetAllToUserFromGroupResponse> GetAllToUserFromGroupAsync(
-            GetAllToUserFromGroupRequest request,
+        public async Task<GetAllMessagesFromGroupResponse> GetAllMessagesFromGroupAsync(
+            GetAllMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);
@@ -157,11 +160,11 @@ namespace SugarChat.Core.Services.Messages
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
-            return new GetAllToUserFromGroupResponse
+            return new GetAllMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllToUserFromGroupAsync(request.UserId, request.GroupId,
-                        cancellationToken))
+                Messages =
+                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.MessageId, request.Count,
+                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
 
@@ -264,6 +267,18 @@ namespace SugarChat.Core.Services.Messages
             await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageSavedEvent>(command);
+        }
+
+        public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
+        {
+            string userId = request.UserId;
+            User user = await GetUserAsync(userId, cancellationToken);
+            user.CheckExist(userId);
+
+            return new GetUnreadMessageCountResponse
+            {
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(userId, cancellationToken)
+            };
         }
     }
 }

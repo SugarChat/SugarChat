@@ -71,7 +71,7 @@ namespace SugarChat.Core.Autofac
             foreach (var type in typeof(IService).GetTypeInfo().Assembly.GetTypes()
                 .Where(t => typeof(IService).IsAssignableFrom(t) && t.IsClass))
             {
-                builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
+                builder.RegisterType(type).AsSelf().AsImplementedInterfaces().InstancePerLifetimeScope();
             }
         }
 

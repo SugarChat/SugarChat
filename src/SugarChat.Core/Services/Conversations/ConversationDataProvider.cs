@@ -22,16 +22,17 @@ namespace SugarChat.Core.Services.Conversations
             int count = 15,
             CancellationToken cancellationToken = default)
         {
-            var nextReqMessage =
-                await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId,
-                    cancellationToken);
-            var boundaryTime = nextReqMessage?.CreatedDate ?? DateTime.MaxValue;
-            var messages = _repository.Query<Domain.Message>()
-                .Where(x => x.GroupId == conversationId && x.CreatedDate < boundaryTime)
-                .OrderByDescending(x => x.SentTime)
-                .Take(count)
-                .AsEnumerable();
-
+            var query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId);
+            if (!string.IsNullOrEmpty(nextReqMessageId))
+            {
+                var nextReqMessage =
+                    await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId,
+                        cancellationToken);
+                query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.SentTime < nextReqMessage.SentTime);
+            }
+            var messages = query.OrderByDescending(x => x.SentTime)
+                                .Take(count)
+                                .AsEnumerable();
             return messages;
         }
     }

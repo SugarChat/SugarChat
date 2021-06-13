@@ -21,7 +21,6 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Users
             var userAddedEvent = await _userService.AddUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(userAddedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
-
         }
     }
 }

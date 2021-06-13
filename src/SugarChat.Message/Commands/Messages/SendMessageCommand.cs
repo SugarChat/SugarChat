@@ -1,8 +1,6 @@
-﻿using Mediator.Net.Contracts;
-
-namespace SugarChat.Message.Commands
+﻿namespace SugarChat.Message.Commands.Messages
 {
-    public class SendMessageCommand : ICommand
+    public class SendMessageCommand : IdRequiredCommand
     {
         public string GroupId { get; set; }
         public string Content { get; set; }

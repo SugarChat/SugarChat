@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands;
-using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Shared.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SugarChat.Message.Commands.Messages;
 
 namespace SugarChat.WebApi.Controllers
 {

@@ -7,6 +7,7 @@ using SugarChat.Core.Services;
 using SugarChat.Message.Commands;
 using SugarChat.Message.Messages.Events;
 using SugarChat.Core.Basic;
+using SugarChat.Message.Commands.Messages;
 
 namespace SugarChat.Core.Mediator.CommandHandler.Messages
 {

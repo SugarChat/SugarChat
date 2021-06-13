@@ -12,7 +12,6 @@ using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
-using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Shared.Dtos;

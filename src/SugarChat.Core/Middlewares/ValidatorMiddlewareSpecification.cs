@@ -9,7 +9,7 @@ using SugarChat.Message.Commands;
 
 namespace SugarChat.Core.Middlewares
 {
-    public class ValidatorSpecification<TContext> : IPipeSpecification<TContext>
+    public class ValidatorMiddlewareSpecification<TContext> : IPipeSpecification<TContext>
         where TContext : IContext<IMessage>
     {
         public bool ShouldExecute(TContext context, CancellationToken cancellationToken)

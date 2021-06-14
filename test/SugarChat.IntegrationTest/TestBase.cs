@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using SugarChat.SignalR.ServerClient;
 using Xunit;
 
 namespace SugarChat.IntegrationTest
@@ -22,6 +23,9 @@ namespace SugarChat.IntegrationTest
             LoadThisConfiguration();
             var containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
+            containerBuilder.RegisterType<SignalRClientMock>()
+                .As<IServerClient>()
+                .InstancePerLifetimeScope();
             RegisterBaseContainer(containerBuilder);
         }
 

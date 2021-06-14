@@ -1,8 +1,8 @@
 ﻿using Mediator.Net.Contracts;
 
-namespace SugarChat.Message.Commands.Message
+namespace SugarChat.Message.Events.Messages
 {
-    public class SendMessageCommand : ICommand
+    public class MessageSavedEvent : IEvent
     {
         public string Id { get; set; }
         public string GroupId { get; set; }

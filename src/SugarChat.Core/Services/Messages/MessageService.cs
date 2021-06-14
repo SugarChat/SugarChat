@@ -243,7 +243,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
-            var message = await _messageDataProvider.GetByIdAsync(command.MessageId).ConfigureAwait(false);
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId, cancellationToken).ConfigureAwait(false);
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
             {
@@ -259,6 +259,14 @@ namespace SugarChat.Core.Services.Messages
             await _messageDataProvider.UpdateAsync(message, cancellationToken);
 
             return _mapper.Map<MessageRevokedEvent>(command);
+        }
+
+        public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            Domain.Message message = _mapper.Map<Domain.Message>(command);
+            await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+
+            return _mapper.Map<MessageSavedEvent>(command);
         }
 
         public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)

@@ -38,6 +38,14 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<UpdateUserCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+        
+        [Route("create"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> CreateUserAsync(AddUserCommand command)
+        {
+            var response = await _mediator.SendAsync<AddUserCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
 
 
     }

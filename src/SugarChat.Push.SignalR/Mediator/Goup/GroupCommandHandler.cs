@@ -3,10 +3,7 @@ using Mediator.Net.Contracts;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Services;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,19 +32,13 @@ namespace SugarChat.Push.SignalR.Mediator.Goup
                 case Enums.GroupAction.Add:
                     foreach (var userConnectionId in userConnectionIds)
                     {
-                        foreach (var groupName in message.GroupNames)
-                        {
-                            await _chatHubService.AddGroup(userConnectionId,groupName, cancellationToken).ConfigureAwait(false);
-                        }
+                        await _chatHubService.AddGroups(userConnectionId, message.GroupNames, cancellationToken).ConfigureAwait(false);
                     }
                     break;
                 case Enums.GroupAction.Exit:
                     foreach (var userConnectionId in userConnectionIds)
                     {
-                        foreach (var groupName in message.GroupNames)
-                        {
-                            await _chatHubService.ExitGroup(userConnectionId,groupName, cancellationToken).ConfigureAwait(false);
-                        }
+                        await _chatHubService.ExitGroups(userConnectionId, message.GroupNames, cancellationToken).ConfigureAwait(false);
                     }
                     break;
                 default:

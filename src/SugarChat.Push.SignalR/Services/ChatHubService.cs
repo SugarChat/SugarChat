@@ -3,7 +3,6 @@ using SugarChat.Push.SignalR.Hubs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -82,13 +81,28 @@ namespace SugarChat.Push.SignalR.Services
             }
         }
 
-        public async Task AddGroup(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        public async Task AddGroup([NotNull] string connectionId, [NotNull] string groupName, CancellationToken cancellationToken = default)
         {
             await _chatHubContext.Groups.AddToGroupAsync(connectionId, groupName, cancellationToken).ConfigureAwait(false);
         }
-        public async Task ExitGroup(string connectionId, string groupName, CancellationToken cancellationToken = default)
+        public async Task AddGroups([NotNull] string connectionId, [NotNull] IReadOnlyList<string> groupNames, CancellationToken cancellationToken = default)
+        {
+            foreach (var groupName in groupNames)
+            {
+                await AddGroup(connectionId, groupName, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        public async Task ExitGroup([NotNull] string connectionId, [NotNull] string groupName, CancellationToken cancellationToken = default)
         {
             await _chatHubContext.Groups.RemoveFromGroupAsync(connectionId, groupName, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task ExitGroups([NotNull] string connectionId, [NotNull] IReadOnlyList<string> groupNames, CancellationToken cancellationToken = default)
+        {
+            foreach (var groupName in groupNames)
+            {
+                await ExitGroup(connectionId, groupName, cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }

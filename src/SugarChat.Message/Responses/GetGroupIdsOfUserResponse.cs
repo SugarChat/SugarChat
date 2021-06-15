@@ -7,6 +7,6 @@ namespace SugarChat.Message.Responses
 {
     public class GetGroupIdsOfUserResponse : IResponse
     {
-        public IEnumerable<string> GroupIds { get; set; }
+        public IReadOnlyList<string> GroupIds { get; set; }
     }
 }

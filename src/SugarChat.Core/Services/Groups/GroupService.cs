@@ -80,7 +80,7 @@ namespace SugarChat.Core.Services.Groups
 
             return new()
             {
-                GroupIds = groupUsers.Select(o=>o.GroupId)
+                GroupIds = groupUsers.Select(o => o.GroupId).ToList()
             };
         }
 

@@ -49,7 +49,7 @@ namespace SugarChat.SignalR.Server.Controllers
             {
                 return Unauthorized();
             }
-            await _mediator.SendAsync(new GroupCommand { Action = model.Action, GroupName = model.GroupName, UserIdentifier = model.UserIdentifier });
+            await _mediator.SendAsync(new GroupCommand { Action = model.Action, GroupNames = model.GroupNames, UserIdentifier = model.UserIdentifier });
             return Ok();
         }
 

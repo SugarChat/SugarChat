@@ -61,13 +61,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Get_Groups_Of_User()
         {
-            GetGroupsOfUserRequest getGroupsOfUserRequest = new()
+            GetPagedGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
                 Id = "1",
                 PageSettings = new PageSettings {PageNum = 1}
             };
-            GetGroupsOfUserResponse getGroupsOfUserResponse =
-                await _groupService.GetGroupsOfUserAsync(getGroupsOfUserRequest);
+            GetPagedGroupsOfUserResponse getGroupsOfUserResponse =
+                await _groupService.GetPagedGroupsOfUserAsync(getGroupsOfUserRequest);
             getGroupsOfUserResponse.Groups.Total.ShouldBe(2);
             GroupDto group = getGroupsOfUserResponse.Groups.Result.SingleOrDefault(o => o.Id == TomAndJerryGroup.Id);
             group.ShouldNotBeNull();
@@ -78,13 +78,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         [Fact]
         public async Task Should_Not_Get_Group_When_User_Dose_Not_Exist()
         {
-            GetGroupsOfUserRequest getGroupsOfUserRequest = new()
+            GetPagedGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
                 Id = "0",
                 PageSettings = new PageSettings {PageNum = 1}
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _groupService.GetGroupsOfUserAsync(getGroupsOfUserRequest));
+                await _groupService.GetPagedGroupsOfUserAsync(getGroupsOfUserRequest));
         }
         
         [Fact]

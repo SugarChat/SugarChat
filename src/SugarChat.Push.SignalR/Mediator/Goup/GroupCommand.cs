@@ -11,7 +11,7 @@ namespace SugarChat.Push.SignalR.Mediator.Goup
     public class GroupCommand : ICommand
     {
         public GroupAction Action { get; set; }
-        public string GroupName { get; set; }
+        public IEnumerable<string> GroupNames { get; set; }
         public string UserIdentifier { get; set; }
     }
 }

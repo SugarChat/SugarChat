@@ -33,7 +33,7 @@ namespace SugarChat.Push.SignalR.Hubs
 
         public async Task Group(GroupActionModel model)
         {
-            await _mediator.SendAsync(new GroupCommand { Action = model.Action, GroupName = model.GroupName, UserIdentifier = model.UserIdentifier });
+            await _mediator.SendAsync(new GroupCommand { Action = model.Action, GroupNames = model.GroupNames, UserIdentifier = model.UserIdentifier });
         }
 
         public async Task SendMessage(SendMessageModel model)

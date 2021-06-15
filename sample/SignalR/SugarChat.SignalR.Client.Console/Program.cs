@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,10 +49,18 @@ namespace SugarChat.SignalR.Client.ConsoleSample
         {
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri("http://localhost:5000");
-            var connectionUrl = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userIdentifier=console");
+            var responseString = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userId=1");
+            
+            SugarChatResponse<string> response = 
+                JsonSerializer.Deserialize<SugarChatResponse<string>>(responseString,new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
+
+            if (response.Code!= 20000)
+            {
+                throw new Exception(response.Message);
+            }
 
             HubConnection hubConnection = new HubConnectionBuilder()
-              .WithUrl(connectionUrl,
+              .WithUrl(response.Data,
               options => {
                   options.SkipNegotiation = true;
                   options.Transports = HttpTransportType.WebSockets;

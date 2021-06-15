@@ -35,13 +35,19 @@ namespace SugarChat.Push.SignalR.Mediator.Goup
                 case Enums.GroupAction.Add:
                     foreach (var userConnectionId in userConnectionIds)
                     {
-                        await _chatHubService.AddGroup(userConnectionId, message.GroupName).ConfigureAwait(false);
+                        foreach (var groupName in message.GroupNames)
+                        {
+                            await _chatHubService.AddGroup(userConnectionId,groupName, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                     break;
                 case Enums.GroupAction.Exit:
                     foreach (var userConnectionId in userConnectionIds)
                     {
-                        await _chatHubService.ExitGroup(userConnectionId, message.GroupName).ConfigureAwait(false);
+                        foreach (var groupName in message.GroupNames)
+                        {
+                            await _chatHubService.ExitGroup(userConnectionId,groupName, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                     break;
                 default:

@@ -1,17 +1,22 @@
 ﻿using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Message;
+using SugarChat.Message.Commands.Messages;
 
 namespace SugarChat.SignalR.Client.ConsoleSample
 {
     public class Program
     {
+        private static string _id; 
         public static async Task Main(string[] args)
         {
+            _id = Console.ReadLine();
             HubConnection hubConnection = await build();
             var count = 1;
             hubConnection.Closed += async (error) =>
@@ -43,13 +48,26 @@ namespace SugarChat.SignalR.Client.ConsoleSample
             });
             await hubConnection.StartAsync();
 
-            Thread.Sleep(int.MaxValue);
+            var httpClient = new HttpClient();
+            httpClient.BaseAddress = new Uri("http://localhost:5000");
+            var responseString = await httpClient.GetStringAsync($"api/chat/addToConversations?userId={_id}");
+
+            httpClient.DefaultRequestHeaders.Add("ContentType", "application/json");
+            while (true)
+            {
+                string content = Console.ReadLine();
+                SendMessageCommand command = new SendMessageCommand
+                    {Content = content, Id = Guid.NewGuid().ToString(), GroupId = "1", SentBy = _id};
+                HttpContent httpContent = new StringContent(JsonSerializer.Serialize(command));
+                httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                await httpClient.PostAsync("api/message/send",httpContent);
+            }
         }
         private static async Task<HubConnection> build()
         {
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri("http://localhost:5000");
-            var responseString = await httpClient.GetStringAsync("api/chat/GetConnectionUrl?userId=1");
+            var responseString = await httpClient.GetStringAsync($"api/chat/GetConnectionUrl?userId={_id}");
             
             SugarChatResponse<string> response = 
                 JsonSerializer.Deserialize<SugarChatResponse<string>>(responseString,new JsonSerializerOptions{PropertyNameCaseInsensitive = true});

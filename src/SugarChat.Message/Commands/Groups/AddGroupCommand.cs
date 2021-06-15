@@ -3,10 +3,8 @@ using Mediator.Net.Contracts;
 
 namespace SugarChat.Message.Commands.Groups
 {
-    public class AddGroupCommand : ICommand
+    public class AddGroupCommand : IdRequiredCommand
     {
-        public string Id { get; set; }
-        
         public string Name { get; set; }
         
         public string AvatarUrl { get; set; }

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
 using SugarChat.Message;
-using SugarChat.Message.Commands.Message;
 using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
+using SugarChat.Message.Commands.Messages;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -22,6 +22,7 @@ namespace SugarChat.IntegrationTest.Services
             {
                 SendMessageCommand command = new SendMessageCommand
                 {
+                    Id = Guid.NewGuid().ToString(),
                     GroupId = Guid.NewGuid().ToString(),
                     Content = "Test",
                     Type = MessageType.Text,

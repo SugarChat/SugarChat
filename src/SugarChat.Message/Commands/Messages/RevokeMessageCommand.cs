@@ -1,11 +1,7 @@
-﻿using Mediator.Net.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using Mediator.Net.Contracts;
 
-namespace SugarChat.Message.Commands.Message
+namespace SugarChat.Message.Commands.Messages
 {
     public class RevokeMessageCommand : ICommand
     {

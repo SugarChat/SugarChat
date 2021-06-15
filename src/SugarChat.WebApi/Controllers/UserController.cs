@@ -5,6 +5,7 @@ using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 using System.Threading.Tasks;
 
 namespace SugarChat.WebApi.Controllers
@@ -39,6 +40,36 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("addUser"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> AddUser(AddUserCommand command)
+        {
+            var response = await _mediator.SendAsync<AddUserCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
 
+        [Route("removeUser"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> RemoveUser(RemoveUserCommand command)
+        {
+            var response = await _mediator.SendAsync<RemoveUserCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
+        [Route("getCurrentUser"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<UserDto>))]
+        public async Task<IActionResult> GetCurrentUser([FromQuery] GetCurrentUserRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetCurrentUserRequest, SugarChatResponse<UserDto>>(request);
+            return Ok(response);
+        }
+
+        [Route("getFriendsOfUser"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<UserDto>>))]
+        public async Task<IActionResult> GetFriendsOfUser([FromQuery] GetFriendsOfUserRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetFriendsOfUserRequest, SugarChatResponse<PagedResult<UserDto>>>(request);
+            return Ok(response);
+        }
     }
 }

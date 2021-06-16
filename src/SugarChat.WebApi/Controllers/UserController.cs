@@ -40,7 +40,7 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("addUser"), HttpPost]
+        [Route("add"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> AddUser(AddUserCommand command)
         {
@@ -48,7 +48,7 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("removeUser"), HttpPost]
+        [Route("remove"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> RemoveUser(RemoveUserCommand command)
         {

@@ -72,9 +72,9 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("removeGroupMember"), HttpPost]
+        [Route("deleteGroupMember"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> RemoveGroupMember(RemoveGroupMemberCommand command)
+        public async Task<IActionResult> DeleteGroupMember(RemoveGroupMemberCommand command)
         {
             var response = await _mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
             return Ok(response);

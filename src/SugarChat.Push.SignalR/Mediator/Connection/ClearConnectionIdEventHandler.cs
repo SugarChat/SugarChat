@@ -28,7 +28,7 @@ namespace SugarChat.Push.SignalR.Mediator.Connection
                 var connectionIds = System.Text.Json.JsonSerializer.Deserialize<List<string>>(kv.Value);
                 connectionIds.Remove(context.Message.ConnectionId);
                 _redis.SetEntryInHash("UserConnectionIds", kv.Key, System.Text.Json.JsonSerializer.Serialize(connectionIds));
-            });
+            }, cancellationToken);
         }
     }
 }

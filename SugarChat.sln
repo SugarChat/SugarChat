@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.SignalR.Client.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Sample.WebApi", "sample\SignalR\SugarChat.Sample.WebApi\SugarChat.Sample.WebApi.csproj", "{E422ADDD-1D24-4FED-B96D-6FFA449A7E26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Net.Client", "src\SugarChat.Net.Client\SugarChat.Net.Client.csproj", "{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{E422ADDD-1D24-4FED-B96D-6FFA449A7E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E422ADDD-1D24-4FED-B96D-6FFA449A7E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E422ADDD-1D24-4FED-B96D-6FFA449A7E26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +162,7 @@ Global
 		{BCB93B7C-C57D-4AD1-9647-2859285CFE0E} = {4D11728F-6354-4B79-8398-2BFC69E2891A}
 		{E1D3EB55-EA78-4EC2-81AF-1EA6C0B4B67C} = {BCB93B7C-C57D-4AD1-9647-2859285CFE0E}
 		{E422ADDD-1D24-4FED-B96D-6FFA449A7E26} = {BCB93B7C-C57D-4AD1-9647-2859285CFE0E}
+		{6B54FDB3-6F59-4241-A4EE-E11C5F04E941} = {646031C8-9701-473A-B858-4BCE64C96A60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {18893F6A-7736-476C-90CF-A0257C41D831}

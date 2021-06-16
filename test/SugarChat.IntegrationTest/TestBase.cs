@@ -9,6 +9,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using SugarChat.SignalR.ServerClient;
 using Xunit;
+using SugarChat.Net.Client;
+using SugarChat.Net.Client.HttpClients;
 
 namespace SugarChat.IntegrationTest
 {
@@ -26,6 +28,9 @@ namespace SugarChat.IntegrationTest
             containerBuilder.RegisterType<SignalRClientMock>()
                 .As<IServerClient>()
                 .InstancePerLifetimeScope();
+            containerBuilder.RegisterType<SugarChatHttpClient>()
+              .As<ISugarChatClient>()
+              .InstancePerLifetimeScope();
             RegisterBaseContainer(containerBuilder);
         }
 

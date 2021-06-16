@@ -59,7 +59,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         }
 
         [Fact]
-        public async Task Should_Get_Groups_Of_User()
+        public async Task Should_Get_Paged_Groups_Of_User()
         {
             GetPagedGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
@@ -76,7 +76,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         }
 
         [Fact]
-        public async Task Should_Not_Get_Group_When_User_Dose_Not_Exist()
+        public async Task Should_Not_Get_Paged_Groups_When_User_Dose_Not_Exist()
         {
             GetPagedGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
@@ -85,6 +85,31 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _groupService.GetPagedGroupsOfUserAsync(getGroupsOfUserRequest));
+        }
+        
+        [Fact]
+        public async Task Should_Get_Group_Ids_Of_User()
+        {
+            GetGroupIdsOfUserRequest getGroupIdsOfUserRequest = new()
+            {
+                Id = "1"
+            };
+            GetGroupIdsOfUserResponse getGroupIdsOfUserResponse =
+                await _groupService.GetGroupIdsOfUserAsync(getGroupIdsOfUserRequest);
+            getGroupIdsOfUserResponse.GroupIds.Count.ShouldBe(2);
+            getGroupIdsOfUserResponse.GroupIds.SingleOrDefault(o => o == TomAndJerryGroup.Id).ShouldNotBeNull();
+            getGroupIdsOfUserResponse.GroupIds.SingleOrDefault(o => o == TomAndJerryAndTykeGroup.Id).ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task Should_Not_Get_Group_Ids_When_User_Dose_Not_Exist()
+        {
+            GetGroupIdsOfUserRequest getGroupIdsOfUserRequest = new()
+            {
+                Id = "0"
+            };
+            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
+                await _groupService.GetGroupIdsOfUserAsync(getGroupIdsOfUserRequest));
         }
         
         [Fact]

@@ -11,11 +11,11 @@ using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Groups
 {
-    public class GetGroupListRequestHandler : IRequestHandler<GetPagedGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>
+    public class GetPagedGroupsOfUserRequestHandler : IRequestHandler<GetPagedGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>
     {
         private readonly IGroupService _groupService;
 
-        public GetGroupListRequestHandler(IGroupService groupService)
+        public GetPagedGroupsOfUserRequestHandler(IGroupService groupService)
         {
             _groupService = groupService;
         }

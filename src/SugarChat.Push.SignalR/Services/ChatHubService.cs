@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Mediator.Net;
+using Microsoft.AspNetCore.SignalR;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Hubs;
+using SugarChat.Push.SignalR.Mediator.Connection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,11 +15,11 @@ namespace SugarChat.Push.SignalR.Services
     public class ChatHubService : IChatHubService
     {
         private readonly IHubContext<ChatHub> _chatHubContext;
-        private readonly IRedisClient _redis;
-
-        public ChatHubService(IHubContext<ChatHub> chatHubContext)
+        private readonly IMediator _mediator;
+        public ChatHubService(IHubContext<ChatHub> chatHubContext, IMediator mediator)
         {
             _chatHubContext = chatHubContext;
+            _mediator = mediator;
         }
 
         public async Task SendUserMessage([NotNull] string userId, string[] messages, CancellationToken cancellationToken = default)
@@ -91,17 +94,7 @@ namespace SugarChat.Push.SignalR.Services
             }
             catch
             {
-                _redis.ScanAllHashEntries("UserConnectionIds", "*" + connectionId + "*");
-                var dic = _redis.GetAllEntriesFromHash("UserConnectionIds");
-                foreach (var kv in dic)
-                {
-                    if (kv.Value.Contains(connectionId))
-                    {
-                        var connectionIds = System.Text.Json.JsonSerializer.Deserialize<List<string>>(kv.Value);
-                        connectionIds.Remove(connectionId);
-                        _redis.SetEntryInHash("UserConnectionIds", kv.Key, System.Text.Json.JsonSerializer.Serialize(connectionIds));
-                    }
-                }
+                await _mediator.PublishAsync(new ClearConnectionIdEvent { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
             }
         }
         public async Task AddGroups([NotNull] string connectionId, [NotNull] IReadOnlyList<string> groupNames, CancellationToken cancellationToken = default)
@@ -119,16 +112,7 @@ namespace SugarChat.Push.SignalR.Services
             }
             catch
             {
-                var dic = _redis.GetAllEntriesFromHash("UserConnectionIds");
-                foreach (var kv in dic)
-                {
-                    if (kv.Value.Contains(connectionId))
-                    {
-                        var connectionIds = System.Text.Json.JsonSerializer.Deserialize<List<string>>(kv.Value);
-                        connectionIds.Remove(connectionId);
-                        _redis.SetEntryInHash("UserConnectionIds", kv.Key, System.Text.Json.JsonSerializer.Serialize(connectionIds));
-                    }
-                }
+                await _mediator.PublishAsync(new ClearConnectionIdEvent { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
             }
         }
 

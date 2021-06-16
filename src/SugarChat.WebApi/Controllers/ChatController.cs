@@ -29,7 +29,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [HttpGet("GetConnectionUrl")]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type:  typeof(SugarChatResponse<IEnumerable<GroupUserDto>>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type:  typeof(SugarChatResponse<string>))]
         public async Task<IActionResult> GetConnectionUrl([FromQuery] GetConnectionUrlRequest request)
         {
             var response = await _mediator.RequestAsync<GetConnectionUrlRequest, SugarChatResponse<string>>(request)

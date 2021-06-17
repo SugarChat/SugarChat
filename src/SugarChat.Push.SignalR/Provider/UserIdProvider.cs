@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.SignalR;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Cache;
+using SugarChat.Push.SignalR.Const;
 using SugarChat.Push.SignalR.Models;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace SugarChat.Push.SignalR.Provider
         public string GetUserId(HubConnectionContext connection)
         {
             var key = _httpContextAccessor.HttpContext.Request.Query["connectionkey"].ToString();
-            var v = _cache.Get<UserInfoModel>("Connectionkey:" + key);
+            var v = _cache.Get<UserInfoModel>(CacheKey.Connectionkey + ":" + key);
             if (v is null)
             {
                 return null;

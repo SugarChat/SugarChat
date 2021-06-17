@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Cache;
+using SugarChat.Push.SignalR.Const;
 using SugarChat.Push.SignalR.Models;
 using System;
 using System.Text.Json;
@@ -43,7 +44,7 @@ namespace SugarChat.Push.SignalR.Services
             }
             
             var key = Guid.NewGuid().ToString("N");
-            await _cache.SetAsync("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+            await _cache.SetAsync(CacheKey.Connectionkey + ":" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromMinutes(5)).ConfigureAwait(false);
             return $"{baseUrl}?connectionkey={key}";
         }
     }

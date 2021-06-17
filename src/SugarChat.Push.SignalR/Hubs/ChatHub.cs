@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Cache;
+using SugarChat.Push.SignalR.Const;
 using SugarChat.Push.SignalR.Models;
 using System;
 using System.Collections.Generic;
@@ -32,13 +33,13 @@ namespace SugarChat.Push.SignalR.Hubs
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }
-            var userinfo = _cache.Get<UserInfoModel>("Connectionkey:" + connectionkey);
+            var userinfo = _cache.Get<UserInfoModel>(CacheKey.Connectionkey + ":" + connectionkey);
             if(userinfo is null)
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
-            _cache.Set("Connectionkey:" + connectionkey, userinfo);
+            _cache.Set(CacheKey.Connectionkey + ":" + connectionkey, userinfo);
             await SetUserConnectionId();
         }
 
@@ -49,32 +50,32 @@ namespace SugarChat.Push.SignalR.Hubs
             {
                 return;
             }
-            var userinfo = _cache.Get<UserInfoModel>("Connectionkey:" + connectionkey);
+            var userinfo = _cache.Get<UserInfoModel>(CacheKey.Connectionkey + ":" + connectionkey);
             if (userinfo is null)
             {
                 return;
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Offline");
-            _cache.Set("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromMinutes(5));
+            _cache.Set(CacheKey.Connectionkey + ":" + connectionkey, userinfo, TimeSpan.FromMinutes(5));
             await RemoveUserConnectionId();
         }
 
         private async Task SetUserConnectionId()
         {
-            var connectionIds = await _cache.HashGetAsync<List<string>> ("UserConnectionIds", Context.UserIdentifier).ConfigureAwait(false);
+            var connectionIds = await _cache.HashGetAsync<List<string>> (CacheKey.UserConnectionIds, Context.UserIdentifier).ConfigureAwait(false);
 
             if(connectionIds is null)
             {
                 connectionIds = new List<string>();
             }
             connectionIds.Add(Context.ConnectionId);
-            await _cache.HashSetAsync("UserConnectionIds", Context.UserIdentifier, connectionIds).ConfigureAwait(false);
+            await _cache.HashSetAsync(CacheKey.UserConnectionIds, Context.UserIdentifier, connectionIds).ConfigureAwait(false);
         }
         private async Task RemoveUserConnectionId()
         {
-            var connectionIds = await _cache.HashGetAsync<List<string>>("UserConnectionIds", Context.UserIdentifier).ConfigureAwait(false);
+            var connectionIds = await _cache.HashGetAsync<List<string>>(CacheKey.UserConnectionIds, Context.UserIdentifier).ConfigureAwait(false);
             connectionIds.Remove(Context.ConnectionId);
-            await _cache.HashSetAsync("UserConnectionIds", Context.UserIdentifier, connectionIds).ConfigureAwait(false);
+            await _cache.HashSetAsync(CacheKey.UserConnectionIds, Context.UserIdentifier, connectionIds).ConfigureAwait(false);
         }
     }
 

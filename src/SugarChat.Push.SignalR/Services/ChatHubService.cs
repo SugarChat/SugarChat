@@ -94,7 +94,7 @@ namespace SugarChat.Push.SignalR.Services
             }
             catch
             {
-                await _mediator.PublishAsync(new ClearConnectionIdEvent { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
+                await _mediator.SendAsync(new ClearConnectionIdCommand { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
             }
         }
         public async Task AddGroups([NotNull] string connectionId, [NotNull] IReadOnlyList<string> groupNames, CancellationToken cancellationToken = default)
@@ -112,7 +112,7 @@ namespace SugarChat.Push.SignalR.Services
             }
             catch
             {
-                await _mediator.PublishAsync(new ClearConnectionIdEvent { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
+                await _mediator.SendAsync(new ClearConnectionIdCommand { ConnectionId = connectionId }, cancellationToken).ConfigureAwait(false);
             }
         }
 

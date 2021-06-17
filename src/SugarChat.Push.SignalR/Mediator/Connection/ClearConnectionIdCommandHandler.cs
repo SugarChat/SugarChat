@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Push.SignalR.Mediator.Connection
 {
-    public class ClearConnectionIdEventHandler : IEventHandler<ClearConnectionIdEvent>
+    public class ClearConnectionIdCommandHandler : ICommandHandler<ClearConnectionIdCommand>
     {
         private readonly ICacheService _cache;
 
-        public ClearConnectionIdEventHandler(ICacheService cache)
+        public ClearConnectionIdCommandHandler(ICacheService cache)
         {
             _cache = cache;
         }
 
-        public async Task Handle(IReceiveContext<ClearConnectionIdEvent> context, CancellationToken cancellationToken)
+        public async Task Handle(IReceiveContext<ClearConnectionIdCommand> context, CancellationToken cancellationToken)
         {
             var dic = await _cache.GetHashAll("UserConnectionIds").ConfigureAwait(false);
             var kv = dic.First(kv => kv.Value.Contains(context.Message.ConnectionId));

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Push.SignalR.Mediator.Connection
 {
-    public class ClearConnectionIdEvent : IEvent
+    public class ClearConnectionIdCommand : ICommand
     {
         public string ConnectionId { get; set; }
     }

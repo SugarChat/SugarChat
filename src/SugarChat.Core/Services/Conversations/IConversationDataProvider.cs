@@ -11,5 +11,7 @@ namespace SugarChat.Core.Services.Conversations
             string nextReqMessageId = null,
             int count = 15,
             CancellationToken cancellationToken = default);
+
+        IEnumerable<Domain.Message> GetPagedMessagesByConversationIdAsync(string conversationId, int pageIndex = 0, int count = 15);
     }
 }

@@ -2,6 +2,8 @@
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,5 +22,7 @@ namespace SugarChat.Core.Services.Conversations
 
         Task<ConversationRemovedEvent> RemoveConversationByConversationIdAsync(RemoveConversationCommand command,
             CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<MessageDto>> GetPagedMessagesByConversationIdAsync(GetMessageListByPageIndexRequest request, CancellationToken cancellationToken = default);
     }
 }

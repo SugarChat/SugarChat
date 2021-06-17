@@ -35,5 +35,18 @@ namespace SugarChat.Core.Services.Conversations
                                 .AsEnumerable();
             return messages;
         }
+
+        public IEnumerable<Domain.Message> GetPagedMessagesByConversationIdAsync(string conversationId, int pageIndex = 0, int count = 15)
+        {
+            var query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId).OrderByDescending(x => x.SentTime);
+            if (pageIndex > 0)
+            {
+                return query.Skip((pageIndex - 1) * count).Take(count);
+            }
+            else
+            {
+                return query;
+            }
+        }
     }
 }

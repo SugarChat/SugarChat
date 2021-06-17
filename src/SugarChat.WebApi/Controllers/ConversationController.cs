@@ -6,6 +6,7 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -72,6 +73,12 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-
+        [Route("getPagingMessageListByPageIndex"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<MessageDto>>))]
+        public async Task<IActionResult> GetPagingMessageListByPageIndex([FromQuery] GetMessageListByPageIndexRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            return Ok(response);
+        }
     }
 }

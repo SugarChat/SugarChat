@@ -9,6 +9,7 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
 using System;
 using System.Collections.Generic;
@@ -125,5 +126,34 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             });
         }
 
+        [Fact]
+        public async Task ShouldGetMessageListByPageIndex()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                {
+                    var request = new GetMessageListByPageIndexRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 1,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+                    response.Data.Count().ShouldBe(2);
+                }
+                {
+                    var request = new GetMessageListByPageIndexRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 2,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+                    response.Data.Count().ShouldBe(1);
+                }
+            });
+        }
     }
 }

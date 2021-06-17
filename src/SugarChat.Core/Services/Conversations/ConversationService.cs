@@ -107,6 +107,16 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
+        public async Task<IEnumerable<MessageDto>> GetPagedMessagesByConversationIdAsync(GetMessageListByPageIndexRequest request, CancellationToken cancellationToken = default)
+        {
+            var groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.ConversationId, cancellationToken);
+            groupUser.CheckExist(request.UserId, request.ConversationId);
+
+            var messages = _conversationDataProvider.GetPagedMessagesByConversationIdAsync(request.ConversationId, request.PagaIndex, request.Count);
+
+            return messages.Select(x => _mapper.Map<MessageDto>(x)).ToList();
+        }
+
         public async Task<ConversationRemovedEvent> RemoveConversationByConversationIdAsync(
             RemoveConversationCommand command, CancellationToken cancellationToken = default)
         {

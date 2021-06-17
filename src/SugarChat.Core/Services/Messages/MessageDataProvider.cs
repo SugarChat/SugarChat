@@ -219,5 +219,10 @@ namespace SugarChat.Core.Services.Messages
 
             return unreadMessageCount;
         }
+
+        public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
+        {
+            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+        }
     }
 }

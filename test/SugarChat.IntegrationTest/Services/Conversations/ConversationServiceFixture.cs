@@ -29,7 +29,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
                 (new GetConversationListRequest { UserId = userId });
 
-                reponse.Data.Count().ShouldBe(2);
+                reponse.Data.Count().ShouldBe(3);
             });
         }
 
@@ -125,5 +125,43 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             });
         }
 
+        [Fact]
+        public async Task ShouldGetConversationByKeyword()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "Order", "1" } },
+                        UserId = userId
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
+                    response.Data.Count().ShouldBe(1);
+                    response.Data.Any(x => x.ConversationID == conversationId).ShouldBeTrue();
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "Order", "2" } },
+                        UserId = userId
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
+                    response.Data.Count().ShouldBe(2);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "Order", "1" },{ "Text","5"} },
+                        UserId = userId
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
+                    response.Data.Count().ShouldBe(3);
+                }
+            });
+        }
     }
 }

@@ -146,23 +146,30 @@ namespace SugarChat.Core.Services.Conversations
             var messages = await _messageDataProvider.GetByGroupIdsAsync(groupUsers.Select(x => x.GroupId).ToArray(), cancellationToken);
 
             List<string> filterGroupIds = new();
-            foreach (var searchParm in request.SearchParms)
+            if (request.SearchParms is not null && request.SearchParms.Count() != 0)
             {
-                foreach (var message in messages)
+                foreach (var searchParm in request.SearchParms)
                 {
-                    dynamic payload = message.Payload;
-                    IDictionary<string, object> dictionary = payload;
-                    foreach (var item in dictionary)
+                    foreach (var message in messages)
                     {
-                        if (item.Key.ToLower().Contains(searchParm.Key.ToLower()))
+                        dynamic payload = message.Payload;
+                        IDictionary<string, object> dictionary = payload;
+                        foreach (var item in dictionary)
                         {
-                            if (item.Value.ToString().ToLower().Contains(searchParm.Value.ToLower()))
+                            if (item.Key.ToLower().Contains(searchParm.Key.ToLower()))
                             {
-                                filterGroupIds.Add(message.GroupId);
+                                if ((request.IsExactSearch && item.Value.ToString() == searchParm.Value) || (!request.IsExactSearch && item.Value.ToString().Contains(searchParm.Value)))
+                                {
+                                    filterGroupIds.Add(message.GroupId);
+                                }
                             }
                         }
                     }
                 }
+            }
+            else
+            {
+                filterGroupIds = messages.Select(x => x.GroupId).ToList();
             }
 
             var groups = await _groupDataProvider.GetByIdsAsync(filterGroupIds, request.PageSettings);

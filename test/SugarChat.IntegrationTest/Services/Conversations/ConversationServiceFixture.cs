@@ -145,8 +145,20 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "2" } },
-                        UserId = userId
+                        SearchParms = new Dictionary<string, string> { { "Order", "25" } },
+                        UserId = userId,
+                        IsExactSearch = true
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
+                    response.Data.Count().ShouldBe(1);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" } },
+                        UserId = userId,
+                        IsExactSearch = true
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
                     response.Data.Count().ShouldBe(2);
@@ -155,8 +167,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "1" },{ "Text","5"} },
-                        UserId = userId
+                        UserId = userId,
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);
                     response.Data.Count().ShouldBe(3);

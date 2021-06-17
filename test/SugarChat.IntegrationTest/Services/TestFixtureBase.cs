@@ -96,7 +96,7 @@ namespace SugarChat.IntegrationTest.Services
             messages.Add(GenerateMessage(groupId4, "今天真热啊", MessageType.Text, userId1, new { text = "test5", order = "25" }));
             messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", MessageType.Text, userId2, new { text = "test6", order = "26" }));
             messages.Add(GenerateMessage(groupId4, "谁说不是呢", MessageType.Text, userId3, new { text = "test7", order = "37" }));
-            messages.Add(GenerateMessage(groupId5, "555", MessageType.Text, userId, new { text = "test5", order = "5" }));
+            messages.Add(GenerateMessage(groupId5, "888", MessageType.Text, userId, new { text = "test8", order = "8" }));
             repository.AddRangeAsync(messages, default(CancellationToken)).Wait();
         }
 

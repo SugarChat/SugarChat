@@ -19,7 +19,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     UserId = userId
                 };
                 var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                response.Data.ShouldBe(7);
+                response.Data.ShouldBe(8);
             });
         }
     }

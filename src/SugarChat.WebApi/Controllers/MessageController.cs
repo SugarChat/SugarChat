@@ -49,7 +49,7 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getUnreadMessagesFromGroupRequest"), HttpGet]
+        [Route("getUnreadMessagesFromGroup"), HttpGet]
         public async Task<IActionResult> GetUnreadMessagesFromGroup([FromQuery] GetUnreadMessagesFromGroupRequest request)
         {
             var response =

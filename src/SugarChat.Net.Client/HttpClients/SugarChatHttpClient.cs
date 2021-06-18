@@ -1,96 +1,365 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using SugarChat.Core.Basic;
+using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.Users;
-using SugarChat.Message.Requests;
-using SugarChat.Message.Requests.Messages;
-using SugarChat.Shared.Dtos;
 using System;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Linq;
+using SugarChat.Message.Commands.Conversations;
+using SugarChat.Net.Client.Exceptions;
+using System.IO;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using SugarChat.Shared.Dtos;
+using SugarChat.Message.Requests.Conversations;
+using SugarChat.Shared.Dtos.Conversations;
+using SugarChat.Message.Commands.Messages;
+using SugarChat.Core.Mediator.CommandHandlers.Groups;
+using SugarChat.Message.Requests;
+using SugarChat.Message.Requests.Groups;
+using SugarChat.Shared.Dtos.GroupUsers;
+using SugarChat.Message.Commands.GroupUsers;
+using SugarChat.Message.Requests.Messages;
+using SugarChat.Message.Responses.Conversations;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using SugarChat.Shared.Paging;
 
 namespace SugarChat.Net.Client.HttpClients
 {
-    public class SugarChatHttpClient : ISugarChatClient
+    public partial class SugarChatHttpClient : ISugarChatClient
     {
-        private const string CreateUserUrl = "api/user/create";
-        private const string GetUserProfileUrl = "api/User/getUserProfile";
-        private const string UpdateMyProfileUrl = "api/User/updateMyProfile";
-        private const string CreateGroupUrl = "api/Group/create";
+        private const string _getConnectionUrl = "api/chat/getConnectionUrl";
+        private const string _getMessageListUrl = "api/conversation/getMessageList";
+        private const string _getConversationListUrl = "api/conversation/getConversationList";
+        private const string _getConversationProfileUrl = "api/conversation/getConversationProfile";
+        private const string _setMessageReadUrl = "api/conversation/setMessageRead";
+        private const string _deleteConversationUrl = "api/conversation/deleteConversation";
+        private const string _addFriendUrl = "api/friend/add";
+        private const string _removeFriendUrl = "api/friend/remove";
+        private const string _createGroupUrl = "api/group/create";
+        private const string _dismissGroupUrl = "api/group/dismiss";
+        private const string _getGroupListUrl = "api/group/getGroupList";
+        private const string _getGroupProfileUrl = "api/group/getGroupProfile";
+        private const string _updateGroupProfileUrl = "api/group/updateGroupProfile";
+        private const string _removeGroupUrl = "api/group/remove";
+        private const string _getGroupMemberListUrl = "api/groupUser/getGroupMemberList";
+        private const string _setGroupMemberCustomFieldUrl = "api/groupUser/setGroupMemberCustomField";
+        private const string _joinGroupUrl = "api/groupUser/join";
+        private const string _quitGroupUrl = "api/groupUser/quit";
+        private const string _changeGroupOwnerUrl = "api/groupUser/changeGroupOwner";
+        private const string _addGroupMemberUrl = "api/groupUser/addGroupMember";
+        private const string _deleteGroupMemberUrl = "api/groupUser/deleteGroupMember";
+        private const string _setMessageRemindTypeUrl = "api/groupUser/setMessageRemindType";
+        private const string _setGroupMemberRoleUrl = "api/groupUser/setGroupMemberRole"; 
+        private const string _sendMessageUrl = "api/message/send";
+        private const string _revokeMessageUrl = "api/message/revoke";
+        private const string _getUnreadMessageCountUrl = "api/message/getUnreadMessageCount";
+        private const string _getUnreadMessagesFromGroupUrl = "api/message/getUnreadMessagesFromGroup";
+        private const string _getAllToUserFromGroupUrl = "api/message/getAllToUserFromGroup";
+        private const string _getMessagesOfGroupUrl = "api/message/getMessagesOfGroup";
+        private const string _getMessagesOfGroupBeforeUrl = "api/message/getMessagesOfGroupBefore";
+        private const string _createUserUrl = "api/user/create";
+        private const string _getUserProfileUrl = "api/user/getUserProfile";
+        private const string _updateMyProfileUrl = "api/user/updateMyProfile";
 
-        private const string GetUnreadMessageCountUrl = "api/message/getUnreadMessageCount";
-
-        private readonly IHttpClientFactory _httpClientFactory;
+        private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;       
         public SugarChatHttpClient()
+        {              
+        } 
+        
+        protected struct ObjectResponseResult<T>
         {
-            var serviceProvider = new ServiceCollection().AddHttpClient().BuildServiceProvider();
-            _httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+            public ObjectResponseResult(T responseObject, string responseText)
+            {
+                this.Object = responseObject;
+                this.Text = responseText;
+            }
+
+            public T Object { get; }
+
+            public string Text { get; }
         }
 
-        private async Task<string> ExecuteAsync(string url, HttpMethod method, string requestString = "", CancellationToken cancellationToken = default(CancellationToken))
+        public bool ReadResponseAsString { get; set; }
+
+        protected virtual async Task<ObjectResponseResult<T>> ReadObjectResponseAsync<T>(HttpResponseMessage response, ReadOnlyDictionary<string, IEnumerable<string>> headers, CancellationToken cancellationToken)
         {
-            var request = new HttpRequestMessage(method, url);
-            request.Content = new StringContent(requestString);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            var client = _httpClientFactory.CreateClient();
-            client.BaseAddress = new Uri("http://localhost:5000/");
-
-            var response = await client.SendAsync(request, cancellationToken);
-            if (response.IsSuccessStatusCode)
+            if (response == null || response.Content == null)
             {
-                var result = await response.Content.ReadAsStringAsync(cancellationToken);
-                return result;
+                return new ObjectResponseResult<T>(default(T), string.Empty);
+            }
+
+            if (ReadResponseAsString)
+            {
+                var responseText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    var typedBody = JsonConvert.DeserializeObject<T>(responseText);
+                    return new ObjectResponseResult<T>(typedBody, responseText);
+                }
+                catch (JsonException exception)
+                {
+                    var message = "Could not deserialize the response body string as " + typeof(T).FullName + ".";
+                    throw new ApiException(message, (int)response.StatusCode, responseText, headers, exception);
+                }
             }
             else
             {
-                throw new HttpRequestException($"接口请求错误{response.StatusCode},错误原因{response.ReasonPhrase}");
+                try
+                {
+                    using (var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using (var streamReader = new StreamReader(responseStream))
+                    using (var jsonTextReader = new JsonTextReader(streamReader))
+                    {
+                        var serializer = JsonSerializer.Create();
+                        var typedBody = serializer.Deserialize<T>(jsonTextReader);
+                        return new ObjectResponseResult<T>(typedBody, string.Empty);
+                    }
+                }
+                catch (JsonException exception)
+                {
+                    var message = "Could not deserialize the response body stream as " + typeof(T).FullName + ".";
+                    throw new ApiException(message, (int)response.StatusCode, string.Empty, headers, exception);
+                }
             }
         }
 
-        public async Task<SugarChatResponse> CreateUserAsync(AddUserCommand command, CancellationToken cancellationToken)
+        private async Task<T> ExecuteAsync<T>(string url, HttpMethod method, string requestString = "", CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync(CreateUserUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken);
-            var result = JsonConvert.DeserializeObject<SugarChatResponse>(response);
-            return result;
+            var client = new HttpClient();
+            client.BaseAddress = new Uri(_baseUrl);
+            var disposeClient = true;
+            try
+            {
+                using (var request = new HttpRequestMessage(method,url))
+                {
+                    var content = new StringContent(requestString);
+                    content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
+                    request.Content = content;                
+                    request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("text/plain"));              
+
+                    var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse = true;
+                    try
+                    {
+                        var headers = Enumerable.ToDictionary(response.Headers, h => h.Key, h => h.Value);
+                        if (response.Content != null && response.Content.Headers != null)
+                        {
+                            foreach (var item in response.Content.Headers)
+                                headers[item.Key] = item.Value;
+                        }
+
+                        var status = (int)response.StatusCode;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var objectResponse = await ReadObjectResponseAsync<T>(response, new ReadOnlyDictionary<string, IEnumerable<string>>(headers), cancellationToken).ConfigureAwait(false);
+                            if (objectResponse.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status, objectResponse.Text, headers, null);
+                            }
+                            return objectResponse.Object;
+                        }
+                        else
+                        {
+                            var responseData = response.Content == null ? null : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status + ").", status, responseData, headers, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse)
+                            response.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient)
+                    client.Dispose();
+            }
         }
 
-        public async Task<SugarChatResponse<UserDto>> GetUserProfileAsync(GetUserRequest request, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<UserDto>> GetUserProfileAsync(GetUserRequest request, CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync($"{GetUserProfileUrl}?id={request.Id}", HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var result = JsonConvert.DeserializeObject<SugarChatResponse<UserDto>>(response);
-            return result;
+            var requestUrl = $"{_getUserProfileUrl}?id={request.Id}";
+            return await ExecuteAsync<SugarChatResponse<UserDto>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse> UpdateMyProfileAsync(UpdateUserCommand command, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> UpdateMyProfileAsync(UpdateUserCommand command, CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync(UpdateMyProfileUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken);
-            var result = JsonConvert.DeserializeObject<SugarChatResponse>(response);
-            return result;
+            return await ExecuteAsync<SugarChatResponse>(_updateMyProfileUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> CreateUserAsync(AddUserCommand command, CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync(CreateGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken);
-            var result = JsonConvert.DeserializeObject<SugarChatResponse>(response);
-            return result;
+            return await ExecuteAsync<SugarChatResponse>(_createUserUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
         }
 
-
-
-
-        public async Task<SugarChatResponse<int>> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken)
+        public async Task<string> GetConnectionUrlAsync(string userIdentifier, CancellationToken cancellationToken = default)
         {
-            var response = await ExecuteAsync($"{GetUnreadMessageCountUrl}?userId={request.UserId}", HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
-            var result = JsonConvert.DeserializeObject<SugarChatResponse<int>>(response);
-            return result;
+            var requestUrl = $"{_getConnectionUrl}?userIdentifier={userIdentifier}";
+            return await ExecuteAsync<string>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<SugarChatResponse<MessageListResult>> GetMessageListAsync(GetMessageListRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getMessageListUrl}?userId={request.UserId}&conversationId={request.ConversationId}&nextReqMessageId={request.NextReqMessageId}&count={request.Count}";
+            return await ExecuteAsync<SugarChatResponse<MessageListResult>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
 
+        public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationListAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getConversationListUrl}?userId={request.UserId}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<ConversationDto>> GetConversationProfileAsync(GetConversationProfileRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getConversationProfileUrl}?conversationId={request.ConversationId}&userId={request.UserId}";
+            return await ExecuteAsync<SugarChatResponse<ConversationDto>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SetMessageReadAsync(SetMessageReadByUserBasedOnMessageIdCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_setMessageReadUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> DeleteConversationAsync(RemoveConversationCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_deleteConversationUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> AddFriendAsync(AddFriendCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_addFriendUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_removeFriendUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<AddGroupResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<AddGroupResponse>(_createGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_dismissGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<PagedResult<GroupDto>>> GetGroupListAsync(GetGroupsOfUserRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getGroupListUrl}?id={request.Id}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
+            return await ExecuteAsync<SugarChatResponse<PagedResult<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<GroupDto>> GetGroupProfileAsync(GetGroupProfileRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getGroupProfileUrl}?userId={request.UserId}&groupId={request.GroupId}";
+            return await ExecuteAsync<SugarChatResponse<GroupDto>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> UpdateGroupProfileAsync(UpdateGroupProfileCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_updateGroupProfileUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_removeGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<GroupUserDto>>> GetGroupMemberListAsync(GetMembersOfGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getGroupMemberListUrl}?userId={request.UserId}&groupId={request.GroupId}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<GroupUserDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SetGroupMemberCustomFieldAsync(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_setGroupMemberCustomFieldUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> JoinGroupAsync(JoinGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_joinGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> QuitGroupAsync(QuitGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_quitGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> ChangeGroupOwnerAsync(ChangeGroupOwnerCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_changeGroupOwnerUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> AddGroupMemberAsync(AddGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_addGroupMemberUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> DeleteGroupMemberAsync(RemoveGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_deleteGroupMemberUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SetMessageRemindTypeAsync(SetMessageRemindTypeCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_setMessageRemindTypeUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SetGroupMemberRoleAsync(SetGroupMemberRoleCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_setGroupMemberRoleUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SendMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_sendMessageUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> RevokeMessageAsync(RevokeMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_revokeMessageUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<int>> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getUnreadMessageCountUrl}?userId={request.UserId}";
+            return await ExecuteAsync<SugarChatResponse<int>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetUnreadMessagesFromGroupAsync(GetUnreadMessagesFromGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getUnreadMessagesFromGroupUrl}?userId={request.UserId}&groupId={request.GroupId}&messageId={request.MessageId}&count={request.Count}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetAllToUserFromGroupAsync(GetAllMessagesFromGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getAllToUserFromGroupUrl}?userId={request.UserId}&groupId={request.GroupId}&messageId={request.MessageId}&count={request.Count}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getMessagesOfGroupUrl}?groupId={request.GroupId}&count={request.Count}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getMessagesOfGroupBeforeUrl}?messageId={request.MessageId}&count={request.Count}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
     }
-
-
 }

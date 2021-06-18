@@ -39,7 +39,7 @@ namespace SugarChat.IntegrationTest
             _configuration = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json")
-               .Build();
+               .Build();           
         }
 
         private void RegisterBaseContainer(ContainerBuilder builder)

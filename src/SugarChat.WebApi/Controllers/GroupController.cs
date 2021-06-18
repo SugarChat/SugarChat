@@ -9,6 +9,7 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared.Paging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -42,12 +43,12 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getGroupList"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupDto>>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<GroupDto>>))]
         public async Task<IActionResult> GetGroupList([FromQuery] GetGroupsOfUserRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
+                      .RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(request);
 
             return Ok(response);
         }

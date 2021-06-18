@@ -15,7 +15,7 @@ namespace SugarChat.WebApi.Controllers
         {
             _client = client;
         }
-        [HttpGet("GetConnectionUrl")]
+        [HttpGet("getConnectionUrl")]
         public async Task<string> GetConnectionUrl(string userIdentifier)
         {
              return await _client.GetConnectionUrl(userIdentifier).ConfigureAwait(false);

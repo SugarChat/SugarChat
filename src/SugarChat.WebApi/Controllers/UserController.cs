@@ -41,7 +41,7 @@ namespace SugarChat.WebApi.Controllers
         
         [Route("create"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> CreateUserAsync(AddUserCommand command)
+        public async Task<IActionResult> CreateUser(AddUserCommand command)
         {
             var response = await _mediator.SendAsync<AddUserCommand, SugarChatResponse>(command);
             return Ok(response);

@@ -9,6 +9,6 @@ namespace SugarChat.Push.SignalR.Const
     public static class CacheKey
     {
         public const string UserConnectionIds = "UserConnectionIds";
-        public const string Connectionkey = "UserConnectionIds";
+        public const string Connectionkey = "Connectionkey";
     }
 }

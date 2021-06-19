@@ -26,7 +26,6 @@ using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Http;
 using SugarChat.Shared.Paging;
 
 namespace SugarChat.Net.Client.HttpClients
@@ -55,7 +54,7 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _addGroupMemberUrl = "api/groupUser/addGroupMember";
         private const string _deleteGroupMemberUrl = "api/groupUser/deleteGroupMember";
         private const string _setMessageRemindTypeUrl = "api/groupUser/setMessageRemindType";
-        private const string _setGroupMemberRoleUrl = "api/groupUser/setGroupMemberRole"; 
+        private const string _setGroupMemberRoleUrl = "api/groupUser/setGroupMemberRole";
         private const string _sendMessageUrl = "api/message/send";
         private const string _revokeMessageUrl = "api/message/revoke";
         private const string _getUnreadMessageCountUrl = "api/message/getUnreadMessageCount";
@@ -67,11 +66,11 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _getUserProfileUrl = "api/user/getUserProfile";
         private const string _updateMyProfileUrl = "api/user/updateMyProfile";
 
-        private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;       
+        private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;
         public SugarChatHttpClient()
-        {              
-        } 
-        
+        {
+        }
+
         protected struct ObjectResponseResult<T>
         {
             public ObjectResponseResult(T responseObject, string responseText)
@@ -133,18 +132,18 @@ namespace SugarChat.Net.Client.HttpClients
         {
             var client = new HttpClient();
             client.BaseAddress = new Uri(_baseUrl);
-            var disposeClient = true;
+
             try
             {
-                using (var request = new HttpRequestMessage(method,url))
+                using (var request = new HttpRequestMessage(method, url))
                 {
                     var content = new StringContent(requestString);
                     content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-                    request.Content = content;                
-                    request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("text/plain"));              
+                    request.Content = content;
+                    request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("text/plain"));
 
                     var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                    var disposeResponse = true;
+
                     try
                     {
                         var headers = Enumerable.ToDictionary(response.Headers, h => h.Key, h => h.Value);
@@ -172,15 +171,13 @@ namespace SugarChat.Net.Client.HttpClients
                     }
                     finally
                     {
-                        if (disposeResponse)
-                            response.Dispose();
+                        response.Dispose();
                     }
                 }
             }
             finally
             {
-                if (disposeClient)
-                    client.Dispose();
+                client.Dispose();
             }
         }
 

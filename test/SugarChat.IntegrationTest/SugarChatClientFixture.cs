@@ -19,6 +19,7 @@ using Xunit;
 
 namespace SugarChat.IntegrationTest
 {
+   
     public class SugarChatClientFixture : TestBase
     {
 
@@ -280,7 +281,7 @@ namespace SugarChat.IntegrationTest
                     UserId = _userIds[0],
                     GroupId = _groupIds[0]
                 });
-                result.Data.Name.ShouldBe("TestGroup");
+                result.Data.Name.ShouldBe("TestGroup0");
             });
         }
 

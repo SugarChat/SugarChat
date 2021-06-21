@@ -1,9 +1,8 @@
-name: publish  to nuget
+name: publish to nuget
 on:
   push:
-    branches: [ ]
-  pull_request:
-    branches: [  ]      
+    branches:
+      - main # Default release branch      
 jobs:
   publish:
     name: build, pack & publish
@@ -43,7 +42,7 @@ jobs:
           # TAG_FORMAT: v*
 
           # API key to authenticate with NuGet server
-            NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          # NUGET_KEY: ${{secrets.NUGET_API_KEY}}
 
           # NuGet server uri hosting the packages, defaults to https://api.nuget.org
           # NUGET_SOURCE: https://api.nuget.org

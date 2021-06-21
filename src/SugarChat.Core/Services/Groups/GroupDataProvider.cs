@@ -61,5 +61,38 @@ namespace SugarChat.Core.Services.Groups
                 throw new BusinessWarningException(Prompt.RemoveGroupFailed.WithParams(group.Id));
             }
         }
+
+        public IEnumerable<Group> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds = null)
+        {
+            var query = _repository.Query<Group>();
+            if (groupIds is not null)
+            {
+                query = query.Where(x => groupIds.Contains(x.Id));
+            }
+            List<Group> groups = new List<Group>();
+            if (customPropertys is not null)
+            {
+                foreach (var group in query)
+                {
+                    if (group.CustomProperties is not null)
+                    {
+                        bool isAdd = true;
+                        foreach (var customProperty in customPropertys)
+                        {
+                            if (group.CustomProperties.GetValueOrDefault(customProperty.Key) != customProperty.Value)
+                            {
+                                isAdd = false;
+                                break;
+                            }
+                        }
+                        if (isAdd)
+                        {
+                            groups.Add(group);
+                        }
+                    }
+                }
+            }
+            return groups;
+        }
     }
 }

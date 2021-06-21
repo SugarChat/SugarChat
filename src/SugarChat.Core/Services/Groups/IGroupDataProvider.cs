@@ -17,5 +17,7 @@ namespace SugarChat.Core.Services.Groups
         Task AddAsync(Group group, CancellationToken cancellationToken = default);
         Task UpdateAsync(Group group, CancellationToken cancellationToken = default);
         Task RemoveAsync(Group group, CancellationToken cancellationToken = default);
+
+        IEnumerable<Group> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds = null);
     }
 }

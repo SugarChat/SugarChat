@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
     <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
   </ItemGroup>
 

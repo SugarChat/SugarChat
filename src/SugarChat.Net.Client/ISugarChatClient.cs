@@ -1,5 +1,4 @@
-﻿using SugarChat.Core.Basic;
-using SugarChat.Core.Mediator.CommandHandlers.Groups;
+﻿using SugarChat.Message.Basic;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Groups;
@@ -47,7 +46,7 @@ namespace SugarChat.Net.Client
 
         Task<SugarChatResponse> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellationToken = default);
 
-        Task<AddGroupResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default);
+        Task<SugarChatResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default);
 
 
         Task<SugarChatResponse> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellationToken = default);

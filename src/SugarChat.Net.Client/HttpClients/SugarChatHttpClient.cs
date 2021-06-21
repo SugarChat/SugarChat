@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.Users;
@@ -18,7 +17,6 @@ using SugarChat.Shared.Dtos;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Shared.Dtos.Conversations;
 using SugarChat.Message.Commands.Messages;
-using SugarChat.Core.Mediator.CommandHandlers.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Shared.Dtos.GroupUsers;
@@ -27,6 +25,7 @@ using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
 using Microsoft.Extensions.Configuration;
 using SugarChat.Shared.Paging;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.Net.Client.HttpClients
 {
@@ -241,9 +240,9 @@ namespace SugarChat.Net.Client.HttpClients
             return await ExecuteAsync<SugarChatResponse>(_removeFriendUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
         }
 
-        public async Task<AddGroupResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default)
         {
-            return await ExecuteAsync<AddGroupResponse>(_createGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+            return await ExecuteAsync<SugarChatResponse>(_createGroupUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
         }
 
         public async Task<SugarChatResponse> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellationToken = default)

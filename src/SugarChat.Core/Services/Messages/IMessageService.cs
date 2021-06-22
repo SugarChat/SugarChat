@@ -1,8 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.Messages;
-using SugarChat.Message.Commands.Message;
 using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
@@ -38,6 +36,9 @@ namespace SugarChat.Core.Services.Messages
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
         Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
+            CancellationToken cancellationToken = default);
+
+        Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command,
             CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
     }

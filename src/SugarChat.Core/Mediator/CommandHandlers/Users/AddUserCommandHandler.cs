@@ -3,10 +3,6 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +10,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Users
 {
     public class AddUserCommandHandler : ICommandHandler<AddUserCommand, SugarChatResponse>
     {
-        public IUserService _userService;
+        private readonly IUserService _userService;
         public AddUserCommandHandler(IUserService userService)
         {
             _userService = userService;

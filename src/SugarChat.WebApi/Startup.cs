@@ -9,6 +9,7 @@ using SugarChat.Core.Autofac;
 using System.Reflection;
 using SugarChat.Data.MongoDb.Autofac;
 using SugarChat.Core.Services;
+using SugarChat.SignalR.ServerClient.Extensions;
 using System.IO;
 using Microsoft.Extensions.Options;
 using System;
@@ -30,6 +31,7 @@ namespace SugarChat.WebApi
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSugarChatSignalRServerHttpClient(Configuration["SignalR:ServerUrl"]);
             services.AddControllers();
             services.AddOptions();
             this.services = services;

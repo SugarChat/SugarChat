@@ -82,7 +82,6 @@ namespace SugarChat.Core.Exceptions
 
         #endregion
 
-
         #region Message
 
         public static readonly ExceptionPrompt MessageNoExists =
@@ -157,6 +156,12 @@ namespace SugarChat.Core.Exceptions
 
         #endregion
 
+        #region Global
 
+        public static readonly ExceptionPrompt IdIsNullOrEmpty =
+            new(ExceptionCode.IdIsNullOrEmpty, "Id should not be null or empty.");
+        
+
+        #endregion
     }
 }

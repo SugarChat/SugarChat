@@ -29,7 +29,8 @@ namespace SugarChat.Core.Services.Users
             _friendDataProvider = friendDataProvider;
         }
 
-        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command, CancellationToken cancellationToken = default)
+        public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
+            CancellationToken cancellationToken = default)
         {
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckNotExist();
@@ -37,11 +38,7 @@ namespace SugarChat.Core.Services.Users
             user = _mapper.Map<User>(command);
             await _userDataProvider.AddAsync(user, cancellationToken).ConfigureAwait(false);
 
-            return new()
-            {
-                Id = user.Id,
-                Status = EventStatus.Success
-            };
+            return _mapper.Map<UserAddedEvent>(command);
         }
 
         public async Task<UserUpdatedEvent> UpdateUserAsync(UpdateUserCommand command,
@@ -64,11 +61,7 @@ namespace SugarChat.Core.Services.Users
 
             await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
 
-            return new()
-            {
-                Id = command.Id,
-                Status = EventStatus.Success,
-            };
+            return _mapper.Map<UserRemovedEvent>(command);
         }
 
         public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,
@@ -78,7 +71,8 @@ namespace SugarChat.Core.Services.Users
             user.CheckExist(request.Id);
             return new()
             {
-                User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellationToken).ConfigureAwait(false))
+                User = _mapper.Map<UserDto>(await _userDataProvider.GetByIdAsync(request.Id, cancellationToken)
+                    .ConfigureAwait(false))
             };
         }
 
@@ -98,7 +92,8 @@ namespace SugarChat.Core.Services.Users
             PagedResult<Friend> friends = await _friendDataProvider.GetAllFriendsByUserIdAsync(request.Id,
                 request.PageSettings, cancellationToken).ConfigureAwait(false);
             IEnumerable<User> users = await
-                _userDataProvider.GetRangeByIdAsync(friends.Result.Select(o => o.FriendId), cancellationToken).ConfigureAwait(false);
+                _userDataProvider.GetRangeByIdAsync(friends.Result.Select(o => o.FriendId), cancellationToken)
+                    .ConfigureAwait(false);
 
             IEnumerable<UserDto> friendsDto = _mapper.Map<IEnumerable<UserDto>>(users);
             return new()

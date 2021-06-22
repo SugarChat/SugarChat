@@ -65,7 +65,13 @@ namespace SugarChat.Core.Common
         RemoveAdminByAdmin = 52011,
         SetGroupOwner = 52012,
         AddUsersToWrongGroup = 52013,
-        UpdateGroupUsersFailed = 52014
+        UpdateGroupUsersFailed = 52014,
+        #endregion
+
+        #region Global
+
+        IdIsNullOrEmpty = 52501
+
         #endregion
         
     }

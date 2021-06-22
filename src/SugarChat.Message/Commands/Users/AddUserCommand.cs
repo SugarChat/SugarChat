@@ -3,9 +3,8 @@ using Mediator.Net.Contracts;
 
 namespace SugarChat.Message.Commands.Users
 {
-    public class AddUserCommand : ICommand
+    public class AddUserCommand : IdRequiredCommand
     {
-        public string Id { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
         public string DisplayName { get; set; }
         public string AvatarUrl { get; set; }

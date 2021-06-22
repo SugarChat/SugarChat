@@ -9,6 +9,7 @@ namespace SugarChat.Message.Commands.GroupUsers
 {
     public class JoinGroupCommand : ICommand
     {
+        public string Id { get; set; }
         public string GroupId { get; set; }
         public string UserId { get; set; }
     }

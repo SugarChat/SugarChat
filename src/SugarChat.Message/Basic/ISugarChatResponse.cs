@@ -4,9 +4,9 @@ namespace SugarChat.Message.Basic
 {
     public interface ISugarChatResponse : IResponse
     {
-        public int Code { get; set;  }
+        int Code { get; set;  }
 
-        public string Message { get; set; }
+        string Message { get; set; }
         
     }
 

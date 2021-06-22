@@ -21,8 +21,4 @@
       <ProjectReference Include="..\SugarChat.SignalR.ServerClient\SugarChat.SignalR.ServerClient.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
-    </ItemGroup>
-
 </Project>

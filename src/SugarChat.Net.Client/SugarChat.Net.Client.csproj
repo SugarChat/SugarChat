@@ -1,7 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net5;netstandard2.0</TargetFrameworks>
+	<Version>1.0.0</Version>
+	<Authors>SugarChat.Net.Client</Authors>
+	<Product>SugarChat.Net.Client</Product>
+	<PackageId>SugarChat.Net.Client</PackageId>
+	<RepositoryUrl>https://github.com/SugarChat/SugarChat.git</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<PackageProjectUrl>https://github.com/SugarChat/SugarChat</PackageProjectUrl>
+	<Company>SugarChat.Net.Client</Company>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>

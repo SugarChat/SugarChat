@@ -17,6 +17,7 @@ using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
+using SugarChat.Message;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -27,23 +28,37 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly ISecurityManager _securityManager;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ISecurityManager securityManager)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _securityManager = securityManager;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
             CancellationToken cancellation = default)
         {
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await _userDataProvider.GetByIdAsync(command.UserId);
+                user.CheckExist(command.UserId);
+            }
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
             group.CheckNotExist();
 
+            GroupUser groupUser = new()
+            {
+                UserId = command.UserId,
+                GroupId = command.Id,
+                Role = UserRole.Owner
+            };
+            await _groupUserDataProvider.AddAsync(groupUser);
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 
@@ -103,7 +118,7 @@ namespace SugarChat.Core.Services.Groups
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(request.UserId);
-            
+
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(request.GroupId);
 
@@ -138,7 +153,7 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
-            
+
             var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 

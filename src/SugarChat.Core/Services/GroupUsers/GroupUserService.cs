@@ -21,15 +21,18 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly IUserDataProvider _userDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly ISecurityManager _securityManager;
 
         public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider,
+            ISecurityManager securityManager)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _securityManager = securityManager;
         }
 
 
@@ -168,7 +171,7 @@ namespace SugarChat.Core.Services.GroupUsers
             groupOwner.Role = UserRole.Admin;
             newGroupOwner.Role = UserRole.Owner;
 
-            await _groupUserDataProvider.UpdateRangeAsync(new List<GroupUser> {groupOwner, newGroupOwner},
+            await _groupUserDataProvider.UpdateRangeAsync(new List<GroupUser> { groupOwner, newGroupOwner },
                 cancellationToken);
 
             return _mapper.Map<GroupOwnerChangedEvent>(command);
@@ -184,15 +187,17 @@ namespace SugarChat.Core.Services.GroupUsers
                 throw new BusinessWarningException(Prompt.AddUsersToWrongGroup);
             }
 
-            var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
-                cancellationToken);
-            admin.CheckIsAdmin(command.AdminId, command.GroupId);
-
-            IEnumerable<User> users =
-                await _userDataProvider.GetRangeByIdAsync(command.GroupUsers.Select(o => o.UserId), cancellationToken);
-            if (users.Count() != command.GroupUsers.Count())
+            if (!await _securityManager.IsSupperAdmin())
             {
-                throw new BusinessWarningException(Prompt.NotAllUsersExists);
+                var admin = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.AdminId, command.GroupId,
+                cancellationToken);
+                admin.CheckIsAdmin(command.AdminId, command.GroupId);
+                IEnumerable<User> users =
+                    await _userDataProvider.GetRangeByIdAsync(command.GroupUsers.Select(o => o.UserId), cancellationToken);
+                if (users.Count() != command.GroupUsers.Count())
+                {
+                    throw new BusinessWarningException(Prompt.NotAllUsersExists);
+                }
             }
 
             IEnumerable<GroupUser> groupUsers =
@@ -256,20 +261,17 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<GroupMemberRoleSetEvent> SetGroupMemberRoleAsync(SetGroupMemberRoleCommand command,
             CancellationToken cancellationToken = default)
         {
-            if (command.Role == UserRole.Owner)
+            if (!await _securityManager.IsSupperAdmin())
             {
-                throw new BusinessWarningException(Prompt.SetGroupOwner);
+                if (command.Role == UserRole.Owner)
+                {
+                    throw new BusinessWarningException(Prompt.SetGroupOwner);
+                }
+                var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId, cancellationToken);
+                owner.CheckIsOwner(command.OwnerId, command.GroupId);
             }
-
-            var owner = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.OwnerId, command.GroupId,
-                cancellationToken);
-            owner.CheckIsOwner(command.OwnerId, command.GroupId);
-
-            var member =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId,
-                    cancellationToken);
+            var member = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.MemberId, command.GroupId, cancellationToken);
             member.CheckExist(command.MemberId, command.GroupId);
-
             member.Role = command.Role;
             await _groupUserDataProvider.UpdateAsync(member, cancellationToken);
 

@@ -14,9 +14,32 @@ jobs:
       #   with:
       #     dotnet-version: 3.1.200
 
-      # Publish
-      - name: publish on version change
-        id: publish_nuget
+      # Publish Shared   
+      - name: publish on shared version change
+        id: publish_shared_nuget
+        uses: rohith/publish-nuget@v2
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: src/SugarChat.Shared/SugarChat.Shared.csproj       
+
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+      #Publish Message
+      - name: publish on message version change
+        id: publish_message_nuget
+        uses: rohith/publish-nuget@v2
+        with:
+          # Filepath of the project to be packaged, relative to root of repository
+          PROJECT_FILE_PATH: src/SugarChat.Message/SugarChat.Message.csproj       
+
+          # API key to authenticate with NuGet server
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+
+
+      # Publish Client
+      - name: publish on client version change
+        id: publish_client_nuget
         uses: rohith/publish-nuget@v2
         with:
           # Filepath of the project to be packaged, relative to root of repository

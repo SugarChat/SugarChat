@@ -1,7 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<Version>1.0.0</Version>
+		<Authors>SugarChat</Authors>
+		<Product>SugarChat.Shared</Product>
+		<PackageId>SugarChat.Shared</PackageId>
+		<RepositoryUrl>https://github.com/SugarChat/SugarChat.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/SugarChat/SugarChat</PackageProjectUrl>
+		<Company>SugarChat</Company>
+	</PropertyGroup>
 
 </Project>

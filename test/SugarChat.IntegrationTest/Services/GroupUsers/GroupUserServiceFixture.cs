@@ -38,7 +38,7 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         }
 
         [Fact]
-        public async Task ShouldGetGroupMembers()
+        public async Task ShouldGetMembersOfGroup()
         {
             await Run<IMediator>(async (mediator) =>
             {
@@ -47,5 +47,14 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
             });
         }
 
+        [Fact]
+        public async Task ShouldGetGroupMembers()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                var reponse = await mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(new GetGroupMembersRequest { GroupId = conversationId });
+                reponse.Data.Count().ShouldBe(2);
+            });
+        }
     }
 }

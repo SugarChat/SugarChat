@@ -74,9 +74,9 @@ namespace SugarChat.WebApi.Controllers
 
         [Route("deleteGroupMember"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> DeleteGroupMember(AddGroupMemberCommand command)
+        public async Task<IActionResult> DeleteGroupMember(RemoveGroupMemberCommand command)
         {
-            var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
@@ -107,6 +107,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> RemoveUserFromGroupCommand(RemoveUserFromGroupCommand command)
         {
             var response = await _mediator.SendAsync<RemoveUserFromGroupCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
+        [Route("getGroupMemberIds"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<string>>))]
+        public async Task<IActionResult> GetGroupMemberIds([FromQuery] GetGroupMembersRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(request);
             return Ok(response);
         }
     }

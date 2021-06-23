@@ -13,6 +13,7 @@ data:
         }
       },
       "AllowedHosts": "*",
+      "UseRedis": {{ .Values.signalr.UseRedis }},
       "SignalRRedis": "{{ .Values.signalr.signalRRedisConnectionString }}",
       "SUGARCHAT_SIGNAL_HUB_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_URL }}",
       "SUGARCHAT_SIGNAL_HUB_INTERIOR_URL": "{{ .Values.signalr.SUGARCHAT_SIGNAL_HUB_INTERIOR_URL }}",

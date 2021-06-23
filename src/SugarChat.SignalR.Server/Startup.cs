@@ -22,12 +22,22 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IRedisClient, RedisClient>(sp => new RedisClient(Configuration.GetSection("SignalRRedis").Value));
             services.AddHttpContextAccessor();
             services.AddControllers();
-            services.AddSugarChatSignalR()
-                .AddJsonProtocol()
-                .AddStackExchangeRedis(Configuration.GetSection("SignalRRedis").Value);
+
+            var signalRBuilder = services.AddSugarChatSignalR()
+                .AddJsonProtocol();
+
+            if (Configuration.GetValue<bool>("UseRedis"))
+            {
+                services.UseRedis(Configuration.GetSection("SignalRRedis").Value);
+                signalRBuilder.AddStackExchangeRedis(Configuration.GetSection("SignalRRedis").Value);
+            }
+            else
+            {
+                services.UseMemoryCache();
+            }
+
 
             #region ConfigureMediator
             var mediatorBuilder = new MediatorBuilder();

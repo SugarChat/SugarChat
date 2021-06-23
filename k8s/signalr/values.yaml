@@ -11,3 +11,4 @@ signalr:
   SUGARCHAT_SIGNAL_HUB_INTERIOR_URL: "http://localhost:9875/hubs/chat"
   ServerClientKey: "key"
   Security: true
+  UseRedis: true

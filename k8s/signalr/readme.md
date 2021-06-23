@@ -15,6 +15,7 @@ signalr:
   SUGARCHAT_SIGNAL_HUB_INTERIOR_URL: "http://127.0.0.1"  # signalR内部鏈接域名 用于創建connectionUrl
   ServerClientKey: "key" # 業務端鏈接SignalRServer驗證的Key
   Security: true 是否启用業務端鏈接驗證
+  UseRedis: true 是否启用Redis
 ```
 
 ## 啓動命令

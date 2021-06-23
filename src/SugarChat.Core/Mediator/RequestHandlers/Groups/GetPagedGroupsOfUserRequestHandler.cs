@@ -11,17 +11,17 @@ using SugarChat.Shared.Paging;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Groups
 {
-    public class GetGroupListRequestHandler : IRequestHandler<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>
+    public class GetPagedGroupsOfUserRequestHandler : IRequestHandler<GetPagedGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>
     {
         private readonly IGroupService _groupService;
 
-        public GetGroupListRequestHandler(IGroupService groupService)
+        public GetPagedGroupsOfUserRequestHandler(IGroupService groupService)
         {
             _groupService = groupService;
         }
-        public async Task<SugarChatResponse<PagedResult<GroupDto>>> Handle(IReceiveContext<GetGroupsOfUserRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<PagedResult<GroupDto>>> Handle(IReceiveContext<GetPagedGroupsOfUserRequest> context, CancellationToken cancellationToken)
         {
-            var response = await _groupService.GetGroupsOfUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            var response = await _groupService.GetPagedGroupsOfUserAsync(context.Message, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse<PagedResult<GroupDto>>() { Data = response.Groups };
         }
     }

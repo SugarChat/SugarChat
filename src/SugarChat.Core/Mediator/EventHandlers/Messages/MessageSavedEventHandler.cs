@@ -25,8 +25,8 @@ namespace SugarChat.Core.Mediator.EventHandlers.Messages
             await _client.SendMessage(new SendMessageModel()
             {
                 SendTo = context.Message.GroupId,
-                Messages = new[] {context.Message.SentBy, context.Message.Content},
-                SendWay = SendWay.All
+                Messages = new object[] {context.Message.SentBy, context.Message.Content},
+                SendWay = SendWay.Group
             });
         }
     }

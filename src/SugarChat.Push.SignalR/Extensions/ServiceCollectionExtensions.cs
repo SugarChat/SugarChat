@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
+using SugarChat.Push.SignalR.Cache;
 using SugarChat.Push.SignalR.Provider;
 using SugarChat.Push.SignalR.Services;
 using System;
@@ -16,6 +18,18 @@ namespace SugarChat.Push.SignalR.Extensions
             services.AddScoped<IChatHubService, ChatHubService>();
             services.AddSingleton<IUserIdProvider, UserIdProvider>();
             return services.AddSignalR();
+        }
+        public static IServiceCollection UseRedis(this IServiceCollection services, string connectionString)
+        {
+            services.AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(connectionString));
+            services.AddSingleton<ICacheService, RedisCacheService>();
+            return services;
+        }
+        public static IServiceCollection UseMemoryCache(this IServiceCollection services)
+        {
+            services.AddMemoryCache();
+            services.AddSingleton<ICacheService, MemoryCacheService>();
+            return services;
         }
     }
 }

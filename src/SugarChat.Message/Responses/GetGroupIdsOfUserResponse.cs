@@ -5,8 +5,8 @@ using SugarChat.Shared.Paging;
 
 namespace SugarChat.Message.Responses
 {
-    public class GetGroupsOfUserResponse : IResponse
+    public class GetGroupIdsOfUserResponse : IResponse
     {
-        public PagedResult<GroupDto> Groups { get; set; }
+        public IReadOnlyList<string> GroupIds { get; set; }
     }
 }

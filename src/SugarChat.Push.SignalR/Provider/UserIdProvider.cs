@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using ServiceStack.Redis;
+using SugarChat.Push.SignalR.Cache;
+using SugarChat.Push.SignalR.Const;
 using SugarChat.Push.SignalR.Models;
 using System;
 using System.Collections.Generic;
@@ -11,19 +13,19 @@ namespace SugarChat.Push.SignalR.Provider
     public class UserIdProvider : IUserIdProvider
     {
         private IHttpContextAccessor _httpContextAccessor;
-        private IRedisClient _redis;
+        private readonly ICacheService _cache;
 
-        public UserIdProvider(IHttpContextAccessor httpContextAccessor, IRedisClient redis)
+        public UserIdProvider(IHttpContextAccessor httpContextAccessor, ICacheService cache)
         {
             _httpContextAccessor = httpContextAccessor;
-            _redis = redis;
+            _cache = cache;
         }
 
         public string GetUserId(HubConnectionContext connection)
         {
             var key = _httpContextAccessor.HttpContext.Request.Query["connectionkey"].ToString();
-            var v = _redis.Get<UserInfoModel>("Connectionkey:" + key);
-            if(v is null)
+            var v = _cache.Get<UserInfoModel>(CacheKey.Connectionkey + ":" + key);
+            if (v is null)
             {
                 return null;
             }

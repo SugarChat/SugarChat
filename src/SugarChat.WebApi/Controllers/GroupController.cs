@@ -43,11 +43,11 @@ namespace SugarChat.WebApi.Controllers
 
         [Route("getGroupList"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupDto>>))]
-        public async Task<IActionResult> GetGroupList([FromQuery] GetGroupsOfUserRequest request)
+        public async Task<IActionResult> GetGroupList([FromQuery] GetPagedGroupsOfUserRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
+                      .RequestAsync<GetPagedGroupsOfUserRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
 
             return Ok(response);
         }

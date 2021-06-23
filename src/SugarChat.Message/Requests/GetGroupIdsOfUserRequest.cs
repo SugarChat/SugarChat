@@ -3,10 +3,8 @@ using SugarChat.Shared.Paging;
 
 namespace SugarChat.Message.Requests
 {
-    public class GetGroupsOfUserRequest : IRequest
+    public class GetGroupIdsOfUserRequest : IRequest
     {
         public string Id { get; set; }
-        public PageSettings PageSettings { get; set; }
-        
     }
 }

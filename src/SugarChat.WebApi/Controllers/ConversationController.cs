@@ -25,12 +25,12 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<MessageListResult>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<GetMessageListResponse>))]
         public async Task<IActionResult> GetPagingMessageList([FromQuery] GetMessageListRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
+                     .RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
 
             return Ok(response);
         }
@@ -70,14 +70,6 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> DeleteConversation(RemoveConversationCommand command)
         {
             var response = await _mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(command);
-            return Ok(response);
-        }
-
-        [Route("getPagingMessageListByPageIndex"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<MessageDto>>))]
-        public async Task<IActionResult> GetPagingMessageListByPageIndex([FromQuery] GetMessageListByPageIndexRequest request)
-        {
-            var response = await _mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
             return Ok(response);
         }
     }

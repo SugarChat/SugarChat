@@ -96,16 +96,40 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var request = new GetMessageListRequest()
                 {
-                    ConversationId = conversationId,
-                    UserId = userId,
-                    NextReqMessageId = "",
-                    Count = 5
-                };
-                var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
-                response.Data.Messages.Count().ShouldBe(3);
-                response.Data.Messages.First().Content.ShouldBe("[图片]");
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        NextReqMessageId = "",
+                        Count = 5
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(3);
+                    response.Data.Messages.First().Content.ShouldBe("[图片]");
+                }
+                {
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 1,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(2);
+                }
+                {
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 2,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(1);
+                }
             });
         }
 
@@ -123,36 +147,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
                 var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 groupUser.ShouldBeNull();
-            });
-        }
-
-        [Fact]
-        public async Task ShouldGetMessageListByPageIndex()
-        {
-            await Run<IMediator>(async (mediator) =>
-            {
-                {
-                    var request = new GetMessageListByPageIndexRequest()
-                    {
-                        ConversationId = conversationId,
-                        UserId = userId,
-                        PagaIndex = 1,
-                        Count = 2
-                    };
-                    var response = await mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                    response.Data.Count().ShouldBe(2);
-                }
-                {
-                    var request = new GetMessageListByPageIndexRequest()
-                    {
-                        ConversationId = conversationId,
-                        UserId = userId,
-                        PagaIndex = 2,
-                        Count = 2
-                    };
-                    var response = await mediator.RequestAsync<GetMessageListByPageIndexRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                    response.Data.Count().ShouldBe(1);
-                }
             });
         }
     }

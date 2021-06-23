@@ -62,14 +62,14 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public IEnumerable<Group> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds = null)
+        public IEnumerable<Group> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds)
         {
-            var query = _repository.Query<Group>();
-            if (groupIds is not null)
+            if (groupIds is null || groupIds.Count() == 0)
             {
-                query = query.Where(x => groupIds.Contains(x.Id));
+                throw new BusinessWarningException(Prompt.ParameterRequired.WithParams("groupIds"));
             }
-            List<Group> groups = new List<Group>();
+            var query = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id));
+            List <Group> groups = new List<Group>();
             if (customPropertys is not null)
             {
                 foreach (var group in query)

@@ -119,7 +119,7 @@ namespace SugarChat.IntegrationTest.Services
                     {
                         UserId = Guid.NewGuid().ToString()
                     });
-                    response.Data.Count().ShouldBe(0);
+                    response.Message.ShouldBe(Prompt.ParameterRequired.WithParams("groupIds").Message);
                 }
                 {
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()

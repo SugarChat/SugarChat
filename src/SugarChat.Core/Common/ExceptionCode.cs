@@ -70,9 +70,10 @@ namespace SugarChat.Core.Common
 
         #region Global
 
-        IdIsNullOrEmpty = 52501
+        IdIsNullOrEmpty = 52501,
+        ParameterRequired = 52502
 
         #endregion
-        
+
     }
 }

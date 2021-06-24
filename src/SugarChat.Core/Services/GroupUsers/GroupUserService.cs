@@ -13,6 +13,8 @@ using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using System;
+using SugarChat.Message.Responses.GroupUsers;
+using SugarChat.Message.Requests.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -294,6 +296,15 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new BusinessWarningException(Prompt.SameGroupUser);
             }
+        }
+
+        public async Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        {           
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdsAsync(request.GroupIds, cancellationToken).ConfigureAwait(false);
+
+            var userIds = groupUsers.Select(x => x.UserId).Distinct();
+
+            return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
         }
     }
 }

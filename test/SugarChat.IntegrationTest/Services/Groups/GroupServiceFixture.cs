@@ -23,8 +23,18 @@ namespace SugarChat.IntegrationTest.Services.Groups
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1 } });
-                reponse.Data.Result.Count().ShouldBe(4);
+                {
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1 } });
+                    reponse.Data.Result.Count().ShouldBe(4);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1, PageSize =2} });
+                    reponse.Data.Result.Count().ShouldBe(2);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = null });
+                    reponse.Data.Result.Count().ShouldBe(4);
+                }
             });
         }
 

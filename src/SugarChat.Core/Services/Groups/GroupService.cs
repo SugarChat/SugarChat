@@ -72,12 +72,18 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.Id);
 
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation).ConfigureAwait(false);
-            PagedResult<Group> groups =
-                await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings,
-                    cancellation).ConfigureAwait(false);
+            PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings,cancellation).ConfigureAwait(false);
+
+            var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
+            foreach (var g in groupDtos)
+            {
+                var unreadMessages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.Id, g.Id, null, null, cancellation).ConfigureAwait(false);
+                g.UnreadCount = unreadMessages.Count();
+            }
+
             PagedResult<GroupDto> groupsDto = new()
             {
-                Result = _mapper.Map<IEnumerable<GroupDto>>(groups.Result),
+                Result = groupDtos,
                 Total = groups.Total
             };
             return new()

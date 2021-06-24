@@ -10,5 +10,6 @@ namespace SugarChat.Shared.Dtos
         public string Description { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
         public int MemberCount { get; set; }
+        public int UnreadCount { get; set; }
     }
 }

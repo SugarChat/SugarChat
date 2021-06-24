@@ -222,19 +222,20 @@ namespace SugarChat.Core.Services.Messages
         {
             User user = await GetUserAsync(command.UserId, cancellationToken);
             user.CheckExist(command.UserId);
+
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
             group.CheckExist(command.GroupId);
-            GroupUser groupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
-                    cancellationToken);
-            groupUser.CheckExist(command.UserId, command.GroupId);
-            Domain.Message lastMessageOfGroup =
-                await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
-            groupUser.CheckLastReadTimeEarlierThan(lastMessageOfGroup.SentTime);
 
-            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId,
-                lastMessageOfGroup.SentTime,
-                cancellationToken);
+            GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
+            groupUser.CheckExist(command.UserId, command.GroupId);
+
+            DateTimeOffset lastMessageSentTime = DateTimeOffset.Now;
+            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
+            if (lastMessageOfGroup is not null) lastMessageSentTime = lastMessageOfGroup.SentTime;
+
+            groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
+
+            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageSentTime, cancellationToken);
             return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
 
         }

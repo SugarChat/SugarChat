@@ -77,5 +77,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("getByCustomProperties"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupDto>>))]
+        public async Task<IActionResult> GetByCustomProperties([FromQuery] GetGroupByCustomPropertiesRequest request)
+        {
+            var response =await _mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
+            return Ok(response);
+        }
     }
 }

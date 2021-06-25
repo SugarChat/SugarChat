@@ -90,7 +90,7 @@ namespace SugarChat.Core.Services.Groups
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(request.UserId);
-            
+
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(request.GroupId);
 
@@ -101,7 +101,7 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
-                await _groupUserDataProvider.GetGroupMemberCountAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+                await _groupUserDataProvider.GetGroupMemberCountBysGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
             return new GetGroupProfileResponse
             {
@@ -125,7 +125,7 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
-            
+
             var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 
@@ -135,6 +135,21 @@ namespace SugarChat.Core.Services.Groups
             await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
 
             return _mapper.Map<GroupDismissedEvent>(command);
+        }
+
+        public async Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken)
+        {
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToArray();
+            var groups = _groupDataProvider.GetByCustomPropertys(request.CustomPropertys, groupIds);
+            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountBysGroupIdsAsync(groupIds, cancellationToken);
+
+            var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);
+            foreach (var groupDto in groupDtos)
+            {
+                groupDto.MemberCount = groupUsers.Where(x => x.GroupId == groupDto.Id).Count();
+            }
+
+            return groupDtos;
         }
     }
 }

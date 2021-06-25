@@ -176,13 +176,16 @@ namespace SugarChat.Core.Services.Conversations
             var groups = await _groupDataProvider.GetByIdsAsync(filterGroupIds, request.PageSettings);
             var groupsResult = groups.Result;
 
+            var groupsUnreadCountResult = (await _messageDataProvider.GetUserUnreadMessagesByGroupIdsAsync(request.UserId, groupsResult.Select(x => x.Id), cancellationToken))
+                                 .GroupBy(x => x.GroupId).Select(x => new { GroupId = x.Key, UnreadCount = x.Count() });
+
             var conversationDtos = new List<ConversationDto>();
             foreach (var group in groupsResult)
             {
                 var lastMessage = messages.Where(x => x.GroupId == group.Id).OrderByDescending(x => x.SentTime).FirstOrDefault();
                 var conversationDto = new ConversationDto();
                 conversationDto.ConversationID = group.Id;
-                conversationDto.UnreadCount = (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, group.Id, cancellationToken: cancellationToken)).Count();
+                conversationDto.UnreadCount = groupsUnreadCountResult.FirstOrDefault(x => x.GroupId == group.Id)?.UnreadCount ?? 0;
                 conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.MemberCount = groupUsers.Where(x => x.GroupId == group.Id).Count();

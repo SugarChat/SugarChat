@@ -11,6 +11,7 @@ using SugarChat.Message.Requests;
 using System.Linq;
 using SugarChat.Core.Basic;
 using SugarChat.Shared.Dtos.GroupUsers;
+using SugarChat.Message.Requests.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -53,6 +54,16 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
             await Run<IMediator>(async (mediator) =>
             {
                 var reponse = await mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(new GetGroupMembersRequest { GroupId = conversationId });
+                reponse.Data.Count().ShouldBe(2);
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetUserIdsByGroupIds()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId} });
                 reponse.Data.Count().ShouldBe(2);
             });
         }

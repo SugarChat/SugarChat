@@ -142,8 +142,9 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken)
         {
-            var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId);
-            var messages = await _messageDataProvider.GetByGroupIdsAsync(groupUsers.Select(x => x.GroupId).ToArray(), cancellationToken);
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId)).Select(x => x.GroupId).ToArray();
+            var messages = await _messageDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken);
+            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountBysGroupIdsAsync(groupIds, cancellationToken);
 
             List<string> filterGroupIds = new();
             if (request.SearchParms is not null && request.SearchParms.Count() != 0)
@@ -178,12 +179,13 @@ namespace SugarChat.Core.Services.Conversations
             var conversationDtos = new List<ConversationDto>();
             foreach (var group in groupsResult)
             {
+                var lastMessage = messages.Where(x => x.GroupId == group.Id).OrderByDescending(x => x.SentTime).FirstOrDefault();
                 var conversationDto = new ConversationDto();
                 conversationDto.ConversationID = group.Id;
                 conversationDto.UnreadCount = (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, group.Id, cancellationToken: cancellationToken)).Count();
-                conversationDto.LastMessage = _mapper.Map<MessageDto>(await _messageDataProvider.GetLatestMessageOfGroupAsync(group.Id, cancellationToken));
-                var groupDto = _mapper.Map<GroupDto>(await _groupDataProvider.GetByIdAsync(group.Id, cancellationToken));
-                groupDto.MemberCount = await _groupUserDataProvider.GetGroupMemberCountAsync(group.Id, cancellationToken);
+                conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                var groupDto = _mapper.Map<GroupDto>(group);
+                groupDto.MemberCount = groupUsers.Where(x => x.GroupId == group.Id).Count();
                 conversationDto.GroupProfile = groupDto;
                 conversationDtos.Add(conversationDto);
             }

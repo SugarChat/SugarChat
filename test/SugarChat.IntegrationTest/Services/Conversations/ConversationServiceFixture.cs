@@ -49,9 +49,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      LastModifyDate = DateTimeOffset.Now,
                      GroupId = conversationId,
                      Content = "TestGroupMessageReaded",
-                     ParsedContent = "TestGroupMessageReaded",
-                     Type = MessageType.Text,
-                     SubType = 0,
+                     Type = 0,
                      SentBy = Guid.NewGuid().ToString(), //用户3
                      SentTime = DateTimeOffset.Now,
                      IsSystem = true,

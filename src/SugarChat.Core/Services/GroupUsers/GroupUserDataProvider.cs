@@ -91,20 +91,21 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id,
             CancellationToken cancellationToken = default)
         {
-            return await Task.Run<IEnumerable<GroupUserDto>>(() => (from a in _repository.Query<GroupUser>()
-                join b in _repository.Query<User>() on a.UserId equals b.Id
-                where a.GroupId == id
-                select new GroupUserDto
-                {
-                    UserId = a.UserId,
-                    GroupId = a.GroupId,
-                    DisplayName = b.DisplayName,
-                    AvatarUrl = b.AvatarUrl,
-                    CustomProperties = b.CustomProperties,
-                }).ToList(), cancellationToken);
+            return await Task.Run<IEnumerable<GroupUserDto>>(() =>
+            (from a in _repository.Query<GroupUser>()
+             join b in _repository.Query<User>() on a.UserId equals b.Id
+             where a.GroupId == id
+             select new GroupUserDto
+             {
+                 UserId = a.UserId,
+                 GroupId = a.GroupId,
+                 DisplayName = b.DisplayName,
+                 AvatarUrl = b.AvatarUrl,
+                 CustomProperties = b.CustomProperties,
+             }).ToList(), cancellationToken);
         }
 
-        public async Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken = default)
+        public async Task<int> GetGroupMemberCountBysGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
             return await _repository.CountAsync<GroupUser>(x => x.GroupId == groupId, cancellationToken)
                 .ConfigureAwait(false);
@@ -152,6 +153,11 @@ namespace SugarChat.Core.Services.GroupUsers
                     groupUsers.Count().ToString(),
                     affectedLineNum.ToString()));
             }
+        }
+
+        public async Task<IEnumerable<GroupUser>> GetGroupMemberCountBysGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
         }
     }
 }

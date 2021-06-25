@@ -68,11 +68,11 @@ namespace SugarChat.Core.Services.Groups
             {
                 throw new BusinessWarningException(Prompt.ParameterRequired.WithParams("groupIds"));
             }
-            var query = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id));
-            List <Group> groups = new List<Group>();
+            var groups = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToArray();
+            List <Group> filterGroups = new List<Group>();
             if (customPropertys is not null)
             {
-                foreach (var group in query)
+                foreach (var group in groups)
                 {
                     if (group.CustomProperties is not null)
                     {
@@ -87,12 +87,12 @@ namespace SugarChat.Core.Services.Groups
                         }
                         if (isAdd)
                         {
-                            groups.Add(group);
+                            filterGroups.Add(group);
                         }
                     }
                 }
             }
-            return groups;
+            return filterGroups;
         }
     }
 }

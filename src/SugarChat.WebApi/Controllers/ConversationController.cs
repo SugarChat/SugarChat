@@ -72,6 +72,12 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-
+        [Route("setMessageReadSetByUserBasedOnGroupId"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command)
+        {
+            var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

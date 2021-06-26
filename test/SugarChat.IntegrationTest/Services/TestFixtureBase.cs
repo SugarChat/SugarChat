@@ -11,7 +11,7 @@ namespace SugarChat.IntegrationTest.Services
     public class TestFixtureBase : TestBase
     {
         private List<User> users = new List<User>();
-        private List<Group> groups = new List<Group>();
+        protected List<Group> groups = new List<Group>();
         private List<GroupUser> groupUsers = new List<GroupUser>();
         private List<Friend> friends = new List<Friend>();
         private List<Core.Domain.Message> messages = new List<Core.Domain.Message>();

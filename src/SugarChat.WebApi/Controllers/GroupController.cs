@@ -27,10 +27,10 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("create"), HttpPost]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(AddGroupResponse))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> CreateGroup(AddGroupCommand command)
         {
-            var response = await _mediator.SendAsync<AddGroupCommand, AddGroupResponse>(command);
+            var response = await _mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

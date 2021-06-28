@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using SugarChat.Core.Autofac;
@@ -11,6 +11,9 @@ using SugarChat.SignalR.ServerClient;
 using Xunit;
 using SugarChat.Net.Client;
 using SugarChat.Net.Client.HttpClients;
+using NSubstitute;
+using SugarChat.Core.Services;
+
 
 namespace SugarChat.IntegrationTest
 {
@@ -28,10 +31,18 @@ namespace SugarChat.IntegrationTest
             containerBuilder.RegisterType<SignalRClientMock>()
                 .As<IServerClient>()
                 .InstancePerLifetimeScope();
+
             containerBuilder.RegisterType<SugarChatHttpClient>()
               .As<ISugarChatClient>()
               .InstancePerLifetimeScope();
-            RegisterBaseContainer(containerBuilder);
+
+            RegisterBaseContainer(containerBuilder, builder =>
+            {
+                var iSecurityManager = Substitute.For<ISecurityManager>();
+                iSecurityManager.IsSupperAdmin().Returns(false);
+                containerBuilder.RegisterInstance(iSecurityManager);
+            });
+
         }
 
         private void LoadThisConfiguration()
@@ -42,12 +53,13 @@ namespace SugarChat.IntegrationTest
                .Build();           
         }
 
-        private void RegisterBaseContainer(ContainerBuilder builder)
+        private void RegisterBaseContainer(ContainerBuilder builder, Action<ContainerBuilder> extraRegistration)
         {
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
                 typeof(SugarChat.Core.Services.IService).Assembly
             }));
+            extraRegistration(builder);
             Container = builder.Build().BeginLifetimeScope();
         }
 

@@ -109,5 +109,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<RemoveUserFromGroupCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("getGroupMemberIds"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<string>>))]
+        public async Task<IActionResult> GetGroupMemberIds([FromQuery] GetGroupMembersRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(request);
+            return Ok(response);
+        }
     }
 }

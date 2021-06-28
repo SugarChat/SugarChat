@@ -68,7 +68,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
                  var request = new GetConversationListRequest()
                  {
-                     UserId = userId
+                     UserId = userId,
+                     PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }
                  };
                  var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
                  response.Data.Where(x => x.ConversationID == conversationId)

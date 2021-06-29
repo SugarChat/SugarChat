@@ -91,9 +91,10 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id,
             CancellationToken cancellationToken = default)
         {
-            var groups = await _repository.ToListAsync<GroupUser>(x => x.GroupId == id, cancellationToken).ConfigureAwait(false); ;
-            var users = await _repository.ToListAsync<User>().ConfigureAwait(false); ;
-            return from a in groups
+            var groupUsers = await _repository.ToListAsync<GroupUser>(x => x.GroupId == id, cancellationToken).ConfigureAwait(false); ;
+            var userIds = groupUsers.Select(x => x.UserId).ToList();
+            var users = await _repository.ToListAsync<User>(x => userIds.Contains(x.Id)).ConfigureAwait(false);
+            return from a in groupUsers
                    join b in users on a.UserId equals b.Id
                    where a.GroupId == id
                    select new GroupUserDto
@@ -106,7 +107,7 @@ namespace SugarChat.Core.Services.GroupUsers
                    };
         }
 
-        public async Task<int> GetGroupMemberCountBysGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
+        public async Task<int> GetGroupMemberCountByGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
             return await _repository.CountAsync<GroupUser>(x => x.GroupId == groupId, cancellationToken)
                 .ConfigureAwait(false);

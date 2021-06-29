@@ -134,7 +134,7 @@ namespace SugarChat.Core.Services.Conversations
             var groupDto =
                 _mapper.Map<GroupDto>(await _groupDataProvider.GetByIdAsync(groupUser.GroupId, cancellationToken));
             groupDto.MemberCount =
-                await _groupUserDataProvider.GetGroupMemberCountBysGroupIdAsync(groupUser.GroupId, cancellationToken);
+                await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(groupUser.GroupId, cancellationToken);
             conversationDto.GroupProfile = groupDto;
             return conversationDto;
         }

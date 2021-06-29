@@ -101,7 +101,7 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
-                await _groupUserDataProvider.GetGroupMemberCountBysGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+                await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
             return new GetGroupProfileResponse
             {

@@ -6,6 +6,7 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,12 +25,12 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<MessageListResult>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<GetMessageListResponse>))]
         public async Task<IActionResult> GetPagingMessageList([FromQuery] GetMessageListRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
+                     .RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
 
             return Ok(response);
         }
@@ -71,7 +72,5 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<RemoveConversationCommand, SugarChatResponse>(command);
             return Ok(response);
         }
-
-
     }
 }

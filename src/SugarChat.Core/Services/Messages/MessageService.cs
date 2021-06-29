@@ -162,7 +162,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllMessagesFromGroupResponse
             {
                 Messages =
-                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.MessageId, request.Count,
+                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId,request.Index, request.MessageId, request.Count,
                         cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }

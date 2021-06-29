@@ -11,7 +11,7 @@ namespace SugarChat.Core.Services.Conversations
 {
     public interface IConversationService : IService
     {
-        Task<GetConversationListResponse> GetConversationListByUserIdAsync(GetConversationListRequest request,
+        Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request,
             CancellationToken cancellationToken = default);
 
         Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(GetConversationProfileRequest request,

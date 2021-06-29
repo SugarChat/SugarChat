@@ -101,7 +101,7 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
-                await _groupUserDataProvider.GetGroupMemberCountBysGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+                await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
             return new GetGroupProfileResponse
             {
@@ -141,7 +141,7 @@ namespace SugarChat.Core.Services.Groups
         {
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToArray();
             var groups = _groupDataProvider.GetByCustomPropertys(request.CustomPropertys, groupIds);
-            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountBysGroupIdsAsync(groupIds, cancellationToken);
+            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);
             foreach (var groupDto in groupDtos)

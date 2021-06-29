@@ -10,6 +10,7 @@ using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos.Conversations;
+using SugarChat.Shared.Paging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator>(async (mediator) =>
             {
                 var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
-                (new GetConversationListRequest { UserId = userId });
+                (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 } });
 
                 reponse.Data.Count().ShouldBe(3);
             });
@@ -67,7 +68,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
                  var request = new GetConversationListRequest()
                  {
-                     UserId = userId
+                     UserId = userId,
+                     PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }
                  };
                  var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
                  response.Data.Where(x => x.ConversationID == conversationId)

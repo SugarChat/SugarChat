@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
 {
-    public class GetMessageListRequestHandler : IRequestHandler<GetMessageListRequest, SugarChatResponse<MessageListResult>>
+    public class GetMessageListRequestHandler : IRequestHandler<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>
     {
         private readonly IConversationService _conversationService;
 
@@ -17,10 +17,10 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
         {
             _conversationService = conversationService;
         }
-        public async Task<SugarChatResponse<MessageListResult>> Handle(IReceiveContext<GetMessageListRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<GetMessageListResponse>> Handle(IReceiveContext<GetMessageListRequest> context, CancellationToken cancellationToken)
         {
             var response = await _conversationService.GetPagedMessagesByConversationIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse<MessageListResult>() { Data = response.Result };
+            return new SugarChatResponse<GetMessageListResponse>() { Data = response };
         }
     }
 }

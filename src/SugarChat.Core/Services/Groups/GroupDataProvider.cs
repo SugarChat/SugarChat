@@ -37,7 +37,7 @@ namespace SugarChat.Core.Services.Groups
             }
             else
             {
-                var groups = query.AsEnumerable();
+                var groups = query.ToList();
                 result.Result = groups;
                 result.Total = groups.Count();
             }

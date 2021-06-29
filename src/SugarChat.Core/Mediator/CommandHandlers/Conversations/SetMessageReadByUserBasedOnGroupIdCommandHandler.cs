@@ -14,7 +14,8 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
 {
     public class SetMessageReadByUserBasedOnGroupIdCommandHandler : ICommandHandler<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>
     {
-        private IMessageService _messageService;
+        private readonly IMessageService _messageService;
+
         public SetMessageReadByUserBasedOnGroupIdCommandHandler(IMessageService messageService)
         {
             _messageService = messageService;

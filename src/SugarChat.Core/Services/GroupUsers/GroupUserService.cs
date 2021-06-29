@@ -203,16 +203,19 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new BusinessWarningException(Prompt.SomeGroupUsersExist);
             }
+
+            var needAddGroupUsers = new List<GroupUser>();
             foreach (var groupUserId in command.GroupUserIds)
             {
-                await _groupUserDataProvider.AddAsync(new GroupUser
+                needAddGroupUsers.Add(new GroupUser
                 {
                     Id = Guid.NewGuid().ToString(),
                     UserId = groupUserId,
                     GroupId = command.GroupId,
                     Role = command.Role
-                }, cancellationToken);
+                });
             }
+            await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
@@ -299,7 +302,7 @@ namespace SugarChat.Core.Services.GroupUsers
         }
 
         public async Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
-        {           
+        {
             var groupUsers = await _groupUserDataProvider.GetByGroupIdsAsync(request.GroupIds, cancellationToken).ConfigureAwait(false);
 
             var userIds = groupUsers.Select(x => x.UserId).Distinct();

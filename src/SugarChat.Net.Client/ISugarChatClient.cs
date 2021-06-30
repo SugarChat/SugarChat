@@ -8,6 +8,7 @@ using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Requests.Groups;
+using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
 using SugarChat.Shared.Dtos;
@@ -26,7 +27,7 @@ namespace SugarChat.Net.Client
         Task<string> GetConnectionUrlAsync(string userIdentifier, CancellationToken cancellationToken = default);
 
 
-        Task<SugarChatResponse<MessageListResult>> GetMessageListAsync(GetMessageListRequest request, CancellationToken cancellationToken = default);
+        Task<SugarChatResponse<GetMessageListResponse>> GetMessageListAsync(GetMessageListRequest request, CancellationToken cancellationToken = default);
 
 
         Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationListAsync(GetConversationListRequest request, CancellationToken cancellationToken = default);
@@ -117,6 +118,11 @@ namespace SugarChat.Net.Client
 
 
         Task<SugarChatResponse> CreateUserAsync(AddUserCommand command, CancellationToken cancellationToken = default);
+
+        Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
+        Task<SugarChatResponse<IEnumerable<string>>> GgetUserIdsByGroupIds(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
+        
     }
 
 }

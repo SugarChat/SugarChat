@@ -9,6 +9,7 @@ namespace SugarChat.Core.Services.Conversations
         Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
             string conversationId,
             string nextReqMessageId = null,
+            int pageIndex = 0,
             int count = 15,
             CancellationToken cancellationToken = default);
     }

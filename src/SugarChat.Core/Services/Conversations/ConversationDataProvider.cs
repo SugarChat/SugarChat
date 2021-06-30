@@ -19,21 +19,23 @@ namespace SugarChat.Core.Services.Conversations
         public async Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
             string conversationId,
             string nextReqMessageId = null,
+            int pageIndex = 0,
             int count = 15,
             CancellationToken cancellationToken = default)
         {
-            var query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId);
+            var query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId).OrderByDescending(x => x.SentTime);
             if (!string.IsNullOrEmpty(nextReqMessageId))
             {
                 var nextReqMessage =
                     await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == nextReqMessageId,
                         cancellationToken);
-                query = _repository.Query<Domain.Message>().Where(x => x.GroupId == conversationId && x.SentTime < nextReqMessage.SentTime);
+                return query.Where(x => x.SentTime < nextReqMessage.SentTime).Take(count);
             }
-            var messages = query.OrderByDescending(x => x.SentTime)
-                                .Take(count)
-                                .AsEnumerable();
-            return messages;
+            else if (pageIndex > 0)
+            {
+                return query.Skip((pageIndex - 1) * count).Take(count);
+            }
+            return query.Take(count).AsEnumerable();
         }
     }
 }

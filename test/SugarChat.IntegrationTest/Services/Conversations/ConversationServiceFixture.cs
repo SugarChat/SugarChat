@@ -9,6 +9,7 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
 using System;
 using System.Collections.Generic;
@@ -48,14 +49,12 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      CustomProperties = new Dictionary<string, string>(),
                      LastModifyDate = DateTimeOffset.Now,
                      GroupId = conversationId,
-                     Content = "TestGroupMessageReaded",
-                     ParsedContent = "TestGroupMessageReaded",
-                     Type = MessageType.Text,
-                     SubType = 0,
+                     Content = "TestGroupMessageRead",
+                     Type = 0,
                      SentBy = Guid.NewGuid().ToString(), //用户3
                      SentTime = DateTimeOffset.Now,
                      IsSystem = true,
-                     Payload = new { Text = "TestGroupMessageReaded" }
+                     Payload = new { Text = "TestGroupMessageRead" }
                  });
 
                  await mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(new SetMessageReadByUserBasedOnMessageIdCommand
@@ -95,16 +94,40 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var request = new GetMessageListRequest()
                 {
-                    ConversationId = conversationId,
-                    UserId = userId,
-                    NextReqMessageId = "",
-                    Count = 5
-                };
-                var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
-                response.Data.Messages.Count().ShouldBe(3);
-                response.Data.Messages.First().Content.ShouldBe("[图片]");
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        NextReqMessageId = "",
+                        Count = 5
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(3);
+                    response.Data.Messages.First().Content.ShouldBe("[图片]");
+                }
+                {
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 1,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(2);
+                }
+                {
+                    var request = new GetMessageListRequest()
+                    {
+                        ConversationId = conversationId,
+                        UserId = userId,
+                        PagaIndex = 2,
+                        Count = 2
+                    };
+                    var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
+                    response.Data.Messages.Count().ShouldBe(1);
+                }
             });
         }
 
@@ -124,6 +147,5 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 groupUser.ShouldBeNull();
             });
         }
-
     }
 }

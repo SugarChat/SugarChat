@@ -24,8 +24,7 @@ namespace SugarChat.IntegrationTest.Services
 
         private string[] groupAdminIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
-        private string[] userIds = new string[]
-            {Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString()};
+        private string[] userIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
         private List<Func<IRepository, Task>> addGroupAdminFunctions = new();
         private List<Func<int, IRepository, Task>> addGroupMemberFunctions = new();
@@ -228,15 +227,6 @@ namespace SugarChat.IntegrationTest.Services
         [Fact]
         public async Task ShouldAddGroupMember()
         {
-            
-         AddGroupUserDto[] addGroupUserDtos = new AddGroupUserDto[]
-        {
-            new() {GroupId = groupId, Id = Guid.NewGuid().ToString(), UserId = userIds[0]},
-            new() {GroupId = groupId, Id = Guid.NewGuid().ToString(), UserId = userIds[1]},
-            new() {GroupId = groupId, Id = Guid.NewGuid().ToString(), UserId = userIds[2]},
-        };
-            
-            
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
                 await AddGroup(repository);
@@ -248,11 +238,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = groupId,
                     AdminId = Guid.NewGuid().ToString(),
-                    GroupUsers = new List<AddGroupUserDto>
-                    {
-                        new() {GroupId = groupId, Id = Guid.NewGuid().ToString(), UserId = Guid.NewGuid().ToString()},
-                        new() {GroupId = groupId, Id = Guid.NewGuid().ToString(), UserId = Guid.NewGuid().ToString()},
-                    }
+                    GroupUserIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() }
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
@@ -269,19 +255,14 @@ namespace SugarChat.IntegrationTest.Services
                     response.Message.ShouldBe(Prompt.NotAllUsersExists.Message);
                 }
 
-                command.GroupUsers = addGroupUserDtos.Take(2).ToList();
-                var ids = command.GroupUsers.Select(o => o.UserId);
+                command.GroupUserIds = userIds.Take(2).ToList();
                 await mediator.SendAsync(command);
-                (await repository.CountAsync<GroupUser>(x =>
-                    x.GroupId == command.GroupId && ids.Contains(x.UserId))).ShouldBe(2);
+                (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId))).ShouldBe(2);
 
                 command.AdminId = groupOwnerId;
-                command.GroupUsers = new List<AddGroupUserDto> {addGroupUserDtos[2]};
-                ids = command.GroupUsers.Select(o => o.UserId);
+                command.GroupUserIds = new string[] { userIds[1] };
                 await mediator.SendAsync(command);
-                (await repository.CountAsync<GroupUser>(x =>
-                    x.GroupId == command.GroupId && ids.Contains(x.UserId))).ShouldBe(1);
-                
+                (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId))).ShouldBe(1);
                 {
                     var response = await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.SomeGroupUsersExist.Message);

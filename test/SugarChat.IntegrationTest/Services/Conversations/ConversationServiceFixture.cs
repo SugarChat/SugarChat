@@ -49,14 +49,12 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      CustomProperties = new Dictionary<string, string>(),
                      LastModifyDate = DateTimeOffset.Now,
                      GroupId = conversationId,
-                     Content = "TestGroupMessageReaded",
-                     ParsedContent = "TestGroupMessageReaded",
-                     Type = MessageType.Text,
-                     SubType = 0,
+                     Content = "TestGroupMessageRead",
+                     Type = 0,
                      SentBy = Guid.NewGuid().ToString(), //用户3
                      SentTime = DateTimeOffset.Now,
                      IsSystem = true,
-                     Payload = new { Text = "TestGroupMessageReaded" }
+                     Payload = new { Text = "TestGroupMessageRead" }
                  });
 
                  await mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(new SetMessageReadByUserBasedOnMessageIdCommand

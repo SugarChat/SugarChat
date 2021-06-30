@@ -6,6 +6,7 @@ namespace SugarChat.Message.Requests
     {
         public string UserId { get; set; }
         public string GroupId { get; set; }
+        public int Index { get; set; }
         public string MessageId { get; set; }
         public int Count { get; set; } = 15;
     }

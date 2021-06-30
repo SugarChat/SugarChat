@@ -86,15 +86,17 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(userId2, groupId4));
             groupUsers.Add(GenerateGroupUser(userId4, groupId4));
             groupUsers.Add(GenerateGroupUser(userId3, groupId4));
+            groupUsers.Add(GenerateGroupUser(userId, groupId5));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
-            messages.Add(GenerateMessage(conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", MessageType.Text, userId9, new { text = "test" }));
-            messages.Add(GenerateMessage(conversationId, "你好", MessageType.Text, userId9, new { text = "test" }));
-            messages.Add(GenerateMessage(conversationId, "[图片]", MessageType.Image, userId, new { file = "test" }));
-            messages.Add(GenerateMessage(groupId4, "TestUser1邀请TestUser2加入了群聊", MessageType.Text, userId, new { text = "test" }));
-            messages.Add(GenerateMessage(groupId4, "今天真热啊", MessageType.Text, userId1, new { text = "test" }));
-            messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", MessageType.Text, userId2, new { text = "test" }));
-            messages.Add(GenerateMessage(groupId4, "谁说不是呢", MessageType.Text, userId3, new { text = "test" }));
+            messages.Add(GenerateMessage(conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", MessageType.Text, userId9, new { text = "test1",order="11" }));
+            messages.Add(GenerateMessage(conversationId, "你好", MessageType.Text, userId9, new { text = "test2", order = "12" }));
+            messages.Add(GenerateMessage(conversationId, "[图片]", MessageType.Image, userId, new { file = "test3", order = "13" }));
+            messages.Add(GenerateMessage(groupId4, "TestUser1邀请TestUser2加入了群聊", MessageType.Text, userId, new { text = "test4", order = "24" }));
+            messages.Add(GenerateMessage(groupId4, "今天真热啊", MessageType.Text, userId1, new { text = "test5", order = "25" }));
+            messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", MessageType.Text, userId2, new { text = "test6", order = "26" }));
+            messages.Add(GenerateMessage(groupId4, "谁说不是呢", MessageType.Text, userId3, new { text = "test7", order = "37" }));
+            messages.Add(GenerateMessage(groupId5, "888", MessageType.Text, userId, new { text = "test8", order = "8" }));
             repository.AddRangeAsync(messages, default(CancellationToken)).Wait();
         }
 

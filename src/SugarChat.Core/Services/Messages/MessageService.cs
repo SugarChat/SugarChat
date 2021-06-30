@@ -280,5 +280,15 @@ namespace SugarChat.Core.Services.Messages
                 Count = await _messageDataProvider.GetUnreadMessageCountAsync(userId, cancellationToken)
             };
         }
+
+        public async Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        {
+            User user = await GetUserAsync(request.UserId, cancellationToken);
+            user.CheckExist(request.UserId);
+
+            var messages =await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
+
+            return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
+        }
     }
 }

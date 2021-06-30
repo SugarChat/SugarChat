@@ -25,7 +25,7 @@ namespace SugarChat.IntegrationTest.Services
                     Id = Guid.NewGuid().ToString(),
                     GroupId = Guid.NewGuid().ToString(),
                     Content = "Test",
-                    Type = MessageType.Text,
+                    Type = 0,
                     SentBy = Guid.NewGuid().ToString(),
                     Payload = new
                     {
@@ -56,7 +56,7 @@ namespace SugarChat.IntegrationTest.Services
                     Id = messageId1,
                     GroupId = Guid.NewGuid().ToString(),
                     Content = "Test",
-                    Type = MessageType.Text,
+                    Type = 0,
                     SentBy = Guid.NewGuid().ToString(),
                     SentTime = DateTime.Now.AddMinutes(-5),
                     Payload = "testUrl"

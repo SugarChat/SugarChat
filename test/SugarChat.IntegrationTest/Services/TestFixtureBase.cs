@@ -11,7 +11,7 @@ namespace SugarChat.IntegrationTest.Services
     public class TestFixtureBase : TestBase
     {
         private List<User> users = new List<User>();
-        private List<Group> groups = new List<Group>();
+        protected List<Group> groups = new List<Group>();
         private List<GroupUser> groupUsers = new List<GroupUser>();
         private List<Friend> friends = new List<Friend>();
         private List<Core.Domain.Message> messages = new List<Core.Domain.Message>();
@@ -89,14 +89,14 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(userId, groupId5));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
-            messages.Add(GenerateMessage(conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", MessageType.Text, userId9, new { text = "test1",order="11" }));
-            messages.Add(GenerateMessage(conversationId, "你好", MessageType.Text, userId9, new { text = "test2", order = "12" }));
-            messages.Add(GenerateMessage(conversationId, "[图片]", MessageType.Image, userId, new { file = "test3", order = "13" }));
-            messages.Add(GenerateMessage(groupId4, "TestUser1邀请TestUser2加入了群聊", MessageType.Text, userId, new { text = "test4", order = "24" }));
-            messages.Add(GenerateMessage(groupId4, "今天真热啊", MessageType.Text, userId1, new { text = "test5", order = "25" }));
-            messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", MessageType.Text, userId2, new { text = "test6", order = "26" }));
-            messages.Add(GenerateMessage(groupId4, "谁说不是呢", MessageType.Text, userId3, new { text = "test7", order = "37" }));
-            messages.Add(GenerateMessage(groupId5, "888", MessageType.Text, userId, new { text = "test8", order = "8" }));
+            messages.Add(GenerateMessage(conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", 0, userId9, new { text = "test1",order="11" }));
+            messages.Add(GenerateMessage(conversationId, "你好", 0, userId9, new { text = "test2", order = "12" }));
+            messages.Add(GenerateMessage(conversationId, "[图片]", 1, userId, new { file = "test3", order = "13" }));
+            messages.Add(GenerateMessage(groupId4, "TestUser1邀请TestUser2加入了群聊", 0, userId, new { text = "test4", order = "24" }));
+            messages.Add(GenerateMessage(groupId4, "今天真热啊", 0, userId1, new { text = "test5", order = "25" }));
+            messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", 0, userId2, new { text = "test6", order = "26" }));
+            messages.Add(GenerateMessage(groupId4, "谁说不是呢", 0, userId3, new { text = "test7", order = "37" }));
+            messages.Add(GenerateMessage(groupId5, "888", 0, userId, new { text = "test8", order = "8" }));
             repository.AddRangeAsync(messages, default(CancellationToken)).Wait();
         }
 
@@ -165,7 +165,7 @@ namespace SugarChat.IntegrationTest.Services
                 GroupId = groupId,//组1
             };
         }
-        private Core.Domain.Message GenerateMessage(string groupId, string content, MessageType type, string sentBy, object payload)
+        private Core.Domain.Message GenerateMessage(string groupId, string content, int type, string sentBy, object payload)
         {
             return new Core.Domain.Message
             {
@@ -177,9 +177,7 @@ namespace SugarChat.IntegrationTest.Services
                 LastModifyDate = DateTimeOffset.Now,
                 GroupId = groupId,
                 Content = content,
-                ParsedContent = content,
                 Type = type,
-                SubType = 0,
                 SentBy = sentBy, //用户3
                 SentTime = DateTimeOffset.Now,
                 IsSystem = true,

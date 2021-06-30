@@ -6,6 +6,7 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
 using SugarChat.Shared.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,12 +25,12 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessageList"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<MessageListResult>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<GetMessageListResponse>))]
         public async Task<IActionResult> GetPagingMessageList([FromQuery] GetMessageListRequest request)
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetMessageListRequest, SugarChatResponse<MessageListResult>>(request);
+                     .RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
 
             return Ok(response);
         }
@@ -72,6 +73,13 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("setMessageReadSetByUserBasedOnGroupId"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command)
+        {
+            var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
         [Route("getConversationByKeyword"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
         public async Task<IActionResult> GetConversationByKeyword([FromQuery] GetConversationByKeywordRequest request)

@@ -2,6 +2,8 @@
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
+using SugarChat.Shared.Dtos;
+using System.Collections.Generic;
 using SugarChat.Shared.Dtos.Conversations;
 using SugarChat.Shared.Paging;
 using System.Threading;

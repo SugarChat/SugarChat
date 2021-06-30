@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests;
+using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Shared.Dtos.GroupUsers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -74,9 +75,9 @@ namespace SugarChat.WebApi.Controllers
 
         [Route("deleteGroupMember"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> DeleteGroupMember(AddGroupMemberCommand command)
+        public async Task<IActionResult> DeleteGroupMember(RemoveGroupMemberCommand command)
         {
-            var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 
@@ -109,5 +110,22 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<RemoveUserFromGroupCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("getGroupMemberIds"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<string>>))]
+        public async Task<IActionResult> GetGroupMemberIds([FromQuery] GetGroupMembersRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(request);
+            return Ok(response);
+        }
+
+        [Route("getUserIdsByGroupIds"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<string>>))]
+        public async Task<IActionResult> GetUsersByGroupIds([FromQuery] GetUserIdsByGroupIdsRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(request);
+            return Ok(response);
+        }
+        
     }
 }

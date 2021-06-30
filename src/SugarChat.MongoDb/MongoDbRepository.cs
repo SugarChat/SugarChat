@@ -60,9 +60,20 @@ namespace SugarChat.Data.MongoDb
         public Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query,
             CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            var result = query?.Paging(pageSettings).ToList();
+            List<T> result = new List<T>();
+            if (pageSettings is not null)
+            {
+                if (pageSettings is not null)
+                {
+                    result = query.Paging(pageSettings).ToList();
+                }
+                else
+                {
+                    result = query.ToList();
+                }
+            }
             var total = query?.Count() ?? 0;
-            return Task.FromResult(new PagedResult<T> {Result = result, Total = total});
+            return Task.FromResult(new PagedResult<T> { Result = result, Total = total });
         }
 
         public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,

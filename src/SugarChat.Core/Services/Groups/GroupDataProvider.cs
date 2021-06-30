@@ -30,8 +30,17 @@ namespace SugarChat.Core.Services.Groups
         {
             var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
                 .OrderByDescending(o => o.LastModifyDate);
-
-            var result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
+            var result = new PagedResult<Group>();
+            if (pageSettings != null)
+            {
+                result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                var groups = query.ToList();
+                result.Result = groups;
+                result.Total = groups.Count();
+            }
             return result;
         }
 

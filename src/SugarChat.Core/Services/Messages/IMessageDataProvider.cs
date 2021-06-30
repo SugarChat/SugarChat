@@ -18,9 +18,9 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,
             CancellationToken cancellationToken = default);
-        Task<IEnumerable<Domain.Message>> GetUnreadMessagesFromGroupAsync(string userId, string groupId, string messageId = null, int count = 15,
+        Task<IEnumerable<Domain.Message>> GetUnreadMessagesFromGroupAsync(string userId, string groupId, string messageId = null, int? count = 15,
             CancellationToken cancellationToken = default);
-        Task<IEnumerable<Domain.Message>> GetAllMessagesFromGroupAsync(string groupId, string messageId = null, int count = 15,
+        Task<IEnumerable<Domain.Message>> GetAllMessagesFromGroupAsync(string groupId, int index = 0, string messageId = null, int count = 0,
             CancellationToken cancellationToken = default);
         Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count,
             CancellationToken cancellationToken = default);
@@ -33,8 +33,8 @@ namespace SugarChat.Core.Services.Messages
 
         Task<int> GetUnreadMessageCountAsync(string userId, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken);
-
         Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken);
     }
 }

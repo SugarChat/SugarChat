@@ -157,6 +157,11 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
+        public async Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId),cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);

@@ -3,8 +3,9 @@ using System.Threading.Tasks;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 using SugarChat.Message.Requests;
+using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Responses;
-
+using SugarChat.Message.Responses.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -43,5 +44,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<GroupMemberRoleSetEvent> SetGroupMemberRoleAsync(SetGroupMemberRoleCommand command,
             CancellationToken cancellationToken = default);
+
+        Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
     }
 }

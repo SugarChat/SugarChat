@@ -124,13 +124,13 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetUnreadMessagesFromGroupAsync(string userId, string groupId, string messageId = null, int count = 15,
+        public async Task<IEnumerable<Domain.Message>> GetUnreadMessagesFromGroupAsync(string userId, string groupId, string messageId = null, int? count = 15,
             CancellationToken cancellationToken = default)
         {
             var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                 cancellationToken)).LastReadTime;
 
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));
+            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));                      
 
             if (!string.IsNullOrEmpty(messageId))
             {
@@ -141,29 +141,44 @@ namespace SugarChat.Core.Services.Messages
                                                                   && o.SentTime < message.SentTime);
             }
 
-            var messages = query.OrderByDescending(o => o.SentTime)
-                               .Take(count)
-                               .AsEnumerable();
+            IEnumerable<Domain.Message> messages;
+
+            if (count != null)
+            {
+                messages = query.OrderByDescending(o => o.SentTime)
+                                .Take(count.Value)
+                                .AsEnumerable();
+            }
+            else
+            { 
+               messages= query.OrderByDescending(o => o.SentTime)                               
+                                .AsEnumerable();
+            }
+
             return messages;
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetAllMessagesFromGroupAsync(string groupId, string messageId = null, int count = 15,
+        public async Task<IEnumerable<Domain.Message>> GetAllMessagesFromGroupAsync(string groupId, int index = 0, string messageId = null, int count = 0,
             CancellationToken cancellationToken = default)
         {
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId);
+            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId).OrderByDescending(o => o.SentTime).AsEnumerable();
 
             if (!string.IsNullOrEmpty(messageId))
             {
                 var message =
                     await _repository.SingleOrDefaultAsync<Domain.Message>(x => x.Id == messageId,
                         cancellationToken);
-                query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && o.SentTime < message.SentTime);
+                query = query.Where(o => o.SentTime < message.SentTime);
             }
-
-            var messages = query.OrderByDescending(o => o.SentTime)
-                               .Take(count)
-                               .AsEnumerable();
-            return messages;
+            else if (index != 0)
+            {
+                query = query.Skip((index - 1) * count);
+            }
+            if (count != 0)
+            {
+                query = query.Take(count);
+            }
+            return query;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetMessagesOfGroupBeforeAsync(string messageId, int count,

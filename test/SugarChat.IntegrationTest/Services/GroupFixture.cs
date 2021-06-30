@@ -27,10 +27,18 @@ namespace SugarChat.IntegrationTest.Services
             {
                 AddGroupCommand command = new AddGroupCommand
                 {
+                    UserId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid().ToString()
                 };
-                await mediator.SendAsync<AddGroupCommand, AddGroupResponse>(command);
-
+                {
+                    var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(command.UserId).Message);
+                }
+                await repository.AddAsync(new User
+                {
+                    Id = command.UserId
+                });
+                await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
                 (await repository.AnyAsync<Group>(x => x.Id == command.Id)).ShouldBeTrue();
             });
         }

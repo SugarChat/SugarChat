@@ -111,7 +111,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     {
                         ConversationId = conversationId,
                         UserId = userId,
-                        PagaIndex = 1,
+                        Index = 1,
                         Count = 2
                     };
                     var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);
@@ -122,7 +122,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     {
                         ConversationId = conversationId,
                         UserId = userId,
-                        PagaIndex = 2,
+                        Index = 2,
                         Count = 2
                     };
                     var response = await mediator.RequestAsync<GetMessageListRequest, SugarChatResponse<GetMessageListResponse>>(request);

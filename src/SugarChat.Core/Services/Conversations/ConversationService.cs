@@ -94,7 +94,7 @@ namespace SugarChat.Core.Services.Conversations
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
             var messages = await _conversationDataProvider
-                .GetPagedMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.PagaIndex, request.Count,
+                .GetPagedMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Index, request.Count,
                     cancellationToken).ConfigureAwait(false);
 
             return new GetMessageListResponse

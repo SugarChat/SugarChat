@@ -207,7 +207,7 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<GetMessageListResponse>> GetMessageListAsync(GetMessageListRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getMessageListUrl}?userId={request.UserId}&conversationId={request.ConversationId}&nextReqMessageId={request.NextReqMessageId}&count={request.Count}&pagaIndex={request.PagaIndex}";
+            var requestUrl = $"{_getMessageListUrl}?userId={request.UserId}&conversationId={request.ConversationId}&nextReqMessageId={request.NextReqMessageId}&count={request.Count}&index={request.Index}";
             return await ExecuteAsync<SugarChatResponse<GetMessageListResponse>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -361,12 +361,12 @@ namespace SugarChat.Net.Client.HttpClients
             return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupIdAsync(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
         {
             return await ExecuteAsync<SugarChatResponse>(_setMessageReadSetByUserBasedOnGroupIdUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse<IEnumerable<string>>> GgetUserIdsByGroupIds(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse<IEnumerable<string>>> GetUserIdsByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
         {
             var requestUrl = $"{_getUserIdsByGroupIdsUrl}?groupIds={request.GroupIds}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<string>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);

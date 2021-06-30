@@ -119,9 +119,9 @@ namespace SugarChat.Net.Client
 
         Task<SugarChatResponse> CreateUserAsync(AddUserCommand command, CancellationToken cancellationToken = default);
 
-        Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+        Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupIdAsync(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
 
-        Task<SugarChatResponse<IEnumerable<string>>> GgetUserIdsByGroupIds(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
+        Task<SugarChatResponse<IEnumerable<string>>> GetUserIdsByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
         
     }
 

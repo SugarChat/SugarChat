@@ -8,6 +8,6 @@ namespace SugarChat.Message.Requests.Conversations
         public string ConversationId { get; set; }
         public string NextReqMessageId { get; set; }
         public int Count { get; set; }
-        public int PagaIndex { get; set; }
+        public int Index { get; set; }
     }
 }

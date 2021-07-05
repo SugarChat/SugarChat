@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SugarChat.Shared.Dtos;
 using Xunit;
+using SugarChat.Shared;
 
 namespace SugarChat.IntegrationTest.Services
 {

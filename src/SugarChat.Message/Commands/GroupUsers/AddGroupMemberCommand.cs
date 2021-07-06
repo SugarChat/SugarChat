@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SugarChat.Shared.Dtos;
+using SugarChat.Shared;
 
 namespace SugarChat.Message.Commands.GroupUsers
 {

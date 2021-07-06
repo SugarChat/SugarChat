@@ -52,7 +52,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
                 var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(7);
+                response.Data.Count().ShouldBe(8);
             });
         }
     }

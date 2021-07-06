@@ -1,5 +1,5 @@
 ﻿using Mediator.Net.Contracts;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 
 namespace SugarChat.Message.Responses.Conversations

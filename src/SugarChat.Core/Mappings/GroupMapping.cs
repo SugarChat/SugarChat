@@ -2,9 +2,9 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.GroupUsers;
+using SugarChat.Message.Dtos;
 using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Events.GroupUsers;
-using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
 {

@@ -13,8 +13,8 @@ using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
 using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.Services

@@ -10,7 +10,7 @@ using Shouldly;
 using SugarChat.Message.Requests;
 using System.Linq;
 using SugarChat.Core.Basic;
-using SugarChat.Shared.Dtos.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers

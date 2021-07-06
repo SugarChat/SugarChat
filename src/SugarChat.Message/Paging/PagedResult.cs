@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SugarChat.Shared.Paging
+namespace SugarChat.Message.Paging
 {
     public class PagedResult<T> where T : class
     {

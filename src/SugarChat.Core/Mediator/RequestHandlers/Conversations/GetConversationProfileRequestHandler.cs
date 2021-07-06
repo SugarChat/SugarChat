@@ -2,8 +2,8 @@
 using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Conversations;
+using SugarChat.Message.Dtos.Conversations;
 using SugarChat.Message.Requests.Conversations;
-using SugarChat.Shared.Dtos.Conversations;
 using System.Threading;
 using System.Threading.Tasks;
 

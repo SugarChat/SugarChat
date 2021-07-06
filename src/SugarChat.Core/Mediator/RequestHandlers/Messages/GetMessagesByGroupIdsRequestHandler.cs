@@ -3,7 +3,7 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Requests.Messages;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autofac;
 using SugarChat.Core.IRepositories;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {

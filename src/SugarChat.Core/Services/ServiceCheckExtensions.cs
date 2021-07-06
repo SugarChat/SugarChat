@@ -2,7 +2,7 @@
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Message;
-using SugarChat.Shared;
+using SugarChat.Message;
 
 namespace SugarChat.Core.Services
 {

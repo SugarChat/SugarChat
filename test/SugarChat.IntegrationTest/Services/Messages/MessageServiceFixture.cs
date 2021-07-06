@@ -3,7 +3,7 @@ using Shouldly;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Messages;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

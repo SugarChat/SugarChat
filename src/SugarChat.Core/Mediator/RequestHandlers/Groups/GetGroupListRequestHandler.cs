@@ -3,11 +3,11 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Requests;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Groups
 {

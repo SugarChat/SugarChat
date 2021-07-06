@@ -3,7 +3,7 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Requests.Groups;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Threading;
 using System.Threading.Tasks;
 

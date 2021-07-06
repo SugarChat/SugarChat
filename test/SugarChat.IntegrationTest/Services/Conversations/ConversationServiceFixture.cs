@@ -9,9 +9,9 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Dtos.Conversations;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Dtos.Conversations;
+using SugarChat.Message.Paging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,7 +157,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
-                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         SearchParms = new Dictionary<string, string> { { "Order", "1" } },
                         UserId = userId
                     };
@@ -168,7 +168,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
-                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         SearchParms = new Dictionary<string, string> { { "Order", "25" } },
                         UserId = userId,
                         IsExactSearch = true
@@ -179,7 +179,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
-                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" } },
                         UserId = userId,
                         IsExactSearch = true
@@ -190,7 +190,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
-                        PageSettings = new Shared.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         UserId = userId,
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(requset);

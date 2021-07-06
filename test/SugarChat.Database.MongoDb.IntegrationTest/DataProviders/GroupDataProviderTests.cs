@@ -6,7 +6,7 @@ using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Groups;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders

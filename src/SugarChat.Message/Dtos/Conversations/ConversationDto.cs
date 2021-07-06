@@ -1,4 +1,4 @@
-﻿namespace SugarChat.Shared.Dtos.Conversations
+﻿namespace SugarChat.Message.Dtos.Conversations
 {
     public class ConversationDto
     {        

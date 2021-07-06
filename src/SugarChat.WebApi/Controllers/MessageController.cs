@@ -88,6 +88,12 @@ namespace SugarChat.WebApi.Controllers
 
             return Ok(response);
         }
-       
+
+        [Route("getMessagesByGroupIds"), HttpGet]
+        public async Task<IActionResult> GetMessagesByGroupIds([FromQuery] GetMessagesByGroupIdsRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            return Ok(response);
+        }
     }
 }

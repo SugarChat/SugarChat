@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Mediator.Net.Contracts;
 
 namespace SugarChat.Message.Commands.Groups
@@ -12,5 +13,6 @@ namespace SugarChat.Message.Commands.Groups
         public string AvatarUrl { get; set; }
 
         public string Description { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
     }
 }

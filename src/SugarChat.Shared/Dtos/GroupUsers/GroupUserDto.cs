@@ -10,5 +10,6 @@ namespace SugarChat.Shared.Dtos.GroupUsers
         public string AvatarUrl { get; set; }
         public string DisplayName { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
+        public UserRole Role { get; set; }
     }
 }

@@ -19,11 +19,11 @@ namespace SugarChat.Core.Exceptions
             new(ExceptionCode.AddUserFailed, "User with Id {0} adding failed.");
 
         public static readonly ExceptionPrompt RemoveUserFailed =
-            new(ExceptionCode.RemoveUserFailed, "User with Id {0} removing failed.");  
-        
+            new(ExceptionCode.RemoveUserFailed, "User with Id {0} removing failed.");
+
         public static readonly ExceptionPrompt NotAllUsersExists =
             new(ExceptionCode.NotAllUsersExists, "Not all users exist.");
-        
+
         #endregion
 
         #region Friend
@@ -160,8 +160,8 @@ namespace SugarChat.Core.Exceptions
 
         public static readonly ExceptionPrompt IdIsNullOrEmpty =
             new(ExceptionCode.IdIsNullOrEmpty, "Id should not be null or empty.");
-        
 
+        public static readonly ExceptionPrompt ParameterRequired = new ExceptionPrompt(ExceptionCode.ParameterRequired, "Parameter {0} is required.");
         #endregion
     }
 }

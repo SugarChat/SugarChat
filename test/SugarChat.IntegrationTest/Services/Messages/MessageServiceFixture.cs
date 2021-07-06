@@ -23,7 +23,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     UserId = userId
                 };
                 var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                response.Data.ShouldBe(7);
+                response.Data.ShouldBe(8);
             });
         }
 
@@ -52,7 +52,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
                 var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(7);
+                response.Data.Count().ShouldBe(8);
             });
         }
     }

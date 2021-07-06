@@ -80,5 +80,12 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+        [Route("getConversationByKeyword"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        public async Task<IActionResult> GetConversationByKeyword([FromQuery] GetConversationByKeywordRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+            return Ok(response);
+        }
     }
 }

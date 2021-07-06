@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
-using SugarChat.Shared.Dtos;
+
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -233,6 +231,11 @@ namespace SugarChat.Core.Services.Messages
                     o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
 
             return unreadMessageCount;
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
+        {
+            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)

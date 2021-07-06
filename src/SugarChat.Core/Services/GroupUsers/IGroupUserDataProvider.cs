@@ -25,7 +25,7 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id,
             CancellationToken cancellationToken = default);
 
-        Task<int> GetGroupMemberCountAsync(string groupId, CancellationToken cancellationToken = default);
+        Task<int> GetGroupMemberCountByGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken = default);
         Task AddRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken = default);
 
@@ -35,5 +35,7 @@ namespace SugarChat.Core.Services.GroupUsers
         Task UpdateRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
     }
 }

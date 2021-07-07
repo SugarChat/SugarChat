@@ -7,7 +7,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Messages;
 using SugarChat.Message.Requests.Messages;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 
 namespace SugarChat.Core.Services.Messages

@@ -1,5 +1,4 @@
 ﻿using SugarChat.Message;
-using SugarChat.Shared;
 using System;
 
 namespace SugarChat.Core.Domain

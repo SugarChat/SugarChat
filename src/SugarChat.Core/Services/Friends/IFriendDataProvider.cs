@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Friends
 {

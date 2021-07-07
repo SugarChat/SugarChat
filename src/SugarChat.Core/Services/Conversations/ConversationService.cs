@@ -7,14 +7,14 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Dtos.Conversations;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Conversations
 {

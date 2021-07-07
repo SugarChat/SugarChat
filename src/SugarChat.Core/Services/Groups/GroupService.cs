@@ -11,14 +11,14 @@ using SugarChat.Message.Event;
 using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
-using SugarChat.Shared;
+using SugarChat.Message;
 
 namespace SugarChat.Core.Services.Groups
 {

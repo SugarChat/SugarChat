@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Shared.Dtos.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
 
 namespace SugarChat.Core.Services.GroupUsers

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SugarChat.Shared
+namespace SugarChat.Message
 {
     public enum UserRole
     {

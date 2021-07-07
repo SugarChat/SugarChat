@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Shared.Dtos.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {

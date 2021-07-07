@@ -5,7 +5,7 @@ using SugarChat.Core.Basic;
 using SugarChat.Message.Commands;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Messages;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Messages;

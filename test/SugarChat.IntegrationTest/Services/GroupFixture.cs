@@ -8,7 +8,7 @@ using SugarChat.Core.Mediator.CommandHandlers.Groups;
 using SugarChat.Core.Services;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests.Groups;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

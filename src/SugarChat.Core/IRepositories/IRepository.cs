@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.IRepositories
 {

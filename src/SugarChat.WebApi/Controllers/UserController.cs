@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Requests;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
 using System.Threading.Tasks;
 
 namespace SugarChat.WebApi.Controllers

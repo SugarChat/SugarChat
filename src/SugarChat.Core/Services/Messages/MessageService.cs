@@ -14,7 +14,7 @@ using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
 using System.Linq;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SugarChat.Shared.Dtos.GroupUsers
+namespace SugarChat.Message.Dtos.GroupUsers
 {
     public class GroupUserDto
     {

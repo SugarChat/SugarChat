@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SugarChat.Shared.Dtos
+namespace SugarChat.Message.Dtos
 {
     public class MessageDto
     {

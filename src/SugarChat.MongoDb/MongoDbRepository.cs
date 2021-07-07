@@ -11,7 +11,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Data.MongoDb
 {

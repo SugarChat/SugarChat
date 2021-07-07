@@ -11,8 +11,8 @@ using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Users
 {

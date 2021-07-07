@@ -8,7 +8,7 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.GroupUsers;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 using Xunit;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders

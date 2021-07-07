@@ -18,7 +18,6 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
-using SugarChat.Message;
 
 namespace SugarChat.Core.Services.Groups
 {

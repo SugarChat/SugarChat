@@ -13,20 +13,20 @@ using SugarChat.Net.Client.Exceptions;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using SugarChat.Shared.Dtos;
 using SugarChat.Message.Requests.Conversations;
-using SugarChat.Shared.Dtos.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
-using SugarChat.Shared.Dtos.GroupUsers;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
 using Microsoft.Extensions.Configuration;
-using SugarChat.Shared.Paging;
 using SugarChat.Message.Basic;
 using SugarChat.Message.Requests.GroupUsers;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Dtos.Conversations;
+using SugarChat.Message.Dtos.GroupUsers;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Net.Client.HttpClients
 {
@@ -67,6 +67,10 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _updateMyProfileUrl = "api/user/updateMyProfile";
         private const string _setMessageReadSetByUserBasedOnGroupIdUrl = "api/conversation/setMessageReadSetByUserBasedOnGroupId";
         private const string _getUserIdsByGroupIdsUrl = "api/groupUser/getUserIdsByGroupIds";
+        private const string _getConversationByKeywordUrl = "api/conversation/getConversationByKeyword";
+        private const string _getByCustomPropertiesUrl = "api/group/getByCustomProperties";
+        private const string _getMessagesByGroupIdsUrl = "api/message/getMessagesByGroupIds";
+
 
         private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;
         public SugarChatHttpClient()
@@ -213,7 +217,7 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationListAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getConversationListUrl}?userId={request.UserId}";
+            var requestUrl = $"{_getConversationListUrl}?userId={request.UserId}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -370,6 +374,24 @@ namespace SugarChat.Net.Client.HttpClients
         {
             var requestUrl = $"{_getUserIdsByGroupIdsUrl}?groupIds={request.GroupIds}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<string>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}&isExactSearch={request.IsExactSearch}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}&customPropertys={request.CustomPropertys}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{_getMessagesByGroupIdsUrl}?userId={request.UserId}&groupIds={request.GroupIds}";
+            return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }

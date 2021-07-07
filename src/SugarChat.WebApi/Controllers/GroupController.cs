@@ -11,6 +11,7 @@ using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.WebApi.Controllers
 {

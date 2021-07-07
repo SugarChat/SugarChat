@@ -5,16 +5,16 @@ using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Commands.Users;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Dtos.Conversations;
+using SugarChat.Message.Dtos.GroupUsers;
+using SugarChat.Message.Paging;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Dtos.Conversations;
-using SugarChat.Shared.Dtos.GroupUsers;
-using SugarChat.Shared.Paging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,7 +122,12 @@ namespace SugarChat.Net.Client
         Task<SugarChatResponse> SetMessageReadSetByUserBasedOnGroupIdAsync(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
 
         Task<SugarChatResponse<IEnumerable<string>>> GetUserIdsByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
-        
+
+        Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default);
+
+        Task<SugarChatResponse<IEnumerable<GroupDto>>> GetByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default);
+
+        Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
     }
 
 }

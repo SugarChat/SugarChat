@@ -12,18 +12,7 @@ jobs:
       # - name: Setup dotnet
       #   uses: actions/setup-dotnet@v1
       #   with:
-      #     dotnet-version: 3.1.200
-
-      # Publish Shared   
-      - name: publish on shared version change
-        id: publish_shared_nuget
-        uses: rohith/publish-nuget@v2
-        with:
-          # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: src/SugarChat.Shared/SugarChat.Shared.csproj       
-
-          # API key to authenticate with NuGet server
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      #     dotnet-version: 3.1.200    
 
       #Publish Message
       - name: publish on message version change

@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Core.Domain;
-using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -37,5 +34,9 @@ namespace SugarChat.Core.Services.Messages
         Task<int> GetUnreadMessageCountAsync(string userId, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Domain.Message>> GetMessagesByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken);
     }
 }

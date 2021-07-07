@@ -6,12 +6,12 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
-using SugarChat.Shared.Dtos;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 using Xunit;
 
 namespace SugarChat.IntegrationTest.Services.Groups
@@ -25,7 +25,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
             {
                 {
                     var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1 } });
-                    reponse.Data.Result.Count().ShouldBe(4);
+                    reponse.Data.Result.Count().ShouldBe(5);
                 }
                 {
                     var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = new PageSettings { PageNum = 1, PageSize =2} });
@@ -33,7 +33,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
                 }
                 {
                     var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { Id = userId, PageSettings = null });
-                    reponse.Data.Result.Count().ShouldBe(4);
+                    reponse.Data.Result.Count().ShouldBe(5);
                 }
             });
         }

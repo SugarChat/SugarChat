@@ -2,9 +2,9 @@
 using SugarChat.Message.Commands;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
+using SugarChat.Message.Dtos;
 using SugarChat.Message.Events.Conversations;
 using SugarChat.Message.Events.Messages;
-using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
 {

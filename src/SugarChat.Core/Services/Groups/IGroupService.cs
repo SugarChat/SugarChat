@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Groups;
@@ -6,6 +7,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
+using SugarChat.Message.Dtos;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -26,5 +28,7 @@ namespace SugarChat.Core.Services.Groups
 
         Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command,
             CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken);
     }
 }

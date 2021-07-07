@@ -1,5 +1,5 @@
 using Mediator.Net.Contracts;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Message.Requests
 {

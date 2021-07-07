@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -17,5 +17,7 @@ namespace SugarChat.Core.Services.Groups
         Task AddAsync(Group group, CancellationToken cancellationToken = default);
         Task UpdateAsync(Group group, CancellationToken cancellationToken = default);
         Task RemoveAsync(Group group, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Group>> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds);
     }
 }

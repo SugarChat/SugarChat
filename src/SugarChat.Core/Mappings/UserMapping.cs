@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Commands.Users;
+using SugarChat.Message.Dtos;
 using SugarChat.Message.Events.Users;
-using SugarChat.Shared.Dtos;
 
 namespace SugarChat.Core.Mappings
 {

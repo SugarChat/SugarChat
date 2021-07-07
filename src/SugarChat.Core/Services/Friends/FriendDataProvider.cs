@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Friends
 {

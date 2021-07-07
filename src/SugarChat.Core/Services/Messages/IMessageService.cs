@@ -7,6 +7,8 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Messages;
 using SugarChat.Message.Requests.Messages;
+using SugarChat.Message.Dtos;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -41,5 +43,7 @@ namespace SugarChat.Core.Services.Messages
         Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command,
             CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
     }
 }

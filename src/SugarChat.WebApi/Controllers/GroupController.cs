@@ -1,4 +1,4 @@
-﻿using Mediator.Net;
+using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
@@ -8,8 +8,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -76,6 +75,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> RemoveGroup(RemoveGroupCommand command)
         {
             var response = await _mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
+        [Route("getByCustomProperties"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<GroupDto>>))]
+        public async Task<IActionResult> GetByCustomProperties([FromQuery] GetGroupByCustomPropertiesRequest request)
+        {
+            var response =await _mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
             return Ok(response);
         }
     }

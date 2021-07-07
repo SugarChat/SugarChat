@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Shared.Paging;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -69,6 +69,39 @@ namespace SugarChat.Core.Services.Groups
             {
                 throw new BusinessWarningException(Prompt.RemoveGroupFailed.WithParams(group.Id));
             }
+        }
+
+        public async Task<IEnumerable<Group>> GetByCustomPropertys(Dictionary<string, string> customPropertys, IEnumerable<string> groupIds)
+        {
+            if (groupIds is null || groupIds.Count() == 0)
+            {
+                throw new BusinessWarningException(Prompt.ParameterRequired.WithParams("groupIds"));
+            }
+            var groups = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
+            List<Group> filterGroups = new List<Group>();
+            if (customPropertys is not null)
+            {
+                foreach (var group in groups)
+                {
+                    if (group.CustomProperties is not null)
+                    {
+                        bool isAdd = true;
+                        foreach (var customProperty in customPropertys)
+                        {
+                            if (group.CustomProperties.GetValueOrDefault(customProperty.Key) != customProperty.Value)
+                            {
+                                isAdd = false;
+                                break;
+                            }
+                        }
+                        if (isAdd)
+                        {
+                            filterGroups.Add(group);
+                        }
+                    }
+                }
+            }
+            return filterGroups;
         }
     }
 }

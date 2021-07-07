@@ -6,8 +6,8 @@ using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Requests.Conversations;
 using SugarChat.Message.Responses.Conversations;
-using SugarChat.Shared.Dtos;
-using SugarChat.Shared.Dtos.Conversations;
+using SugarChat.Message.Dtos;
+using SugarChat.Message.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -78,6 +78,13 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> SetMessageReadSetByUserBasedOnGroupId( SetMessageReadByUserBasedOnGroupIdCommand command)
         {
             var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+        [Route("getConversationByKeyword"), HttpGet]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        public async Task<IActionResult> GetConversationByKeyword([FromQuery] GetConversationByKeywordRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
             return Ok(response);
         }
     }

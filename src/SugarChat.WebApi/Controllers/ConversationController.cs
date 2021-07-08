@@ -10,6 +10,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Dtos.Conversations;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -81,10 +82,10 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
         [Route("getConversationByKeyword"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
         public async Task<IActionResult> GetConversationByKeyword([FromQuery] GetConversationByKeywordRequest request)
         {
-            var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+            var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
             return Ok(response);
         }
     }

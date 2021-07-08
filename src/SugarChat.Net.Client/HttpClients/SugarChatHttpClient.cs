@@ -376,10 +376,10 @@ namespace SugarChat.Net.Client.HttpClients
             return await ExecuteAsync<SugarChatResponse<IEnumerable<string>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse<PagedResult<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
             var requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}&isExactSearch={request.IsExactSearch}";
-            return await ExecuteAsync<SugarChatResponse<IEnumerable<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await ExecuteAsync<SugarChatResponse<PagedResult<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)

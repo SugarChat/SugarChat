@@ -3,8 +3,10 @@ using System.IO;
 using Autofac;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
+using NSubstitute;
 using SugarChat.Core.Autofac;
 using SugarChat.Core.IRepositories;
+using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Autofac;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
@@ -30,6 +32,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 {
                     typeof(SugarChat.Core.Services.IService).Assembly
                 }));
+
+            var iSecurityManager = Substitute.For<ISecurityManager>();
+            iSecurityManager.IsSupperAdmin().Returns(false);
+            containerBuilder.RegisterInstance(iSecurityManager);
 
             Container = containerBuilder.Build().BeginLifetimeScope();
             Repository = Container.Resolve<IRepository>();

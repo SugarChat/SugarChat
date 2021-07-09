@@ -29,11 +29,13 @@ namespace SugarChat.Core.Services.Messages
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly ISecurityManager _securityManager;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider,
+            ISecurityManager securityManager)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -41,6 +43,7 @@ namespace SugarChat.Core.Services.Messages
             _friendDataProvider = friendDataProvider;
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _securityManager = securityManager;
         }
 
 
@@ -53,8 +56,11 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default)
         {
             string userId = request.UserId;
-            User user = await GetUserAsync(userId, cancellationToken);
-            user.CheckExist(userId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(userId, cancellationToken);
+                user.CheckExist(userId);
+            }
 
             return new GetAllUnreadToUserResponse
             {
@@ -125,8 +131,11 @@ namespace SugarChat.Core.Services.Messages
             GetUnreadMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(request.UserId, cancellationToken);
-            user.CheckExist(request.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(request.UserId, cancellationToken);
+                user.CheckExist(request.UserId);
+            }
 
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
@@ -148,8 +157,11 @@ namespace SugarChat.Core.Services.Messages
             GetAllMessagesFromGroupRequest request,
             CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(request.UserId, cancellationToken);
-            user.CheckExist(request.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(request.UserId, cancellationToken);
+                user.CheckExist(request.UserId);
+            }
 
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
@@ -201,8 +213,11 @@ namespace SugarChat.Core.Services.Messages
             SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(command.UserId, cancellationToken);
-            user.CheckExist(command.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(command.UserId, cancellationToken);
+                user.CheckExist(command.UserId);
+            }
             Domain.Message message = await _messageDataProvider.GetByIdAsync(command.MessageId, cancellationToken);
             message.CheckExist(command.MessageId);
             GroupUser groupUser =
@@ -220,8 +235,11 @@ namespace SugarChat.Core.Services.Messages
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(command.UserId, cancellationToken);
-            user.CheckExist(command.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(command.UserId, cancellationToken);
+                user.CheckExist(command.UserId);
+            }
 
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
             group.CheckExist(command.GroupId);
@@ -272,8 +290,11 @@ namespace SugarChat.Core.Services.Messages
         public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
         {
             string userId = request.UserId;
-            User user = await GetUserAsync(userId, cancellationToken);
-            user.CheckExist(userId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(userId, cancellationToken);
+                user.CheckExist(userId);
+            }
 
             return new GetUnreadMessageCountResponse
             {
@@ -283,8 +304,11 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
         {
-            User user = await GetUserAsync(request.UserId, cancellationToken);
-            user.CheckExist(request.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                User user = await GetUserAsync(request.UserId, cancellationToken);
+                user.CheckExist(request.UserId);
+            }
 
             var messages =await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
 

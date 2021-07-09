@@ -26,6 +26,7 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly ISecurityManager _securityManager;
 
         public ConversationService(
             IMapper mapper,
@@ -33,7 +34,8 @@ namespace SugarChat.Core.Services.Conversations
             IGroupUserDataProvider groupUserDataProvider,
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
-            IMessageDataProvider messageDataProvider)
+            IMessageDataProvider messageDataProvider,
+            ISecurityManager securityManager)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -41,12 +43,16 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _securityManager = securityManager;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
         {
-            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
-            user.CheckExist(request.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
+                user.CheckExist(request.UserId);
+            }
 
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId)).Select(x => x.GroupId).ToArray();
             var messages = await _messageDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken);

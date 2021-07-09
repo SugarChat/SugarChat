@@ -34,6 +34,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             AddGroupCommand addGroupCommand = new()
             {
                 Id = "0",
+                UserId = "1",
                 Description = "Friend group of Tom and Tyke"
             };
             GroupAddedEvent addGroupEvent =
@@ -64,7 +65,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
                 Id = "1",
-                PageSettings = new PageSettings {PageNum = 1}
+                PageSettings = new PageSettings { PageNum = 1 }
             };
             GetGroupsOfUserResponse getGroupsOfUserResponse =
                 await _groupService.GetGroupsOfUserAsync(getGroupsOfUserRequest);
@@ -81,12 +82,12 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
                 Id = "0",
-                PageSettings = new PageSettings {PageNum = 1}
+                PageSettings = new PageSettings { PageNum = 1 }
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _groupService.GetGroupsOfUserAsync(getGroupsOfUserRequest));
         }
-        
+
         [Fact]
         public async Task Should_Remove_Group()
         {
@@ -101,7 +102,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             removeGroupEvent.Id.ShouldBe(TomAndJerryGroup.Id);
             removeGroupEvent.Status.ShouldBe(EventStatus.Success);
         }
-        
+
         [Fact]
         public async Task Should_Not_Remove_Group_Not_Exist()
         {

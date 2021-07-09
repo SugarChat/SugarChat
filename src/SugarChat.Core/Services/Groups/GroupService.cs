@@ -18,7 +18,6 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
-using SugarChat.Message;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -112,8 +111,11 @@ namespace SugarChat.Core.Services.Groups
         public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
             CancellationToken cancellationToken = default)
         {
-            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
-            user.CheckExist(request.UserId);
+            if (!await _securityManager.IsSupperAdmin())
+            {
+                var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
+                user.CheckExist(request.UserId);
+            }
 
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(request.GroupId);

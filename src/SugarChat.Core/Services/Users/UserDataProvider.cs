@@ -56,5 +56,15 @@ namespace SugarChat.Core.Services.Users
                 throw new BusinessWarningException(Prompt.RemoveUserFailed.WithParams(user.Id));
             }
         }
+
+        public async Task AddRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
+        {
+            await _repository.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RemoveRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
+        {
+            await _repository.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

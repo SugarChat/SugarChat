@@ -113,8 +113,8 @@ namespace SugarChat.Core.Services.Users
         public async Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
         {
             var users = _mapper.Map<IEnumerable<User>>(command.Users);
-            await _userDataProvider.RemoveRangeAsync(users, cancellationToken);
-            await _userDataProvider.AddRangeAsync(users, cancellationToken);
+            await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
+            await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
             return _mapper.Map<UsersBatchAddedEvent>(command);
         }
     }

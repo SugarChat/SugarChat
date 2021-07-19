@@ -70,6 +70,7 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _getConversationByKeywordUrl = "api/conversation/getConversationByKeyword";
         private const string _getByCustomPropertiesUrl = "api/group/getByCustomProperties";
         private const string _getMessagesByGroupIdsUrl = "api/message/getMessagesByGroupIds";
+        private const string _batchAddUsersUrl = "api/user/batchAddUsers";
 
 
         private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;
@@ -392,6 +393,11 @@ namespace SugarChat.Net.Client.HttpClients
         {
             var requestUrl = $"{_getMessagesByGroupIdsUrl}?userId={request.UserId}&groupIds={request.GroupIds}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> BatchAddUsers(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_batchAddUsersUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
         }
     }
 }

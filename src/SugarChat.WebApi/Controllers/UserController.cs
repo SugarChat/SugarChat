@@ -79,5 +79,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.RequestAsync<GetFriendsOfUserRequest, SugarChatResponse<PagedResult<UserDto>>>(request);
             return Ok(response);
         }
+
+        [Route("batchAddUsers"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> AddUser(BatchAddUsersCommand command)
+        {
+            var response = await _mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

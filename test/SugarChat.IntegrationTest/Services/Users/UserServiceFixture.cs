@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using System;
+using System.Linq;
 
 namespace SugarChat.IntegrationTest.Services.Users
 {
@@ -113,6 +115,34 @@ namespace SugarChat.IntegrationTest.Services.Users
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
                 var reponse = await mediator.RequestAsync<GetFriendsOfUserRequest, SugarChatResponse<PagedResult<UserDto>>>(new GetFriendsOfUserRequest());
+            });
+        }
+
+        [Fact]
+        public async Task ShouldBatchAddUsers()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                List<UserDto> userDtos = new List<UserDto>();
+                for (int i = 0; i < 50; i++)
+                {
+                    userDtos.Add(new UserDto
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        DisplayName = i.ToString(),
+                        CreatedBy = "System",
+                        CreatedDate = DateTime.Now
+                    });
+                }
+                var ids = userDtos.Select(x => x.Id).ToArray();
+                {
+                    var response = await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
+                    (await repository.CountAsync<User>(x => ids.Contains(x.Id))).ShouldBe(50);
+                }
+                {
+                    var response = await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
+                    (await repository.CountAsync<User>(x => ids.Contains(x.Id))).ShouldBe(50);
+                }
             });
         }
     }

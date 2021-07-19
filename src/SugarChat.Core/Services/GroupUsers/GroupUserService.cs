@@ -15,7 +15,6 @@ using SugarChat.Message.Responses;
 using System;
 using SugarChat.Message.Responses.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
-using SugarChat.Message;
 
 namespace SugarChat.Core.Services.GroupUsers
 {

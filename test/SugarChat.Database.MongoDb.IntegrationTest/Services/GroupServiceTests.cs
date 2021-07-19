@@ -34,6 +34,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             AddGroupCommand addGroupCommand = new()
             {
                 Id = "0",
+                UserId = "1",
                 Description = "Friend group of Tom and Tyke"
             };
             GroupAddedEvent addGroupEvent =

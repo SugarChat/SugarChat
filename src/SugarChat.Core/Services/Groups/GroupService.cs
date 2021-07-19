@@ -28,27 +28,22 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
-        private readonly ISecurityManager _securityManager;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ISecurityManager securityManager)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
-            _securityManager = securityManager;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
             CancellationToken cancellation = default)
         {
-            if (!await _securityManager.IsSupperAdmin())
-            {
-                User user = await _userDataProvider.GetByIdAsync(command.UserId);
-                user.CheckExist(command.UserId);
-            }
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation);
+            user.CheckExist(command.UserId);
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
             group.CheckNotExist();
 
@@ -58,7 +53,7 @@ namespace SugarChat.Core.Services.Groups
                 GroupId = command.Id,
                 Role = UserRole.Owner
             };
-            await _groupUserDataProvider.AddAsync(groupUser);
+            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             group = _mapper.Map<Group>(command);
             await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
 

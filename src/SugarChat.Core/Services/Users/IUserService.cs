@@ -20,5 +20,7 @@ namespace SugarChat.Core.Services.Users
 
         Task<GetFriendsOfUserResponse> GetFriendsOfUserAsync(GetFriendsOfUserRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default);
     }
 }

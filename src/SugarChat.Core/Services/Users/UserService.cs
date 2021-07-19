@@ -7,7 +7,6 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Message.Commands.Users;
-using SugarChat.Message.Event;
 using SugarChat.Message.Events.Users;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -79,7 +78,7 @@ namespace SugarChat.Core.Services.Users
         public Task<GetCurrentUserResponse> GetCurrentUserAsync(GetCurrentUserRequest request,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(new GetCurrentUserResponse {User = new UserDto()});
+            return Task.FromResult(new GetCurrentUserResponse { User = new UserDto() });
         }
 
 
@@ -109,6 +108,14 @@ namespace SugarChat.Core.Services.Users
         private async Task<User> GetUserAsync(string id, CancellationToken cancellationToken = default)
         {
             return await _userDataProvider.GetByIdAsync(id, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
+        {
+            var users = _mapper.Map<IEnumerable<User>>(command.Users);
+            await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
+            await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
+            return _mapper.Map<UsersBatchAddedEvent>(command);
         }
     }
 }

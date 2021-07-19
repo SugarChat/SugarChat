@@ -10,12 +10,13 @@ namespace SugarChat.Core.Mappings
     {
         public UserMapping()
         {
-            CreateMap<User, UserDto>();
+            CreateMap<User, UserDto>().ReverseMap();
             CreateMap<AddUserCommand, User>();
             CreateMap<AddUserCommand, UserAddedEvent>();
             CreateMap<UpdateUserCommand, User>();
             CreateMap<UpdateUserCommand, UserUpdatedEvent>();
             CreateMap<RemoveUserCommand, UserRemovedEvent>();
+            CreateMap<BatchAddUsersCommand, UsersBatchAddedEvent>();
         }
     }
 }

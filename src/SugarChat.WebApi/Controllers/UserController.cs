@@ -83,7 +83,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("batchAddUsers"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> BatchAddUsers(BatchAddUsersCommand command)
-        {
+        { 
             var response = await _mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(command);
             return Ok(response);
         }

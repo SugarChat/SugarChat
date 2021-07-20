@@ -20,7 +20,6 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Conversations;
-using Microsoft.Extensions.Configuration;
 using SugarChat.Message.Basic;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos;
@@ -73,9 +72,10 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _batchAddUsersUrl = "api/user/batchAddUsers";
 
 
-        private string _baseUrl = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("HttpClientBaseUrl").Value;
-        public SugarChatHttpClient()
+        private string _baseUrl = "";
+        public SugarChatHttpClient(string baseUrl)
         {
+            _baseUrl = baseUrl;
         }
 
         protected struct ObjectResponseResult<T>

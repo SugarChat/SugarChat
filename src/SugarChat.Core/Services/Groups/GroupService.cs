@@ -110,7 +110,10 @@ namespace SugarChat.Core.Services.Groups
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
             if (group is null)
             {
-                return default(GetGroupProfileResponse);
+                return new GetGroupProfileResponse
+                {
+                    Group = null
+                };
             }
 
             var groupUser =

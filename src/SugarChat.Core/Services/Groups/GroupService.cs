@@ -16,6 +16,7 @@ using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
+using System;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -47,6 +48,7 @@ namespace SugarChat.Core.Services.Groups
 
             GroupUser groupUser = new()
             {
+                Id = Guid.NewGuid().ToString(),
                 UserId = command.UserId,
                 GroupId = command.Id,
                 Role = UserRole.Owner

@@ -7,7 +7,6 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Groups;
-using SugarChat.Message.Event;
 using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -15,7 +14,6 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
-using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 
@@ -110,7 +108,10 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.UserId);
 
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
-            group.CheckExist(request.GroupId);
+            if (group is null)
+            {
+                return default(GetGroupProfileResponse);
+            }
 
             var groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,

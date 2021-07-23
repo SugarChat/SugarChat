@@ -15,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Paging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -162,9 +164,8 @@ namespace SugarChat.Core.Services.Conversations
                 {
                     foreach (var message in messages)
                     {
-                        dynamic payload = message.Payload;
-                        IDictionary<string, object> dictionary = payload;
-                        foreach (var item in dictionary)
+                        JObject jo = (JObject)JsonConvert.DeserializeObject(message.Payload);
+                        foreach (var item in jo)
                         {
                             if (item.Key.ToLower().Contains(searchParm.Key.ToLower()))
                             {

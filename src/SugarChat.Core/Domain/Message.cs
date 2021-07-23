@@ -11,7 +11,7 @@ namespace SugarChat.Core.Domain
         public string SentBy { get; set; }
         public DateTimeOffset SentTime { get; set; }
         public bool IsSystem { get; set; }
-        public object Payload { get; set; }
+        public string Payload { get; set; }
         public bool IsRevoked { get; set; }
     }
 }

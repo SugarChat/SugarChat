@@ -13,21 +13,9 @@ namespace SugarChat.Core.Mediator.EventHandlers.Messages
 {
     public class MessageSavedEventHandler : IEventHandler<MessageSavedEvent>
     {
-        private readonly IServerClient _client;
-
-        public MessageSavedEventHandler(IServerClient client)
+        public Task Handle(IReceiveContext<MessageSavedEvent> context, CancellationToken cancellationToken)
         {
-            _client = client;
-        }
-
-        public async Task Handle(IReceiveContext<MessageSavedEvent> context, CancellationToken cancellationToken)
-        {
-            await _client.SendMessage(new SendMessageModel()
-            {
-                SendTo = context.Message.GroupId,
-                Messages = new[] {context.Message.SentBy, context.Message.Content},
-                SendWay = SendWay.All
-            });
+            return Task.CompletedTask;
         }
     }
 }

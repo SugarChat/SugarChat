@@ -15,6 +15,9 @@ using Mediator.Net.Contracts;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
+using Mediator.Net.Pipeline;
+using Mediator.Net.Middlewares.Serilog;
+using Serilog;
 
 namespace SugarChat.Core.Autofac
 {
@@ -39,15 +42,17 @@ namespace SugarChat.Core.Autofac
         {
             var mediaBuilder = new MediatorBuilder();
 
-            mediaBuilder
-                .ConfigureGlobalReceivePipe(config =>
-                {
-                    config.UseUnifyResponseMiddleware();
-                    config.UseValidatorMiddleware();
-                })
-                .RegisterHandlers(_assemblies.ToArray());
+            mediaBuilder.RegisterHandlers(_assemblies.ToArray());
+            mediaBuilder.ConfigureGlobalReceivePipe(AddGlobalReceivePipeConfigurator);
 
             builder.RegisterMediator(mediaBuilder);
+        }
+
+        public static void AddGlobalReceivePipeConfigurator(IGlobalReceivePipeConfigurator config)
+        {
+            config.UseSerilog(logger: Log.Logger);
+            config.UseUnifyResponseMiddleware();
+            config.UseValidatorMiddleware();
         }
 
 

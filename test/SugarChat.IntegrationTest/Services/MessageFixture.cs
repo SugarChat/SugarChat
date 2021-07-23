@@ -10,6 +10,7 @@ using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands.Messages;
+using Newtonsoft.Json;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -20,6 +21,13 @@ namespace SugarChat.IntegrationTest.Services
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                object payload = new
+                {
+                    uuid = Guid.NewGuid(),
+                    url = "testUrl",
+                    size = 100,
+                    second = 50
+                };
                 SendMessageCommand command = new SendMessageCommand
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -27,13 +35,7 @@ namespace SugarChat.IntegrationTest.Services
                     Content = "Test",
                     Type = 0,
                     SentBy = Guid.NewGuid().ToString(),
-                    Payload = new
-                    {
-                        uuid = Guid.NewGuid(),
-                        url = "testUrl",
-                        size = 100,
-                        second = 50
-                    }
+                    Payload = JsonConvert.SerializeObject(payload)
                 };
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
@@ -78,12 +80,12 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     command.MessageId = messageId1;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(Prompt.RevokeOthersMessage.WithParams(command.UserId,command.MessageId).Message);
+                    response.Message.ShouldBe(Prompt.RevokeOthersMessage.WithParams(command.UserId, command.MessageId).Message);
                 }
                 {
                     command.UserId = message.SentBy;
                     var response = await mediator.SendAsync<RevokeMessageCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(Prompt.TooLateToRevoke.WithParams(command.UserId,command.MessageId).Message);
+                    response.Message.ShouldBe(Prompt.TooLateToRevoke.WithParams(command.UserId, command.MessageId).Message);
                 }
 
                 command.MessageId = messageId2;

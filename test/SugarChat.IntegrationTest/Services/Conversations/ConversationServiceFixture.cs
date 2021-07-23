@@ -55,7 +55,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      SentBy = Guid.NewGuid().ToString(), //用户3
                      SentTime = DateTimeOffset.Now,
                      IsSystem = true,
-                     Payload = new { Text = "TestGroupMessageRead" }
+                     Payload = "{\"Text\":\"TestGroupMessageRead\"}"
                  });
 
                  await mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(new SetMessageReadByUserBasedOnMessageIdCommand

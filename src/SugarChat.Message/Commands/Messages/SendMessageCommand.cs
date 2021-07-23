@@ -6,6 +6,6 @@
         public string Content { get; set; }
         public int Type { get; set; }
         public string SentBy { get; set; }
-        public object Payload { get; set; }
+        public string Payload { get; set; }
     }
 }

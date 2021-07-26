@@ -51,7 +51,8 @@ namespace SugarChat.Core.Services.Groups
                 Id = Guid.NewGuid().ToString(),
                 UserId = command.UserId,
                 GroupId = command.Id,
-                Role = UserRole.Owner
+                Role = UserRole.Owner,
+                CreatedBy = command.CreatedBy
             };
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             group = _mapper.Map<Group>(command);

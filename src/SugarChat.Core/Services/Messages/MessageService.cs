@@ -162,7 +162,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllMessagesFromGroupResponse
             {
                 Messages =
-                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId,request.Index, request.MessageId, request.Count,
+                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count,
                         cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
@@ -264,6 +264,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
         {
             Domain.Message message = _mapper.Map<Domain.Message>(command);
+            message.SentTime = DateTime.Now;
             await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageSavedEvent>(command);
@@ -286,7 +287,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var messages =await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
+            var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
 
             return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
         }

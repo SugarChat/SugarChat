@@ -29,7 +29,8 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     UserId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid().ToString(),
-                    CustomProperties=new Dictionary<string, string> { { "MerchId","1"}, { "OrderId", "2" } }
+                    CustomProperties = new Dictionary<string, string> { { "MerchId", "1" }, { "OrderId", "2" } },
+                    CreatedBy = Guid.NewGuid().ToString()
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
@@ -40,7 +41,7 @@ namespace SugarChat.IntegrationTest.Services
                     Id = command.UserId
                 });
                 await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
-                var group = await repository.SingleAsync<Group>(x => x.Id == command.Id);
+                var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
                 group.CustomProperties.GetValueOrDefault("MerchId").ShouldBe("1");
                 group.CustomProperties.GetValueOrDefault("OrderId").ShouldBe("2");
             });

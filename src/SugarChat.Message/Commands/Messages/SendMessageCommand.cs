@@ -1,4 +1,6 @@
-﻿namespace SugarChat.Message.Commands.Messages
+﻿using System.Collections.Generic;
+
+namespace SugarChat.Message.Commands.Messages
 {
     public class SendMessageCommand : IdRequiredCommand
     {
@@ -7,5 +9,7 @@
         public int Type { get; set; }
         public string SentBy { get; set; }
         public string Payload { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
+        public string CreatedBy { get; set; }
     }
 }

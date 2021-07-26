@@ -11,6 +11,7 @@ using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -35,14 +36,19 @@ namespace SugarChat.IntegrationTest.Services
                     Content = "Test",
                     Type = 0,
                     SentBy = Guid.NewGuid().ToString(),
-                    Payload = JsonConvert.SerializeObject(payload)
+                    Payload = JsonConvert.SerializeObject(payload),
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CustomProperties = new Dictionary<string, string> { { "Number", "1" } }
                 };
                 await mediator.SendAsync(command);
-                (await repository.AnyAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
-                    && x.Content == command.Content
-                    && x.Type == command.Type
-                    && x.SentBy == command.SentBy
-                    && x.Payload == command.Payload)).ShouldBeTrue();
+                var message = await repository.SingleAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
+                     && x.Content == command.Content
+                     && x.Type == command.Type
+                     && x.SentBy == command.SentBy
+                     && x.Payload == command.Payload
+                     && x.CreatedBy == command.CreatedBy
+                     && x.CustomProperties == command.CustomProperties);
+                message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
             });
         }
 

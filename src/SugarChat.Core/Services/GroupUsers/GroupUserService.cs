@@ -212,7 +212,8 @@ namespace SugarChat.Core.Services.GroupUsers
                     Id = Guid.NewGuid().ToString(),
                     UserId = groupUserId,
                     GroupId = command.GroupId,
-                    Role = command.Role
+                    Role = command.Role,
+                    CreatedBy = command.CreatedBy
                 });
             }
             await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);

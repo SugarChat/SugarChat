@@ -383,7 +383,7 @@ namespace SugarChat.Net.Client.HttpClients
             return await ExecuteAsync<SugarChatResponse<PagedResult<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetGroupByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)
         {
             var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}&customPropertys={request.CustomPropertys}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);

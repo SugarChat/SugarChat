@@ -131,7 +131,7 @@ namespace SugarChat.IntegrationTest.Services
                     {
                         UserId = Guid.NewGuid().ToString()
                     });
-                    response.Message.ShouldBe(Prompt.ParameterRequired.WithParams("groupIds").Message);
+                    response.Data.Count().ShouldBe(0);
                 }
                 {
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()

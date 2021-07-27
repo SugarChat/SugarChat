@@ -181,13 +181,13 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" } },
+                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" }, { "content", "是" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(2);
-                    response.Data.Total.ShouldBe(2);
+                    response.Data.Result.Count().ShouldBe(3);
+                    response.Data.Total.ShouldBe(3);
                 }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest

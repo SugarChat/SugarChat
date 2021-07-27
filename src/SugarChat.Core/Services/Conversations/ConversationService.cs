@@ -160,20 +160,30 @@ namespace SugarChat.Core.Services.Conversations
             List<string> filterGroupIds = new();
             if (request.SearchParms is not null && request.SearchParms.Count != 0)
             {
-                foreach (var searchParm in request.SearchParms)
+                foreach (var message in messages)
                 {
-                    foreach (var message in messages)
+                    foreach (var searchParm in request.SearchParms)
                     {
-                        JObject jo = (JObject)JsonConvert.DeserializeObject(message.Payload);
-                        foreach (var item in jo)
+                        if (message.CustomProperties is not null && message.CustomProperties.Count != 0)
                         {
-                            if (item.Key.ToLower().Contains(searchParm.Key.ToLower()))
+                            foreach (var customProperty in message.CustomProperties)
                             {
-                                if ((request.IsExactSearch && item.Value.ToString() == searchParm.Value) || (!request.IsExactSearch && item.Value.ToString().Contains(searchParm.Value)))
+                                if (customProperty.Key.ToLower() == searchParm.Key.ToLower())
                                 {
-                                    filterGroupIds.Add(message.GroupId);
+                                    if ((request.IsExactSearch && customProperty.Value.ToString() == searchParm.Value) || (!request.IsExactSearch && customProperty.Value.ToString().Contains(searchParm.Value)))
+                                    {
+                                        filterGroupIds.Add(message.GroupId);
+                                    }
                                 }
                             }
+                        }
+                    }
+                    var contentKeyword = request.SearchParms.GetValueOrDefault("Content") ?? request.SearchParms.GetValueOrDefault("content");
+                    if (!string.IsNullOrEmpty(contentKeyword))
+                    {
+                        if (message.Content.Contains(contentKeyword))
+                        {
+                            filterGroupIds.Add(message.GroupId);
                         }
                     }
                 }

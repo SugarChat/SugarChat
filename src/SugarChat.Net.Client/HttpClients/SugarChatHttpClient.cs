@@ -218,7 +218,15 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<IEnumerable<ConversationDto>>> GetConversationListAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getConversationListUrl}?userId={request.UserId}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
+            string requestUrl;
+            if (request.PageSettings is null)
+            {
+                requestUrl = $"{_getConversationListUrl}?userId={request.UserId}";
+            }
+            else
+            {
+                requestUrl = $"{_getConversationListUrl}?userId={request.UserId}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
+            }
             return await ExecuteAsync<SugarChatResponse<IEnumerable<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -379,7 +387,15 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<PagedResult<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}&isExactSearch={request.IsExactSearch}";
+            string requestUrl;
+            if (request.PageSettings is null)
+            {
+                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&isExactSearch={request.IsExactSearch}";
+            }
+            else
+            {
+                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}&isExactSearch={request.IsExactSearch}";
+            }
             return await ExecuteAsync<SugarChatResponse<PagedResult<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 

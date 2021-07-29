@@ -137,7 +137,7 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userId,
-                        CustomPropertys = new Dictionary<string, string> { { "merchId", "11" }, { "userId", "12" } }
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "11" }, { "userId", "12" } }
                     });
                     response.Data.Count().ShouldBe(1);
                 }

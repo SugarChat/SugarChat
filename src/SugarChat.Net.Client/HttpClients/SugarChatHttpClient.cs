@@ -382,7 +382,9 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<IEnumerable<string>>> GetUserIdsByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getUserIdsByGroupIdsUrl}?groupIds={request.GroupIds}";
+            var query = StringEnumerableToQuery("GroupIds", request.GroupIds);
+            query = query.Substring(1, query.Length - 1);
+            var requestUrl = $"{_getUserIdsByGroupIdsUrl}?{query}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<string>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -410,7 +412,8 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getMessagesByGroupIdsUrl}?userId={request.UserId}&groupIds={request.GroupIds}";
+            var query = StringEnumerableToQuery("GroupIds", request.GroupIds);
+            var requestUrl = $"{_getMessagesByGroupIdsUrl}?userId={request.UserId}{query}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -425,6 +428,16 @@ namespace SugarChat.Net.Client.HttpClients
             foreach (var dictionary in dictionaries)
             {
                 query.Append($"&{fieldName}[{dictionary.Key}]={dictionary.Value}");
+            }
+            return query.ToString();
+        }
+
+        private string StringEnumerableToQuery(string fieldName, IEnumerable<string> arr)
+        {
+            StringBuilder query = new StringBuilder();
+            foreach (var item in arr)
+            {
+                query.Append($"&{fieldName}={item}");
             }
             return query.ToString();
         }

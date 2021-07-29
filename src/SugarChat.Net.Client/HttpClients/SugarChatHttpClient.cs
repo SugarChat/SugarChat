@@ -26,6 +26,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Dtos.Conversations;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Paging;
+using System.Text;
 
 namespace SugarChat.Net.Client.HttpClients
 {
@@ -388,20 +389,22 @@ namespace SugarChat.Net.Client.HttpClients
         public async Task<SugarChatResponse<PagedResult<ConversationDto>>> GetConversationByKeywordAsync(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
             string requestUrl;
+            var query = DictionariesToQuery("SearchParms", request.SearchParms);
             if (request.PageSettings is null)
             {
-                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&isExactSearch={request.IsExactSearch}";
+                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}{query}&isExactSearch={request.IsExactSearch}";
             }
             else
             {
-                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}&searchParms={request.SearchParms}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}&isExactSearch={request.IsExactSearch}";
+                requestUrl = $"{_getConversationByKeywordUrl}?userId={request.UserId}{query}&isExactSearch={request.IsExactSearch}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
             }
             return await ExecuteAsync<SugarChatResponse<PagedResult<ConversationDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetGroupByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}&customPropertys={request.CustomPropertys}";
+            var query = DictionariesToQuery("CustomProperties", request.CustomProperties);
+            var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}{query}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
@@ -414,6 +417,16 @@ namespace SugarChat.Net.Client.HttpClients
         public async Task<SugarChatResponse> BatchAddUsers(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
         {
             return await ExecuteAsync<SugarChatResponse>(_batchAddUsersUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
+        }
+
+        private string DictionariesToQuery(string fieldName, IDictionary<string, string> dictionaries)
+        {
+            StringBuilder query = new StringBuilder();
+            foreach (var dictionary in dictionaries)
+            {
+                query.Append($"&{fieldName}[{dictionary.Key}]={dictionary.Value}");
+            }
+            return query.ToString();
         }
     }
 }

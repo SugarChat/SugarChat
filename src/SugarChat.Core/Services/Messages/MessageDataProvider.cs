@@ -197,7 +197,11 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default)
         {
             var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
-                .OrderByDescending(o => o.SentTime).Take(count).ToList();
+                .OrderByDescending(o => o.SentTime).AsEnumerable();
+            if (count!=0)
+            {
+                messages = messages.Take(count);
+            }
 
             return await Task.FromResult(messages);
         }

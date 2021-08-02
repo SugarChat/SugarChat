@@ -17,6 +17,7 @@ using SugarChat.Core.Domain;
 using SugarChat.Message.Paging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -158,19 +159,19 @@ namespace SugarChat.Core.Services.Conversations
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             List<string> filterGroupIds = new();
-            if (request.SearchParms is not null && request.SearchParms.Count != 0)
+            if (request.SearchParms is not null && request.SearchParms.Any())
             {
                 foreach (var message in messages)
                 {
                     foreach (var searchParm in request.SearchParms)
                     {
-                        if (message.CustomProperties is not null && message.CustomProperties.Count != 0)
+                        if (message.CustomProperties is not null && message.CustomProperties.Any())
                         {
                             foreach (var customProperty in message.CustomProperties)
                             {
-                                if (customProperty.Key.ToLower() == searchParm.Key.ToLower())
+                                if (string.Equals(customProperty.Key, searchParm.Key, StringComparison.CurrentCultureIgnoreCase))
                                 {
-                                    if ((request.IsExactSearch && customProperty.Value.ToString() == searchParm.Value) || (!request.IsExactSearch && customProperty.Value.ToString().Contains(searchParm.Value)))
+                                    if (request.IsExactSearch ? customProperty.Value == searchParm.Value : customProperty.Value.Contains(searchParm.Value))
                                     {
                                         filterGroupIds.Add(message.GroupId);
                                     }
@@ -178,7 +179,7 @@ namespace SugarChat.Core.Services.Conversations
                             }
                         }
                     }
-                    var contentKeyword = request.SearchParms.GetValueOrDefault("Content") ?? request.SearchParms.GetValueOrDefault("content");
+                    var contentKeyword = request.SearchParms.GetValueOrDefault(Message.Constant.Content);
                     if (!string.IsNullOrEmpty(contentKeyword))
                     {
                         if (message.Content.Contains(contentKeyword))

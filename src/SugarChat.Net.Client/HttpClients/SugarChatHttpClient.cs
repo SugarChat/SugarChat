@@ -269,7 +269,15 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<PagedResult<GroupDto>>> GetGroupListAsync(GetGroupsOfUserRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getGroupListUrl}?id={request.Id}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
+            string requestUrl;
+            if (request.PageSettings is null)
+            {
+                requestUrl = $"{_getGroupListUrl}?id={request.Id}";
+            }
+            else
+            {
+                requestUrl = $"{_getGroupListUrl}?id={request.Id}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
+            }
             return await ExecuteAsync<SugarChatResponse<PagedResult<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 

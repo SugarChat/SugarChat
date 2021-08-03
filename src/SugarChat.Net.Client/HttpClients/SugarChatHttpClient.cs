@@ -347,7 +347,8 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<int>> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getUnreadMessageCountUrl}?userId={request.UserId}";
+            var query = StringEnumerableToQuery("GroupIds", request.GroupIds);
+            var requestUrl = $"{_getUnreadMessageCountUrl}?userId={request.UserId}{query}";
             return await ExecuteAsync<SugarChatResponse<int>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 

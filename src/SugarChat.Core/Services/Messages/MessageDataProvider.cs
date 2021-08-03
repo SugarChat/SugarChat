@@ -74,7 +74,7 @@ namespace SugarChat.Core.Services.Messages
             var groupIds = groups.Select(x => x.GroupId);
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
-            var unreadMessages = messages.Where(o =>
+            var unreadMessages = messages.Where(o => o.SentBy != userId &&
                     o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue))
                 .ToList();
 
@@ -130,7 +130,7 @@ namespace SugarChat.Core.Services.Messages
             var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                 cancellationToken)).LastReadTime;
 
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));                      
+            var query = _repository.Query<Domain.Message>().Where(o => o.SentBy != userId && o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));
 
             if (!string.IsNullOrEmpty(messageId))
             {
@@ -230,7 +230,7 @@ namespace SugarChat.Core.Services.Messages
             var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
             var groupIds = groups.Select(x => x.GroupId);
             var messages =
-                await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
+                await _repository.ToListAsync<Domain.Message>(o => o.SentBy != userId && groupIds.Contains(o.GroupId), cancellationToken);
             var unreadMessageCount = messages.Count(o =>
                     o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
 

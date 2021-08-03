@@ -18,12 +18,23 @@ namespace SugarChat.IntegrationTest.Services.Messages
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var request = new GetUnreadMessageCountRequest()
                 {
-                    UserId = userId
-                };
-                var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                response.Data.ShouldBe(5);
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(5);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupIds = new string[] { groups[3].Id }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
             });
         }
 

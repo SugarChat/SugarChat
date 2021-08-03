@@ -278,7 +278,7 @@ namespace SugarChat.Core.Services.Messages
 
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(userId, cancellationToken)
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, request.GroupIds, cancellationToken)
             };
         }
 

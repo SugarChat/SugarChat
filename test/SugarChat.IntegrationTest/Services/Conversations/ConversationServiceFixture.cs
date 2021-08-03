@@ -181,7 +181,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" }, { "content", "是" } },
+                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true
                     };

@@ -74,7 +74,7 @@ namespace SugarChat.Core.Services.Messages
             var groupIds = groups.Select(x => x.GroupId);
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
-            var unreadMessages = messages.Where(o =>
+            var unreadMessages = messages.Where(o => o.SentBy != userId &&
                     o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue))
                 .ToList();
 
@@ -130,7 +130,7 @@ namespace SugarChat.Core.Services.Messages
             var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                 cancellationToken)).LastReadTime;
 
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));                      
+            var query = _repository.Query<Domain.Message>().Where(o => o.SentBy != userId && o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));
 
             if (!string.IsNullOrEmpty(messageId))
             {
@@ -197,7 +197,11 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default)
         {
             var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
-                .OrderByDescending(o => o.SentTime).Take(count).ToList();
+                .OrderByDescending(o => o.SentTime).AsEnumerable();
+            if (count!=0)
+            {
+                messages = messages.Take(count);
+            }
 
             return await Task.FromResult(messages);
         }
@@ -221,14 +225,18 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<int> GetUnreadMessageCountAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            var groupIds = groups.Select(x => x.GroupId);
+            var groupUsers = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
+            if (groupIds is not null && groupIds.Any())
+            {
+                groupUsers = groupUsers.Where(x => groupIds.Contains(x.GroupId)).ToList();
+            }
+            var _groupIds = groupUsers.Select(x => x.GroupId);
             var messages =
-                await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
+                await _repository.ToListAsync<Domain.Message>(o => o.SentBy != userId && _groupIds.Contains(o.GroupId), cancellationToken);
             var unreadMessageCount = messages.Count(o =>
-                    o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
+                    o.SentTime > (groupUsers.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
 
             return unreadMessageCount;
         }

@@ -17,7 +17,6 @@ namespace SugarChat.WebApi
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.Development.json", true, true)
                 .AddEnvironmentVariables()
                 .Build();
 

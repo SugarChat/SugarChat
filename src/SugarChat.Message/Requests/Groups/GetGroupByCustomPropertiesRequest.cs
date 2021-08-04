@@ -11,5 +11,6 @@ namespace SugarChat.Message.Requests.Groups
     {
         public string UserId { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
+        public bool SearchAllGroup { get; set; }
     }
 }

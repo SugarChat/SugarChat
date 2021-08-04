@@ -164,10 +164,17 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken)
         {
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToArray();
-            if (!groupIds.Any())
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(request.UserId);
+
+            List<string> groupIds = new List<string>();
+            if (!request.SearchAllGroup)
             {
-                return new GroupDto[] { };
+                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                if (!groupIds.Any())
+                {
+                    return new GroupDto[] { };
+                }
             }
             var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds);
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);

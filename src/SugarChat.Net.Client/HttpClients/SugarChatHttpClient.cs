@@ -415,7 +415,7 @@ namespace SugarChat.Net.Client.HttpClients
         public async Task<SugarChatResponse<IEnumerable<GroupDto>>> GetGroupByCustomPropertiesAsync(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken = default)
         {
             var query = DictionariesToQuery("CustomProperties", request.CustomProperties);
-            var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}{query}";
+            var requestUrl = $"{_getByCustomPropertiesUrl}?userId={request.UserId}&SearchAllGroup={request.SearchAllGroup}{query}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<GroupDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 

@@ -249,7 +249,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             var groups = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
-            var messages = await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
+            var messages = await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId)&& o.SentBy != userId, cancellationToken);
             var unreadMessages = messages.Where(o => o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
             return unreadMessages;
         }

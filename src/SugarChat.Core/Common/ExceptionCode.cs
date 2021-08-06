@@ -46,7 +46,7 @@ namespace SugarChat.Core.Common
         UpdateMessageFailed = 51502,
         AddMessageFailed = 51503,
         RemoveMessageFailed = 51504,
-        LastReadTimeLaterThanOrEqualTo = 51505,
+        LastReadTimeLaterThan = 51505,
         RevokeOthersMessage = 51506,
         TooLateToRevoke = 51507,
         #endregion

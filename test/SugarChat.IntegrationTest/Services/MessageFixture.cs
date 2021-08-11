@@ -12,6 +12,8 @@ using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using SugarChat.Core.Domain;
+using System.Linq;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -97,6 +99,60 @@ namespace SugarChat.IntegrationTest.Services
                 command.MessageId = messageId2;
                 await mediator.SendAsync(command);
                 (await repository.SingleOrDefaultAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).IsRevoked.ShouldBeTrue();
+            });
+        }
+
+        [Fact]
+        public async Task ShouldSetMessageReadByUserIdsBasedOnGroupId()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                string groupId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new Group
+                {
+                    Id = groupId
+                });
+
+                DateTimeOffset lastMessageSentTime = DateTime.Now.AddDays(-1);
+                List<GroupUser> groupUsers = new List<GroupUser>();
+                await repository.AddAsync(new Core.Domain.Message
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    GroupId = groupId,
+                    SentTime = lastMessageSentTime
+                });
+
+                for (int i = 0; i < 10; i++)
+                {
+                    groupUsers.Add(new GroupUser
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        GroupId = groupId,
+                        UserId = Guid.NewGuid().ToString()
+                    });
+                }
+                await repository.AddRangeAsync(groupUsers);
+                IEnumerable<string> userIds = groupUsers.Select(x => x.UserId);
+
+                SetMessageReadByUserIdsBasedOnGroupIdCommand command = new SetMessageReadByUserIdsBasedOnGroupIdCommand()
+                {
+                    GroupId = Guid.NewGuid().ToString(),
+                    UserIds = new string[] { Guid.NewGuid().ToString() }
+                };
+                {
+                    var response = await mediator.SendAsync<SetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
+                    response.Message.ShouldBe(Prompt.GroupNoExists.WithParams(command.GroupId).Message);
+                }
+                {
+                    command.GroupId = groupId;
+                    var response = await mediator.SendAsync<SetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
+                    response.Message.ShouldBe(Prompt.NotAllUsersExists.Message);
+                }
+                {
+                    command.UserIds = userIds;
+                    await mediator.SendAsync(command);
+                    (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId && userIds.Contains(x.UserId) && x.LastReadTime == lastMessageSentTime)).ShouldBe(10);
+                }
             });
         }
     }

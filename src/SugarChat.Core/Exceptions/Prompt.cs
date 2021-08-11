@@ -154,6 +154,8 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt AddUsersToWrongGroup =
             new(ExceptionCode.AddUsersToWrongGroup, "Should not add users to a different group.");
 
+        public static readonly ExceptionPrompt NotAllGroupUsersExists = new(ExceptionCode.NotAllUsersExists, "Not all group users exist.");
+
         #endregion
 
         #region Global

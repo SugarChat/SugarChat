@@ -294,5 +294,33 @@ namespace SugarChat.Core.Services.Messages
 
             return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
         }
+
+        public async Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+            group.CheckExist(command.GroupId);
+
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdsAndGroupIdAsync(command.UserIds, command.GroupId, cancellationToken);
+            if (groupUsers.Count() != command.UserIds.Count())
+            {
+                throw new BusinessWarningException(Prompt.NotAllUsersExists);
+            }
+
+            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
+            if (lastMessageOfGroup is null)
+            {
+                return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
+            }
+            else
+            {
+                DateTimeOffset lastMessageSentTime = lastMessageOfGroup.SentTime;
+                foreach (var groupUser in groupUsers)
+                {
+                    groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
+                }
+                await _groupUserDataProvider.SetMessageReadByUserIdsAsync(command.UserIds, command.GroupId, lastMessageSentTime, cancellationToken);
+                return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
+            }
+        }
     }
 }

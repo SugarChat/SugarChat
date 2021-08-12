@@ -24,6 +24,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 .Build();
 
             var containerBuilder = new ContainerBuilder();
+            containerBuilder.RegisterInstance(Configuration).As<IConfiguration>();
             containerBuilder
                 .RegisterMongoDbRepository(() => Configuration.GetSection("MongoDb"))
                 .RegisterModule(new SugarChatModule(new[]

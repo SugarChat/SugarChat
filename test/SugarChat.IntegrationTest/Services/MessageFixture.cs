@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using SugarChat.Core.Domain;
 using System.Linq;
+using SugarChat.Message.Dtos;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -152,6 +153,70 @@ namespace SugarChat.IntegrationTest.Services
                     command.UserIds = userIds;
                     await mediator.SendAsync(command);
                     (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId && userIds.Contains(x.UserId) && x.LastReadTime == lastMessageSentTime)).ShouldBe(10);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldTranslateMessage()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                {
+                    var message = new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Content = "莫忘记，人类情感上最大的需要是感恩。",
+                    };
+                    await repository.AddAsync(message);
+                    var command = new TranslateMessageCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CreatedBy = Guid.NewGuid().ToString(),
+                        LanguageCode = "aaa",
+                        MessageId = Guid.NewGuid().ToString()
+                    };
+                    {
+                        var response = await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                        response.Message.ShouldBe(Prompt.LanguageCodeIsWrong.Message);
+                    }
+                    {
+                        command.LanguageCode = "en-US";
+                        var response = await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                        response.Message.ShouldBe(Prompt.MessageNoExists.WithParams(command.MessageId).Message);
+                    }
+                    {
+                        command.MessageId = message.Id;
+                        await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                        (await repository.CountAsync<MessageTranslate>(x => x.MessageId == message.Id && x.LanguageCode == command.LanguageCode)).ShouldBe(1);
+                    }
+                    {
+                        await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                        (await repository.CountAsync<MessageTranslate>(x => x.MessageId == message.Id && x.LanguageCode == command.LanguageCode)).ShouldBe(1);
+                    }
+                    {
+                        command.LanguageCode = "es-ES";
+                        command.Id = Guid.NewGuid().ToString();
+                        await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                        (await repository.CountAsync<MessageTranslate>(x => x.MessageId == message.Id && x.LanguageCode == command.LanguageCode)).ShouldBe(1);
+                    }
+                }
+                {
+                    var message = new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Content = "Cero Miedo",
+                    };
+                    await repository.AddAsync(message);
+                    var command = new TranslateMessageCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CreatedBy = Guid.NewGuid().ToString(),
+                        LanguageCode = "zh-TW",
+                        MessageId = message.Id
+                    };
+                    await mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
+                    (await repository.CountAsync<MessageTranslate>(x => x.MessageId == message.Id && x.LanguageCode == command.LanguageCode && x.Content == "零恐懼")).ShouldBe(1);
                 }
             });
         }

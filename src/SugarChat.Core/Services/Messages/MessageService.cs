@@ -18,6 +18,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
 using System.Linq;
+using SugarChat.Core.Services.ThirdParty;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -29,11 +30,15 @@ namespace SugarChat.Core.Services.Messages
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IGoogleService _googleService;
+        private readonly ITranslateMessageDataProvider _translateMessageDataProvider;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider,
+            IGoogleService googleService,
+            ITranslateMessageDataProvider translateMessageDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -41,6 +46,8 @@ namespace SugarChat.Core.Services.Messages
             _friendDataProvider = friendDataProvider;
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _googleService = googleService;
+            _translateMessageDataProvider = translateMessageDataProvider;
         }
 
 
@@ -321,6 +328,37 @@ namespace SugarChat.Core.Services.Messages
                 await _groupUserDataProvider.SetMessageReadByUserIdsAsync(command.UserIds, command.GroupId, lastMessageSentTime, cancellationToken);
                 return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
             }
+        }
+
+        public async Task<(MessageTranslatedEvent, MessageTranslateDto)> TranslateMessage(TranslateMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var googleLanguageCode = _googleService.MapLanguageCode(command.LanguageCode);
+            if (string.IsNullOrWhiteSpace(googleLanguageCode))
+            {
+                throw new BusinessWarningException(Prompt.LanguageCodeIsWrong);
+            }
+
+            var message = await _messageDataProvider.GetByIdAsync(command.MessageId);
+            message.CheckExist(command.MessageId);
+
+            var messageTranslate = await _translateMessageDataProvider.GetByMessageIdAndLuaguageCodeAsync(command.MessageId, command.LanguageCode, cancellationToken);
+            if (messageTranslate is not null)
+            {
+                return (_mapper.Map<MessageTranslatedEvent>(command), _mapper.Map<MessageTranslateDto>(messageTranslate));
+            }
+
+            var translatedTest = await _googleService.TranslateText(googleLanguageCode, message.Content);
+            var newMessageTranslate = new MessageTranslate
+            {
+                Id = command.Id,
+                MessageId = command.MessageId,
+                Content = translatedTest,
+                LanguageCode = command.LanguageCode,
+                CreatedBy = command.CreatedBy
+            };
+            await _translateMessageDataProvider.AddAsync(newMessageTranslate, cancellationToken);
+
+            return (_mapper.Map<MessageTranslatedEvent>(command), _mapper.Map<MessageTranslateDto>(newMessageTranslate));
         }
     }
 }

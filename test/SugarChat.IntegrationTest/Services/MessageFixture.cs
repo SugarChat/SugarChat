@@ -41,7 +41,8 @@ namespace SugarChat.IntegrationTest.Services
                     SentBy = Guid.NewGuid().ToString(),
                     Payload = JsonConvert.SerializeObject(payload),
                     CreatedBy = Guid.NewGuid().ToString(),
-                    CustomProperties = new Dictionary<string, string> { { "Number", "1" } }
+                    CustomProperties = new Dictionary<string, string> { { "Number", "1" } },
+                    Url = Guid.NewGuid().ToString()
                 };
                 await mediator.SendAsync(command);
                 var message = await repository.SingleAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
@@ -50,7 +51,8 @@ namespace SugarChat.IntegrationTest.Services
                      && x.SentBy == command.SentBy
                      && x.Payload == command.Payload
                      && x.CreatedBy == command.CreatedBy
-                     && x.CustomProperties == command.CustomProperties);
+                     && x.CustomProperties == command.CustomProperties
+                     && x.Url == command.Url);
                 message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
             });
         }

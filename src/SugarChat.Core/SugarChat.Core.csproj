@@ -7,10 +7,12 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="10.1.1" />
+      <PackageReference Include="Google.Cloud.Translation.V2" Version="2.1.0" />
       <PackageReference Include="Mediator.Net" Version="4.0.0" />
       <PackageReference Include="Mediator.Net.Middlewares.Serilog" Version="4.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
       <PackageReference Include="MongoDB.Bson" Version="2.12.2" />
       <PackageReference Include="MongoDB.Driver" Version="2.12.2" />

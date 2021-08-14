@@ -37,5 +37,9 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<GroupUser>> GetByUserIdsAndGroupIdAsync(IEnumerable<string> userIds, string groupId,CancellationToken cancellationToken = default);
+
+        Task SetMessageReadByUserIdsAsync(IEnumerable<string> userIds, string groupId, DateTimeOffset messageSentTime,CancellationToken cancellationToken = default);
     }
 }

@@ -9,6 +9,7 @@ namespace SugarChat.Message.Commands.Messages
 {
     public class SetMessageReadByUserIdsBasedOnGroupIdCommand : ICommand
     {
+        public string UserId { get; set; }
         public IEnumerable<string> UserIds { get; set; }
         public string GroupId { get; set; }
     }

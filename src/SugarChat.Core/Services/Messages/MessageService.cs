@@ -307,6 +307,12 @@ namespace SugarChat.Core.Services.Messages
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken);
             group.CheckExist(command.GroupId);
 
+            User user = await GetUserAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+
+            GroupUser currentGroupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
+            currentGroupUser.CheckIsAdmin(command.UserId, command.GroupId);
+
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdsAndGroupIdAsync(command.UserIds, command.GroupId, cancellationToken);
             if (groupUsers.Count() != command.UserIds.Count())
             {

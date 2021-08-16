@@ -336,7 +336,7 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
-        public async Task<(MessageTranslatedEvent, MessageTranslateDto)> TranslateMessage(TranslateMessageCommand command, CancellationToken cancellationToken = default)
+        public async Task<(MessageTranslatedEvent, MessageTranslateDto)> TranslateMessageAsync(TranslateMessageCommand command, CancellationToken cancellationToken = default)
         {
             var googleLanguageCode = _googleService.MapLanguageCode(command.LanguageCode);
             if (string.IsNullOrWhiteSpace(googleLanguageCode))

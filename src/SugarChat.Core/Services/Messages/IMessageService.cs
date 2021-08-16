@@ -49,6 +49,6 @@ namespace SugarChat.Core.Services.Messages
 
         Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
 
-        Task<(MessageTranslatedEvent, MessageTranslateDto)> TranslateMessage(TranslateMessageCommand command, CancellationToken cancellationToken = default);
+        Task<(MessageTranslatedEvent, MessageTranslateDto)> TranslateMessageAsync(TranslateMessageCommand command, CancellationToken cancellationToken = default);
     }
 }

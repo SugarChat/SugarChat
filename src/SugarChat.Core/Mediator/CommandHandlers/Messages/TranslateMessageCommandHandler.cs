@@ -24,7 +24,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 
         public async Task<SugarChatResponse<MessageTranslateDto>> Handle(IReceiveContext<TranslateMessageCommand> context, CancellationToken cancellationToken)
         {
-            var (messageTranslatedEvent, messageTranslateDto) = await _messageService.TranslateMessage(context.Message, cancellationToken).ConfigureAwait(false);
+            var (messageTranslatedEvent, messageTranslateDto) = await _messageService.TranslateMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageTranslatedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse<MessageTranslateDto>() { Data = messageTranslateDto };
         }

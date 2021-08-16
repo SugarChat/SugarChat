@@ -71,6 +71,8 @@ namespace SugarChat.Net.Client.HttpClients
         private const string _getByCustomPropertiesUrl = "api/group/getByCustomProperties";
         private const string _getMessagesByGroupIdsUrl = "api/message/getMessagesByGroupIds";
         private const string _batchAddUsersUrl = "api/user/batchAddUsers";
+        private const string _translateMessageUrl = "api/message/translate";
+        private const string _setMessageReadByUserIdsBasedOnGroupIdUrl = "api/conversation/setMessageReadByUserIdsBasedOnGroupId";
 
 
         private string _baseUrl = "";
@@ -449,6 +451,16 @@ namespace SugarChat.Net.Client.HttpClients
                 query.Append($"&{fieldName}={item}");
             }
             return query.ToString();
+        }
+
+        public async Task<SugarChatResponse<MessageTranslateDto>> TranslateMessageAsync(TranslateMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse<MessageTranslateDto>>(_translateMessageUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SugarChatResponse> SetMessageReadByUserIdsBasedOnGroupId(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync<SugarChatResponse>(_setMessageReadByUserIdsBasedOnGroupIdUrl, HttpMethod.Post, JsonConvert.SerializeObject(command), cancellationToken).ConfigureAwait(false);
         }
     }
 }

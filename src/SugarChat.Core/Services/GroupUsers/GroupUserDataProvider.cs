@@ -159,12 +159,33 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId),cancellationToken).ConfigureAwait(false);
+            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<GroupUser>> GetByUserIdsAndGroupIdAsync(IEnumerable<string> userIds, string groupId, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<GroupUser>(x => x.GroupId == groupId && userIds.Contains(x.UserId));
+        }
+
+        public async Task SetMessageReadByUserIdsAsync(IEnumerable<string> userIds, string groupId, DateTimeOffset messageSentTime, CancellationToken cancellationToken = default)
+        {
+            IEnumerable<GroupUser> groupUsers = await _repository.ToListAsync<GroupUser>(x => userIds.Contains(x.UserId) && x.GroupId == groupId, cancellationToken);
+
+            foreach (var groupUser in groupUsers)
+            {
+                groupUser.LastReadTime = messageSentTime;
+            }
+
+            int affectedLineNum = await _repository.UpdateRangeAsync(groupUsers, cancellationToken);
+            if (affectedLineNum != 1)
+            {
+                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(string.Join(",", userIds)));
+            }
         }
     }
 }

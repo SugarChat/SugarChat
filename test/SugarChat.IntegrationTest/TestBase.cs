@@ -22,8 +22,8 @@ namespace SugarChat.IntegrationTest
 
         protected TestBase()
         {
-            LoadThisConfiguration();
             var containerBuilder = new ContainerBuilder();
+            LoadThisConfiguration(containerBuilder);
             containerBuilder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
             containerBuilder.RegisterType<SignalRClientMock>()
                 .As<IServerClient>()
@@ -37,12 +37,13 @@ namespace SugarChat.IntegrationTest
             });
         }
 
-        private void LoadThisConfiguration()
+        private void LoadThisConfiguration(ContainerBuilder builder)
         {
             _configuration = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json")
                .Build();
+            builder.RegisterInstance(_configuration).As<IConfiguration>();
         }
 
         private void RegisterBaseContainer(ContainerBuilder builder, Action<ContainerBuilder> extraRegistration)

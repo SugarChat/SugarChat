@@ -11,5 +11,6 @@ namespace SugarChat.Message.Commands.Messages
         public string Payload { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
         public string CreatedBy { get; set; }
+        public string FileUrl { get; set; }
     }
 }

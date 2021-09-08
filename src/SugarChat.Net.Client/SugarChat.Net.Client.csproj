@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5;netstandard2.0</TargetFrameworks>
-	<Version>1.0.23</Version>
+	<Version>1.0.24</Version>
 	<Authors>SugarChat</Authors>
 	<Product>SugarChat.Net.Client</Product>
 	<PackageId>SugarChat.Net.Client</PackageId>
@@ -10,6 +10,8 @@
 	<RepositoryType>git</RepositoryType>
 	<PackageProjectUrl>https://github.com/SugarChat/SugarChat</PackageProjectUrl>
 	<Company>SugarChat</Company>
+	<PackageReleaseNotes>get group by custom properties ignore case.
+get conversation by keyword ignore case.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

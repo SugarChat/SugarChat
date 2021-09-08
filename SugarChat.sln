@@ -47,7 +47,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.SignalR.Client.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Sample.WebApi", "sample\SignalR\SugarChat.Sample.WebApi\SugarChat.Sample.WebApi.csproj", "{E422ADDD-1D24-4FED-B96D-6FFA449A7E26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SugarChat.Net.Client", "src\SugarChat.Net.Client\SugarChat.Net.Client.csproj", "{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SugarChat.Net.Client", "src\SugarChat.Net.Client\SugarChat.Net.Client.csproj", "{6B54FDB3-6F59-4241-A4EE-E11C5F04E941}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

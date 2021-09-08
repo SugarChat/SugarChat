@@ -110,9 +110,6 @@ namespace SugarChat.IntegrationTest.Services
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                //string userId1 = Guid.NewGuid().ToString();
-                //string userId2 = Guid.NewGuid().ToString();
-
                 string[] userIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
                 for (int j = 0; j < 2; j++)
                 {
@@ -132,7 +129,7 @@ namespace SugarChat.IntegrationTest.Services
                         await repository.AddAsync(new Group
                         {
                             Id = groupId,
-                            CustomProperties = new Dictionary<string, string> { { "merchId", $"{i + 1}{i + 1}" }, { "userId", $"{i + 1}{i + 2}" } }
+                            CustomProperties = new Dictionary<string, string> { { "merchId", $"a{i + 1}{i + 1}" }, { "userId", $"b{i + 1}{i + 2}" } }
                         });
                     }
                 }
@@ -148,7 +145,7 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "11" }, { "userId", "12" } }
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } }
                     });
                     response.Data.Count().ShouldBe(1);
                 }
@@ -156,7 +153,7 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "11" }, { "userId", "12" } },
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } },
                         SearchAllGroup = true
                     });
                     response.Data.Count().ShouldBe(2);

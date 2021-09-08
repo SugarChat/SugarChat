@@ -169,9 +169,11 @@ namespace SugarChat.Core.Services.Conversations
                         {
                             foreach (var customProperty in message.CustomProperties)
                             {
-                                if (string.Equals(customProperty.Key, searchParm.Key, StringComparison.CurrentCultureIgnoreCase))
+                                if (customProperty.Key == searchParm.Key)
                                 {
-                                    if (request.IsExactSearch ? customProperty.Value.Equals(searchParm.Value) : customProperty.Value.Contains(searchParm.Value))
+                                    if (request.IsExactSearch ?
+                                        string.Equals(customProperty.Value, searchParm.Value, StringComparison.CurrentCultureIgnoreCase)
+                                        : customProperty.Value.Contains(searchParm.Value, StringComparison.InvariantCultureIgnoreCase))
                                     {
                                         filterGroupIds.Add(message.GroupId);
                                     }
@@ -182,7 +184,7 @@ namespace SugarChat.Core.Services.Conversations
                     var contentKeyword = request.SearchParms.GetValueOrDefault(Message.Constant.Content);
                     if (!string.IsNullOrEmpty(contentKeyword))
                     {
-                        if (message.Content.Contains(contentKeyword))
+                        if (message.Content.Contains(contentKeyword, StringComparison.InvariantCultureIgnoreCase))
                         {
                             filterGroupIds.Add(message.GroupId);
                         }

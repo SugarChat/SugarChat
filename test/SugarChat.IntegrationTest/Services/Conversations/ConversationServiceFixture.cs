@@ -149,6 +149,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 groupUser.ShouldBeNull();
             });
         }
+
         [Fact]
         public async Task ShouldGetConversationByKeyword()
         {
@@ -158,7 +159,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "1" } },
+                        SearchParms = new Dictionary<string, string> { { "order", "1" } },
                         UserId = userId
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
@@ -169,7 +170,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "25" } },
+                        SearchParms = new Dictionary<string, string> { { "order", "25" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
@@ -181,7 +182,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "Order", "11" }, { "Text", "test8" }, { "Content", "是" } },
+                        SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true
                     };

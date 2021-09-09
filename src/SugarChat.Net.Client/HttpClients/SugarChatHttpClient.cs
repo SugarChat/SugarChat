@@ -376,7 +376,7 @@ namespace SugarChat.Net.Client.HttpClients
 
         public async Task<SugarChatResponse<IEnumerable<MessageDto>>> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request, CancellationToken cancellationToken = default)
         {
-            var requestUrl = $"{_getMessagesOfGroupUrl}?groupId={request.GroupId}&count={request.Count}";
+            var requestUrl = $"{_getMessagesOfGroupUrl}?groupId={request.GroupId}&fromDate={request.FromDate}&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
             return await ExecuteAsync<SugarChatResponse<IEnumerable<MessageDto>>>(requestUrl, HttpMethod.Get, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 

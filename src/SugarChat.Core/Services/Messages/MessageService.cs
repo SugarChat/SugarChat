@@ -18,6 +18,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
 using System.Linq;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -173,11 +174,14 @@ namespace SugarChat.Core.Services.Messages
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
 
-            var messages =
-                await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.Count, cancellationToken);
+            var messages = await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
             return new()
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = new PagedResult<MessageDto>
+                {
+                    Result = _mapper.Map<IEnumerable<MessageDto>>(messages.Result),
+                    Total = messages.Total
+                }
             };
         }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
-
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -193,17 +193,26 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetMessagesOfGroupAsync(string groupId, int count,
-            CancellationToken cancellationToken = default)
+        public async Task<PagedResult<Domain.Message>> GetMessagesOfGroupAsync(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default)
         {
-            var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
-                .OrderByDescending(o => o.SentTime).AsEnumerable();
-            if (count!=0)
+            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId);
+            if (fromDate is not null)
             {
-                messages = messages.Take(count);
+                query = query.Where(x => x.SentTime >= fromDate);
             }
-
-            return await Task.FromResult(messages);
+            query = query.OrderByDescending(o => o.SentTime);
+            var result = new PagedResult<Domain.Message>();
+            if (pageSettings is not null)
+            {
+                result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken);
+            }
+            else
+            {
+                var messages = query.ToArray();
+                result.Result = messages;
+                result.Total = messages.Count();
+            }
+            return result;
         }
 
         public async Task<Domain.Message> GetLatestMessageOfGroupAsync(string groupId,

@@ -8,6 +8,7 @@ using Xunit;
 using Shouldly;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
 {
@@ -216,15 +217,15 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_Messages_Of_Group()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, 1);
-            messages.Count().ShouldBe(1);
-            messages.First().ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
+            PagedResult<Core.Domain.Message> messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, new PageSettings { PageNum = 1, PageSize = 1 }, null);
+            messages.Total.ShouldBe(2);
+            messages.Result.First().ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
 
-            messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, 2);
-            messages.Count().ShouldBe(2);
-            messages.OrderByDescending(o => o.SentTime).Last()
+            messages = await _messageDataProvider.GetMessagesOfGroupAsync(TomAndJerryGroup.Id, new PageSettings { PageNum = 1, PageSize = 2 }, null);
+            messages.Total.ShouldBe(2);
+            messages.Result.OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry1);
-            messages.OrderByDescending(o => o.SentTime).First()
+            messages.Result.OrderByDescending(o => o.SentTime).First()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
         }
 

@@ -172,7 +172,7 @@ namespace SugarChat.Core.Services.Conversations
                                 if (customProperty.Key == searchParm.Key)
                                 {
                                     if (request.IsExactSearch ?
-                                        string.Equals(customProperty.Value, searchParm.Value, StringComparison.CurrentCultureIgnoreCase)
+                                        string.Equals(customProperty.Value, searchParm.Value, StringComparison.InvariantCultureIgnoreCase)
                                         : customProperty.Value.Contains(searchParm.Value, StringComparison.InvariantCultureIgnoreCase))
                                     {
                                         filterGroupIds.Add(message.GroupId);

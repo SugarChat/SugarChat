@@ -73,7 +73,7 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<Group>> GetByCustomProperties(Dictionary<string, string> customProperties, IEnumerable<string> groupIds)
         {
-            var groups = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) || groupIds.Count() == 0);
+            var groups = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) || !groupIds.Any());
             List<Group> filterGroups = new List<Group>();
             if (customProperties is not null)
             {
@@ -81,12 +81,12 @@ namespace SugarChat.Core.Services.Groups
                 {
                     if (group.CustomProperties is not null)
                     {
-                        bool isAdd = false;
+                        bool isAdd = true;
                         foreach (var customProperty in customProperties)
                         {
-                            if (string.Equals(group.CustomProperties.GetValueOrDefault(customProperty.Key), customProperty.Value, StringComparison.InvariantCultureIgnoreCase))
+                            if (!string.Equals(group.CustomProperties.GetValueOrDefault(customProperty.Key), customProperty.Value, StringComparison.InvariantCultureIgnoreCase))
                             {
-                                isAdd = true;
+                                isAdd = false;
                                 break;
                             }
                         }

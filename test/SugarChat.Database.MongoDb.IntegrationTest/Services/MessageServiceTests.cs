@@ -8,6 +8,7 @@ using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
+using SugarChat.Message.Paging;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using Xunit;
@@ -32,14 +33,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             };
             GetAllUnreadToUserResponse getAllUnreadToUserResponse =
                 await _messageService.GetAllUnreadToUserAsync(getAllUnreadToUserRequest);
-            getAllUnreadToUserResponse.Messages.Count().ShouldBe(4);
-            getAllUnreadToUserResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
+            getAllUnreadToUserResponse.Messages.Count().ShouldBe(2);
+            getAllUnreadToUserResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
 
             TomInTomAndJerry.LastReadTime = BaseTime;
             await Repository.UpdateAsync(TomInTomAndJerry);
             getAllUnreadToUserResponse =
                 await _messageService.GetAllUnreadToUserAsync(getAllUnreadToUserRequest);
-            getAllUnreadToUserResponse.Messages.Count().ShouldBe(3);
+            getAllUnreadToUserResponse.Messages.Count().ShouldBe(2);
             getAllUnreadToUserResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
         }
 
@@ -203,8 +204,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             };
             GetUnreadMessagesFromGroupResponse getUnreadToUserFromGroupResponse =
                 await _messageService.GetUnreadMessagesFromGroupAsync(getUnreadToUserFromGroupRequest);
-            getUnreadToUserFromGroupResponse.Messages.Count().ShouldBe(2);
-            getUnreadToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
+            getUnreadToUserFromGroupResponse.Messages.Count().ShouldBe(1);
+            getUnreadToUserFromGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
 
             TomInTomAndJerry.LastReadTime = BaseTime;
             await Repository.UpdateAsync(TomInTomAndJerry);
@@ -315,26 +316,35 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetMessagesOfGroupRequest getMessagesOfGroupRequest = new()
             {
                 GroupId = TomAndJerryGroup.Id,
-                Count = 1
+                PageSettings = new PageSettings { PageSize = 1, PageNum = 1 }
             };
             GetMessagesOfGroupResponse getMessagesOfGroupResponse =
                 await _messageService.GetMessagesOfGroupAsync(getMessagesOfGroupRequest);
-            getMessagesOfGroupResponse.Messages.Count().ShouldBe(1);
-            getMessagesOfGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
-            getMessagesOfGroupResponse.Messages.Last().Content.ShouldBe(MessageOfGroupTomAndJerry2.Content);
-            getMessagesOfGroupResponse.Messages.Last().SentTime.ShouldBe(MessageOfGroupTomAndJerry2.SentTime);
+            getMessagesOfGroupResponse.Messages.Total.ShouldBe(2);
+            getMessagesOfGroupResponse.Messages.Result.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(1);
+            getMessagesOfGroupResponse.Messages.Result.Last().Content.ShouldBe(MessageOfGroupTomAndJerry2.Content);
+            getMessagesOfGroupResponse.Messages.Result.Last().SentTime.ShouldBe(MessageOfGroupTomAndJerry2.SentTime);
 
             getMessagesOfGroupRequest = new()
             {
                 GroupId = TomAndJerryGroup.Id,
-                Count = 2
+                PageSettings = new PageSettings { PageNum = 50, PageSize = 1 },
+                FromDate = BaseTime.AddSeconds(3)
+            };
+            getMessagesOfGroupResponse =await _messageService.GetMessagesOfGroupAsync(getMessagesOfGroupRequest);
+            getMessagesOfGroupResponse.Messages.Total.ShouldBe(1);
+
+            getMessagesOfGroupRequest = new()
+            {
+                GroupId = TomAndJerryGroup.Id,
+                PageSettings = new PageSettings { PageNum = 1, PageSize = 2 }
             };
             getMessagesOfGroupResponse =
                 await _messageService.GetMessagesOfGroupAsync(getMessagesOfGroupRequest);
-            getMessagesOfGroupResponse.Messages.Count().ShouldBe(2);
-            getMessagesOfGroupResponse.Messages.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
-            getMessagesOfGroupResponse.Messages.Last().Content.ShouldBe(MessageOfGroupTomAndJerry1.Content);
-            getMessagesOfGroupResponse.Messages.Last().SentTime.ShouldBe(MessageOfGroupTomAndJerry1.SentTime);
+            getMessagesOfGroupResponse.Messages.Total.ShouldBe(2);
+            getMessagesOfGroupResponse.Messages.Result.Count(o => o.GroupId == TomAndJerryGroup.Id).ShouldBe(2);
+            getMessagesOfGroupResponse.Messages.Result.Last().Content.ShouldBe(MessageOfGroupTomAndJerry1.Content);
+            getMessagesOfGroupResponse.Messages.Result.Last().SentTime.ShouldBe(MessageOfGroupTomAndJerry1.SentTime);
         }
 
         [Fact]
@@ -343,7 +353,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetMessagesOfGroupRequest getMessagesOfGroupRequest = new()
             {
                 GroupId = "0",
-                Count = 2
+                PageSettings = new PageSettings { PageNum = 1, PageSize = 2 }
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _messageService.GetMessagesOfGroupAsync(getMessagesOfGroupRequest));
@@ -451,14 +461,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
 
         [Fact]
         public async Task
-            Should_Not_Set_Message_Read_By_User_Based_On_Message_Id_When_Last_Read_Time_Later_Or_Equal_To_The_Message()
+            Should_Not_Set_Message_Read_By_User_Based_On_Message_Id_When_Last_Read_Time_Later_The_Message()
         {
             SetMessageReadByUserBasedOnMessageIdCommand setMessageReadByUserBasedOnMessageIdCommand = new()
             {
                 UserId = Tom.Id,
                 MessageId = MessageOfGroupTomAndJerry1.Id
             };
-            TomInTomAndJerry.LastReadTime = MessageOfGroupTomAndJerry1.SentTime;
+            TomInTomAndJerry.LastReadTime = MessageOfGroupTomAndJerry1.SentTime.AddSeconds(5);
             await Repository.UpdateAsync(TomInTomAndJerry);
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _messageService.SetMessageReadByUserBasedOnMessageIdAsync(
@@ -525,14 +535,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
 
         [Fact]
         public async Task
-            Should_Not_Set_Message_Read_By_User_Based_On_Group_Id_When_Last_Read_Time_Later_Or_Equal_To_The_Message()
+            Should_Not_Set_Message_Read_By_User_Based_On_Group_Id_When_Last_Read_Time_Later_The_Message()
         {
             SetMessageReadByUserBasedOnGroupIdCommand setMessageReadByUserBasedOnGroupIdCommand = new()
             {
                 UserId = Tom.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            TomInTomAndJerry.LastReadTime = MessageOfGroupTomAndJerry2.SentTime;
+            TomInTomAndJerry.LastReadTime = MessageOfGroupTomAndJerry2.SentTime.AddSeconds(5);
             await Repository.UpdateAsync(TomInTomAndJerry);
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(

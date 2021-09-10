@@ -10,6 +10,7 @@ namespace SugarChat.Message.Requests.Groups
     public class GetGroupByCustomPropertiesRequest : IRequest
     {
         public string UserId { get; set; }
-        public Dictionary<string, string> CustomPropertys { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
+        public bool SearchAllGroup { get; set; }
     }
 }

@@ -39,7 +39,6 @@ namespace SugarChat.Core.Middlewares
             if (ex is not BusinessException || context.Message is IEvent)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();
-                throw ex;
             }
             var businessException = ex as BusinessException;
             if (context.Result is null)

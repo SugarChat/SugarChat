@@ -90,9 +90,9 @@ namespace SugarChat.Core.Services
 
         public static void CheckLastReadTimeEarlierThan(this GroupUser groupUser, DateTimeOffset sentTime)
         {
-            if (groupUser.LastReadTime >= sentTime)
+            if (groupUser.LastReadTime > sentTime)
             {
-                throw new BusinessWarningException(Prompt.LastReadTimeLaterThanOrEqualTo.WithParams(groupUser.UserId,
+                throw new BusinessWarningException(Prompt.LastReadTimeLaterThan.WithParams(groupUser.UserId,
                     groupUser.GroupId, sentTime.ToString()));
             }
         }

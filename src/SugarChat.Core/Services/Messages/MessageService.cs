@@ -18,6 +18,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
 using System.Linq;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -162,7 +163,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllMessagesFromGroupResponse
             {
                 Messages =
-                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId,request.Index, request.MessageId, request.Count,
+                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count,
                         cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
             };
         }
@@ -173,11 +174,14 @@ namespace SugarChat.Core.Services.Messages
             Group group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken);
             group.CheckExist(request.GroupId);
 
-            var messages =
-                await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.Count, cancellationToken);
+            var messages = await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
             return new()
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = new PagedResult<MessageDto>
+                {
+                    Result = _mapper.Map<IEnumerable<MessageDto>>(messages.Result),
+                    Total = messages.Total
+                }
             };
         }
 
@@ -229,15 +233,18 @@ namespace SugarChat.Core.Services.Messages
             GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
 
-            DateTimeOffset lastMessageSentTime = DateTimeOffset.Now;
             Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
-            if (lastMessageOfGroup is not null) lastMessageSentTime = lastMessageOfGroup.SentTime;
-
-            groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
-
-            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageSentTime, cancellationToken);
-            return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
-
+            if (lastMessageOfGroup is null)
+            {
+                return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
+            }
+            else
+            {
+                DateTimeOffset lastMessageSentTime = lastMessageOfGroup.SentTime;
+                groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
+                await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageSentTime, cancellationToken);
+                return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
+            }
         }
 
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
@@ -264,6 +271,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
         {
             Domain.Message message = _mapper.Map<Domain.Message>(command);
+            message.SentTime = DateTime.Now;
             await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageSavedEvent>(command);
@@ -277,7 +285,7 @@ namespace SugarChat.Core.Services.Messages
 
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(userId, cancellationToken)
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, request.GroupIds, cancellationToken)
             };
         }
 
@@ -286,7 +294,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var messages =await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
+            var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
 
             return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
         }

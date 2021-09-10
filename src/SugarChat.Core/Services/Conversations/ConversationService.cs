@@ -15,6 +15,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Paging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -156,23 +159,34 @@ namespace SugarChat.Core.Services.Conversations
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             List<string> filterGroupIds = new();
-            if (request.SearchParms is not null && request.SearchParms.Count != 0)
+            if (request.SearchParms is not null && request.SearchParms.Any())
             {
-                foreach (var searchParm in request.SearchParms)
+                foreach (var message in messages)
                 {
-                    foreach (var message in messages)
+                    foreach (var searchParm in request.SearchParms)
                     {
-                        dynamic payload = message.Payload;
-                        IDictionary<string, object> dictionary = payload;
-                        foreach (var item in dictionary)
+                        if (message.CustomProperties is not null && message.CustomProperties.Any())
                         {
-                            if (item.Key.ToLower().Contains(searchParm.Key.ToLower()))
+                            foreach (var customProperty in message.CustomProperties)
                             {
-                                if ((request.IsExactSearch && item.Value.ToString() == searchParm.Value) || (!request.IsExactSearch && item.Value.ToString().Contains(searchParm.Value)))
+                                if (customProperty.Key == searchParm.Key)
                                 {
-                                    filterGroupIds.Add(message.GroupId);
+                                    if (request.IsExactSearch ?
+                                        string.Equals(customProperty.Value, searchParm.Value, StringComparison.InvariantCultureIgnoreCase)
+                                        : customProperty.Value.Contains(searchParm.Value, StringComparison.InvariantCultureIgnoreCase))
+                                    {
+                                        filterGroupIds.Add(message.GroupId);
+                                    }
                                 }
                             }
+                        }
+                    }
+                    var contentKeyword = request.SearchParms.GetValueOrDefault(Message.Constant.Content);
+                    if (!string.IsNullOrEmpty(contentKeyword))
+                    {
+                        if (message.Content.Contains(contentKeyword, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            filterGroupIds.Add(message.GroupId);
                         }
                     }
                 }

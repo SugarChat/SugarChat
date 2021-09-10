@@ -96,9 +96,9 @@ namespace SugarChat.Core.Exceptions
         public static readonly ExceptionPrompt RemoveMessageFailed =
             new(ExceptionCode.RemoveMessageFailed, "Message with Id {0} removing failed.");
 
-        public static readonly ExceptionPrompt LastReadTimeLaterThanOrEqualTo =
-            new(ExceptionCode.LastReadTimeLaterThanOrEqualTo,
-                "User with Id {0} from group with Id {1}'s Last Read Time is later than or equal to {2}.");
+        public static readonly ExceptionPrompt LastReadTimeLaterThan =
+            new(ExceptionCode.LastReadTimeLaterThan,
+                "User with Id {0} from group with Id {1}'s Last Read Time is later than {2}.");
         
         public static readonly ExceptionPrompt RevokeOthersMessage =
             new(ExceptionCode.RevokeOthersMessage,

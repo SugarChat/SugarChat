@@ -7,7 +7,6 @@ using SugarChat.Core.Domain;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Groups;
-using SugarChat.Message.Event;
 using SugarChat.Message.Events.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -15,9 +14,9 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Requests.Groups;
-using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
+using System;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -49,9 +48,11 @@ namespace SugarChat.Core.Services.Groups
 
             GroupUser groupUser = new()
             {
+                Id = Guid.NewGuid().ToString(),
                 UserId = command.UserId,
                 GroupId = command.Id,
-                Role = UserRole.Owner
+                Role = UserRole.Owner,
+                CreatedBy = command.CreatedBy
             };
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             group = _mapper.Map<Group>(command);
@@ -110,7 +111,13 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.UserId);
 
             var group = await _groupDataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
-            group.CheckExist(request.GroupId);
+            if (group is null)
+            {
+                return new GetGroupProfileResponse
+                {
+                    Group = null
+                };
+            }
 
             var groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
@@ -157,8 +164,19 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken)
         {
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToArray();
-            var groups = await _groupDataProvider.GetByCustomPropertys(request.CustomPropertys, groupIds);
+            var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(request.UserId);
+
+            List<string> groupIds = new List<string>();
+            if (!request.SearchAllGroup)
+            {
+                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                if (!groupIds.Any())
+                {
+                    return new GroupDto[] { };
+                }
+            }
+            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds);
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);

@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;
-using SugarChat.Message.Commands;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Messages;
-using SugarChat.Message.Responses;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -75,7 +74,7 @@ namespace SugarChat.WebApi.Controllers
         {
             var response =
                  await _mediator
-                     .RequestAsync<GetMessagesOfGroupRequest, SugarChatResponse<GetMessagesOfGroupResponse>>(request);
+                     .RequestAsync<GetMessagesOfGroupRequest, SugarChatResponse<PagedResult<MessageDto>>>(request);
 
             return Ok(response);
         }

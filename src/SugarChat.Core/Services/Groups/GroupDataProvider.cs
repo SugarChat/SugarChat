@@ -81,12 +81,12 @@ namespace SugarChat.Core.Services.Groups
                 {
                     if (group.CustomProperties is not null)
                     {
-                        bool isAdd = false;
+                        bool isAdd = true;
                         foreach (var customProperty in customProperties)
                         {
-                            if (string.Equals(group.CustomProperties.GetValueOrDefault(customProperty.Key), customProperty.Value, StringComparison.InvariantCultureIgnoreCase))
+                            if (!string.Equals(group.CustomProperties.GetValueOrDefault(customProperty.Key), customProperty.Value, StringComparison.InvariantCultureIgnoreCase))
                             {
-                                isAdd = true;
+                                isAdd = false;
                                 break;
                             }
                         }

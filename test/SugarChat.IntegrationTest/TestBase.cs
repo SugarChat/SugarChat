@@ -11,6 +11,7 @@ using SugarChat.SignalR.ServerClient;
 using Xunit;
 using NSubstitute;
 using SugarChat.Core.Services;
+using Nest;
 
 namespace SugarChat.IntegrationTest
 {
@@ -50,7 +51,8 @@ namespace SugarChat.IntegrationTest
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
                 typeof(SugarChat.Core.Services.IService).Assembly
-            }));
+            }, _configuration));
+            builder.RegisterInstance(_configuration).As<IConfiguration>();
             extraRegistration(builder);
             Container = builder.Build().BeginLifetimeScope();
         }
@@ -138,8 +140,11 @@ namespace SugarChat.IntegrationTest
 
         private void ClearDatabaseRecord()
         {
-            var client = new MongoClient(_configuration["MongoDb:ConnectionString"]);
-            client.DropDatabase(_configuration["MongoDb:DatabaseName"]);
+            var mongoClient = new MongoClient(_configuration["MongoDb:ConnectionString"]);
+            mongoClient.DropDatabase(_configuration["MongoDb:DatabaseName"]);
+
+            var elasticClient = new ElasticClient(new ConnectionSettings(new Uri(_configuration["Elasticsearch:Node"])));
+            elasticClient.Indices.Delete(_configuration["Elasticsearch:MessageIndex"]);
         }
     }
 }

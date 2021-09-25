@@ -18,16 +18,21 @@ using SugarChat.Core.Services.Users;
 using Mediator.Net.Pipeline;
 using Mediator.Net.Middlewares.Serilog;
 using Serilog;
+using Nest;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace SugarChat.Core.Autofac
 {
     public class SugarChatModule : Module
     {
         private readonly IEnumerable<Assembly> _assemblies;
+        public IConfiguration _configuration { get; set; }
 
-        public SugarChatModule(IEnumerable<Assembly> assemblies)
+        public SugarChatModule(IEnumerable<Assembly> assemblies, IConfiguration configuration)
         {
             _assemblies = assemblies;
+            _configuration = configuration;
         }
 
         protected override void Load(ContainerBuilder builder)
@@ -36,6 +41,7 @@ namespace SugarChat.Core.Autofac
             RegisterServices(builder);
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
+            RegisterElasticClient(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -91,6 +97,17 @@ namespace SugarChat.Core.Autofac
             {
                 builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }
+        }
+
+        private void RegisterElasticClient(ContainerBuilder builder)
+        {
+            builder.Register(c =>
+            {
+                var settings = new ConnectionSettings(new Uri(_configuration["Elasticsearch:Node"]));
+                settings.BasicAuthentication(_configuration["Elasticsearch:UserName"], _configuration["Elasticsearch:Password"]);
+                var client = new ElasticClient(settings);
+                return client;
+            }).As<IElasticClient>().SingleInstance();
         }
     }
 }

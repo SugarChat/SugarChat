@@ -18,6 +18,8 @@ using SugarChat.Message.Paging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using SugarChat.Core.Settings;
+using SugarChat.Core.Services.Elasticsearch;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -29,6 +31,8 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly ElasticsearchIsEnableSetting _elasticsearchIsEnableSetting;
+        private readonly ElasticsearchService _elasticsearchService;
 
         public ConversationService(
             IMapper mapper,
@@ -36,7 +40,9 @@ namespace SugarChat.Core.Services.Conversations
             IGroupUserDataProvider groupUserDataProvider,
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
-            IMessageDataProvider messageDataProvider)
+            IMessageDataProvider messageDataProvider,
+            ElasticsearchIsEnableSetting elasticsearchIsEnableSetting,
+            ElasticsearchService elasticsearchService)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -44,6 +50,8 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _elasticsearchIsEnableSetting = elasticsearchIsEnableSetting;
+            _elasticsearchService = elasticsearchService;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
@@ -159,34 +167,42 @@ namespace SugarChat.Core.Services.Conversations
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             List<string> filterGroupIds = new();
+
             if (request.SearchParms is not null && request.SearchParms.Any())
             {
-                foreach (var message in messages)
+                if (_elasticsearchIsEnableSetting.Value)
                 {
-                    foreach (var searchParm in request.SearchParms)
+                    filterGroupIds = (await _elasticsearchService.GetConversationByKeyword(request, cancellationToken)).list.Select(x => x.GroupId).ToList();
+                }
+                else
+                {
+                    foreach (var message in messages)
                     {
-                        if (message.CustomProperties is not null && message.CustomProperties.Any())
+                        foreach (var searchParm in request.SearchParms)
                         {
-                            foreach (var customProperty in message.CustomProperties)
+                            if (message.CustomProperties is not null && message.CustomProperties.Any())
                             {
-                                if (customProperty.Key == searchParm.Key)
+                                foreach (var customProperty in message.CustomProperties)
                                 {
-                                    if (request.IsExactSearch ?
-                                        string.Equals(customProperty.Value, searchParm.Value, StringComparison.InvariantCultureIgnoreCase)
-                                        : customProperty.Value.Contains(searchParm.Value, StringComparison.InvariantCultureIgnoreCase))
+                                    if (customProperty.Key == searchParm.Key)
                                     {
-                                        filterGroupIds.Add(message.GroupId);
+                                        if (request.IsExactSearch ?
+                                            string.Equals(customProperty.Value, searchParm.Value, StringComparison.InvariantCultureIgnoreCase)
+                                            : customProperty.Value.Contains(searchParm.Value, StringComparison.InvariantCultureIgnoreCase))
+                                        {
+                                            filterGroupIds.Add(message.GroupId);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    var contentKeyword = request.SearchParms.GetValueOrDefault(Message.Constant.Content);
-                    if (!string.IsNullOrEmpty(contentKeyword))
-                    {
-                        if (message.Content.Contains(contentKeyword, StringComparison.InvariantCultureIgnoreCase))
+                        var contentKeyword = request.SearchParms.GetValueOrDefault(Message.Constant.Content);
+                        if (!string.IsNullOrEmpty(contentKeyword))
                         {
-                            filterGroupIds.Add(message.GroupId);
+                            if (message.Content.Contains(contentKeyword, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                filterGroupIds.Add(message.GroupId);
+                            }
                         }
                     }
                 }

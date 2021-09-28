@@ -18,6 +18,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.Extensions.Configuration;
+using NSubstitute;
+using SugarChat.Core.Settings;
+using SugarChat.Message.Commands.Elasticsearchs;
 
 namespace SugarChat.IntegrationTest.Services.Conversations
 {
@@ -150,11 +154,18 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             });
         }
 
-        [Fact]
-        public async Task ShouldGetConversationByKeyword()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ShouldGetConversationByKeyword(bool isEnableElasticsearch)
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                if (isEnableElasticsearch)
+                {
+                    await mediator.SendAsync(new SyncMessageToElasticsearchCommand());
+                    await Task.Delay(1000);
+                }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
@@ -200,6 +211,12 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     response.Data.Result.Count().ShouldBe(3);
                     response.Data.Total.ShouldBe(3);
                 }
+            }, x =>
+            {
+                var configuration = Container.Resolve<IConfiguration>();
+                configuration["Elasticsearch:IsEnable"] = isEnableElasticsearch.ToString();
+                var elasticsearchIsEnableSetting = Substitute.For<ElasticsearchIsEnableSetting>(configuration);
+                x.RegisterInstance(elasticsearchIsEnableSetting).AsImplementedInterfaces();
             });
         }
     }

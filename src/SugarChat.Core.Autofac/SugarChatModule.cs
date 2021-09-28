@@ -21,6 +21,7 @@ using Serilog;
 using Nest;
 using Microsoft.Extensions.Configuration;
 using System;
+using SugarChat.Core.Settings;
 
 namespace SugarChat.Core.Autofac
 {
@@ -42,6 +43,7 @@ namespace SugarChat.Core.Autofac
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
             RegisterElasticClient(builder);
+            RegisterSettings(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -108,6 +110,13 @@ namespace SugarChat.Core.Autofac
                 var client = new ElasticClient(settings);
                 return client;
             }).As<IElasticClient>().SingleInstance();
+        }
+
+        private void RegisterSettings(ContainerBuilder builder)
+        {
+            builder.RegisterTypes(typeof(IConfigurationSetting).Assembly.GetTypes()
+                    .Where(x => x.IsClass && typeof(IConfigurationSetting).IsAssignableFrom(x)).ToArray()).AsSelf()
+                .SingleInstance();
         }
     }
 }

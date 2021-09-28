@@ -69,7 +69,7 @@ namespace SugarChat.Core.Services.Elasticsearch
             {
                 foreach (var customProperty in message.CustomProperties)
                 {
-                    func += p => p.Keyword(k => k.Name("custom_properties." + customProperty.Key).Normalizer("lowercase"));
+                    func += p => p.Text(k => k.Name("custom_properties." + customProperty.Key).Fields(f => f.Wildcard(k => k.Name(WildcardName))));
                 }
             }
 

@@ -36,7 +36,7 @@ namespace SugarChat.IntegrationTest.Services.Elasticsearchs
                         SentBy = Guid.NewGuid().ToString(),
                         SentTime = DateTime.Now.AddHours(i),
                         CreatedBy = Guid.NewGuid().ToString(),
-                        CustomProperties = new Dictionary<string, string> { { "test1", "a" + i }, { "test2", "b" + (i + 5) } }
+                        CustomProperties = new Dictionary<string, string> { { "test1", "a" + i }, { "test2", "b" + (i + 3) } }
                     });
                 }
                 for (int i = 0; i < 5; i++)
@@ -71,8 +71,18 @@ namespace SugarChat.IntegrationTest.Services.Elasticsearchs
                 {
                     GetConversationByKeywordRequest request = new GetConversationByKeywordRequest
                     {
-                        IsExactSearch = false,
-                        SearchParms = new Dictionary<string, string> { { "Content", "Content00" }, { "test1", "A0" } },
+                        IsExactSearch = true,
+                        SearchParms = new Dictionary<string, string> { { "Content", "Content00" }, { "test1", "A1" } },
+                        PageSettings = new Message.Paging.PageSettings { PageNum = 1, PageSize = 20 },
+                    };
+                    var response = await elasticsearchService.GetConversationByKeyword(request, default(CancellationToken));
+                    response.total.ShouldBe(3);
+                }
+                {
+                    GetConversationByKeywordRequest request = new GetConversationByKeywordRequest
+                    {
+                        IsExactSearch = true,
+                        SearchParms = new Dictionary<string, string> { { "test2", "B3" } },
                         PageSettings = new Message.Paging.PageSettings { PageNum = 1, PageSize = 20 }
                     };
                     var response = await elasticsearchService.GetConversationByKeyword(request, default(CancellationToken));
@@ -82,7 +92,7 @@ namespace SugarChat.IntegrationTest.Services.Elasticsearchs
                     GetConversationByKeywordRequest request = new GetConversationByKeywordRequest
                     {
                         IsExactSearch = false,
-                        SearchParms = new Dictionary<string, string> { { "test2", "B5" } },
+                        SearchParms = new Dictionary<string, string> { { "test2", "5" } },
                         PageSettings = new Message.Paging.PageSettings { PageNum = 1, PageSize = 20 }
                     };
                     var response = await elasticsearchService.GetConversationByKeyword(request, default(CancellationToken));

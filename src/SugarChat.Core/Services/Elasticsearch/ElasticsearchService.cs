@@ -60,7 +60,7 @@ namespace SugarChat.Core.Services.Elasticsearch
         {
             var queries = new List<Func<QueryContainerDescriptor<ElasticsearchMessage>, QueryContainer>> { };
 
-            var mustQueries = new List<Func<QueryContainerDescriptor<ElasticsearchMessage>, QueryContainer>> { };
+            var shouldQueries = new List<Func<QueryContainerDescriptor<ElasticsearchMessage>, QueryContainer>> { };
             foreach (var searchParm in request.SearchParms)
             {
                 if (searchParm.Key.Equals(Message.Constant.Content))
@@ -69,16 +69,24 @@ namespace SugarChat.Core.Services.Elasticsearch
                     if (!string.IsNullOrEmpty(contentKeyword))
                     {
                         var keyword = $"*{contentKeyword}*";
-                        mustQueries.Add(q => q.Wildcard(w => w.Field(f => f.Content).Value(keyword.ToLower())));
+                        shouldQueries.Add(q => q.Wildcard(w => w.Field(f => f.Content).Value(keyword.ToLower())));
                     }
                 }
                 else
                 {
-                    mustQueries.Add(q => q.Term(t => t.Field("custom_properties." + searchParm.Key).Value(searchParm.Value.ToLower())));
+                    if (request.IsExactSearch)
+                    {
+                        shouldQueries.Add(q => q.Term(t => t.Field("custom_properties." + searchParm.Key).Value(searchParm.Value.ToLower())));
+                    }
+                    else
+                    {
+                        var keyword = $"*{searchParm.Value}*";
+                        shouldQueries.Add(q => q.Wildcard(w => w.Field("custom_properties." + searchParm.Key).Value(keyword.ToLower())));
+                    }
                 }
 
             }
-            queries.Add(q => q.Bool(b => b.Must(mustQueries)));
+            queries.Add(q => q.Bool(b => b.Should(shouldQueries)));
 
             Func<SearchDescriptor<ElasticsearchMessage>, ISearchRequest> searchRequest = s => s.Query(q => q.Bool(b => b.Filter(queries)))
                 .Index(_configuration["Elasticsearch:MessageIndex"])

@@ -29,7 +29,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 .RegisterModule(new SugarChatModule(new[]
                 {
                     typeof(SugarChat.Core.Services.IService).Assembly
-                }));
+                }, Configuration));
 
             Container = containerBuilder.Build().BeginLifetimeScope();
             Repository = Container.Resolve<IRepository>();

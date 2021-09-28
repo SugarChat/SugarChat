@@ -19,12 +19,13 @@ namespace SugarChat.Core.Domain
         [Text(Name = "content")]
         public string Content { get; set; }
 
-        [Keyword(Name = "content")]
+        [Keyword(Name = "sent_by")]
         public string SentBy { get; set; }
 
         [Date(Name = "sent_time")]
         public DateTimeOffset SentTime { get; set; }
 
+        [PropertyName("custom_properties")]
         public Dictionary<string, string> CustomProperties { get; set; }
     }
 }

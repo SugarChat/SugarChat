@@ -1,4 +1,5 @@
 ﻿using Nest;
+using SugarChat.Core.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,10 @@ namespace SugarChat.Core.Services.Elasticsearch
     {
         Task BatchCreateAsync<T>(string indexName, IEnumerable<T> entities, CancellationToken cancellationToken) where T : class;
 
-        Task<(IEnumerable<T> list, int total)> SearchAsync<T>(SearchRequest searchRequest) where T : class;
+        Task<(IEnumerable<T> list, int total)> SearchAsync<T>(SearchRequest searchRequest, CancellationToken cancellationToken) where T : class;
+
+        Task<(IEnumerable<T> list, int total)> SearchAsync<T>(Func<SearchDescriptor<T>, ISearchRequest> searchRequest, CancellationToken cancellationToken) where T : class;
+
+        Task CreateMessageIndexAsync(string indexName, ElasticsearchMessage message, CancellationToken cancellationToken);
     }
 }

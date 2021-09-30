@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SugarChat.Core.Mediator.CommandHandlers.Elasticsearch
+namespace SugarChat.Core.Mediator.CommandHandlers.Elasticsearchs
 {
     public class SyncMessageToElasticsearchCommandHandler : ICommandHandler<SyncMessageToElasticsearchCommand, SugarChatResponse>
     {

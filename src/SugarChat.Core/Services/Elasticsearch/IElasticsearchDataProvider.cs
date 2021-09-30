@@ -18,5 +18,7 @@ namespace SugarChat.Core.Services.Elasticsearch
         Task<(IEnumerable<T> list, int total)> SearchAsync<T>(Func<SearchDescriptor<T>, ISearchRequest> searchRequest, CancellationToken cancellationToken) where T : class;
 
         Task CreateMessageIndexAsync(string indexName, ElasticsearchMessage message, CancellationToken cancellationToken);
+
+        Task CreateGroupIndexAsync(string indexName, ElasticsearchGroup group, CancellationToken cancellationToken);
     }
 }

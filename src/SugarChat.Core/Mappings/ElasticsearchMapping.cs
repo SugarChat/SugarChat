@@ -14,6 +14,7 @@ namespace SugarChat.Core.Mappings
         public ElasticsearchMapping()
         {
             CreateMap<SyncMessageToElasticsearchCommand, SyncMessageToElasticsearchEvent>();
+            CreateMap<SyncGroupToElasticsearchCommand, SyncGroupToElasticsearchEvent>();
         }
     }
 }

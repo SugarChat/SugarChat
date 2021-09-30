@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Xunit;
 using TestStack.BDDfy;
 using SugarChat.Message.Requests.Conversations;
+using SugarChat.Message.Requests.Groups;
 
 namespace SugarChat.IntegrationTest.Services.Elasticsearchs
 {
@@ -101,12 +102,79 @@ namespace SugarChat.IntegrationTest.Services.Elasticsearchs
             });
         }
 
-
         [Fact]
-        public void RunTest()
+        public void RunMessageTest()
         {
             this.Given(x => x.ShouldSyncMessage())
                 .And(x => x.ShouldGetConversationByKeyword())
+                .BDDfy();
+        }
+
+        private async Task ShouldSyncGroup()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                List<Group> groups = new List<Group>();
+                for (int i = 0; i < 5; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = "NameA nameB " + i,
+                        Description = "description" + (i + 10) + "description",
+                        CustomProperties = new Dictionary<string, string> { { "test1", "a" + i }, { "test2", "b" + (i + 3) } }
+                    });
+                }
+                for (int i = 0; i < 5; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = "NameA nameB " + i,
+                        Description = "description" + (i + 20) + "description",
+                        CustomProperties = new Dictionary<string, string> { { "test1", "a" + i }, { "test2", "b" + (i + 5) } }
+                    });
+                }
+                await repository.AddRangeAsync(groups);
+                await mediator.SendAsync(new SyncGroupToElasticsearchCommand());
+            });
+            await Task.Delay(1000);
+            await Run<IElasticsearchDataProvider, IConfiguration>(async (elasticsearchDataProvider, configuration) =>
+            {
+                SearchRequest searchRequest = new SearchRequest<ElasticsearchGroup>(configuration["Elasticsearch:GroupIndex"]);
+                var response = await elasticsearchDataProvider.SearchAsync<ElasticsearchGroup>(searchRequest, default(CancellationToken));
+                response.total.ShouldBe(10);
+            });
+        }
+
+        private async Task ShouldGetGroupByCustomProperties()
+        {
+            await Run<IElasticsearchService>(async elasticsearchService =>
+            {
+                {
+                    GetGroupByCustomPropertiesRequest request = new GetGroupByCustomPropertiesRequest
+                    {
+                        CustomProperties = new Dictionary<string, string> { { "test1", "A0" } }
+                    };
+                    var response = await elasticsearchService.GetGroupByCustomProperties(request, default(CancellationToken));
+                    response.total.ShouldBe(2);
+                }
+                {
+                    GetGroupByCustomPropertiesRequest request = new GetGroupByCustomPropertiesRequest
+                    {
+                        CustomProperties = new Dictionary<string, string> { { "test1", "A1" }, { "test2", "B4" } }
+                    };
+                    var response = await elasticsearchService.GetGroupByCustomProperties(request, default(CancellationToken));
+                    response.total.ShouldBe(1);
+                }
+            });
+        }
+
+        [Fact]
+        public void RunGroupTest()
+        {
+            this.Given(x => x.ShouldSyncGroup())
+                .And(x => x.ShouldGetGroupByCustomProperties())
                 .BDDfy();
         }
     }

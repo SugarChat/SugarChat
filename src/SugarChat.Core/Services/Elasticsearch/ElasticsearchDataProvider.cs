@@ -110,5 +110,30 @@ namespace SugarChat.Core.Services.Elasticsearch
             var response = await _client.SearchAsync(searchRequest);
             return (response.Documents, (int)response.Total);
         }
+
+        public async Task CreateGroupIndexAsync(string indexName, ElasticsearchGroup group, CancellationToken cancellationToken)
+        {
+            if (await IndexExists(indexName)) return;
+            Func<PropertiesDescriptor<ElasticsearchGroup>, IPromise<IProperties>> func = p => p
+                 .Keyword(k => k.Name(n => n.Id))
+                 .Text(t => t.Name(n => n.Name)
+                     .Fields(f => f.Wildcard(k => k.Name(WildcardName))))
+                 .Text(t => t.Name(n => n.Description)
+                     .Fields(f => f.Wildcard(k => k.Name(WildcardName))));
+
+            if (group.CustomProperties is not null && group.CustomProperties.Any())
+            {
+                foreach (var customProperty in group.CustomProperties)
+                {
+                    func += p => p.Keyword(k => k.Name("custom_properties." + customProperty.Key));
+                }
+            }
+
+            var response = await _client.Indices.CreateAsync(indexName, i => i.Map<ElasticsearchMessage>(m => m
+               .Properties(func)
+               .AutoMap()));
+
+            CheckResponse(response);
+        }
     }
 }

@@ -7,6 +7,7 @@ using SugarChat.Message.Commands.Elasticsearchs;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Events.Elasticsearchs;
 using SugarChat.Message.Requests.Conversations;
+using SugarChat.Message.Requests.Groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,6 +95,45 @@ namespace SugarChat.Core.Services.Elasticsearch
                 .Size(request.PageSettings.PageSize)
                 .Sort(s => s.Descending(a => a.SentTime))
                 .Source(s => s.Includes(i => i.Field(f => f.GroupId)));
+
+            return await _elasticsearchDataProvider.SearchAsync(searchRequest, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<SyncGroupToElasticsearchEvent> SyncGroupAsync(SyncGroupToElasticsearchCommand command, CancellationToken cancellationToken)
+        {
+            var elasticsearchGroups = _repository.Query<Group>().Select(x => new ElasticsearchGroup
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                CustomProperties = x.CustomProperties
+            });
+            if (!elasticsearchGroups.Any())
+            {
+                return _mapper.Map<SyncGroupToElasticsearchEvent>(command);
+            }
+
+            await _elasticsearchDataProvider.CreateGroupIndexAsync(_configuration["Elasticsearch:GroupIndex"], elasticsearchGroups.FirstOrDefault(), cancellationToken).ConfigureAwait(false);
+
+            await _elasticsearchDataProvider.BatchCreateAsync(_configuration["Elasticsearch:GroupIndex"], elasticsearchGroups, cancellationToken).ConfigureAwait(false);
+
+            return _mapper.Map<SyncGroupToElasticsearchEvent>(command);
+        }
+
+        public async Task<(IEnumerable<ElasticsearchGroup> list, int total)> GetGroupByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken)
+        {
+            var queries = new List<Func<QueryContainerDescriptor<ElasticsearchGroup>, QueryContainer>> { };
+
+            var mustQueries = new List<Func<QueryContainerDescriptor<ElasticsearchGroup>, QueryContainer>> { };
+            foreach (var customProperty in request.CustomProperties)
+            {
+                mustQueries.Add(q=> q.Term(t => t.Field("custom_properties." + customProperty.Key).Value(customProperty.Value.ToLower())));
+            }
+            queries.Add(q => q.Bool(b => b.Must(mustQueries)));
+
+            Func<SearchDescriptor<ElasticsearchGroup>, ISearchRequest> searchRequest = s => s.Query(q => q.Bool(b => b.Filter(queries)))
+                .Index(_configuration["Elasticsearch:GroupIndex"])
+                .Source(s => s.Includes(i => i.Field(f => f.Id)));
 
             return await _elasticsearchDataProvider.SearchAsync(searchRequest, cancellationToken).ConfigureAwait(false);
         }

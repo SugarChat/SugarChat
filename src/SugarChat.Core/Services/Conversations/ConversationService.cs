@@ -163,7 +163,6 @@ namespace SugarChat.Core.Services.Conversations
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken)
         {
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
-            var messages = await _messageDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken);
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
 
             List<string> filterGroupIds = new();
@@ -176,7 +175,8 @@ namespace SugarChat.Core.Services.Conversations
                 }
                 else
                 {
-                    foreach (var message in messages)
+                    var _messages = await _messageDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken);
+                    foreach (var message in _messages)
                     {
                         foreach (var searchParm in request.SearchParms)
                         {
@@ -209,7 +209,7 @@ namespace SugarChat.Core.Services.Conversations
             }
             else
             {
-                filterGroupIds = messages.Select(x => x.GroupId).ToList();
+                filterGroupIds = groupIds.ToList();
             }
 
             var groups = await _groupDataProvider.GetByIdsAsync(filterGroupIds, request.PageSettings, cancellationToken);
@@ -219,6 +219,8 @@ namespace SugarChat.Core.Services.Conversations
                                  .GroupBy(x => x.GroupId).Select(x => new { GroupId = x.Key, UnreadCount = x.Count() });
 
             var conversationDtos = new List<ConversationDto>();
+
+            var messages = await _messageDataProvider.GetByGroupIdsAsync(filterGroupIds.ToArray(), cancellationToken);
             foreach (var group in groupsResult)
             {
                 var lastMessage = messages.Where(x => x.GroupId == group.Id).OrderByDescending(x => x.SentTime).FirstOrDefault();

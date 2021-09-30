@@ -145,6 +145,7 @@ namespace SugarChat.IntegrationTest
 
             var elasticClient = new ElasticClient(new ConnectionSettings(new Uri(_configuration["Elasticsearch:Node"])));
             elasticClient.Indices.Delete(_configuration["Elasticsearch:MessageIndex"]);
+            elasticClient.Indices.Delete(_configuration["Elasticsearch:GroupIndex"]);
         }
     }
 }

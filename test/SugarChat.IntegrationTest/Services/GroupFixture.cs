@@ -15,6 +15,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using SugarChat.Message.Commands.Elasticsearchs;
+using Microsoft.Extensions.Configuration;
+using Autofac;
+using NSubstitute;
+using SugarChat.Core.Settings;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -105,8 +110,10 @@ namespace SugarChat.IntegrationTest.Services
             });
         }
 
-        [Fact]
-        public async Task ShouldGetByCustomProperties()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ShouldGetByCustomProperties(bool isEnableElasticsearch)
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
@@ -133,6 +140,11 @@ namespace SugarChat.IntegrationTest.Services
                         });
                     }
                 }
+                if (isEnableElasticsearch)
+                {
+                    await mediator.SendAsync(new SyncGroupToElasticsearchCommand());
+                    await Task.Delay(1000);
+                }
                 {
                     var request = new GetGroupByCustomPropertiesRequest()
                     {
@@ -158,6 +170,12 @@ namespace SugarChat.IntegrationTest.Services
                     });
                     response.Data.Count().ShouldBe(2);
                 }
+            }, x =>
+            {
+                var configuration = Container.Resolve<IConfiguration>();
+                configuration["Elasticsearch:IsEnable"] = isEnableElasticsearch.ToString();
+                var elasticsearchIsEnableSetting = Substitute.For<ElasticsearchIsEnableSetting>(configuration);
+                x.RegisterInstance(elasticsearchIsEnableSetting).AsImplementedInterfaces();
             });
         }
     }

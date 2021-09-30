@@ -17,6 +17,8 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
+using SugarChat.Core.Settings;
+using SugarChat.Core.Services.Elasticsearch;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -27,15 +29,20 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly ElasticsearchIsEnableSetting _elasticsearchIsEnableSetting;
+        private readonly ElasticsearchService _elasticsearchService;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider,
+            ElasticsearchIsEnableSetting elasticsearchIsEnableSetting, ElasticsearchService elasticsearchService)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _elasticsearchIsEnableSetting = elasticsearchIsEnableSetting;
+            _elasticsearchService = elasticsearchService;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -167,17 +174,28 @@ namespace SugarChat.Core.Services.Groups
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(request.UserId);
 
-            List<string> groupIds = new List<string>();
+            List<string> filterGroupIds = new List<string>();
             if (!request.SearchAllGroup)
             {
-                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
-                if (!groupIds.Any())
+                filterGroupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                if (!filterGroupIds.Any())
                 {
                     return new GroupDto[] { };
                 }
             }
-            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds);
-            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
+            var groups = new List<Group>();
+            if (_elasticsearchIsEnableSetting.Value)
+            {
+                var groupIds = (await _elasticsearchService.GetGroupByCustomProperties(request, cancellationToken).ConfigureAwait(false)).list
+                    .Where(x => (filterGroupIds.Any() && filterGroupIds.Contains(x.Id)) || !filterGroupIds.Any())
+                    .Select(x => x.Id).ToList();
+                groups = (await _groupDataProvider.GetByIdsAsync(groupIds, null, cancellationToken).ConfigureAwait(false)).Result.ToList();
+            }
+            else
+            {
+                groups = (await _groupDataProvider.GetByCustomProperties(request.CustomProperties, filterGroupIds)).ToList();
+            }
+            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(filterGroupIds, cancellationToken);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);
             foreach (var groupDto in groupDtos)

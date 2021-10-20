@@ -60,7 +60,10 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new ArgumentException();
             }
-
+            if (groupUser.LastReadTime == messageSentTime)
+            {
+                return;
+            }
             groupUser.LastReadTime = messageSentTime;
 
             int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
@@ -159,7 +162,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId),cancellationToken).ConfigureAwait(false);
+            return await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)

@@ -15,6 +15,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 
 namespace SugarChat.WebApi
 {
@@ -96,6 +98,10 @@ namespace SugarChat.WebApi
                 c.ShowExtensions();
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "SugarChat WebApi v1");
                 c.RoutePrefix = string.Empty;
+            });
+            app.UseSerilogRequestLogging(options =>
+            {
+                options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Information;
             });
             app.UseRouting();
             app.UseEndpoints(endpoints =>

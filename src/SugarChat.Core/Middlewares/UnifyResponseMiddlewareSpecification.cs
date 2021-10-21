@@ -1,6 +1,7 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
 using Mediator.Net.Pipeline;
+using Serilog;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Exceptions;
 using System;
@@ -36,6 +37,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
+            Log.Error(ex, ex.Message);
             if (ex is not BusinessException || context.Message is IEvent)
             {
                 ExceptionDispatchInfo.Capture(ex).Throw();

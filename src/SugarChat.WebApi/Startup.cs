@@ -99,10 +99,6 @@ namespace SugarChat.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "SugarChat WebApi v1");
                 c.RoutePrefix = string.Empty;
             });
-            app.UseSerilogRequestLogging(options =>
-            {
-                options.GetLevel = (httpContext, elapsed, ex) => LogEventLevel.Information;
-            });
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {

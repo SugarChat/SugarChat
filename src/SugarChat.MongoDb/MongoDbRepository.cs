@@ -168,7 +168,7 @@ namespace SugarChat.Data.MongoDb
             if (entity != null)
             {
                 var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-                //entity.LastModifyDate = DateTimeOffset.Now;
+                entity.LastModifyDate = DateTimeOffset.Now;
                 var replaceResult = await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
                 if (replaceResult.IsAcknowledged)
                 {

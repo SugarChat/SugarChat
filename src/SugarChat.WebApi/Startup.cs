@@ -15,8 +15,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Models;
-using Serilog;
-using Serilog.Events;
 
 namespace SugarChat.WebApi
 {

@@ -52,37 +52,30 @@ namespace SugarChat.Core.Services.Conversations
             user.CheckExist(request.UserId);
 
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
-            var messages = await _messageDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken);
-            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
-
-            var groups = await _groupDataProvider.GetByIdsAsync(groupIds, request.PageSettings, cancellationToken);
-            var groupsResult = groups.Result;
-
-            var groupsUnreadCountResult = (await _messageDataProvider.GetUserUnreadMessagesByGroupIdsAsync(request.UserId, groupsResult.Select(x => x.Id), cancellationToken))
-                                 .GroupBy(x => x.GroupId).Select(x => new { GroupId = x.Key, UnreadCount = x.Count() });
-
-
             var conversations = new List<ConversationDto>();
+            if (groupIds.Length == 0)
+                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
-            foreach (var group in groups.Result)
+            var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(groupIds, user.Id, request.PageSettings);
+
+            var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, request.PageSettings, cancellationToken)).Result;
+            foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
-                //Get the groups that have had conversations
-                var groupMessages = messages.Where(x => x.GroupId == group.Id).OrderByDescending(x => x.SentTime);
-
-                if (groupMessages.Any())
+                var lastMessage = _messageDataProvider.GetLastMessageBygGroupId(messageCountGroupByGroupId.GroupId);
+                var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
+                var groupDto = _mapper.Map<GroupDto>(group);
+                var conversationDto = new ConversationDto
                 {
-                    var conversationDto = new ConversationDto();
-                    conversationDto.ConversationID = group.Id;
-                    conversationDto.UnreadCount = groupsUnreadCountResult.FirstOrDefault(x => x.GroupId == group.Id)?.UnreadCount ?? 0;
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(groupMessages.FirstOrDefault());
-                    var groupDto = _mapper.Map<GroupDto>(group);
-                    groupDto.MemberCount = groupUsers.Where(x => x.GroupId == group.Id).Count();
-                    conversationDto.GroupProfile = groupDto;
-                    conversations.Add(conversationDto);
-                }
+                    ConversationID = messageCountGroupByGroupId.GroupId,
+                    GroupProfile = _mapper.Map<GroupDto>(group),
+                    LastMessage = _mapper.Map<MessageDto>(lastMessage),
+                    UnreadCount = messageCountGroupByGroupId.Count
+                };
+                conversations.Add(conversationDto);
             }
 
-            return new PagedResult<ConversationDto> { Result = conversations, Total = groups.Total };
+            return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
         }
 
         public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(

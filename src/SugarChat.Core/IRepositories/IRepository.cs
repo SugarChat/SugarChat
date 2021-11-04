@@ -4,6 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services;
 using SugarChat.Message.Paging;
@@ -27,5 +29,6 @@ namespace SugarChat.Core.IRepositories
         Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        IAsyncCursor<BsonDocument> GetAggregate<T>(PipelineDefinition<BsonDocument, BsonDocument> pipeline);
     }
 }

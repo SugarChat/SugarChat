@@ -31,7 +31,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
                 (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 } });
 
-                reponse.Data.Count().ShouldBe(3);
+                reponse.Data.Count().ShouldBe(5);
             });
         }
 

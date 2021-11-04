@@ -1,4 +1,5 @@
-﻿using SugarChat.Message.Paging;
+﻿using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -39,5 +40,9 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<Domain.Message>> GetMessagesByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken);
+
+        IEnumerable<MessageCountGroupByGroupId> GetMessageCountGroupByGroupId(IEnumerable<string> groupIds, string userId, PageSettings pageSettings);
+
+        Domain.Message GetLastMessageBygGroupId(string groupId);
     }
 }

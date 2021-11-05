@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
@@ -98,6 +102,77 @@ namespace SugarChat.Core.Services.Groups
                 }
             }
             return filterGroups;
+        }
+
+        class _Group
+        {
+            public string GroupId { get; set; }
+        }
+
+        public IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, PageSettings pageSettings, bool isExactSearch)
+        {
+            var match = @"
+{$match:
+    {$and:[
+        {GroupId:{$in:[#GroupIds#]}},
+        #match_and_or#
+    ]}
+}
+";
+            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
+            match = match.Replace("#GroupIds#", groupIdsStr);
+            if (searchParms is not null && searchParms.Any())
+            {
+                StringBuilder match_and_or = new StringBuilder("{$or:[");
+                foreach (var searchParm in searchParms)
+                {
+                    if (searchParm.Key == Message.Constant.Content)
+                    {
+                        match_and_or.Append($"{{Content:{{'$regex':'{searchParm.Value}','$options':'i'}}}}");
+                    }
+                    else
+                    {
+                        if (isExactSearch)
+                        {
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{searchParm.Value}$/i}},");
+                        }
+                        else
+                        {
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':{{'$regex':'{searchParm.Value}','$options':'i'}}}},");
+                        }
+                    }
+                }
+                match_and_or.Append("]}");
+                match = match.Replace("#match_and_or#", match_and_or.ToString());
+            }
+            else
+            {
+                return groupIds;
+            }
+            var group = "{$group:{_id:'$GroupId'}}";
+            var project = "{$project:{_id:0,GroupId:'$_id'}}";
+
+            List<string> stages = new List<string>();
+            stages.Add(match);
+            stages.Add(group);
+            stages.Add(project);
+
+            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
+            foreach (var stage in stages)
+            {
+                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
+                pipelineStages.Add(pipelineStage);
+            }
+            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
+            var bsonDocuments = _repository.GetAggregate<Domain.Message>(pipeline).ToList();
+            var result = new List<_Group>();
+            foreach (var bsonDocument in bsonDocuments)
+            {
+                var _groupId = BsonSerializer.Deserialize<_Group>(bsonDocument);
+                result.Add(_groupId);
+            }
+
+            return result.Select(x => x.GroupId);
         }
     }
 }

@@ -197,8 +197,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         UserId = userId,
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(3);
-                    response.Data.Total.ShouldBe(3);
+                    response.Data.Result.Count().ShouldBe(5);
+                    response.Data.Total.ShouldBe(5);
                 }
             });
         }

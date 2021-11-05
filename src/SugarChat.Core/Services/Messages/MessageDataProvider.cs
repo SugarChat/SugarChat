@@ -247,7 +247,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             var groupUsers = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            if (groupIds is not null && groupIds.Any())
+            if (groupIds.Any())
             {
                 groupUsers = groupUsers.Where(x => groupIds.Contains(x.GroupId)).ToList();
             }

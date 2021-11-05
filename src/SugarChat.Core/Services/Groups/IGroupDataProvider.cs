@@ -19,5 +19,7 @@ namespace SugarChat.Core.Services.Groups
         Task RemoveAsync(Group group, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Group>> GetByCustomProperties(Dictionary<string, string> customProperties, IEnumerable<string> groupIds);
+
+        IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupId, Dictionary<string, string> searchParms, PageSettings pageSettings, bool isExactSearch);
     }
 }

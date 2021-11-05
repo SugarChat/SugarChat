@@ -119,9 +119,9 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getUserIdsByGroupIds"), HttpGet]
+        [Route("getUserIdsByGroupIds"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<string>>))]
-        public async Task<IActionResult> GetUsersByGroupIds([FromQuery] GetUserIdsByGroupIdsRequest request)
+        public async Task<IActionResult> GetUsersByGroupIds(GetUserIdsByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(request);
             return Ok(response);

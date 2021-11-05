@@ -60,7 +60,10 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new ArgumentException();
             }
-
+            if (groupUser.LastReadTime == messageSentTime)
+            {
+                return;
+            }
             groupUser.LastReadTime = messageSentTime;
 
             int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);

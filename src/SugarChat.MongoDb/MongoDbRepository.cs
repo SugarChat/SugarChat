@@ -12,6 +12,7 @@ using MongoDB.Driver.Linq;
 using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Message.Paging;
+using MongoDB.Bson;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -196,6 +197,11 @@ namespace SugarChat.Data.MongoDb
                 }
             }
             return default;
+        }
+
+        public IAsyncCursor<BsonDocument> GetAggregate<T>(PipelineDefinition<BsonDocument, BsonDocument> pipeline)
+        {
+            return _database.GetCollection<BsonDocument>(typeof(T).Name).Aggregate(pipeline);
         }
     }
 }

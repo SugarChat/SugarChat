@@ -54,7 +54,7 @@ namespace SugarChat.Core.Services.Conversations
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
             {
-                groupIds.Intersect(request.GroupIds);
+                groupIds = groupIds.Intersect(request.GroupIds).ToArray();
             }
 
             var conversations = new List<ConversationDto>();
@@ -155,7 +155,7 @@ namespace SugarChat.Core.Services.Conversations
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
             {
-                groupIds.Intersect(request.GroupIds);
+                groupIds = groupIds.Intersect(request.GroupIds).ToArray();
             }
 
             var conversations = new List<ConversationDto>();

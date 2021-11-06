@@ -314,6 +314,7 @@ namespace SugarChat.Core.Services.Messages
                     {$eq:['$GroupId','$$groupUser_GroupId']}
                 }
             },
+            {$sort:{SentTime:-1}},
             {$limit:1}
         ],
         as:'stockdata2'

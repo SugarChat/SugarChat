@@ -302,18 +302,38 @@ namespace SugarChat.Core.Services.Messages
         public IEnumerable<MessageCountGroupByGroupId> GetMessageCountGroupByGroupId(IEnumerable<string> groupIds, string userId, PageSettings pageSettings)
         {
             List<string> stages = new List<string>();
-            var lookup = GetLookup(userId);
+            var lookup1 = GetLookup(userId);
+            var lookup2 = @"
+{
+    $lookup:{
+        from:'Message',
+        let:{groupUser_GroupId:'$GroupId'},
+        pipeline:[
+            {$match:
+                {$expr:
+                    {$eq:['$GroupId','$$groupUser_GroupId']}
+                }
+            },
+            {$limit:1}
+        ],
+        as:'stockdata2'
+    }
+}
+";
+            var set= @"{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
             var match = GetMatch(userId, groupIds);
             string project = "{$project:{_id:0,GroupId:1,Count:{$size:'$stockdata'}}}";
+            string sort = "{$sort:{Count:-1,'stockdata2.SentTime':-1}}";
             string skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
             string limit = $"{{$limit:{pageSettings.PageSize}}}";
-            string sort = "{$sort:{Count:-1,'stockdata.SentTime':-1}}";
-            stages.Add(lookup);
+            stages.Add(lookup1);
+            stages.Add(lookup2);
+            stages.Add(set);
             stages.Add(match);
             stages.Add(project);
+            stages.Add(sort);
             stages.Add(skip);
             stages.Add(limit);
-            stages.Add(sort);
 
             IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
             foreach (var stage in stages)

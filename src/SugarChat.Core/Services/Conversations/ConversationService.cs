@@ -64,7 +64,7 @@ namespace SugarChat.Core.Services.Conversations
             var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(groupIds, user.Id, request.PageSettings);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
-            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, request.PageSettings, cancellationToken)).Result;
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var lastMessage = _messageDataProvider.GetLastMessageBygGroupId(messageCountGroupByGroupId.GroupId);
@@ -166,7 +166,7 @@ namespace SugarChat.Core.Services.Conversations
             var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(filterGroupIds, request.UserId, request.PageSettings);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
-            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, request.PageSettings, cancellationToken)).Result;
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var lastMessage = _messageDataProvider.GetLastMessageBygGroupId(messageCountGroupByGroupId.GroupId);

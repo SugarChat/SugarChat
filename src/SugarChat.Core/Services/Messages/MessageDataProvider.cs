@@ -323,8 +323,8 @@ namespace SugarChat.Core.Services.Messages
 ";
             var set= @"{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
             var match = GetMatch(userId, groupIds);
-            string project = "{$project:{_id:0,GroupId:1,Count:{$size:'$stockdata'}}}";
-            string sort = "{$sort:{Count:-1,'stockdata2.SentTime':-1}}";
+            string project = "{$project:{_id:0,GroupId:1,LastSentTime:'$stockdata2.SentTime',Count:{$size:'$stockdata'}}}";
+            string sort = "{$sort:{Count:-1,LastSentTime:-1}}";
             string skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
             string limit = $"{{$limit:{pageSettings.PageSize}}}";
             stages.Add(lookup1);

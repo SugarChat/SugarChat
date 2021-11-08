@@ -240,9 +240,9 @@ namespace SugarChat.Net.Client.HttpClients
             return await ExecuteAsync<SugarChatResponse>(_deleteConversationUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
         }
 
-        public async Task<SugarChatResponse> AddFriendAsync(AddFriendCommand command, CancellationToken cancellationToken = default)
+        public async Task<SugarChatResponse> AddFriendAsync(CancellationToken cancellationToken = default)
         {
-            return await ExecuteAsync<SugarChatResponse>(_addFriendUrl, HttpMethod.Post, JsonConvert.SerializeObject(command)).ConfigureAwait(false);
+            return await ExecuteAsync<SugarChatResponse>(_addFriendUrl, HttpMethod.Post, JsonConvert.SerializeObject("")).ConfigureAwait(false);
         }
 
         public async Task<SugarChatResponse> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellationToken = default)

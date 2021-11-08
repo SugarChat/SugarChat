@@ -45,7 +45,7 @@ namespace SugarChat.Net.Client
         Task<SugarChatResponse> AddFriendAsync(CancellationToken cancellationToken = default);
 
 
-        Task<SugarChatResponse> RemoveFriendAsync(RemoveFriendCommand command, CancellationToken cancellationToken = default);
+        Task<SugarChatResponse> RemoveFriendAsync(CancellationToken cancellationToken = default);
 
         Task<SugarChatResponse> CreateGroupAsync(AddGroupCommand command, CancellationToken cancellationToken = default);
 

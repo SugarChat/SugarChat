@@ -49,3 +49,4 @@ jobs:
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           PACKAGE_NAME: SugarChat.Message.${{ steps.gitversion.outputs.semVer }}
+          VERSION_STATIC: ${{ steps.gitversion.outputs.semVer }}

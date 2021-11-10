@@ -30,6 +30,7 @@ jobs:
         run: git branch --create-reflog master origin/main
         
       - name: Determine Version
+        id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.7
       
       - name: Display SemVer

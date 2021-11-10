@@ -48,4 +48,4 @@ jobs:
 
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          VERSION_STATIC: "$GITVERSION_SEMVER"
+          VERSION_STATIC: ${{ steps.gitversion.outputs.semVer }}

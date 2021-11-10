@@ -48,5 +48,5 @@ jobs:
           dotnet pack -c Release -o out -p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
           
       - name: Push generated package to GitHub registry
-        run: dotnet nuget push ./out/SugarChat.Message.2021.2.0-try-gitversion.3.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./out/SugarChat.Message.${{ steps.gitversion.outputs.semVer }}.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
         

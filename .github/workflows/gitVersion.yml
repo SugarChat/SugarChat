@@ -54,5 +54,5 @@ jobs:
         with:
           version: ${{ steps.gitversion.outputs.semVer }}
           project-path: src/SugarChat.Message/SugarChat.Message.csproj  
-          solution-path: src/SugarChat.sln
+          solution-path: SugarChat.sln
           nuget-feed-password:  ${{secrets.NUGET_API_KEY}}

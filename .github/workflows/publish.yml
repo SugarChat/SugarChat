@@ -1,54 +1,50 @@
 name: publish to nuget
 on:
   push:
-    branches: [ ]     
+    branches: [ ]
 jobs:
-  build:
-    name: Get Git Version
+  # This workflow contains a single job called "build"
+  build_pack_publish:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v1
-      - name: Get Git Version
-        uses: docker://mcasperson/gitversion:5.0.2-linux-centos-7-netcoreapp2.2
-        with:
-          args: /github/workspace /nofetch /exec /bin/sh /execargs "-c \"echo $GitVersion_FullSemVer > /github/workspace/version.txt\""
-      - name: Extract Octopus Tools
-        run: |
-          mkdir /opt/octo
-          cd /opt/octo
-          wget -O /opt/octo/octopus.zip https://download.octopusdeploy.com/octopus-tools/6.12.0/OctopusTools.6.12.0.portable.zip
-          unzip /opt/octo/octopus.zip
-          chmod +x /opt/octo/Octo
-  publish:
-    name: build, pack & publish
-    runs-on: ubuntu-latest
-    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # - name: Setup dotnet
-      #   uses: actions/setup-dotnet@v1
-      #   with:
-      #     dotnet-version: 3.1.200    
-
-      #Publish Message
-      - name: publish on message version change
-        id: publish_message_nuget
-        uses: rohith/publish-nuget@v2
         with:
-          # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: src/SugarChat.Message/SugarChat.Message.csproj       
-
-          # API key to authenticate with NuGet server
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-
-
-      # Publish Client
-      - name: publish on client version change
-        id: publish_client_nuget
-        uses: rohith/publish-nuget@v2
+          fetch-depth: 0
+      - uses: gittools/actions/gitversion/setup@v0.9.7
         with:
-          # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: src/SugarChat.Net.Client/SugarChat.Net.Client.csproj       
+          versionSpec: '5.x'
+          
+      - name: Checkout
+        run: git fetch --tags
 
-          # API key to authenticate with NuGet server
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+      - name: Fetch master for GitVersion
+        if: github.ref != 'refs/heads/main'
+        run: git branch --create-reflog master origin/main
+        
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.7
+    
+      - name: Display SemVer
+        run: |
+          echo "SemVer: $GITVERSION_SEMVER"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.x"
+          
+      - name: Build solution and generate NuGet package
+        run: |
+          dotnet pack -c Release -o out -p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+
+      - name: Push HttpClient to GitHub registry
+        run: dotnet nuget push ./out/SugarChat.Net.Client.${{ steps.gitversion.outputs.semVer }}.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+          
+      - name: Push Message to GitHub registry
+        run: dotnet nuget push ./out/SugarChat.Message.${{ steps.gitversion.outputs.semVer }}.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

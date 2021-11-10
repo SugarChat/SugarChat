@@ -46,6 +46,7 @@ jobs:
       - name: Build, Test, and Publish NuGet
         uses: wahinekai/actions-publish-nuget@v3.0.1
         with:
+          nuget-feed-url: 'https://www.nuget.org/'
           version: ${{ steps.gitversion.outputs.semVer }}
           project-path: src/SugarChat.Message/SugarChat.Message.csproj  
           solution-path: SugarChat.sln

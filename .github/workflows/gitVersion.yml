@@ -19,6 +19,7 @@ jobs:
       - uses: gittools/actions/gitversion/setup@v0.9.7
         with:
           versionSpec: '5.x'
+          fetch-depth: 0
           
       - name: Checkout
         run: git fetch --tags

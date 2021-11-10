@@ -35,6 +35,7 @@ jobs:
       - name: Display SemVer
         run: |
           echo "SemVer: $GITVERSION_SEMVER"
+          echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
           
       #Publish Message
       - name: publish on message version change

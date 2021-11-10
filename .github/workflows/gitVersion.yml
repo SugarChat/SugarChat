@@ -53,16 +53,3 @@ jobs:
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           VERSION_STATIC: $GITVERSION_SEMVER
-
-
-      # Publish Client
-      - name: publish on client version change
-        id: publish_client_nuget
-        uses: rohith/publish-nuget@v2
-        with:
-          # Filepath of the project to be packaged, relative to root of repository
-          PROJECT_FILE_PATH: src/SugarChat.Net.Client/SugarChat.Net.Client.csproj       
-
-          # API key to authenticate with NuGet server
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          VERSION_STATIC: $GITVERSION_SEMVER

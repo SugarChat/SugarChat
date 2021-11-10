@@ -43,11 +43,10 @@ jobs:
         with:
           dotnet-version: "3.x"
           
-      - name: Build, Test, and Publish NuGet
-        uses: wahinekai/actions-publish-nuget@v3.0.1
-        with:
-          nuget-feed-url: 'https://www.nuget.org/'
-          version: ${{ steps.gitversion.outputs.semVer }}
-          project-path: src/SugarChat.Message/SugarChat.Message.csproj  
-          solution-path: SugarChat.sln
-          nuget-feed-password:  ${{secrets.NUGET_API_KEY}}
+      - name: Build solution and generate NuGet package
+        run: |
+          dotnet pack -c Release -o out -p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
+          
+      - name: Push generated package to GitHub registry
+        run: dotnet nuget push ./<project>/out/SugarCaht.Message.*.nupkg --skip-duplicate --no-symbols true -sk  ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
+        

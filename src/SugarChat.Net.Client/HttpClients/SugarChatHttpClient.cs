@@ -366,11 +366,11 @@ namespace SugarChat.Net.Client.HttpClients
         public async Task<SugarChatResponse<PagedResult<MessageDto>>> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request, CancellationToken cancellationToken = default)
         {
             string requestUrl = $"{_getMessagesOfGroupUrl}?groupId={request.GroupId}";
-            if (request.FromDate != null)
+            if (request.FromDate is not null)
             {
                 requestUrl += $"&fromDate={request.FromDate}";
             }
-            if (request.PageSettings is null)
+            if (request.PageSettings is not null)
             {
                 requestUrl += $"&pageSettings.pageSize={request.PageSettings.PageSize}&pageSettings.pageNum={request.PageSettings.PageNum}";
             }

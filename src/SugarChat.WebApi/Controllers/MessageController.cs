@@ -39,8 +39,10 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getUnreadMessageCount"), HttpPost]
-        public async Task<IActionResult> GetUnreadMessageCount(GetUnreadMessageCountRequest request)
+        [Route("getUnreadMessageCount")]
+        [HttpGet]
+        [HttpPost]
+        public async Task<IActionResult> GetUnreadMessageCount([FromQuery] GetUnreadMessageCountRequest request)
         {
             var response =
                  await _mediator
@@ -89,8 +91,10 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getMessagesByGroupIds"), HttpPost]
-        public async Task<IActionResult> GetMessagesByGroupIds(GetMessagesByGroupIdsRequest request)
+        [Route("getMessagesByGroupIds")]
+        [HttpGet]
+        [HttpPost]
+        public async Task<IActionResult> GetMessagesByGroupIds([FromQuery] GetMessagesByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
             return Ok(response);

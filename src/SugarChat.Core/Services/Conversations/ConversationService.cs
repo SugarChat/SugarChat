@@ -162,7 +162,7 @@ namespace SugarChat.Core.Services.Conversations
             if (groupIds.Length == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
-            var filterGroupIds = _groupDataProvider.GetGroupIdsByMessageKeyword(groupIds, request.SearchParms, request.PageSettings, request.IsExactSearch);
+            var filterGroupIds = _groupDataProvider.GetGroupIdsByMessageKeyword(groupIds, request.SearchParms, request.IsExactSearch);
             var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(filterGroupIds, request.UserId, request.PageSettings);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);

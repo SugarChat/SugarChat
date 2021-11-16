@@ -321,20 +321,27 @@ namespace SugarChat.Core.Services.Messages
     }
 }
 ";
-            var set= @"{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
+            var set = @"{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
             var match = GetMatch(userId, groupIds);
             string project = "{$project:{_id:0,GroupId:1,LastSentTime:'$stockdata2.SentTime',Count:{$size:'$stockdata'}}}";
             string sort = "{$sort:{Count:-1,LastSentTime:-1}}";
-            string skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
-            string limit = $"{{$limit:{pageSettings.PageSize}}}";
+            string skip = ""; string limit = "";
+            if (pageSettings is not null)
+            {
+                skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
+                limit = $"{{$limit:{pageSettings.PageSize}}}";
+            }
             stages.Add(lookup1);
             stages.Add(lookup2);
             stages.Add(set);
             stages.Add(match);
             stages.Add(project);
             stages.Add(sort);
-            stages.Add(skip);
-            stages.Add(limit);
+            if (pageSettings is not null)
+            {
+                stages.Add(skip);
+                stages.Add(limit);
+            }
 
             IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
             foreach (var stage in stages)

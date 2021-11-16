@@ -109,7 +109,7 @@ namespace SugarChat.Core.Services.Groups
             public string GroupId { get; set; }
         }
 
-        public IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, PageSettings pageSettings, bool isExactSearch)
+        public IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch)
         {
             var match = @"
 {$match:

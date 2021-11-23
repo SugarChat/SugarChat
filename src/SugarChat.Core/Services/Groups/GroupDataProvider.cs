@@ -157,21 +157,7 @@ namespace SugarChat.Core.Services.Groups
             stages.Add(group);
             stages.Add(project);
 
-            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
-            foreach (var stage in stages)
-            {
-                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
-                pipelineStages.Add(pipelineStage);
-            }
-            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = await (await _repository.GetAggregate<Domain.Message>(pipeline, cancellationToken)).ToListAsync(cancellationToken);
-            var result = new List<_Group>();
-            foreach (var bsonDocument in bsonDocuments)
-            {
-                var _groupId = BsonSerializer.Deserialize<_Group>(bsonDocument);
-                result.Add(_groupId);
-            }
-
+            var result = await _repository.GetList<Domain.Message, _Group>(stages, cancellationToken).ConfigureAwait(false);
             return result.Select(x => x.GroupId);
         }
     }

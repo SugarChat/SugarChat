@@ -16,8 +16,8 @@ namespace SugarChat.Core.IRepositories
     public interface IRepository
     {
         Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, Expression<Func<T, bool>> predicate = null,CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query = null,CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<T> SingleAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
@@ -30,6 +30,7 @@ namespace SugarChat.Core.IRepositories
         Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(PipelineDefinition<BsonDocument, BsonDocument> pipeline, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<IEnumerable<TDestination>> GetList<TSource, TDestination>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where TSource : class, IEntity where TDestination : class;
     }
 }

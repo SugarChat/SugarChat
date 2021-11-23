@@ -241,7 +241,6 @@ namespace SugarChat.Core.Services.Messages
 
         class MessageCount
         {
-            public Guid? _id { get; set; }
             public int Count { get; set; }
         }
 
@@ -258,22 +257,16 @@ namespace SugarChat.Core.Services.Messages
             List<string> stages = new List<string>();
             var lookup = GetLookup(userId);
             var match = GetMatch(userId, _groupIds);
-            string project = "{$project:{Count:{$size:'$stockdata'}}}";
+            string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
             string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
+            string project2= "{$project:{_id:0}}";
             stages.Add(lookup);
             stages.Add(match);
-            stages.Add(project);
+            stages.Add(project1);
             stages.Add(group);
+            stages.Add(project2);
 
-            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
-            foreach (var stage in stages)
-            {
-                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
-                pipelineStages.Add(pipelineStage);
-            }
-
-            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(pipeline, cancellationToken)).ToListAsync(cancellationToken);
+            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(stages, cancellationToken)).ToListAsync(cancellationToken);
             if (bsonDocuments.Count() == 0)
                 return 0;
 
@@ -344,22 +337,7 @@ namespace SugarChat.Core.Services.Messages
                 stages.Add(limit);
             }
 
-            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
-            foreach (var stage in stages)
-            {
-                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
-                pipelineStages.Add(pipelineStage);
-            }
-
-            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(pipeline, cancellationToken).ConfigureAwait(false)).ToListAsync(cancellationToken).ConfigureAwait(false);
-            var result = new List<MessageCountGroupByGroupId>();
-            foreach (var bsonDocument in bsonDocuments)
-            {
-                var messageCountGroupByGroupId = BsonSerializer.Deserialize<MessageCountGroupByGroupId>(bsonDocument);
-                result.Add(messageCountGroupByGroupId);
-            }
-
+            var result = await _repository.GetList<GroupUser,MessageCountGroupByGroupId>(stages, cancellationToken).ConfigureAwait(false);
             return result;
         }
 

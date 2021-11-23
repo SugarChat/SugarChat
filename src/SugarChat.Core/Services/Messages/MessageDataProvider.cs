@@ -11,6 +11,7 @@ using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
+using MongoDB.Driver.Linq;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -272,7 +273,7 @@ namespace SugarChat.Core.Services.Messages
             }
 
             PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = await _repository.GetAggregate<GroupUser>(pipeline).ToListAsync();
+            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(pipeline, cancellationToken)).ToListAsync(cancellationToken);
             if (bsonDocuments.Count() == 0)
                 return 0;
 
@@ -299,7 +300,7 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public IEnumerable<MessageCountGroupByGroupId> GetMessageCountGroupByGroupId(IEnumerable<string> groupIds, string userId, PageSettings pageSettings)
+        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageCountGroupByGroupIdAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
             List<string> stages = new List<string>();
             var lookup1 = GetLookup(userId);
@@ -351,7 +352,7 @@ namespace SugarChat.Core.Services.Messages
             }
 
             PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = _repository.GetAggregate<GroupUser>(pipeline).ToList();
+            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(pipeline, cancellationToken).ConfigureAwait(false)).ToListAsync(cancellationToken).ConfigureAwait(false);
             var result = new List<MessageCountGroupByGroupId>();
             foreach (var bsonDocument in bsonDocuments)
             {
@@ -362,9 +363,9 @@ namespace SugarChat.Core.Services.Messages
             return result;
         }
 
-        public Domain.Message GetLastMessageBygGroupId(string groupId)
+        public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId).OrderByDescending(x => x.SentTime).FirstOrDefault();
+            return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId).OrderByDescending(x => x.SentTime).FirstOrDefaultAsync(cancellationToken);
         }
 
         private string GetLookup(string userId)

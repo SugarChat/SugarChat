@@ -105,7 +105,7 @@ namespace SugarChat.Data.MongoDb
                     .ConfigureAwait(false);
         }
 
-        public IQueryable<T> Query<T>() where T : class, IEntity
+        public IMongoQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
                 .AsQueryable();
@@ -199,9 +199,9 @@ namespace SugarChat.Data.MongoDb
             return default;
         }
 
-        public IAsyncCursor<BsonDocument> GetAggregate<T>(PipelineDefinition<BsonDocument, BsonDocument> pipeline)
+        public async Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(PipelineDefinition<BsonDocument, BsonDocument> pipeline, CancellationToken cancellationToken = default) where T : class, IEntity
         {
-            return _database.GetCollection<BsonDocument>(typeof(T).Name).Aggregate(pipeline);
+            return await _database.GetCollection<BsonDocument>(typeof(T).Name).AggregateAsync(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }

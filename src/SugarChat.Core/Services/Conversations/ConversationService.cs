@@ -61,13 +61,13 @@ namespace SugarChat.Core.Services.Conversations
             if (groupIds.Length == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
-            var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(groupIds, user.Id, request.PageSettings);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageCountGroupByGroupIdAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
-                var lastMessage = _messageDataProvider.GetLastMessageBygGroupId(messageCountGroupByGroupId.GroupId);
+                var lastMessage = await _messageDataProvider.GetLastMessageBygGroupIdAsync(messageCountGroupByGroupId.GroupId, cancellationToken);
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 var conversationDto = new ConversationDto
@@ -150,7 +150,7 @@ namespace SugarChat.Core.Services.Conversations
             return conversationDto;
         }
 
-        public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken)
+        public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
@@ -162,14 +162,14 @@ namespace SugarChat.Core.Services.Conversations
             if (groupIds.Length == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
-            var filterGroupIds = _groupDataProvider.GetGroupIdsByMessageKeyword(groupIds, request.SearchParms, request.IsExactSearch);
-            var messageCountGroupByGroupIds = _messageDataProvider.GetMessageCountGroupByGroupId(filterGroupIds, request.UserId, request.PageSettings);
+            var filterGroupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, cancellationToken);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageCountGroupByGroupIdAsync(filterGroupIds, request.UserId, request.PageSettings, cancellationToken);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
-                var lastMessage = _messageDataProvider.GetLastMessageBygGroupId(messageCountGroupByGroupId.GroupId);
+                var lastMessage = await _messageDataProvider.GetLastMessageBygGroupIdAsync(messageCountGroupByGroupId.GroupId, cancellationToken);
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 var conversationDto = new ConversationDto

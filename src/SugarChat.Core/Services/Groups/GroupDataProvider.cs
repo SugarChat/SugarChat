@@ -109,7 +109,7 @@ namespace SugarChat.Core.Services.Groups
             public string GroupId { get; set; }
         }
 
-        public IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch)
+        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
         {
             var match = @"
 {$match:
@@ -164,7 +164,7 @@ namespace SugarChat.Core.Services.Groups
                 pipelineStages.Add(pipelineStage);
             }
             PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = _repository.GetAggregate<Domain.Message>(pipeline).ToList();
+            var bsonDocuments = await (await _repository.GetAggregate<Domain.Message>(pipeline, cancellationToken)).ToListAsync(cancellationToken);
             var result = new List<_Group>();
             foreach (var bsonDocument in bsonDocuments)
             {

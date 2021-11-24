@@ -19,18 +19,19 @@ namespace SugarChat.IntegrationTest.Services
         public string userId = Guid.NewGuid().ToString();
         public string conversationId = Guid.NewGuid().ToString();
 
+
+        public string groupId1 = Guid.NewGuid().ToString();
+        public string groupId2 = Guid.NewGuid().ToString();
+        public string groupId4 = Guid.NewGuid().ToString();
+        public string groupId5 = Guid.NewGuid().ToString();
+        public string groupId6 = Guid.NewGuid().ToString();
+
         public TestFixtureBase()
         {
             GenerateTestCollections(Container.Resolve<IRepository>(), userId, conversationId);
         }
         public void GenerateTestCollections(IRepository repository, string userId, string conversationId)
         {
-            var groupId1 = Guid.NewGuid().ToString();
-            var groupId2 = Guid.NewGuid().ToString();
-            var groupId4 = Guid.NewGuid().ToString();
-            var groupId5 = Guid.NewGuid().ToString();
-            var groupId6 = Guid.NewGuid().ToString();
-
             var groupDic = new Dictionary<string, string>
             {
                 { groupId1, "TestGroup1" },

@@ -28,10 +28,21 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
-                (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 } });
-
-                reponse.Data.Count().ShouldBe(5);
+                {
+                    var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
+                    (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 } });
+                    reponse.Data.Count().ShouldBe(5);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
+                    (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupIds = new string[] { conversationId, Guid.NewGuid().ToString() } });
+                    reponse.Data.Count().ShouldBe(1);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>
+                    (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupIds = new string[] { Guid.NewGuid().ToString() } });
+                    reponse.Data.Count().ShouldBe(0);
+                }
             });
         }
 
@@ -194,11 +205,35 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } },
+                        UserId = userId,
+                        IsExactSearch = true,
+                        GroupIds = new string[] { conversationId , groupId2 , groupId4 }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(2);
+                    response.Data.Total.ShouldBe(2);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         UserId = userId,
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(5);
                     response.Data.Total.ShouldBe(5);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        UserId = userId,
+                        GroupIds = new string[] { conversationId, Guid.NewGuid().ToString() }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
                 }
             });
         }

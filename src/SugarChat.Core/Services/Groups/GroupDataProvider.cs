@@ -104,11 +104,6 @@ namespace SugarChat.Core.Services.Groups
             return filterGroups;
         }
 
-        class _Group
-        {
-            public string GroupId { get; set; }
-        }
-
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
         {
             var match = @"
@@ -150,15 +145,13 @@ namespace SugarChat.Core.Services.Groups
                 return groupIds;
             }
             var group = "{$group:{_id:'$GroupId'}}";
-            var project = "{$project:{_id:0,GroupId:'$_id'}}";
 
             List<string> stages = new List<string>();
             stages.Add(match);
             stages.Add(group);
-            stages.Add(project);
 
-            var result = await _repository.GetList<Domain.Message, _Group>(stages, cancellationToken).ConfigureAwait(false);
-            return result.Select(x => x.GroupId);
+            var result = await _repository.GetList<Domain.Message, Group>(stages, cancellationToken).ConfigureAwait(false);
+            return result.Select(x => x.Id);
         }
     }
 }

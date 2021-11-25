@@ -293,7 +293,7 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
             List<string> stages = new List<string>();
             var lookup1 = GetLookup(userId);

@@ -61,7 +61,7 @@ namespace SugarChat.Core.Services.Conversations
             if (groupIds.Length == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
@@ -163,7 +163,7 @@ namespace SugarChat.Core.Services.Conversations
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
             var filterGroupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, cancellationToken);
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageCountGroupByGroupIdsAsync(filterGroupIds, request.UserId, request.PageSettings, cancellationToken);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(filterGroupIds, request.UserId, request.PageSettings, cancellationToken);
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;

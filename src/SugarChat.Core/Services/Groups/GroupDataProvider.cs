@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Exceptions;
 using SugarChat.Core.IRepositories;
@@ -98,6 +102,56 @@ namespace SugarChat.Core.Services.Groups
                 }
             }
             return filterGroups;
+        }
+
+        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
+        {
+            var match = @"
+{$match:
+    {$and:[
+        {GroupId:{$in:[#GroupIds#]}},
+        #match_and_or#
+    ]}
+}
+";
+            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
+            match = match.Replace("#GroupIds#", groupIdsStr);
+            if (searchParms is not null && searchParms.Any())
+            {
+                StringBuilder match_and_or = new StringBuilder("{$or:[");
+                foreach (var searchParm in searchParms)
+                {
+                    if (searchParm.Key == Message.Constant.Content)
+                    {
+                        match_and_or.Append($"{{Content:{{'$regex':'{searchParm.Value}','$options':'i'}}}}");
+                    }
+                    else
+                    {
+                        if (isExactSearch)
+                        {
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{searchParm.Value}$/i}},");
+                        }
+                        else
+                        {
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':{{'$regex':'{searchParm.Value}','$options':'i'}}}},");
+                        }
+                    }
+                }
+                match_and_or.Append("]}");
+                match = match.Replace("#match_and_or#", match_and_or.ToString());
+            }
+            else
+            {
+                return groupIds;
+            }
+            var group = "{$group:{_id:'$GroupId'}}";
+
+            List<string> stages = new List<string>();
+            stages.Add(match);
+            stages.Add(group);
+
+            var result = await _repository.GetList<Domain.Message, Group>(stages, cancellationToken).ConfigureAwait(false);
+            return result.Select(x => x.Id);
         }
     }
 }

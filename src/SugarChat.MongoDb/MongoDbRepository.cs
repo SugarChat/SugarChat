@@ -12,6 +12,8 @@ using MongoDB.Driver.Linq;
 using SugarChat.Core.Services;
 using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Message.Paging;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -104,7 +106,7 @@ namespace SugarChat.Data.MongoDb
                     .ConfigureAwait(false);
         }
 
-        public IQueryable<T> Query<T>() where T : class, IEntity
+        public IMongoQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
                 .AsQueryable();
@@ -196,6 +198,31 @@ namespace SugarChat.Data.MongoDb
                 }
             }
             return default;
+        }
+
+        public async Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
+            foreach (var stage in stages)
+            {
+                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
+                pipelineStages.Add(pipelineStage);
+            }
+
+            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
+            return await _database.GetCollection<BsonDocument>(typeof(T).Name).AggregateAsync(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<TDestination>> GetList<TSource, TDestination>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where TSource : class, IEntity where TDestination : class
+        {
+            var bsonDocuments = await (await GetAggregate<TSource>(stages, cancellationToken).ConfigureAwait(false)).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var list = new List<TDestination>();
+            foreach (var bsonDocument in bsonDocuments)
+            {
+                var messageCountGroupByGroupId = BsonSerializer.Deserialize<TDestination>(bsonDocument);
+                list.Add(messageCountGroupByGroupId);
+            }
+            return list;
         }
     }
 }

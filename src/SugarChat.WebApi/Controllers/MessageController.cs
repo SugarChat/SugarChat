@@ -40,7 +40,17 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getUnreadMessageCount"), HttpGet]
-        public async Task<IActionResult> GetUnreadMessageCount([FromQuery] GetUnreadMessageCountRequest request)
+        public async Task<IActionResult> GetUnreadMessageCountForGet([FromQuery] GetUnreadMessageCountRequest request)
+        {
+            var response =
+                 await _mediator
+                     .RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+
+            return Ok(response);
+        }
+
+        [Route("getUnreadMessageCount"), HttpPost]
+        public async Task<IActionResult> GetUnreadMessageCountForPost(GetUnreadMessageCountRequest request)
         {
             var response =
                  await _mediator
@@ -90,7 +100,14 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getMessagesByGroupIds"), HttpGet]
-        public async Task<IActionResult> GetMessagesByGroupIds([FromQuery] GetMessagesByGroupIdsRequest request)
+        public async Task<IActionResult> GetMessagesByGroupIdsForGet([FromQuery] GetMessagesByGroupIdsRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            return Ok(response);
+        }
+
+        [Route("getMessagesByGroupIds"), HttpPost]
+        public async Task<IActionResult> GetMessagesByGroupIdsForPost(GetMessagesByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
             return Ok(response);

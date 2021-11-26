@@ -38,7 +38,18 @@ namespace SugarChat.WebApi.Controllers
 
         [Route("getConversationList"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
-        public async Task<IActionResult> GetConversationListByUserId([FromQuery] GetConversationListRequest request)
+        public async Task<IActionResult> GetConversationListByUserIdForGet([FromQuery] GetConversationListRequest request)
+        {
+            var response =
+                  await _mediator
+                      .RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+
+            return Ok(response);
+        }
+
+        [Route("getConversationList"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        public async Task<IActionResult> GetConversationListByUserIdForPost(GetConversationListRequest request)
         {
             var response =
                   await _mediator
@@ -81,9 +92,18 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
         [Route("getConversationByKeyword"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
-        public async Task<IActionResult> GetConversationByKeyword([FromQuery] GetConversationByKeywordRequest request)
+        public async Task<IActionResult> GetConversationByKeywordForGet([FromQuery] GetConversationByKeywordRequest request)
+        {
+            var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
+            return Ok(response);
+        }
+
+        [Route("getConversationByKeyword"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
+        public async Task<IActionResult> GetConversationByKeywordForPost(GetConversationByKeywordRequest request)
         {
             var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
             return Ok(response);

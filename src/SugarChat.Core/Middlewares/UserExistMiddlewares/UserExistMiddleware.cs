@@ -13,7 +13,7 @@ namespace SugarChat.Core.Middlewares
 {
     public static class UserExistMiddleware
     {
-        public static void UseUserExist<TContext>(this IPipeConfigurator<TContext> configurator) where TContext : IContext<IMessage>
+        public static void UseNeedUserExist<TContext>(this IPipeConfigurator<TContext> configurator) where TContext : IContext<IMessage>
         {
             var userDataProvider = configurator.DependencyScope.Resolve<IUserDataProvider>();
             var memoryCache = configurator.DependencyScope.Resolve<IMemoryCache>();

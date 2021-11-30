@@ -56,7 +56,7 @@ namespace SugarChat.Core.Autofac
             config.UseSerilog(logger: Log.Logger);
             config.UseUnifyResponseMiddleware();
             config.UseValidatorMiddleware();
-            config.UseUserExist();
+            config.UseNeedUserExist();
         }
 
         private void RegisterAutoMapper(ContainerBuilder builder)

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
@@ -14,5 +16,6 @@ namespace SugarChat.Core.Services.Users
         Task UpdateAsync(User user, CancellationToken cancellationToken = default);
         Task RemoveAsync(User user, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default);
+        Task<IEnumerable<User>> GetListAsync(Expression<Func<User, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

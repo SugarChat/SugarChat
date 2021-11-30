@@ -11,6 +11,9 @@ using SugarChat.SignalR.ServerClient;
 using Xunit;
 using NSubstitute;
 using SugarChat.Core.Services;
+using Microsoft.Extensions.Caching.Memory;
+using SugarChat.Core;
+using SugarChat.Message;
 
 namespace SugarChat.IntegrationTest
 {
@@ -28,6 +31,9 @@ namespace SugarChat.IntegrationTest
             containerBuilder.RegisterType<SignalRClientMock>()
                 .As<IServerClient>()
                 .InstancePerLifetimeScope();
+
+            MemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
+            containerBuilder.RegisterInstance(memoryCache).AsImplementedInterfaces();
 
             RegisterBaseContainer(containerBuilder, builder =>
             {
@@ -50,7 +56,8 @@ namespace SugarChat.IntegrationTest
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
                 typeof(SugarChat.Core.Services.IService).Assembly
-            }));
+            },
+            new RunTimeProvider(RunTimeType.Test)));
             extraRegistration(builder);
             Container = builder.Build().BeginLifetimeScope();
         }

@@ -1,10 +1,11 @@
 ﻿using Mediator.Net.Contracts;
+using SugarChat.Message.Commands;
 using SugarChat.Message.Paging;
 using System.Collections.Generic;
 
 namespace SugarChat.Message.Requests.Conversations
 {
-    public class GetConversationListRequest : IRequest
+    public class GetConversationListRequest : IRequest, INeedUserExist
     {     
         public string UserId { get; set; }
         public PageSettings PageSettings { get; set; }

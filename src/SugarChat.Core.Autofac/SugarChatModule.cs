@@ -24,14 +24,17 @@ namespace SugarChat.Core.Autofac
     public class SugarChatModule : Module
     {
         private readonly IEnumerable<Assembly> _assemblies;
+        private readonly RunTimeProvider _runTimeProvider;
 
-        public SugarChatModule(IEnumerable<Assembly> assemblies)
+        public SugarChatModule(IEnumerable<Assembly> assemblies, RunTimeProvider runTimeProvider)
         {
             _assemblies = assemblies;
+            _runTimeProvider = runTimeProvider;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
+            builder.Register(x => _runTimeProvider).SingleInstance();
             RegisterMediator(builder);
             RegisterServices(builder);
             RegisterAutoMapper(builder);
@@ -53,8 +56,8 @@ namespace SugarChat.Core.Autofac
             config.UseSerilog(logger: Log.Logger);
             config.UseUnifyResponseMiddleware();
             config.UseValidatorMiddleware();
+            config.UseUserExist();
         }
-
 
         private void RegisterAutoMapper(ContainerBuilder builder)
         {

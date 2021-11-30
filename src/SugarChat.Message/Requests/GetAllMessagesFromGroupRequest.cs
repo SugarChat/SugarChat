@@ -1,8 +1,9 @@
 ﻿using Mediator.Net.Contracts;
+using SugarChat.Message.Commands;
 
 namespace SugarChat.Message.Requests
 {
-    public class GetAllMessagesFromGroupRequest : IRequest
+    public class GetAllMessagesFromGroupRequest : IRequest, INeedUserExist
     {
         public string UserId { get; set; }
         public string GroupId { get; set; }

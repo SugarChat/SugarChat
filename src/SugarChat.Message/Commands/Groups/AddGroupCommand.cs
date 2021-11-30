@@ -4,7 +4,7 @@ using Mediator.Net.Contracts;
 
 namespace SugarChat.Message.Commands.Groups
 {
-    public class AddGroupCommand : IdRequiredCommand
+    public class AddGroupCommand : IdRequiredCommand, INeedUserExist
     {
         public string UserId { get; set; }
 

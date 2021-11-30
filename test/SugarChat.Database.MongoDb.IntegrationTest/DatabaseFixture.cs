@@ -3,9 +3,11 @@ using System.IO;
 using Autofac;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
+using SugarChat.Core;
 using SugarChat.Core.Autofac;
 using SugarChat.Core.IRepositories;
 using SugarChat.Data.MongoDb.Autofac;
+using SugarChat.Message;
 
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
@@ -29,7 +31,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 .RegisterModule(new SugarChatModule(new[]
                 {
                     typeof(SugarChat.Core.Services.IService).Assembly
-                }));
+                }, new RunTimeProvider(RunTimeType.Test)));
 
             Container = containerBuilder.Build().BeginLifetimeScope();
             Repository = Container.Resolve<IRepository>();

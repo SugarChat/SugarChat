@@ -60,9 +60,9 @@ namespace SugarChat.Core.Middlewares
                             if (user is null)
                             {
                                 user = await UserExistForDb(needUserExist.UserId, cancellationToken);
+                                users.Add(user);
+                                _memoryCache.Set(CacheService.AllUser, users);
                             }
-                            users.Add(user);
-                            _memoryCache.Set(CacheService.AllUser, users);
                         }
                     }
                 }

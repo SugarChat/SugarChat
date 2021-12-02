@@ -39,7 +39,7 @@ namespace SugarChat.Core.Middlewares
         {
             try
             {
-                if (_runtimeProvider.Type == Message.RunTimeType.AspNetCoreApi)
+                if (_runtimeProvider.Type != Message.RunTimeType.Test)
                 {
                     if (context.Message is INeedUserExist needUserExist)
                     {
@@ -47,11 +47,7 @@ namespace SugarChat.Core.Middlewares
                         User user;
                         if (users is null)
                         {
-                            user = await _userDataProvider.GetByIdAsync(needUserExist.UserId, cancellationToken);
-                            if (user is null)
-                            {
-                                user = await UserExistForDb(needUserExist.UserId, cancellationToken);
-                            }
+                            user = await UserExistForDb(needUserExist.UserId, cancellationToken);
                             _memoryCache.Set(CacheService.AllUser, new List<User> { user });
                         }
                         else
@@ -70,10 +66,12 @@ namespace SugarChat.Core.Middlewares
             catch (Exception e)
             {
                 Log.Error(e, "UserExistSpecification Error{@command}", context.Message);
+                ExceptionDispatchInfo.Capture(ex).Throw();
+                throw ex;
             }
         }
 
-        private async Task<User> UserExistForDb(string userId, CancellationToken cancellationToken)
+        private async Task<User> AddUserToDb(string userId, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(userId, cancellationToken);
             if (user is null)
@@ -91,6 +89,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
+            ExceptionDispatchInfo.Capture(ex).Throw();
             throw ex;
         }
 

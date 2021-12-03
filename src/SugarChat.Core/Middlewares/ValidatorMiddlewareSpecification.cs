@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands;
+using System.Runtime.ExceptionServices;
 
 namespace SugarChat.Core.Middlewares
 {

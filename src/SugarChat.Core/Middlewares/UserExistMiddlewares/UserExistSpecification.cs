@@ -10,6 +10,7 @@ using SugarChat.Message.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace SugarChat.Core.Middlewares
                         User user;
                         if (users is null)
                         {
-                            user = await UserExistForDb(needUserExist.UserId, cancellationToken);
+                            user = await AddUserToDb(needUserExist.UserId, cancellationToken);
                             _memoryCache.Set(CacheService.AllUser, new List<User> { user });
                         }
                         else
@@ -55,7 +56,7 @@ namespace SugarChat.Core.Middlewares
                             user = users.FirstOrDefault(x => x.Id == needUserExist.UserId);
                             if (user is null)
                             {
-                                user = await UserExistForDb(needUserExist.UserId, cancellationToken);
+                                user = await AddUserToDb(needUserExist.UserId, cancellationToken);
                                 users.Add(user);
                                 _memoryCache.Set(CacheService.AllUser, users);
                             }
@@ -63,9 +64,9 @@ namespace SugarChat.Core.Middlewares
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Log.Error(e, "UserExistSpecification Error{@command}", context.Message);
+                Log.Error(ex, "UserExistSpecification Error{@command}", context.Message);
                 ExceptionDispatchInfo.Capture(ex).Throw();
                 throw ex;
             }

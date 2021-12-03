@@ -368,7 +368,7 @@ namespace SugarChat.Net.Client.HttpClients
             string requestUrl = $"{_getMessagesOfGroupUrl}?groupId={request.GroupId}";
             if (request.FromDate != null)
             {
-                requestUrl += $"&fromDate={request.FromDate}";
+                requestUrl += $"&fromDate={request.FromDate.Value.ToString("yyyy-MM-dd HH:mm:ss")}";
             }
             if (request.PageSettings != null)
             {

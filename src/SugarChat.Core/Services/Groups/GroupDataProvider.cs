@@ -104,12 +104,7 @@ namespace SugarChat.Core.Services.Groups
             return filterGroups;
         }
 
-        class _Group
-        {
-            public string GroupId { get; set; }
-        }
-
-        public IEnumerable<string> GetGroupIdsByMessageKeyword(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, PageSettings pageSettings, bool isExactSearch)
+        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
         {
             var match = @"
 {$match:
@@ -150,29 +145,13 @@ namespace SugarChat.Core.Services.Groups
                 return groupIds;
             }
             var group = "{$group:{_id:'$GroupId'}}";
-            var project = "{$project:{_id:0,GroupId:'$_id'}}";
 
             List<string> stages = new List<string>();
             stages.Add(match);
             stages.Add(group);
-            stages.Add(project);
 
-            IList<IPipelineStageDefinition> pipelineStages = new List<IPipelineStageDefinition>();
-            foreach (var stage in stages)
-            {
-                PipelineStageDefinition<BsonDocument, BsonDocument> pipelineStage = new JsonPipelineStageDefinition<BsonDocument, BsonDocument>(stage);
-                pipelineStages.Add(pipelineStage);
-            }
-            PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            var bsonDocuments = _repository.GetAggregate<Domain.Message>(pipeline).ToList();
-            var result = new List<_Group>();
-            foreach (var bsonDocument in bsonDocuments)
-            {
-                var _groupId = BsonSerializer.Deserialize<_Group>(bsonDocument);
-                result.Add(_groupId);
-            }
-
-            return result.Select(x => x.GroupId);
+            var result = await _repository.GetList<Domain.Message, Group>(stages, cancellationToken).ConfigureAwait(false);
+            return result.Select(x => x.Id);
         }
     }
 }

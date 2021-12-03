@@ -11,5 +11,7 @@ namespace SugarChat.Message.Dtos
         public string GroupId { get; set; }
 
         public int Count { get; set; }
+
+        public DateTimeOffset LastSentTime { get; set; }
     }
 }

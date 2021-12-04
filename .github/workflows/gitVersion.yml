@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "SemVer: $GITVERSION_SEMVER"
           echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-          echo "tag: ${{ steps.tag }}"
+          echo "tag: ${{ steps.tag.outputs }}"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v1

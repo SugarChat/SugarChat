@@ -66,9 +66,13 @@ namespace SugarChat.Core.Middlewares
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "UserExistSpecification Error{@command}", context.Message);
-                ExceptionDispatchInfo.Capture(ex).Throw();
-                throw ex;
+                if (!(ex.Message.Contains("E11000 duplicate key error collection: SugarChatTestDb.User index")
+                    || (ex.Message.StartsWith("User with Id") && ex.Message.EndsWith("already exists."))))
+                {
+                    Log.Error(ex, "UserExistSpecification Error{@command}", context.Message);
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                    throw ex;
+                }
             }
         }
 

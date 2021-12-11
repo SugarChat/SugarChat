@@ -8,7 +8,7 @@ namespace SugarChat.Message.Requests
     public class GetGroupsOfUserRequest : IRequest, INeedUserExist
     {
         private string _Id;
-        [Obsolete("use UserId")]
+        [Obsolete("Id field is obsolete, please use UserId")]
         public string Id
         {
             get

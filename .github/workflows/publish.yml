@@ -26,10 +26,6 @@ jobs:
           
       - name: Checkout
         run: git fetch --tags
-
-      - name: Fetch master for GitVersion
-        if: github.ref != 'refs/heads/main'
-        run: git branch --create-reflog master origin/main
         
       - name: Determine Version
         id: gitversion
@@ -39,18 +35,3 @@ jobs:
         run: |
           echo "SemVer: $GITVERSION_SEMVER"
           echo "SemVer: ${{ steps.gitversion.outputs.semVer }}"
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "5.x"
-          
-      - name: Build solution and generate NuGet package
-        run: |
-          dotnet pack -c Release -o out -p:PackageVersion=${{ steps.gitversion.outputs.semVer }}
-
-      - name: Push HttpClient to GitHub registry
-        run: dotnet nuget push ./out/SugarChat.Net.Client.${{ steps.gitversion.outputs.semVer }}.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json
-          
-      - name: Push Message to GitHub registry
-        run: dotnet nuget push ./out/SugarChat.Message.${{ steps.gitversion.outputs.semVer }}.nupkg --skip-duplicate --no-symbols true -k ${{secrets.NUGET_API_KEY}} -s https://api.nuget.org/v3/index.json

@@ -15,5 +15,6 @@ namespace SugarChat.Message.Dtos
         public string Payload { get; set; }
         public bool IsRevoked { get; set; }
         public Dictionary<string, string> CustomProperties { get; set; }
+        public string Url { get; set; }
     }
 }

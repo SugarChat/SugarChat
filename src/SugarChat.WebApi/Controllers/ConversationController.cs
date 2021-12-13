@@ -87,7 +87,7 @@ namespace SugarChat.WebApi.Controllers
 
         [Route("setMessageReadSetByUserBasedOnGroupId"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> SetMessageReadSetByUserBasedOnGroupId(SetMessageReadByUserBasedOnGroupIdCommand command)
+        public async Task<IActionResult> SetMessageReadSetByUserBasedOnGroupId( SetMessageReadByUserBasedOnGroupIdCommand command)
         {
             var response = await _mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
             return Ok(response);
@@ -106,6 +106,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> GetConversationByKeywordForPost(GetConversationByKeywordRequest request)
         {
             var response = await _mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
+            return Ok(response);
+        }
+
+        [Route("setMessageReadByUserIdsBasedOnGroupId"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> SetMessageReadByUserIdsBasedOnGroupId(SetMessageReadByUserIdsBasedOnGroupIdCommand command)
+        {
+            var response = await _mediator.SendAsync<SetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
             return Ok(response);
         }
     }

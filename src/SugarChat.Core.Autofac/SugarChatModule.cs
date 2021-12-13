@@ -18,6 +18,7 @@ using SugarChat.Core.Services.Users;
 using Mediator.Net.Pipeline;
 using Mediator.Net.Middlewares.Serilog;
 using Serilog;
+using SugarChat.Core.Setting;
 
 namespace SugarChat.Core.Autofac
 {
@@ -36,6 +37,7 @@ namespace SugarChat.Core.Autofac
             RegisterServices(builder);
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
+            RegisterConfigurationSetting(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -54,7 +56,6 @@ namespace SugarChat.Core.Autofac
             config.UseUnifyResponseMiddleware();
             config.UseValidatorMiddleware();
         }
-
 
         private void RegisterAutoMapper(ContainerBuilder builder)
         {
@@ -91,6 +92,13 @@ namespace SugarChat.Core.Autofac
             {
                 builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }
+        }
+
+        private void RegisterConfigurationSetting(ContainerBuilder builder)
+        {
+            builder.RegisterTypes(typeof(IConfigurationSetting).Assembly.GetTypes()
+                    .Where(x => x.IsClass && typeof(IConfigurationSetting).IsAssignableFrom(x)).ToArray()).AsSelf()
+                .SingleInstance();
         }
     }
 }

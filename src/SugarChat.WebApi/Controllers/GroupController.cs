@@ -1,4 +1,4 @@
-﻿using Mediator.Net;
+using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Basic;

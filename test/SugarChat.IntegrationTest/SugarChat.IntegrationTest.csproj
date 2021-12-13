@@ -38,5 +38,6 @@
     <ProjectReference Include="..\..\src\SugarChat.Core.Autofac\SugarChat.Core.Autofac.csproj" />
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
     <ProjectReference Include="..\..\src\SugarChat.Database.MongoDb.Autofac\SugarChat.Data.MongoDb.Autofac.csproj" />
+    <ProjectReference Include="..\..\src\SugarChat.Net.Client\SugarChat.Net.Client.csproj" />
   </ItemGroup>
 </Project>

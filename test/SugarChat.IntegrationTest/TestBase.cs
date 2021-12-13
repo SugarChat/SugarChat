@@ -9,8 +9,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using SugarChat.SignalR.ServerClient;
 using Xunit;
+using SugarChat.Net.Client;
+using SugarChat.Net.Client.HttpClients;
 using NSubstitute;
 using SugarChat.Core.Services;
+
 
 namespace SugarChat.IntegrationTest
 {
@@ -22,12 +25,16 @@ namespace SugarChat.IntegrationTest
 
         protected TestBase()
         {
-            LoadThisConfiguration();
             var containerBuilder = new ContainerBuilder();
+            LoadThisConfiguration(containerBuilder);
             containerBuilder.RegisterMongoDbRepository(() => _configuration.GetSection("MongoDb"));
             containerBuilder.RegisterType<SignalRClientMock>()
                 .As<IServerClient>()
                 .InstancePerLifetimeScope();
+
+            containerBuilder.RegisterType<SugarChatHttpClient>()
+              .As<ISugarChatClient>()
+              .InstancePerLifetimeScope();
 
             RegisterBaseContainer(containerBuilder, builder =>
             {
@@ -35,14 +42,16 @@ namespace SugarChat.IntegrationTest
                 iSecurityManager.IsSupperAdmin().Returns(false);
                 containerBuilder.RegisterInstance(iSecurityManager);
             });
+
         }
 
-        private void LoadThisConfiguration()
+        private void LoadThisConfiguration(ContainerBuilder builder)
         {
             _configuration = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json")
-               .Build();
+               .Build();           
+            builder.RegisterInstance(_configuration).As<IConfiguration>();
         }
 
         private void RegisterBaseContainer(ContainerBuilder builder, Action<ContainerBuilder> extraRegistration)

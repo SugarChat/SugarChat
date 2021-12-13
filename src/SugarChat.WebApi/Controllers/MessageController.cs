@@ -59,7 +59,7 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("getUnreadMessagesFromGroupRequest"), HttpGet]
+        [Route("getUnreadMessagesFromGroup"), HttpGet]
         public async Task<IActionResult> GetUnreadMessagesFromGroup([FromQuery] GetUnreadMessagesFromGroupRequest request)
         {
             var response =
@@ -110,6 +110,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> GetMessagesByGroupIdsForPost(GetMessagesByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            return Ok(response);
+        }
+
+        [Route("translate"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> TranslateMessage(TranslateMessageCommand command)
+        {
+            var response=  await _mediator.SendAsync<TranslateMessageCommand, SugarChatResponse<MessageTranslateDto>>(command);
             return Ok(response);
         }
     }

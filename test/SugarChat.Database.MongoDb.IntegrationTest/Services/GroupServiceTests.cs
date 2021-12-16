@@ -64,7 +64,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         {
             GetGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
-                Id = "1",
+                UserId = "1",
                 PageSettings = new PageSettings {PageNum = 1}
             };
             GetGroupsOfUserResponse getGroupsOfUserResponse =
@@ -72,7 +72,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             getGroupsOfUserResponse.Groups.Total.ShouldBe(2);
             GroupDto group = getGroupsOfUserResponse.Groups.Result.SingleOrDefault(o => o.Id == TomAndJerryGroup.Id);
             group.ShouldNotBeNull();
-            group.Id.ShouldBe(getGroupsOfUserRequest.Id);
+            group.Id.ShouldBe(getGroupsOfUserRequest.UserId);
             group.Description.ShouldBe(TomAndJerryGroup.Description);
         }
 
@@ -81,7 +81,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         {
             GetGroupsOfUserRequest getGroupsOfUserRequest = new()
             {
-                Id = "0",
+                UserId = "0",
                 PageSettings = new PageSettings {PageNum = 1}
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>

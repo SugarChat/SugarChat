@@ -15,6 +15,12 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using Microsoft.OpenApi.Models;
+using SugarChat.Core.Services.Users;
+using SugarChat.Core.Cache;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using SugarChat.Core;
+using SugarChat.Message;
 
 namespace SugarChat.WebApi
 {
@@ -31,6 +37,7 @@ namespace SugarChat.WebApi
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMemoryCache();
             services.AddSugarChatSignalRServerHttpClient(Configuration["SignalR:ServerUrl"]);
             services.AddControllers();
             services.AddOptions();
@@ -80,7 +87,8 @@ namespace SugarChat.WebApi
             builder.RegisterModule(new SugarChatModule(new Assembly[]
             {
                 typeof(IService).Assembly
-            }));
+            }, new RunTimeProvider(RunTimeType.AspNetCoreApi)));
+            builder.RegisterBuildCallback(lifetimeScope => SetAllUserCache(lifetimeScope));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,6 +110,14 @@ namespace SugarChat.WebApi
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private async Task SetAllUserCache(ILifetimeScope lifetimeScope)
+        {
+            var userDataProvider = lifetimeScope.Resolve<IUserDataProvider>();
+            var memoryCache = lifetimeScope.Resolve<IMemoryCache>();
+            var userList = await userDataProvider.GetListAsync();
+            memoryCache.Set(CacheService.AllUser, userList, new DateTimeOffset(new DateTime(2099, 12, 31)));
         }
     }
 }

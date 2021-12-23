@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Exceptions;
 using SugarChat.Message.Commands;
+using System.Runtime.ExceptionServices;
 
 namespace SugarChat.Core.Middlewares
 {
@@ -40,6 +41,7 @@ namespace SugarChat.Core.Middlewares
 
         public Task OnException(Exception ex, TContext context)
         {
+            ExceptionDispatchInfo.Capture(ex).Throw();
             throw ex;
         }
     }

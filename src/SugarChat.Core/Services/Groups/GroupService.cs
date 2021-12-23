@@ -64,10 +64,10 @@ namespace SugarChat.Core.Services.Groups
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {
-            User user = await GetUserAsync(request.Id, cancellation).ConfigureAwait(false);
-            user.CheckExist(request.Id);
+            User user = await GetUserAsync(request.UserId, cancellation).ConfigureAwait(false);
+            user.CheckExist(request.UserId);
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.Id, cancellation).ConfigureAwait(false);
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation).ConfigureAwait(false);
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);

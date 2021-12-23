@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
@@ -65,6 +67,11 @@ namespace SugarChat.Core.Services.Users
         public async Task RemoveRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
         {
             await _repository.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<User>> GetListAsync(Expression<Func<User, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -11,19 +11,16 @@
       <PackageReference Include="Mediator.Net.Middlewares.Serilog" Version="4.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
       <PackageReference Include="MongoDB.Bson" Version="2.12.2" />
       <PackageReference Include="MongoDB.Driver" Version="2.12.2" />
       <PackageReference Include="Serilog" Version="2.10.0" />
+      <PackageReference Include="SugarChat.Message" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
       <ProjectReference Include="..\SugarChat.SignalR.ServerClient\SugarChat.SignalR.ServerClient.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\SugarChat.Message\SugarChat.Message.csproj" />
     </ItemGroup>
 
 </Project>

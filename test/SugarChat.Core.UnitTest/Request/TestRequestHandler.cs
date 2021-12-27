@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
 using SugarChat.Core.Basic;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.UnitTest.Command;
 
 namespace SugarChat.Core.UnitTest.Request

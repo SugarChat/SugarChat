@@ -8,7 +8,7 @@ using Shouldly;
 using SugarChat.Message;
 using SugarChat.Core.Services;
 using SugarChat.Core.Basic;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
 using System.Collections.Generic;

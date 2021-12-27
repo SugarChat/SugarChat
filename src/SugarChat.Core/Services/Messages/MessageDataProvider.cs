@@ -7,7 +7,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;

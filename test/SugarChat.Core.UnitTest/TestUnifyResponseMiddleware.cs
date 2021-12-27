@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using SugarChat.Core.UnitTest.Request;
 using Xunit;
 using SugarChat.Core.UnitTest.Events;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 
 namespace SugarChat.Core.UnitTest
 {

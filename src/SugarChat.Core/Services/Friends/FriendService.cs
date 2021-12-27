@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Friends;
 using SugarChat.Message.Commands.Users;

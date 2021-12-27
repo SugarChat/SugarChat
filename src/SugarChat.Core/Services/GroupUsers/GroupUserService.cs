@@ -6,7 +6,7 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;

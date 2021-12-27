@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Driver.Linq;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services

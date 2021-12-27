@@ -6,7 +6,7 @@ using SugarChat.Core;
 using SugarChat.Core.Basic;
 using SugarChat.Core.Cache;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message;
 using SugarChat.Message.Commands.Messages;

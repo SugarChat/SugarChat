@@ -1,6 +1,5 @@
 ﻿using Mediator.Net;
 using Shouldly;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
@@ -14,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SugarChat.Message.Dtos;
 using Xunit;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services
 {

@@ -2,7 +2,7 @@
 using Mediator.Net.Contracts;
 using Mediator.Net.Pipeline;
 using Serilog;
-using SugarChat.Core.Basic;
+using SugarChat.Message.Basic;
 using SugarChat.Message.Exceptions;
 using System;
 using System.Linq;

@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Messages;
+using SugarChat.Message.Basic;
 using SugarChat.Message.Commands.Messages;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Messages

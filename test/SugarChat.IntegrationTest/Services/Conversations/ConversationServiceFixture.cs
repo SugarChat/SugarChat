@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Mediator.Net;
 using Shouldly;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message;
@@ -20,6 +19,7 @@ using System.Threading.Tasks;
 using Xunit;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Messages;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services.Conversations
 {

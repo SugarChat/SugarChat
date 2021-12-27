@@ -9,9 +9,9 @@ using Xunit;
 using Shouldly;
 using SugarChat.Message.Requests;
 using System.Linq;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {

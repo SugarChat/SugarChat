@@ -112,5 +112,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
             return Ok(response);
         }
+
+        [Route("GetUpdateMessage"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> GetUpdateMessage(UpdateMessageCommand command)
+        {
+            var response = await _mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

@@ -12,6 +12,7 @@ namespace SugarChat.Core.Services.Messages
         Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default);
         Task UpdateAsync(Domain.Message message, CancellationToken cancellationToken = default);
+        Task UpdateRangeAsync(IEnumerable<Domain.Message> message, CancellationToken cancellationToken = default);
         Task RemoveAsync(Domain.Message message, CancellationToken cancellationToken = default);
         Task<IEnumerable<Domain.Message>> GetUnreadToUserWithFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default);
@@ -44,5 +45,7 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default);
 
         Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
     }
 }

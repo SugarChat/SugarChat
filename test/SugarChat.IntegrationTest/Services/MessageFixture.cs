@@ -12,6 +12,9 @@ using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using SugarChat.Message.Basic;
+using AutoMapper;
+using SugarChat.Message.Dtos;
+using System.Linq;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -97,6 +100,61 @@ namespace SugarChat.IntegrationTest.Services
                 command.MessageId = messageId2;
                 await mediator.SendAsync(command);
                 (await repository.SingleOrDefaultAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).IsRevoked.ShouldBeTrue();
+            });
+        }
+
+        [Fact]
+        public async Task ShouldUpdateMessage()
+        {
+            await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
+            {
+                List<SendMessageCommand> sendMessageCommands = new List<SendMessageCommand>();
+                for (int i = 0; i < 3; i++)
+                {
+                    var sendMessageCommand = new SendMessageCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        GroupId = Guid.NewGuid().ToString(),
+                        Content = "Test",
+                        Type = 0,
+                        SentBy = Guid.NewGuid().ToString(),
+                        Payload = Guid.NewGuid().ToString(),
+                        CreatedBy = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } }
+                    };
+                    sendMessageCommands.Add(sendMessageCommand);
+                    await mediator.SendAsync(sendMessageCommand);
+                }
+                var messages = await repository.ToListAsync<Core.Domain.Message>();
+                var messageDtos = mapper.Map<IEnumerable<MessageDto>>(messages);
+                foreach (var messageDto in messageDtos)
+                {
+                    messageDto.GroupId = Guid.NewGuid().ToString();
+                    messageDto.Content = "Test";
+                    messageDto.Type = 1;
+                    messageDto.SentBy = Guid.NewGuid().ToString();
+                    messageDto.Payload = Guid.NewGuid().ToString();
+                    messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                }
+                var updateMessageCommand = new UpdateMessageCommand { Messages = messageDtos };
+                await mediator.SendAsync(updateMessageCommand);
+                var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
+                foreach (var _messages in messagesUpdateAfter)
+                {
+                    var messageDto = messageDtos.FirstOrDefault(x => x.Id == _messages.Id);
+                    var message = messages.FirstOrDefault(x => x.Id == _messages.Id);
+                    _messages.GroupId.ShouldBe(messageDto.GroupId);
+                    _messages.Content.ShouldBe(messageDto.Content);
+                    _messages.Type.ShouldBe(messageDto.Type);
+                    _messages.SentBy.ShouldBe(messageDto.SentBy);
+                    _messages.Payload.ShouldBe(messageDto.Payload);
+                    _messages.CustomProperties.ShouldBe(messageDto.CustomProperties);
+                    _messages.CreatedBy.ShouldBe(message.CreatedBy);
+                    _messages.CreatedDate.ShouldBe(message.CreatedDate);
+                    _messages.SentTime.ShouldBe(message.SentTime);
+                    _messages.IsSystem.ShouldBe(message.IsSystem);
+                    _messages.IsRevoked.ShouldBe(message.IsRevoked);
+                }
             });
         }
     }

@@ -298,5 +298,20 @@ namespace SugarChat.Core.Services.Messages
 
             return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
         }
+
+        public async Task UpdateMessageAsync(UpdateMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var ids = command.Messages.Select(x => x.Id).ToArray();
+            var messages = await _messageDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
+            foreach (var messageDto in command.Messages)
+            {
+                var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
+                if (message != null)
+                {
+                    _mapper.Map(messageDto, message);
+                }
+            }
+            await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

@@ -53,6 +53,7 @@ namespace SugarChat.Core.Autofac
 
         public static void AddGlobalReceivePipeConfigurator(IGlobalReceivePipeConfigurator config)
         {
+            config.UseLogOverallElapsed(Log.Logger);
             config.UseSerilog(logger: Log.Logger);
             config.UseUnifyResponseMiddleware();
             config.UseValidatorMiddleware();

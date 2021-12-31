@@ -3,7 +3,7 @@ using Mediator.Net.Contracts;
 using Mediator.Net.Pipeline;
 using Serilog;
 
-namespace SugarChat.Core.Middlewares.RequestOverallElapsed
+namespace SugarChat.Core.Middlewares
 {
     public static class RequestOverallElapsedMiddleware
     {

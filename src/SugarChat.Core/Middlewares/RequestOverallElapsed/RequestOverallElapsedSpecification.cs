@@ -9,7 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SugarChat.Core.Middlewares.RequestOverallElapsed
+namespace SugarChat.Core.Middlewares
 {
     public class RequestOverallElapsedSpecification<TContext> : IPipeSpecification<TContext>
             where TContext : IContext<IMessage>

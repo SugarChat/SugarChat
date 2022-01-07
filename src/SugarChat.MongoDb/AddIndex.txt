@@ -6,5 +6,4 @@ db.GroupUser.createIndex({"LastReadTime":-1});
 
 db.Message.createIndex({"CustomProperties":1});
 db.Message.createIndex({"GroupId":1});
-db.Message.createIndex({"Content":"text"});
 db.Message.createIndex({"SendTime":-1});

@@ -400,24 +400,29 @@ namespace SugarChat.Core.Services.Messages
 {{
     $lookup:{{
         from:'Message',
-        let:{{message_GroupId:'$GroupId'}},
+        let:{{group_GroupId:'$_id'}},
         pipeline:[
             {{$match:
                 {{$expr:
-                    {{$eq:['_id','$$message_GroupId']}}
+                    {{$eq:['$GroupId','$$group_GroupId']}}
                 }}
             }},
             {{$sort:{{SentTime:-1}}}},
             {{$limit:1}}
+
         ],
-        as:'stockdata1'
+        as:'stockdata'
     }}
 }}
 ";
             string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
+            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
+            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
             stages.Add(match);
             stages.Add(lookup);
             stages.Add(set);
+            stages.Add(project);
+            stages.Add(replaceRoot);
             var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
             return result;
         }

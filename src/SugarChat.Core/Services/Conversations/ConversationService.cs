@@ -65,7 +65,7 @@ namespace SugarChat.Core.Services.Conversations
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(groupIds,cancellationToken).ConfigureAwait(false);
+            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
@@ -171,7 +171,7 @@ namespace SugarChat.Core.Services.Conversations
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);

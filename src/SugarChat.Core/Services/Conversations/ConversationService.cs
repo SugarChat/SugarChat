@@ -65,18 +65,22 @@ namespace SugarChat.Core.Services.Conversations
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
+            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(groupIds,cancellationToken).ConfigureAwait(false);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
-                var lastMessage = await _messageDataProvider.GetLastMessageBygGroupIdAsync(messageCountGroupByGroupId.GroupId, cancellationToken);
+                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 var conversationDto = new ConversationDto
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
                     GroupProfile = _mapper.Map<GroupDto>(group),
-                    LastMessage = _mapper.Map<MessageDto>(lastMessage),
                     UnreadCount = messageCountGroupByGroupId.Count
                 };
+                if (lastMessage is not null)
+                {
+                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                }
                 conversations.Add(conversationDto);
             }
 
@@ -167,18 +171,22 @@ namespace SugarChat.Core.Services.Conversations
 
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
+            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(groupIds, cancellationToken).ConfigureAwait(false);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
-                var lastMessage = await _messageDataProvider.GetLastMessageBygGroupIdAsync(messageCountGroupByGroupId.GroupId, cancellationToken);
+                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 var conversationDto = new ConversationDto
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
                     GroupProfile = _mapper.Map<GroupDto>(group),
-                    LastMessage = _mapper.Map<MessageDto>(lastMessage),
                     UnreadCount = messageCountGroupByGroupId.Count
                 };
+                if (lastMessage is not null)
+                {
+                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                }
                 conversations.Add(conversationDto);
             }
 

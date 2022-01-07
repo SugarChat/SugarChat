@@ -301,6 +301,9 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task UpdateMessageAsync(UpdateMessageCommand command, CancellationToken cancellationToken = default)
         {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
             var ids = command.Messages.Select(x => x.Id).ToArray();
             var messages = await _messageDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
             foreach (var messageDto in command.Messages)

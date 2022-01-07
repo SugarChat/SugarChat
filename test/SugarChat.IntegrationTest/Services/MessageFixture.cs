@@ -15,6 +15,7 @@ using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos;
 using System.Linq;
+using SugarChat.Core.Domain;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -108,6 +109,11 @@ namespace SugarChat.IntegrationTest.Services
         {
             await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
             {
+                var userId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new User
+                {
+                    Id = userId
+                });
                 List<SendMessageCommand> sendMessageCommands = new List<SendMessageCommand>();
                 for (int i = 0; i < 3; i++)
                 {
@@ -136,8 +142,13 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.Payload = Guid.NewGuid().ToString();
                     messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
-                var updateMessageCommand = new UpdateMessageCommand { Messages = messageDtos };
-                await mediator.SendAsync(updateMessageCommand);
+                var updateMessageCommand = new UpdateMessageCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
+                {
+                    var response = await mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(updateMessageCommand);
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageCommand.UserId).Message);
+                }
+                updateMessageCommand.UserId = userId;
+                await mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(updateMessageCommand);
                 var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
                 foreach (var _messages in messagesUpdateAfter)
                 {

@@ -80,16 +80,26 @@ namespace SugarChat.IntegrationTest.Services
             }
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                var userId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new User
+                {
+                    Id = userId
+                });
                 await repository.AddRangeAsync(groups);
                 await repository.AddRangeAsync(groupUsers);
                 await repository.AddRangeAsync(messages);
 
                 DismissGroupCommand command = new DismissGroupCommand
                 {
-                    GroupId = Guid.NewGuid().ToString()
+                    GroupId = Guid.NewGuid().ToString(),
+                    UserId = Guid.NewGuid().ToString()
                 };
-
                 {
+                    var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(command.UserId).Message);
+                }
+                {
+                    command.UserId = userId;
                     var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.GroupNoExists.WithParams(command.GroupId).Message);
                 }

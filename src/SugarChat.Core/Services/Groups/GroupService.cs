@@ -168,8 +168,8 @@ namespace SugarChat.Core.Services.Groups
                     return new GroupDto[] { };
                 }
             }
-            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds);
-            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken);
+            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds, cancellationToken).ConfigureAwait(false);
+            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);
             foreach (var groupDto in groupDtos)

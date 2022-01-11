@@ -125,19 +125,28 @@ namespace SugarChat.Core.Services.Groups
                 StringBuilder match_and_or = new StringBuilder("{$or:[");
                 foreach (var searchParm in searchParms)
                 {
+                    var keyword = searchParm.Value
+                               .Replace(@"\", @"\\")
+                               .Replace("^", @"\^")
+                               .Replace("$", @"\$")
+                               .Replace(".", @"\.")
+                               .Replace("*", @"\*")
+                               .Replace("?", @"\?")
+                               .Replace("+", @"\+")
+                               .Replace("|", @"\|");
                     if (searchParm.Key == Message.Constant.Content)
                     {
-                        match_and_or.Append($"{{Content:{{'$regex':'{searchParm.Value}','$options':'i'}}}}");
+                        match_and_or.Append($"{{Content:/{keyword}/i}}");
                     }
                     else
                     {
                         if (isExactSearch)
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{searchParm.Value}$/i}},");
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{keyword}$/i}},");
                         }
                         else
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':{{'$regex':'{searchParm.Value}','$options':'i'}}}},");
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/{keyword}/i}},");
                         }
                     }
                 }

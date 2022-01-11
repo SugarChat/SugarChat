@@ -237,6 +237,19 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     response.Data.Result.Count().ShouldBe(1);
                     response.Data.Total.ShouldBe(1);
                 }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        SearchParms = new Dictionary<string, string> { { "Content", "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!" } },
+                        UserId = userId,
+                        IsExactSearch = false,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
+                }
             });
         }
 

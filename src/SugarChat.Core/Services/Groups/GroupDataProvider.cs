@@ -126,7 +126,7 @@ namespace SugarChat.Core.Services.Groups
 
                 foreach (var searchParm in searchParms)
                 {
-                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]" };
+                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
                     var keyword = searchParm.Value.Replace(@"\", @"\\");
                     foreach (var item in chars)
                     {

@@ -123,21 +123,15 @@ namespace SugarChat.Core.Services.Groups
             if (searchParms is not null && searchParms.Any())
             {
                 StringBuilder match_and_or = new StringBuilder("{$or:[");
+
                 foreach (var searchParm in searchParms)
                 {
-                    var keyword = searchParm.Value
-                               .Replace(@"\", @"\\")
-                               .Replace("^", @"\^")
-                               .Replace("$", @"\$")
-                               .Replace(".", @"\.")
-                               .Replace("*", @"\*")
-                               .Replace("?", @"\?")
-                               .Replace("+", @"\+")
-                               .Replace("|", @"\|")
-                               .Replace("{", @"\{")
-                               .Replace("}", @"\}")
-                               .Replace("[", @"\[")
-                               .Replace("]", @"\]");
+                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]" };
+                    var keyword = searchParm.Value.Replace(@"\", @"\\");
+                    foreach (var item in chars)
+                    {
+                        keyword = keyword.Replace(item, @"\" + item);
+                    }
                     if (searchParm.Key == Message.Constant.Content)
                     {
                         match_and_or.Append($"{{Content:/{keyword}/i}}");

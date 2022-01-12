@@ -133,7 +133,11 @@ namespace SugarChat.Core.Services.Groups
                                .Replace("*", @"\*")
                                .Replace("?", @"\?")
                                .Replace("+", @"\+")
-                               .Replace("|", @"\|");
+                               .Replace("|", @"\|")
+                               .Replace("{", @"\{")
+                               .Replace("}", @"\}")
+                               .Replace("[", @"\[")
+                               .Replace("]", @"\]");
                     if (searchParm.Key == Message.Constant.Content)
                     {
                         match_and_or.Append($"{{Content:/{keyword}/i}}");

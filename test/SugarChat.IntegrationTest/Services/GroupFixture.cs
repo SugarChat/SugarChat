@@ -182,35 +182,35 @@ namespace SugarChat.IntegrationTest.Services
                         {
                             Id = Guid.NewGuid().ToString(),
                             GroupId = groupIds[i].ToString(),
-                            Content = @"a \^$.*?+| b" + i + j,
+                            Content = @"a \^$.*?+| b{1}[a]" + i + j,
                             SentTime = DateTimeOffset.Now,
-                            CustomProperties = new Dictionary<string, string> { { "AAA", @"\^$.*?+|" + i + j }, { "BBB", i + @"\^$.*?+|" + j + j } }
+                            CustomProperties = new Dictionary<string, string> { { "AAA", @"\^$.*?+|{1}[a]" + i + j }, { "BBB", i + @"\^$.*?+|{1}[a]" + j + j } }
                         });
                     }
                 }
                 {
                     var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
                         new Dictionary<string, string> {
-                        { "AAA", @"\^$.*?+|" + 0 + 0 },
-                        { "BBB", 1 + @"\^$.*?+|" + 1 + 1 },
-                        { "Content", @"a \^$.*?+| b" + 2 + 2 }
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 + 1 },
+                        { "Content", @"a \^$.*?+| b{1}[a]" + 2 + 2 }
                         }, true);
                     result.Result.Count().ShouldBe(3);
                 }
                 {
                     var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
                         new Dictionary<string, string> {
-                        { "AAA", @"\^$.*?+|" + 0 },
-                        { "BBB", 1 + @"\^$.*?+|" + 1 }
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 }
                         }, true);
                     result.Result.Count().ShouldBe(0);
                 }
                 {
                     var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
                         new Dictionary<string, string> {
-                        { "AAA", @"\^$.*?+|" + 0 },
-                        { "BBB", 1 + @"\^$.*?+|" + 1 },
-                        { "Content", @"a \^$.*?+| b" }
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 },
+                        { "Content", @"a \^$.*?+| b{1}[a]" }
                         }, false);
                     result.Result.Count().ShouldBe(5);
                 }

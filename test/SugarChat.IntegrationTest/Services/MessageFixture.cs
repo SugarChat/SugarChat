@@ -124,7 +124,7 @@ namespace SugarChat.IntegrationTest.Services
                             Id = Guid.NewGuid().ToString(),
                             GroupId= groupIds[i].ToString(),
                             Content = "Content" + i + j,
-                            SentTime = DateTimeOffset.Now
+                            SentTime = sentTime
                         });
                     }
                     for (int j = 4; j < 6; j++)
@@ -135,7 +135,7 @@ namespace SugarChat.IntegrationTest.Services
                             Id = Guid.NewGuid().ToString(),
                             GroupId = groupIds[i].ToString(),
                             Content = "Content" + i + j,
-                            SentTime = DateTimeOffset.Now
+                            SentTime = sentTime
                         });
                     }
                 }
@@ -144,7 +144,7 @@ namespace SugarChat.IntegrationTest.Services
                 for (int i = 0; i < groupIds.Length; i++)
                 {
                     var message = messages.Single(x => x.GroupId == groupIds[i].ToString());
-                    message.Content.ShouldBe("Content" + i + "5");
+                    message.Content.ShouldBe("Content" + i + "2");
                 }
             });
         }

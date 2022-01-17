@@ -11,10 +11,12 @@ using SugarChat.Message.Exceptions;
 using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using SugarChat.Core.Domain;
+using SugarChat.Core.Services.Messages;
+using System.Linq;
 using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos;
-using System.Linq;
 using SugarChat.Core.Domain;
 
 namespace SugarChat.IntegrationTest.Services
@@ -101,6 +103,52 @@ namespace SugarChat.IntegrationTest.Services
                 command.MessageId = messageId2;
                 await mediator.SendAsync(command);
                 (await repository.SingleOrDefaultAsync<Core.Domain.Message>(x => x.Id == command.MessageId)).IsRevoked.ShouldBeTrue();
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetLastMessageForGroups()
+        {
+            await Run<IMessageDataProvider, IRepository>(async (messageDataProvider, repository) =>
+            {
+                Guid[] groupIds = new Guid[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+                for (int i = 0; i < groupIds.Length; i++)
+                {
+                    await repository.AddAsync(new Group
+                    {
+                        Id = groupIds[i].ToString(),
+                        Name = "group" + i
+                    });
+                    for (int j = 0; j < 3; j++)
+                    {
+                        DateTimeOffset sentTime = DateTimeOffset.Now.AddMinutes(j);
+                        await repository.AddAsync(new Core.Domain.Message
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            GroupId= groupIds[i].ToString(),
+                            Content = "Content" + i + j,
+                            SentTime = sentTime
+                        });
+                    }
+                    for (int j = 4; j < 6; j++)
+                    {
+                        DateTimeOffset sentTime = DateTimeOffset.Now.AddMinutes(-j);
+                        await repository.AddAsync(new Core.Domain.Message
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            GroupId = groupIds[i].ToString(),
+                            Content = "Content" + i + j,
+                            SentTime = sentTime
+                        });
+                    }
+                }
+                var messages = await messageDataProvider.GetLastMessageForGroupsAsync(groupIds.Select(x => x.ToString()));
+                messages.Count().ShouldBe(5);
+                for (int i = 0; i < groupIds.Length; i++)
+                {
+                    var message = messages.Single(x => x.GroupId == groupIds[i].ToString());
+                    message.Content.ShouldBe("Content" + i + "2");
+                }
             });
         }
 

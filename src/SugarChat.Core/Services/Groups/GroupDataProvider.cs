@@ -75,33 +75,37 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<Group>> GetByCustomProperties(Dictionary<string, string> customProperties, IEnumerable<string> groupIds)
+        public async Task<IEnumerable<Group>> GetByCustomProperties(Dictionary<string, string> customProperties, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            var groups = await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) || !groupIds.Any());
-            List<Group> filterGroups = new List<Group>();
-            if (customProperties is not null)
+            var match = @"
+{$match:
+    {$and:[
+        {_id:{$in:[#GroupIds#]}},
+        #customProperties#
+    ]}
+}
+";
+            if (groupIds.Count() > 0)
             {
-                foreach (var group in groups)
-                {
-                    if (group.CustomProperties is not null)
-                    {
-                        bool isAdd = true;
-                        foreach (var customProperty in customProperties)
-                        {
-                            if (!string.Equals(group.CustomProperties.GetValueOrDefault(customProperty.Key), customProperty.Value, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                isAdd = false;
-                                break;
-                            }
-                        }
-                        if (isAdd)
-                        {
-                            filterGroups.Add(group);
-                        }
-                    }
-                }
+                var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
+                match = match.Replace("#GroupIds#", groupIdsStr);
             }
-            return filterGroups;
+            else
+            {
+                match = match.Replace("{_id:{$in:[#GroupIds#]}},", "");
+            }
+
+            List<string> customPropertyQuery = new List<string>();
+            foreach (var customProperty in customProperties)
+            {
+                customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':/^{customProperty.Value}$/i}}");
+            }
+            match = match.Replace("#customProperties#", string.Join(",", customPropertyQuery));
+
+            List<string> stages = new List<string>();
+            stages.Add(match);
+            var result = await _repository.GetList<Group, Group>(stages, cancellationToken).ConfigureAwait(false);
+            return result;
         }
 
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
@@ -119,21 +123,28 @@ namespace SugarChat.Core.Services.Groups
             if (searchParms is not null && searchParms.Any())
             {
                 StringBuilder match_and_or = new StringBuilder("{$or:[");
+
                 foreach (var searchParm in searchParms)
                 {
+                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
+                    var keyword = searchParm.Value.Replace(@"\", @"\\");
+                    foreach (var item in chars)
+                    {
+                        keyword = keyword.Replace(item, @"\" + item);
+                    }
                     if (searchParm.Key == Message.Constant.Content)
                     {
-                        match_and_or.Append($"{{Content:{{'$regex':'{searchParm.Value}','$options':'i'}}}}");
+                        match_and_or.Append($"{{Content:/{keyword}/i}}");
                     }
                     else
                     {
                         if (isExactSearch)
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{searchParm.Value}$/i}},");
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{keyword}$/i}},");
                         }
                         else
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':{{'$regex':'{searchParm.Value}','$options':'i'}}}},");
+                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/{keyword}/i}},");
                         }
                     }
                 }

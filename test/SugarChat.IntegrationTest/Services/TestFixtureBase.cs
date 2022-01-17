@@ -94,7 +94,7 @@ namespace SugarChat.IntegrationTest.Services
             messages.Add(GenerateMessage(conversationId, "你好", 0, userId9, new Dictionary<string, string> { { "text", "test2" }, { "order", "12" } }, "{\"text\":\"test2\",\"order\":\"12\"}"));
             messages.Add(GenerateMessage(conversationId, "[图片]", 1, userId, new Dictionary<string, string> { { "text", "test3" }, { "order", "13" } }, "{\"text\":\"test3\",\"order\":\"13\"}"));
             messages.Add(GenerateMessage(groupId4, "TestUser1邀请TestUser2加入了群聊", 0, userId, new Dictionary<string, string> { { "text", "test4" }, { "order", "24" } }, "{\"text\":\"test4\",\"order\":\"24\"}"));
-            messages.Add(GenerateMessage(groupId4, "今天真热啊", 0, userId1, new Dictionary<string, string> { { "text", "test5" }, { "order", "25" } }, "{\"text\":\"test5\",\"order\":\"25\"}"));
+            messages.Add(GenerateMessage(groupId4, "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!", 0, userId1, new Dictionary<string, string> { { "text", "test5" }, { "order", "25" } }, "{\"text\":\"test5\",\"order\":\"25\"}"));
             messages.Add(GenerateMessage(groupId4, "是啊,又到了不动都能出汗的季节了", 0, userId2, new Dictionary<string, string> { { "text", "test6" }, { "order", "26" } }, "{\"text\":\"test6\",\"order\":\"26\"}"));
             messages.Add(GenerateMessage(groupId4, "谁说不是呢", 0, userId3, new Dictionary<string, string> { { "text", "test7" }, { "order", "37" } }, "{\"text\":\"test7\",\"order\":\"37\"}"));
             messages.Add(GenerateMessage(groupId5, "888", 0, userId, new Dictionary<string, string> { { "text", "test8" }, { "order", "8" } }, "{\"text\":\"test8\",\"order\":\"8\"}"));

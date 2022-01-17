@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Xunit;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.Groups;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services
 {

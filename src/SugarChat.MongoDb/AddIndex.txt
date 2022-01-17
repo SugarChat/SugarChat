@@ -1,0 +1,9 @@
+﻿db.Group.createIndex({"CustomProperties":1});
+
+db.GroupUser.createIndex({"UserId":1});
+db.GroupUser.createIndex({"GroupId":1});
+db.GroupUser.createIndex({"LastReadTime":-1});
+
+db.Message.createIndex({"CustomProperties":1});
+db.Message.createIndex({"GroupId":1});
+db.Message.createIndex({"SendTime":-1});

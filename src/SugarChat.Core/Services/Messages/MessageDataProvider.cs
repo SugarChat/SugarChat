@@ -260,8 +260,8 @@ namespace SugarChat.Core.Services.Messages
             string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
             string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
             string project2= "{$project:{_id:0}}";
-            stages.Add(lookup);
             stages.Add(match);
+            stages.Add(lookup);
             stages.Add(project1);
             stages.Add(group);
             stages.Add(project2);
@@ -315,7 +315,7 @@ namespace SugarChat.Core.Services.Messages
     }
 }
 ";
-            var set = @"{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
+            var set = "{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
             var match = GetMatch(userId, groupIds);
             string project = "{$project:{_id:0,GroupId:1,LastSentTime:'$stockdata2.SentTime',Count:{$size:'$stockdata'}}}";
             string sort = "{$sort:{Count:-1,LastSentTime:-1}}";
@@ -325,10 +325,10 @@ namespace SugarChat.Core.Services.Messages
                 skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
                 limit = $"{{$limit:{pageSettings.PageSize}}}";
             }
+            stages.Add(match);
             stages.Add(lookup1);
             stages.Add(lookup2);
             stages.Add(set);
-            stages.Add(match);
             stages.Add(project);
             stages.Add(sort);
             if (pageSettings is not null)
@@ -385,6 +385,46 @@ namespace SugarChat.Core.Services.Messages
 }}}}
 ";
             return match;
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        {
+            List<string> stages = new List<string>();
+            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
+            string match = $@"
+{{$match:{{
+    _id:{{$in:[{groupIdsStr}]}}
+}}}}
+";
+            var lookup = $@"
+{{
+    $lookup:{{
+        from:'Message',
+        let:{{group_GroupId:'$_id'}},
+        pipeline:[
+            {{$match:
+                {{$expr:
+                    {{$eq:['$GroupId','$$group_GroupId']}}
+                }}
+            }},
+            {{$sort:{{SentTime:-1}}}},
+            {{$limit:1}}
+
+        ],
+        as:'stockdata'
+    }}
+}}
+";
+            string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
+            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
+            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
+            stages.Add(match);
+            stages.Add(lookup);
+            stages.Add(set);
+            stages.Add(project);
+            stages.Add(replaceRoot);
+            var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
+            return result;
         }
     }
 }

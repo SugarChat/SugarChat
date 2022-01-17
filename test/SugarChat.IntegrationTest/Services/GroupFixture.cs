@@ -14,7 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using SugarChat.Message.Basic;
+using SugarChat.Core.Services.Messages;
+using SugarChat.Core.Services.Groups;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -157,6 +158,60 @@ namespace SugarChat.IntegrationTest.Services
                         SearchAllGroup = true
                     });
                     response.Data.Count().ShouldBe(2);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetGroupIdsByMessageKeyword()
+        {
+            await Run<IGroupDataProvider, IRepository>(async (groupDataProvider, repository) =>
+            {
+                Guid[] groupIds = new Guid[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+                for (int i = 0; i < groupIds.Length; i++)
+                {
+                    await repository.AddAsync(new Group
+                    {
+                        Id = groupIds[i].ToString(),
+                        Name = "group" + i
+                    });
+                    for (int j = 0; j < 3; j++)
+                    {
+                        await repository.AddAsync(new Core.Domain.Message
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            GroupId = groupIds[i].ToString(),
+                            Content = @"a \^$.*?+| b{1}[a]" + i + j,
+                            SentTime = DateTimeOffset.Now,
+                            CustomProperties = new Dictionary<string, string> { { "AAA", @"\^$.*?+|{1}[a]" + i + j }, { "BBB", i + @"\^$.*?+|{1}[a]" + j + j } }
+                        });
+                    }
+                }
+                {
+                    var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
+                        new Dictionary<string, string> {
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 + 1 },
+                        { "Content", @"a \^$.*?+| b{1}[a]" + 2 + 2 }
+                        }, true);
+                    result.Result.Count().ShouldBe(3);
+                }
+                {
+                    var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
+                        new Dictionary<string, string> {
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 }
+                        }, true);
+                    result.Result.Count().ShouldBe(0);
+                }
+                {
+                    var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
+                        new Dictionary<string, string> {
+                        { "AAA", @"\^$.*?+|{1}[a]" + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 },
+                        { "Content", @"a \^$.*?+| b{1}[a]" }
+                        }, false);
+                    result.Result.Count().ShouldBe(5);
                 }
             });
         }

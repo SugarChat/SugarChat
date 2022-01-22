@@ -310,5 +310,31 @@ namespace SugarChat.Core.Services.GroupUsers
 
             return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
         }
+
+        public async Task UpdateGroupUserAsync(UpdateGroupUserCommand command, CancellationToken cancellationToken = default)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
+            var ids = command.GroupUsers.Select(x => x.Id).ToArray();
+            var groupUsers = await _groupUserDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupUsers.Select(x => x.GroupId), null, cancellationToken).ConfigureAwait(false)).Result;
+            foreach (var groupUser in groupUsers)
+            {
+                var group = groups.SingleOrDefault(x => x.Id == groupUser.GroupId);
+                group.CheckExist(groupUser.GroupId);
+            }
+            var userIds = groupUsers.Select(x => x.UserId);
+            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id));
+            foreach (var groupUserDto in command.GroupUsers)
+            {
+                var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
+                if (groupUser != null)
+                {
+                    _mapper.Map(groupUserDto, groupUser);
+                }
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

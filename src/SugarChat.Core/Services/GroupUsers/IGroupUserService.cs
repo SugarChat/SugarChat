@@ -46,5 +46,7 @@ namespace SugarChat.Core.Services.GroupUsers
             CancellationToken cancellationToken = default);
 
         Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);
+
+        Task UpdateGroupUserAsync(UpdateGroupUserCommand command, CancellationToken cancellationToken = default);
     }
 }

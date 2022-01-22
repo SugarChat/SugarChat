@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using SugarChat.Message.Dtos;
 using Xunit;
 using SugarChat.Message.Basic;
+using AutoMapper;
+using SugarChat.Message.Dtos.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -407,6 +409,63 @@ namespace SugarChat.IntegrationTest.Services
                     command.Role = UserRole.Owner;
                     var response = await mediator.SendAsync<SetGroupMemberRoleCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.SetGroupOwner.Message);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldUpdateGroupUser()
+        {
+            await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
+            {
+                var userId = Guid.NewGuid().ToString();
+                var groupId2 = Guid.NewGuid().ToString();
+                await repository.AddAsync(new User
+                {
+                    Id = userId
+                });
+                await AddGroup(repository);
+                await repository.AddAsync(new Group
+                {
+                    Id = groupId2,
+                    Name = "testGroup2",
+                    AvatarUrl = "testAvatarUrl2",
+                    Description = "testDescription2"
+                });
+                AddGroupMemberCommand command = new AddGroupMemberCommand
+                {
+                    GroupId = groupId,
+                    AdminId = Guid.NewGuid().ToString(),
+                    GroupUserIds = userIds,
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    Role = UserRole.Admin
+                };
+                await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
+                var groupUsers = await repository.ToListAsync<GroupUser>();
+                var updateGroupUesrDtos = mapper.Map<IEnumerable<UpdateGroupUserDto>>(groupUsers);
+                foreach (var updateGroupUesrDto in updateGroupUesrDtos)
+                {
+                    updateGroupUesrDto.UserId = userIds[0];
+                    updateGroupUesrDto.GroupId = groupId2;
+                    updateGroupUesrDto.LastReadTime = Convert.ToDateTime("2020-1-1");
+                    updateGroupUesrDto.Role = UserRole.Member;
+                    updateGroupUesrDto.MessageRemindType = MessageRemindType.DISCARD;
+                    updateGroupUesrDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                }
+                var updateGroupUserCommand = new UpdateGroupUserCommand { GroupUsers = updateGroupUesrDtos };
+                await mediator.SendAsync<UpdateGroupUserCommand, SugarChatResponse>(updateGroupUserCommand);
+                var groupUsersUpdateAfter = await repository.ToListAsync<GroupUser>();
+                foreach (var groupUserUpdateAfter in groupUsersUpdateAfter)
+                {
+                    var updateGroupUesrDto = updateGroupUesrDtos.FirstOrDefault(x => x.Id == groupUserUpdateAfter.Id);
+                    var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserUpdateAfter.Id);
+                    groupUserUpdateAfter.UserId.ShouldBe(updateGroupUesrDto.UserId);
+                    groupUserUpdateAfter.GroupId.ShouldBe(updateGroupUesrDto.GroupId);
+                    groupUserUpdateAfter.LastReadTime.ShouldBe(updateGroupUesrDto.LastReadTime);
+                    groupUserUpdateAfter.Role.ShouldBe(updateGroupUesrDto.Role);
+                    groupUserUpdateAfter.MessageRemindType.ShouldBe(updateGroupUesrDto.MessageRemindType);
+                    groupUserUpdateAfter.CreatedBy.ShouldBe(groupUser.CreatedBy);
+                    groupUserUpdateAfter.CreatedDate.ShouldBe(groupUser.CreatedDate);
                 }
             });
         }

@@ -306,12 +306,25 @@ namespace SugarChat.Core.Services.Messages
 
             var ids = command.Messages.Select(x => x.Id).ToArray();
             var messages = await _messageDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
-            foreach (var messageDto in command.Messages)
+            var groups = (await _groupDataProvider.GetByIdsAsync(messages.Select(x => x.GroupId), null, cancellationToken).ConfigureAwait(false)).Result;
+            foreach (var message in messages)
             {
-                var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
+                var group = groups.SingleOrDefault(x => x.Id == message.GroupId);
+                group.CheckExist(message.GroupId);
+            }
+            var userIds = messages.Select(x => x.SentBy);
+            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id));
+            foreach (var message in messages)
+            {
+                var _user = users.SingleOrDefault(x => x.Id == message.SentBy);
+                _user.CheckExist(message.SentBy);
+            }
+            foreach (var updateMessageDto in command.Messages)
+            {
+                var message = messages.FirstOrDefault(x => x.Id == updateMessageDto.Id);
                 if (message != null)
                 {
-                    _mapper.Map(messageDto, message);
+                    _mapper.Map(updateMessageDto, message);
                 }
             }
             await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);

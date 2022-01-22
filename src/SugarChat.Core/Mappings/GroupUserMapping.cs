@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Commands.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
 
 namespace SugarChat.Core.Mappings
@@ -19,6 +20,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<RemoveGroupMemberCommand, GroupMemberRemovedEvent>();
             CreateMap<SetMessageRemindTypeCommand, MessageRemindTypeSetEvent>();
             CreateMap<SetGroupMemberRoleCommand, GroupMemberRoleSetEvent>();
+            CreateMap<GroupUser, UpdateGroupUserDto>().ReverseMap();
         }
     }
 }

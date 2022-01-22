@@ -125,7 +125,7 @@ namespace SugarChat.IntegrationTest.Services
                         await repository.AddAsync(new Core.Domain.Message
                         {
                             Id = Guid.NewGuid().ToString(),
-                            GroupId= groupIds[i].ToString(),
+                            GroupId = groupIds[i].ToString(),
                             Content = "Content" + i + j,
                             SentTime = sentTime
                         });
@@ -213,6 +213,36 @@ namespace SugarChat.IntegrationTest.Services
                     _messages.SentTime.ShouldBe(message.SentTime);
                     _messages.IsSystem.ShouldBe(message.IsSystem);
                     _messages.IsRevoked.ShouldBe(message.IsRevoked);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetListByIds()
+        {
+            await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    var sendMessageCommand = new SendMessageCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        GroupId = Guid.NewGuid().ToString(),
+                        Content = i.ToString(),
+                        Type = 0,
+                        SentBy = Guid.NewGuid().ToString(),
+                        Payload = Guid.NewGuid().ToString(),
+                        CreatedBy = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } }
+                    };
+                    await mediator.SendAsync(sendMessageCommand);
+                }
+                var messageIds = (await repository.ToListAsync<Core.Domain.Message>(x => new string[] { "1", "2", "5" }.Contains(x.Content))).Select(x => x.Id);
+                var messages = await messageDataProvider.GetListByIdsAsync(messageIds);
+                messages.Count().ShouldBe(2);
+                foreach (var message in messages)
+                {
+                    new string[] { "1", "2" }.Contains(message.Content).ShouldBeTrue();
                 }
             });
         }

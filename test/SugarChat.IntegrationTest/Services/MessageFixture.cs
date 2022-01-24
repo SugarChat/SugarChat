@@ -201,20 +201,20 @@ namespace SugarChat.IntegrationTest.Services
                     await mediator.SendAsync(sendMessageCommand);
                 }
                 var messages = await repository.ToListAsync<Core.Domain.Message>();
-                var updateMessageDtos = mapper.Map<IEnumerable<UpdateMessageDto>>(messages);
-                foreach (var updateMessageDto in updateMessageDtos)
+                var messageDtos = mapper.Map<IEnumerable<MessageDto>>(messages);
+                foreach (var messageDto in messageDtos)
                 {
-                    updateMessageDto.GroupId = groupId2;
-                    updateMessageDto.Content = "Test";
-                    updateMessageDto.Type = 1;
-                    updateMessageDto.SentBy = userId2;
-                    updateMessageDto.Payload = Guid.NewGuid().ToString();
-                    updateMessageDto.SentTime = Convert.ToDateTime("2020-1-1");
-                    updateMessageDto.IsSystem = true;
-                    updateMessageDto.IsRevoked = true;
-                    updateMessageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                    messageDto.GroupId = groupId2;
+                    messageDto.Content = "Test";
+                    messageDto.Type = 1;
+                    messageDto.SentBy = userId2;
+                    messageDto.Payload = Guid.NewGuid().ToString();
+                    messageDto.SentTime = Convert.ToDateTime("2020-1-1");
+                    messageDto.IsSystem = true;
+                    messageDto.IsRevoked = true;
+                    messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
-                var updateMessageCommand = new UpdateMessageCommand { Messages = updateMessageDtos, UserId = Guid.NewGuid().ToString() };
+                var updateMessageCommand = new UpdateMessageCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
                 {
                     var response = await mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(updateMessageCommand);
                     response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageCommand.UserId).Message);
@@ -224,17 +224,17 @@ namespace SugarChat.IntegrationTest.Services
                 var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
                 foreach (var messageUpdateAfter in messagesUpdateAfter)
                 {
-                    var updateMessageDto = updateMessageDtos.FirstOrDefault(x => x.Id == messageUpdateAfter.Id);
+                    var messageDto = messageDtos.FirstOrDefault(x => x.Id == messageUpdateAfter.Id);
                     var message = messages.FirstOrDefault(x => x.Id == messageUpdateAfter.Id);
-                    messageUpdateAfter.GroupId.ShouldBe(updateMessageDto.GroupId);
-                    messageUpdateAfter.Content.ShouldBe(updateMessageDto.Content);
-                    messageUpdateAfter.Type.ShouldBe(updateMessageDto.Type);
-                    messageUpdateAfter.SentBy.ShouldBe(updateMessageDto.SentBy);
-                    messageUpdateAfter.Payload.ShouldBe(updateMessageDto.Payload);
-                    messageUpdateAfter.SentTime.ShouldBe(updateMessageDto.SentTime);
-                    messageUpdateAfter.IsSystem.ShouldBe(updateMessageDto.IsSystem);
-                    messageUpdateAfter.IsRevoked.ShouldBe(updateMessageDto.IsRevoked);
-                    messageUpdateAfter.CustomProperties.ShouldBe(updateMessageDto.CustomProperties);
+                    messageUpdateAfter.GroupId.ShouldBe(messageDto.GroupId);
+                    messageUpdateAfter.Content.ShouldBe(messageDto.Content);
+                    messageUpdateAfter.Type.ShouldBe(messageDto.Type);
+                    messageUpdateAfter.SentBy.ShouldBe(messageDto.SentBy);
+                    messageUpdateAfter.SentTime.ShouldBe(messageDto.SentTime);
+                    messageUpdateAfter.IsSystem.ShouldBe(messageDto.IsSystem);
+                    messageUpdateAfter.Payload.ShouldBe(messageDto.Payload);
+                    messageUpdateAfter.IsRevoked.ShouldBe(messageDto.IsRevoked);
+                    messageUpdateAfter.CustomProperties.ShouldBe(messageDto.CustomProperties);
                     messageUpdateAfter.CreatedBy.ShouldBe(message.CreatedBy);
                     messageUpdateAfter.CreatedDate.ShouldBe(message.CreatedDate);
                 }

@@ -140,9 +140,6 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellation)
         {
-            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation).ConfigureAwait(false);
-            user.CheckExist(command.UserId);
-
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
 

@@ -15,6 +15,7 @@ using SugarChat.Message.Responses;
 using System;
 using SugarChat.Message.Responses.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -93,12 +94,21 @@ namespace SugarChat.Core.Services.GroupUsers
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
-            var groupMembers =
-                await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            var groupUsers = await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            var groupUserDtos = _mapper.Map<IEnumerable<GroupUserDto>>(groupUsers);
+
+            var userIds = groupUsers.Select(x => x.UserId).ToList();
+            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id)).ConfigureAwait(false);
+            foreach (var groupUserDto in groupUserDtos)
+            {
+                var user = users.SingleOrDefault(x => x.Id == groupUserDto.UserId);
+                groupUserDto.AvatarUrl = user?.AvatarUrl;
+                groupUserDto.DisplayName = user?.DisplayName;
+            }
 
             return new GetMembersOfGroupResponse
             {
-                Members = groupMembers
+                Members = groupUserDtos
             };
         }
 

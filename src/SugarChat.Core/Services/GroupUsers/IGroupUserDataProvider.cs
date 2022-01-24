@@ -22,7 +22,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task UpdateAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<GroupUserDto>> GetMembersByGroupIdAsync(string id,
+        Task<IEnumerable<GroupUser>> GetMembersByGroupIdAsync(string id,
             CancellationToken cancellationToken = default);
 
         Task<int> GetGroupMemberCountByGroupIdAsync(string groupId, CancellationToken cancellationToken = default);

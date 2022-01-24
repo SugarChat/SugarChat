@@ -442,28 +442,28 @@ namespace SugarChat.IntegrationTest.Services
                 };
                 await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                 var groupUsers = await repository.ToListAsync<GroupUser>();
-                var updateGroupUesrDtos = mapper.Map<IEnumerable<UpdateGroupUserDto>>(groupUsers);
-                foreach (var updateGroupUesrDto in updateGroupUesrDtos)
+                var groupUesrDtos = mapper.Map<IEnumerable<GroupUserDto>>(groupUsers);
+                foreach (var groupUesrDto in groupUesrDtos)
                 {
-                    updateGroupUesrDto.UserId = userIds[0];
-                    updateGroupUesrDto.GroupId = groupId2;
-                    updateGroupUesrDto.LastReadTime = Convert.ToDateTime("2020-1-1");
-                    updateGroupUesrDto.Role = UserRole.Member;
-                    updateGroupUesrDto.MessageRemindType = MessageRemindType.DISCARD;
-                    updateGroupUesrDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                    groupUesrDto.UserId = userIds[0];
+                    groupUesrDto.GroupId = groupId2;
+                    groupUesrDto.LastReadTime = Convert.ToDateTime("2020-1-1");
+                    groupUesrDto.Role = UserRole.Member;
+                    groupUesrDto.MessageRemindType = MessageRemindType.DISCARD;
+                    groupUesrDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
-                var updateGroupUserCommand = new UpdateGroupUserCommand { GroupUsers = updateGroupUesrDtos };
+                var updateGroupUserCommand = new UpdateGroupUserCommand { GroupUsers = groupUesrDtos };
                 await mediator.SendAsync<UpdateGroupUserCommand, SugarChatResponse>(updateGroupUserCommand);
                 var groupUsersUpdateAfter = await repository.ToListAsync<GroupUser>();
                 foreach (var groupUserUpdateAfter in groupUsersUpdateAfter)
                 {
-                    var updateGroupUesrDto = updateGroupUesrDtos.FirstOrDefault(x => x.Id == groupUserUpdateAfter.Id);
+                    var groupUesrDto = groupUesrDtos.FirstOrDefault(x => x.Id == groupUserUpdateAfter.Id);
                     var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserUpdateAfter.Id);
-                    groupUserUpdateAfter.UserId.ShouldBe(updateGroupUesrDto.UserId);
-                    groupUserUpdateAfter.GroupId.ShouldBe(updateGroupUesrDto.GroupId);
-                    groupUserUpdateAfter.LastReadTime.ShouldBe(updateGroupUesrDto.LastReadTime);
-                    groupUserUpdateAfter.Role.ShouldBe(updateGroupUesrDto.Role);
-                    groupUserUpdateAfter.MessageRemindType.ShouldBe(updateGroupUesrDto.MessageRemindType);
+                    groupUserUpdateAfter.UserId.ShouldBe(groupUesrDto.UserId);
+                    groupUserUpdateAfter.GroupId.ShouldBe(groupUesrDto.GroupId);
+                    groupUserUpdateAfter.LastReadTime.ShouldBe(groupUesrDto.LastReadTime);
+                    groupUserUpdateAfter.Role.ShouldBe(groupUesrDto.Role);
+                    groupUserUpdateAfter.MessageRemindType.ShouldBe(groupUesrDto.MessageRemindType);
                     groupUserUpdateAfter.CreatedBy.ShouldBe(groupUser.CreatedBy);
                     groupUserUpdateAfter.CreatedDate.ShouldBe(groupUser.CreatedDate);
                 }

@@ -12,6 +12,8 @@ using System.Linq;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Basic;
+using System;
+using SugarChat.Message.Commands.Groups;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -63,8 +65,56 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId} });
+                var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId } });
                 reponse.Data.Count().ShouldBe(2);
+            });
+        }
+
+        [Fact]
+        public async Task ShouldRemoveAllGroupMember()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                string[] userIds = new[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+                foreach (var userId in userIds)
+                {
+                    await repository.AddAsync(new User
+                    {
+                        Id = userId
+                    });
+                }
+                var groupId = Guid.NewGuid().ToString();
+                {
+                    AddGroupCommand command = new AddGroupCommand
+                    {
+                        UserId = userIds[0],
+                        Id = groupId,
+                        CustomProperties = new Dictionary<string, string> { { "MerchId", "1" }, { "OrderId", "2" } },
+                        CreatedBy = Guid.NewGuid().ToString()
+                    };
+                    await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
+                    (await repository.CountAsync<Group>(x => x.Id == groupId)).ShouldBe(1);
+                }
+                {
+                    AddGroupMemberCommand command = new AddGroupMemberCommand
+                    {
+                        GroupId = groupId,
+                        AdminId = userIds[0],
+                        GroupUserIds = userIds.Skip(1),
+                        CreatedBy = userIds[0]
+                    };
+                    await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
+                    (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId)).ShouldBe(3);
+                }
+                {
+                    RemoveAllGroupMemberCommand command = new RemoveAllGroupMemberCommand
+                    {
+                        UserId = userIds[0],
+                        GroupId = groupId
+                    };
+                    await mediator.SendAsync<RemoveAllGroupMemberCommand, SugarChatResponse>(command);
+                    (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId)).ShouldBe(0);
+                }
             });
         }
     }

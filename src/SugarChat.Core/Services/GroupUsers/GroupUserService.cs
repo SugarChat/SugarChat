@@ -346,5 +346,13 @@ namespace SugarChat.Core.Services.GroupUsers
             }
             await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
+
+        public async Task RemoveAllGroupMemberAsync(RemoveAllGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken);
+            user.CheckExist(command.UserId);
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId);
+            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellationToken);
+        }
     }
 }

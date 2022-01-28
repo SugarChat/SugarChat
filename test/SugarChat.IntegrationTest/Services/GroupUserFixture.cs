@@ -16,6 +16,10 @@ using Xunit;
 using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos.GroupUsers;
+using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Message.Commands.Groups;
+using SugarChat.Message.Requests;
+using SugarChat.Message.Responses;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -467,6 +471,43 @@ namespace SugarChat.IntegrationTest.Services
                     groupUserUpdateAfter.CreatedBy.ShouldBe(groupUser.CreatedBy);
                     groupUserUpdateAfter.CreatedDate.ShouldBe(groupUser.CreatedDate);
                 }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetListByIds()
+        {
+            await Run<IMediator, IRepository, IGroupUserDataProvider>(async (mediator, repository, groupUserDataProvider) =>
+            {
+                var userIds = new string[] { Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+                var groupId = Guid.NewGuid().ToString();
+                for (int i = 0; i < userIds.Count(); i++)
+                {
+                    await repository.AddAsync(new User
+                    {
+                        Id = userIds[i]
+                    });
+                }
+                var addGroupCommand = new AddGroupCommand
+                {
+                    Id = groupId,
+                    UserId = userIds[0]
+                };
+                await mediator.SendAsync(addGroupCommand);
+                var addGroupMemberCommand = new AddGroupMemberCommand
+                {
+                    AdminId = userIds[0],
+                    GroupId = groupId,
+                    GroupUserIds = userIds.Skip(1)
+                };
+                await mediator.SendAsync(addGroupMemberCommand);
+                var getGroupMembersResponse = await mediator.RequestAsync<GetGroupMembersRequest, SugarChatResponse<IEnumerable<string>>>(new GetGroupMembersRequest
+                {
+                    GroupId = groupId
+                });
+                var groupUers = await groupUserDataProvider.GetMembersByGroupIdAsync(groupId);
+                var resulut = await groupUserDataProvider.GetListByIdsAsync(groupUers.Select(x => x.Id));
+                resulut.Count().ShouldBe(4);
             });
         }
     }

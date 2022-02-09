@@ -113,11 +113,11 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("UpdateMessage"), HttpPost]
+        [Route("UpdateMessageData"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
-        public async Task<IActionResult> UpdateMessage(UpdateMessageCommand command)
+        public async Task<IActionResult> UpdateMessageData(UpdateMessageDataCommand command)
         {
-            var response = await _mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(command);
+            var response = await _mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(command);
             return Ok(response);
         }
     }

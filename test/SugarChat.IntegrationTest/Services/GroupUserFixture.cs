@@ -456,8 +456,8 @@ namespace SugarChat.IntegrationTest.Services
                     groupUesrDto.MessageRemindType = MessageRemindType.DISCARD;
                     groupUesrDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
-                var updateGroupUserCommand = new UpdateGroupUserCommand { GroupUsers = groupUesrDtos };
-                await mediator.SendAsync<UpdateGroupUserCommand, SugarChatResponse>(updateGroupUserCommand);
+                var updateGroupUserDataCommand = new UpdateGroupUserDataCommand { GroupUsers = groupUesrDtos };
+                await mediator.SendAsync<UpdateGroupUserDataCommand, SugarChatResponse>(updateGroupUserDataCommand);
                 var groupUsersUpdateAfter = await repository.ToListAsync<GroupUser>();
                 foreach (var groupUserUpdateAfter in groupUsersUpdateAfter)
                 {

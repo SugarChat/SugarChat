@@ -214,13 +214,13 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.IsRevoked = true;
                     messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
-                var updateMessageCommand = new UpdateMessageCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
+                var updateMessageDataCommand = new UpdateMessageDataCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
                 {
-                    var response = await mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(updateMessageCommand);
-                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageCommand.UserId).Message);
+                    var response = await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageDataCommand.UserId).Message);
                 }
-                updateMessageCommand.UserId = userId1;
-                await mediator.SendAsync<UpdateMessageCommand, SugarChatResponse>(updateMessageCommand);
+                updateMessageDataCommand.UserId = userId1;
+                await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
                 var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
                 foreach (var messageUpdateAfter in messagesUpdateAfter)
                 {

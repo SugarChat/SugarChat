@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 {
-    public class UpdateMessageCommandHandler : ICommandHandler<UpdateMessageCommand, SugarChatResponse>
+    public class UpdateMessageDataCommandHandler : ICommandHandler<UpdateMessageDataCommand, SugarChatResponse>
     {
         private readonly IMessageService _messageService;
 
-        public UpdateMessageCommandHandler(IMessageService messageService)
+        public UpdateMessageDataCommandHandler(IMessageService messageService)
         {
             _messageService = messageService;
         }
 
-        public async Task<SugarChatResponse> Handle(IReceiveContext<UpdateMessageCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse> Handle(IReceiveContext<UpdateMessageDataCommand> context, CancellationToken cancellationToken)
         {
-            await _messageService.UpdateMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
+            await _messageService.UpdateMessageDataAsync(context.Message, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }
     }

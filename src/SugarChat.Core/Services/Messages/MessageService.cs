@@ -299,7 +299,7 @@ namespace SugarChat.Core.Services.Messages
             return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
         }
 
-        public async Task UpdateMessageAsync(UpdateMessageCommand command, CancellationToken cancellationToken = default)
+        public async Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default)
         {
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.UserId);

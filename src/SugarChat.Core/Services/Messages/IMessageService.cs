@@ -46,6 +46,6 @@ namespace SugarChat.Core.Services.Messages
 
         Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
 
-        Task UpdateMessageAsync(UpdateMessageCommand command, CancellationToken cancellationToken = default);
+        Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
     }
 }

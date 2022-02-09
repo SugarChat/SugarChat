@@ -104,8 +104,8 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("RemoveUserFromGroupCommand"), HttpPost]
-        public async Task<IActionResult> RemoveUserFromGroupCommand(RemoveUserFromGroupCommand command)
+        [Route("RemoveUserFromGroup"), HttpPost]
+        public async Task<IActionResult> RemoveUserFromGroup(RemoveUserFromGroupCommand command)
         {
             var response = await _mediator.SendAsync<RemoveUserFromGroupCommand, SugarChatResponse>(command);
             return Ok(response);

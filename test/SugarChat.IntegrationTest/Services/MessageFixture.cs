@@ -153,7 +153,7 @@ namespace SugarChat.IntegrationTest.Services
         }
 
         [Fact]
-        public async Task ShouldUpdateMessage()
+        public async Task ShouldUpdateMessageData()
         {
             await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
             {

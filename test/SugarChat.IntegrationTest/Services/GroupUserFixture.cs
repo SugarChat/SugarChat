@@ -418,7 +418,7 @@ namespace SugarChat.IntegrationTest.Services
         }
 
         [Fact]
-        public async Task ShouldUpdateGroupUser()
+        public async Task ShouldUpdateGroupUserData()
         {
             await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
             {

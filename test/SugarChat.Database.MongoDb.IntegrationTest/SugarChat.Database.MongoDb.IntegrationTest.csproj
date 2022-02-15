@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -32,12 +32,6 @@
     <ProjectReference Include="..\..\src\SugarChat.Core\SugarChat.Core.csproj" />
     <ProjectReference Include="..\..\src\SugarChat.Database.MongoDb.Autofac\SugarChat.Data.MongoDb.Autofac.csproj" />
     <ProjectReference Include="..\..\src\SugarChat.MongoDb\SugarChat.Data.MongoDb.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="SugarChat.Message">
-      <HintPath>..\..\src\SugarChat.Message.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

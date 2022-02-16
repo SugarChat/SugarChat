@@ -90,7 +90,6 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = Guid.NewGuid().ToString()
                 };
-
                 {
                     var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.GroupNoExists.WithParams(command.GroupId).Message);

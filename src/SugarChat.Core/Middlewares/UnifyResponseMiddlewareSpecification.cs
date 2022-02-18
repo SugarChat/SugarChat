@@ -40,7 +40,27 @@ namespace SugarChat.Core.Middlewares
             Log.Error(ex, ex.Message);
             if (ex is not BusinessException || context.Message is IEvent)
             {
-                ExceptionDispatchInfo.Capture(ex).Throw();
+                if (ex is TimeoutException)
+                {
+                    ex = new BusinessWarningException(Prompt.DatabaseTimeout, ex.InnerException);
+                }
+                else if (ex is MongoDB.Driver.MongoWriteException)
+                {
+                    var mongoWriteException = (MongoDB.Driver.MongoWriteException)ex;
+                    switch (mongoWriteException.WriteError.Code)
+                    {
+                        case 11000:
+                            ex = new BusinessWarningException(Prompt.DatabaseDuplicateKey, ex.InnerException);
+                            break;
+                        default:
+                            ExceptionDispatchInfo.Capture(ex).Throw();
+                            break;
+                    }
+                }
+                else
+                {
+                    ExceptionDispatchInfo.Capture(ex).Throw();
+                }
             }
             var businessException = ex as BusinessException;
             if (context.Result is null)

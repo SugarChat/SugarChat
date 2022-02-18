@@ -67,7 +67,7 @@ namespace SugarChat.Core.Services.Groups
                 {
                     group.CheckNotExist();
                 }
-                throw new BusinessWarningException(Prompt.DatabaseError, ex.InnerException);
+                throw;
             }
             catch (Exception)
             {

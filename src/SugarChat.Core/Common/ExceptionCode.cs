@@ -75,6 +75,9 @@ namespace SugarChat.Core.Common
 
         #endregion
 
-        DatabaseError = 50500
+        #region Database
+        DatabaseTimeout = 50500,
+        DatabaseDuplicateKey = 50503
+        #endregion
     }
 }

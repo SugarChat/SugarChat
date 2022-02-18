@@ -71,9 +71,13 @@ namespace SugarChat.Core.Common
         #region Global
 
         IdIsNullOrEmpty = 52501,
-        ParameterRequired = 52502
+        ParameterRequired = 52502,
 
         #endregion
 
+        #region Database
+        DatabaseTimeout = 50500,
+        DatabaseDuplicateKey = 50503
+        #endregion
     }
 }

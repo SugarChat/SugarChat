@@ -163,5 +163,10 @@ namespace SugarChat.Core.Exceptions
 
         public static readonly ExceptionPrompt ParameterRequired = new ExceptionPrompt(ExceptionCode.ParameterRequired, "Parameter {0} is required.");
         #endregion
+
+        #region Database
+        public static readonly ExceptionPrompt DatabaseDuplicateKey = new(ExceptionCode.DatabaseDuplicateKey, "Duplicate key error.");
+        public static readonly ExceptionPrompt DatabaseTimeout = new(ExceptionCode.DatabaseTimeout, "The Database connection has timed out");
+        #endregion
     }
 }

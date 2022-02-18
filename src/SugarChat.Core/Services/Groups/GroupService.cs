@@ -17,6 +17,7 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
+using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -56,8 +57,22 @@ namespace SugarChat.Core.Services.Groups
             };
             await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             group = _mapper.Map<Group>(command);
-            await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
-
+            try
+            {
+                await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
+            }
+            catch (MongoDB.Driver.MongoWriteException ex)
+            {
+                if (ex.WriteError.Code == 11000)
+                {
+                    group.CheckNotExist();
+                }
+                throw new BusinessWarningException(Prompt.DatabaseError, ex.InnerException);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
             return _mapper.Map<GroupAddedEvent>(command);
         }
 

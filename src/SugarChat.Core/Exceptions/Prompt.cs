@@ -163,5 +163,7 @@ namespace SugarChat.Core.Exceptions
 
         public static readonly ExceptionPrompt ParameterRequired = new ExceptionPrompt(ExceptionCode.ParameterRequired, "Parameter {0} is required.");
         #endregion
+
+        public static readonly ExceptionPrompt DatabaseError= new(ExceptionCode.DatabaseError, "An error has occurred in the database");
     }
 }

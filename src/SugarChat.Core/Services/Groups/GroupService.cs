@@ -47,15 +47,6 @@ namespace SugarChat.Core.Services.Groups
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
             group.CheckNotExist();
 
-            GroupUser groupUser = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = command.UserId,
-                GroupId = command.Id,
-                Role = UserRole.Owner,
-                CreatedBy = command.CreatedBy
-            };
-            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             group = _mapper.Map<Group>(command);
             try
             {
@@ -73,6 +64,15 @@ namespace SugarChat.Core.Services.Groups
             {
                 throw;
             }
+            GroupUser groupUser = new()
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = command.UserId,
+                GroupId = command.Id,
+                Role = UserRole.Owner,
+                CreatedBy = command.CreatedBy
+            };
+            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             return _mapper.Map<GroupAddedEvent>(command);
         }
 

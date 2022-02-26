@@ -17,6 +17,7 @@ using Xunit;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Basic;
+using SugarChat.Message.Common;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -46,6 +47,20 @@ namespace SugarChat.IntegrationTest.Services
                 var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
                 group.CustomProperties.GetValueOrDefault("MerchId").ShouldBe("1");
                 group.CustomProperties.GetValueOrDefault("OrderId").ShouldBe("2");
+                (await repository.CountAsync<GroupUser>()).ShouldBe(1);
+            });
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var userId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new User { Id = userId });
+                var groupId = Guid.NewGuid().ToString();
+                await repository.AddAsync(new Group
+                {
+                    Id = groupId
+                });
+                var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(new AddGroupCommand { UserId = userId, Id = groupId });
+                response.Code.ShouldBe(ExceptionCode.GroupExists);
+                (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId)).ShouldBe(0);
             });
         }
 

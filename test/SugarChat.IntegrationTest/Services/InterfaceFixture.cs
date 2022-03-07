@@ -3,10 +3,9 @@ using Mediator.Net;
 using Microsoft.Extensions.Caching.Memory;
 using Shouldly;
 using SugarChat.Core;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Cache;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message;
 using SugarChat.Message.Commands.Messages;
@@ -16,6 +15,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using SugarChat.Message.Common;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -49,7 +50,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     var response = await mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(
                         new SetMessageReadByUserBasedOnGroupIdCommand { UserId = user.Id, GroupId = groupId });
-                    response.Code.ShouldBe(20000);
+                    response.Code.ShouldBe(ExceptionCode.Success);
                     (await repository.FirstOrDefaultAsync<User>(x => x.Id == user.Id)).ShouldNotBeNull();
                 }
                 if (isExistDbData && !isExistDbData)

@@ -7,7 +7,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
@@ -259,7 +259,7 @@ namespace SugarChat.Core.Services.Messages
             var match = GetMatch(userId, _groupIds);
             string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
             string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
-            string project2= "{$project:{_id:0}}";
+            string project2 = "{$project:{_id:0}}";
             stages.Add(match);
             stages.Add(lookup);
             stages.Add(project1);
@@ -337,7 +337,7 @@ namespace SugarChat.Core.Services.Messages
                 stages.Add(limit);
             }
 
-            var result = await _repository.GetList<GroupUser,MessageCountGroupByGroupId>(stages, cancellationToken).ConfigureAwait(false);
+            var result = await _repository.GetList<GroupUser, MessageCountGroupByGroupId>(stages, cancellationToken).ConfigureAwait(false);
             return result;
         }
 
@@ -425,6 +425,16 @@ namespace SugarChat.Core.Services.Messages
             stages.Add(replaceRoot);
             var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
             return result;
+        }
+
+        public async Task UpdateRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)
+        {
+            await _repository.UpdateRangeAsync(messages, cancellationToken);
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<Domain.Message>(x => ids.Contains(x.Id), cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Event;

@@ -6,7 +6,7 @@ using Autofac;
 using SugarChat.Core.Services.Messages;
 using Xunit;
 using Shouldly;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Paging;
 

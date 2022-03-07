@@ -1,13 +1,13 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos.GroupUsers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -104,8 +104,8 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("RemoveUserFromGroupCommand"), HttpPost]
-        public async Task<IActionResult> RemoveUserFromGroupCommand(RemoveUserFromGroupCommand command)
+        [Route("RemoveUserFromGroup"), HttpPost]
+        public async Task<IActionResult> RemoveUserFromGroup(RemoveUserFromGroupCommand command)
         {
             var response = await _mediator.SendAsync<RemoveUserFromGroupCommand, SugarChatResponse>(command);
             return Ok(response);
@@ -132,6 +132,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> GetUsersByGroupIdsForPost(GetUserIdsByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(request);
+            return Ok(response);
+        }
+
+        [Route("UpdateGroupUserData"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> UpdateGroupUserData(UpdateGroupUserDataCommand command)
+        {
+            var response = await _mediator.SendAsync<UpdateGroupUserDataCommand, SugarChatResponse>(command);
             return Ok(response);
         }
     }

@@ -1,7 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Mediator.CommandHandlers.Groups;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
@@ -12,6 +11,7 @@ using SugarChat.Message.Dtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SugarChat.Message.Paging;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.WebApi.Controllers
 {

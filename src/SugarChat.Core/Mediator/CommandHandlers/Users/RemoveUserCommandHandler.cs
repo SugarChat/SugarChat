@@ -1,7 +1,7 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Users;
+using SugarChat.Message.Basic;
 using SugarChat.Message.Commands.Users;
 using System;
 using System.Collections.Generic;

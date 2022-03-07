@@ -1,6 +1,5 @@
 ﻿using Mediator.Net;
 using Shouldly;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Groups;
@@ -13,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Paging;
 using Xunit;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.IntegrationTest.Services.Groups
 {

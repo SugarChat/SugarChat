@@ -1,6 +1,6 @@
 ﻿using System;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message;
 
 namespace SugarChat.Core.Services

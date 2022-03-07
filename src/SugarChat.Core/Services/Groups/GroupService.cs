@@ -17,7 +17,6 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
-using SugarChat.Core.Exceptions;
 
 namespace SugarChat.Core.Services.Groups
 {

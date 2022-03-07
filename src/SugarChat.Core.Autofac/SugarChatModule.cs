@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using Module = Autofac.Module;
 using Mediator.Net.Binding;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Middlewares;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;

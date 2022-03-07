@@ -1,7 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Dtos;
@@ -9,6 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Paging;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -110,6 +110,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> GetMessagesByGroupIdsForPost(GetMessagesByGroupIdsRequest request)
         {
             var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            return Ok(response);
+        }
+
+        [Route("UpdateMessageData"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> UpdateMessageData(UpdateMessageDataCommand command)
+        {
+            var response = await _mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(command);
             return Ok(response);
         }
     }

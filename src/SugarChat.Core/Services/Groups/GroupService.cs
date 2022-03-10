@@ -125,11 +125,6 @@ namespace SugarChat.Core.Services.Groups
                 };
             }
 
-            var groupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
-                    cancellationToken).ConfigureAwait(false);
-            groupUser.CheckExist(request.UserId, request.GroupId);
-
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);

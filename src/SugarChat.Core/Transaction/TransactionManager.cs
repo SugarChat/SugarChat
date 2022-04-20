@@ -21,14 +21,14 @@ namespace SugarChat.Core.Transaction
             _repository.BeginTransaction();
         }
 
-        public async Task CommitTransactionAsync()
+        public void CommitTransaction()
         {
-           await _repository.CommitTransactionAsync();
+            _repository.CommitTransaction();
         }
 
-        public async Task AbortTransactionAsync()
+        public void AbortTransaction()
         {
-            await _repository.AbortTransactionAsync();
+            _repository.AbortTransaction();
         }
     }
 }

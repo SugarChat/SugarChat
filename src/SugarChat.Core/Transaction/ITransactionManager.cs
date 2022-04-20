@@ -10,8 +10,8 @@ namespace SugarChat.Core.Transaction
     {
         void BeginTransaction();
 
-        Task CommitTransactionAsync();
+        void CommitTransaction();
 
-        Task AbortTransactionAsync();
+        void AbortTransaction();
     }
 }

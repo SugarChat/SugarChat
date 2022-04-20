@@ -18,6 +18,7 @@ using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
 using SugarChat.Core.Exceptions;
+using SugarChat.Core.Transaction;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -28,15 +29,18 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        readonly ITransactionManager _transactionManager;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider,
+            ITransactionManager transactionManager)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _transactionManager = transactionManager;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -48,6 +52,7 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
+            _transactionManager.BeginTransaction();
             try
             {
                 await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
@@ -162,6 +167,7 @@ namespace SugarChat.Core.Services.Groups
             await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
+            _transactionManager.CommitTransaction();
             await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
 
             await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);

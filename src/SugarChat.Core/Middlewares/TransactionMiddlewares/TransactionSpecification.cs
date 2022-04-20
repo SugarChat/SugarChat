@@ -22,24 +22,25 @@ namespace SugarChat.Core.Middlewares.TransactionMiddlewares
             _repository = repository;
         }
 
-        public async Task AfterExecute(TContext context, CancellationToken cancellationToken)
+        public Task AfterExecute(TContext context, CancellationToken cancellationToken)
         {
-            await _repository.CommitTransactionAsync();
+            _repository.CommitTransaction();
+            return Task.CompletedTask;
         }
 
         public Task BeforeExecute(TContext context, CancellationToken cancellationToken)
         {
-            return Task.WhenAll();
+            return Task.CompletedTask;
         }
 
         public Task Execute(TContext context, CancellationToken cancellationToken)
         {
-            return Task.WhenAll();
+            return Task.CompletedTask;
         }
 
-        public async Task OnException(Exception ex, TContext context)
+        public Task OnException(Exception ex, TContext context)
         {
-            await _repository.AbortTransactionAsync();
+            _repository.AbortTransaction();
             ExceptionDispatchInfo.Capture(ex).Throw();
             throw ex;
         }

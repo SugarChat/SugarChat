@@ -121,19 +121,19 @@ namespace SugarChat.IntegrationTest.Services.Users
         [Fact]
         public async Task ShouldBatchAddUsers()
         {
+            List<UserDto> userDtos = new List<UserDto>();
+            for (int i = 0; i < 50; i++)
+            {
+                userDtos.Add(new UserDto
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    DisplayName = i.ToString(),
+                    CreatedBy = "System",
+                    CreatedDate = DateTime.Now
+                });
+            }
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                List<UserDto> userDtos = new List<UserDto>();
-                for (int i = 0; i < 50; i++)
-                {
-                    userDtos.Add(new UserDto
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        DisplayName = i.ToString(),
-                        CreatedBy = "System",
-                        CreatedDate = DateTime.Now
-                    });
-                }
                 var ids = userDtos.Select(x => x.Id).ToArray();
                 {
                     var response = await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
@@ -143,6 +143,20 @@ namespace SugarChat.IntegrationTest.Services.Users
                     var response = await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
                     (await repository.CountAsync<User>(x => ids.Contains(x.Id))).ShouldBe(50);
                 }
+            });
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                userDtos.Add(new UserDto
+                {
+                    Id = userDtos[0].Id,
+                    DisplayName = "DisplayName",
+                    CreatedBy = "System",
+                    CreatedDate = DateTime.Now
+                });
+                var ids = userDtos.Select(x => x.Id).ToArray();
+                Func<Task> func=async () => await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
+                await func().ShouldThrowAsync<Exception>();
+                (await repository.CountAsync<User>(x => ids.Contains(x.Id))).ShouldBe(50);
             });
         }
     }

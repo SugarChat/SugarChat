@@ -240,19 +240,19 @@ namespace SugarChat.Data.MongoDb
                 readPreference: ReadPreference.Primary));
         }
 
-        public async Task CommitTransactionAsync()
+        public void CommitTransaction()
         {
             if (_session.IsInTransaction)
             {
-                await _session.CommitTransactionAsync();
+                _session.CommitTransaction();
             }
         }
 
-        public async Task AbortTransactionAsync()
+        public void AbortTransaction()
         {
             if (_session.IsInTransaction)
             {
-                await _session.AbortTransactionAsync();
+                _session.AbortTransaction();
             }
         }
     }

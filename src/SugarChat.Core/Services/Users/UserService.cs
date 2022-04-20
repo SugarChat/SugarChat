@@ -12,6 +12,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
+using SugarChat.Core.Transaction;
 
 namespace SugarChat.Core.Services.Users
 {
@@ -20,12 +21,14 @@ namespace SugarChat.Core.Services.Users
         private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
+        readonly ITransactionManager _transactionManager;
 
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
+        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManager transactionManager)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
+            _transactionManager = transactionManager;
         }
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
@@ -113,6 +116,7 @@ namespace SugarChat.Core.Services.Users
         public async Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
         {
             var users = _mapper.Map<IEnumerable<User>>(command.Users);
+            _transactionManager.BeginTransaction();
             await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
             await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
             return _mapper.Map<UsersBatchAddedEvent>(command);

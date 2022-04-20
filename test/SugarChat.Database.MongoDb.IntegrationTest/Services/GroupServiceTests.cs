@@ -39,6 +39,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             };
             GroupAddedEvent addGroupEvent =
                 await _groupService.AddGroupAsync(addGroupCommand);
+            Repository.CommitTransaction();
             Group group = await Repository.SingleOrDefaultAsync<Group>(o => o.Id == addGroupCommand.Id);
             group.ShouldNotBeNull();
             group.Id.ShouldBe(addGroupCommand.Id);

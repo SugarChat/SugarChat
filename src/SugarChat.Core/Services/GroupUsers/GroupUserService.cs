@@ -6,7 +6,7 @@ using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Users;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
@@ -15,6 +15,7 @@ using SugarChat.Message.Responses;
 using System;
 using SugarChat.Message.Responses.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
+using SugarChat.Message.Dtos.GroupUsers;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -93,12 +94,21 @@ namespace SugarChat.Core.Services.GroupUsers
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
-            var groupMembers =
-                await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            var groupUsers = await _groupUserDataProvider.GetMembersByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            var groupUserDtos = _mapper.Map<IEnumerable<GroupUserDto>>(groupUsers);
+
+            var userIds = groupUsers.Select(x => x.UserId).ToList();
+            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id)).ConfigureAwait(false);
+            foreach (var groupUserDto in groupUserDtos)
+            {
+                var user = users.SingleOrDefault(x => x.Id == groupUserDto.UserId);
+                groupUserDto.AvatarUrl = user?.AvatarUrl;
+                groupUserDto.DisplayName = user?.DisplayName;
+            }
 
             return new GetMembersOfGroupResponse
             {
-                Members = groupMembers
+                Members = groupUserDtos
             };
         }
 
@@ -309,6 +319,32 @@ namespace SugarChat.Core.Services.GroupUsers
             var userIds = groupUsers.Select(x => x.UserId).Distinct();
 
             return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
+        }
+
+        public async Task UpdateGroupUserDataAsync(UpdateGroupUserDataCommand command, CancellationToken cancellationToken = default)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
+            var ids = command.GroupUsers.Select(x => x.Id).ToArray();
+            var groupUsers = await _groupUserDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupUsers.Select(x => x.GroupId), null, cancellationToken).ConfigureAwait(false)).Result;
+            foreach (var groupUser in groupUsers)
+            {
+                var group = groups.SingleOrDefault(x => x.Id == groupUser.GroupId);
+                group.CheckExist(groupUser.GroupId);
+            }
+            var userIds = groupUsers.Select(x => x.UserId);
+            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id));
+            foreach (var groupUserDto in command.GroupUsers)
+            {
+                var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
+                if (groupUser != null)
+                {
+                    _mapper.Map(groupUserDto, groupUser);
+                }
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
     }
 }

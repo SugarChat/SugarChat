@@ -1,6 +1,5 @@
 ﻿using Mediator.Net;
 using Mediator.Net.Binding;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Middlewares;
 using SugarChat.Core.UnitTest.Command;
 using System;
@@ -11,7 +10,9 @@ using System.Threading.Tasks;
 using SugarChat.Core.UnitTest.Request;
 using Xunit;
 using SugarChat.Core.UnitTest.Events;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
+using SugarChat.Message.Common;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.Core.UnitTest
 {
@@ -37,7 +38,7 @@ namespace SugarChat.Core.UnitTest
                 mediator.RequestAsync<TestRequest, SugarChatResponse<string>>(new TestRequest());
 
 
-            Assert.Equal(20000, response.Code);
+            Assert.Equal(ExceptionCode.Success, response.Code);
             Assert.Equal("Success", response.Message);
             Assert.Equal("TestData", response.Data);
         }

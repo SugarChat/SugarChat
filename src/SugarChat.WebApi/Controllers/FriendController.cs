@@ -1,6 +1,6 @@
 ﻿using Mediator.Net;
 using Microsoft.AspNetCore.Mvc;
-using SugarChat.Core.Basic;
+using SugarChat.Message.Basic;
 using SugarChat.Message.Commands.Friends;
 using System;
 using System.Collections.Generic;

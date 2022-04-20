@@ -1,6 +1,6 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,5 @@
 ﻿using Mediator.Net;
 using Shouldly;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Users;
@@ -16,6 +15,8 @@ using System.Threading.Tasks;
 using Xunit;
 using System;
 using System.Linq;
+using SugarChat.Message.Basic;
+using SugarChat.Message.Common;
 
 namespace SugarChat.IntegrationTest.Services.Users
 {
@@ -75,7 +76,7 @@ namespace SugarChat.IntegrationTest.Services.Users
                     DisplayName = "Micky"
                 };
                 var response = await mediator.SendAsync<AddUserCommand, SugarChatResponse>(addUserCommand);
-                response.Code.ShouldBe(20000);
+                response.Code.ShouldBe(ExceptionCode.Success);
                 User user = await repository.SingleOrDefaultAsync<User>(o => o.Id == addUserCommand.Id);
                 user.ShouldNotBeNull();
                 user.Id.ShouldBe(addUserCommand.Id);

@@ -17,7 +17,6 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
-using SugarChat.Core.Exceptions;
 using SugarChat.Core.Transaction;
 
 namespace SugarChat.Core.Services.Groups
@@ -131,11 +130,6 @@ namespace SugarChat.Core.Services.Groups
                 };
             }
 
-            var groupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(request.UserId, request.GroupId,
-                    cancellationToken).ConfigureAwait(false);
-            groupUser.CheckExist(request.UserId, request.GroupId);
-
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
@@ -167,7 +161,7 @@ namespace SugarChat.Core.Services.Groups
             await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
-            _transactionManager.CommitTransaction();
+            _transactionManager.BeginTransaction();
             await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
 
             await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);

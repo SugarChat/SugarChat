@@ -9,9 +9,11 @@ using Xunit;
 using Shouldly;
 using SugarChat.Message.Requests;
 using System.Linq;
-using SugarChat.Core.Basic;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
+using SugarChat.Message.Basic;
+using System;
+using SugarChat.Message.Commands.Groups;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -63,7 +65,7 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator>(async (mediator) =>
             {
-                var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId} });
+                var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId } });
                 reponse.Data.Count().ShouldBe(2);
             });
         }

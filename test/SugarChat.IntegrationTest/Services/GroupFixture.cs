@@ -1,8 +1,7 @@
 ﻿using Mediator.Net;
 using Shouldly;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Mediator.CommandHandlers.Groups;
 using SugarChat.Core.Services;
@@ -17,7 +16,8 @@ using System.Threading.Tasks;
 using Xunit;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.Groups;
-using SugarChat.Core.Common;
+using SugarChat.Message.Basic;
+using SugarChat.Message.Common;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -59,7 +59,7 @@ namespace SugarChat.IntegrationTest.Services
                     Id = groupId
                 });
                 var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(new AddGroupCommand { UserId = userId, Id = groupId });
-                response.Code.ShouldBe((int)ExceptionCode.GroupExists);
+                response.Code.ShouldBe(ExceptionCode.GroupExists);
                 (await repository.CountAsync<GroupUser>(x => x.GroupId == groupId)).ShouldBe(0);
             });
         }
@@ -105,7 +105,6 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = Guid.NewGuid().ToString()
                 };
-
                 {
                     var response = await mediator.SendAsync<DismissGroupCommand, SugarChatResponse>(command);
                     response.Message.ShouldBe(Prompt.GroupNoExists.WithParams(command.GroupId).Message);

@@ -1,12 +1,12 @@
 ﻿using Mediator.Net.Context;
 using Mediator.Net.Contracts;
-using SugarChat.Core.Basic;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Dtos;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Paging;
+using SugarChat.Message.Basic;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Messages
 {

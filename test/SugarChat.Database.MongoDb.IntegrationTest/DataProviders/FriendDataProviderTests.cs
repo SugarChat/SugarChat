@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Shouldly;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Paging;

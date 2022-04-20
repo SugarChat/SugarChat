@@ -4,7 +4,7 @@ using Mediator.Net.Pipeline;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SugarChat.Core.Exceptions;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message.Commands;
 using System.Runtime.ExceptionServices;
 

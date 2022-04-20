@@ -36,6 +36,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         public virtual async ValueTask DisposeAsync()
         {
+            Repository.CommitTransaction();
             await CleanDatabaseAsync();
         }
 

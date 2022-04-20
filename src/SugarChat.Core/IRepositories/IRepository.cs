@@ -32,5 +32,8 @@ namespace SugarChat.Core.IRepositories
         Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<IEnumerable<TDestination>> GetList<TSource, TDestination>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where TSource : class, IEntity where TDestination : class;
+        void BeginTransaction();
+        Task CommitTransactionAsync();
+        Task AbortTransactionAsync();
     }
 }

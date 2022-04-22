@@ -19,12 +19,11 @@ namespace SugarChat.Data.MongoDb
 {
     public class MongoDbRepository : IRepository
     {
-        readonly IMongoDatabase _database;
+        private readonly IDatabaseManagement _databaseManagement;
 
-        public MongoDbRepository(MongoDbSettings settings)
+        public MongoDbRepository(IDatabaseManagement databaseManagement)
         {
-            var client = new MongoClient(settings.ConnectionString);
-            _database = client.GetDatabase(settings.DatabaseName);
+            _databaseManagement = databaseManagement;
         }
 
         private static Expression<Func<T, bool>> WhereAdapter<T>(Expression<Func<T, bool>> expression)
@@ -34,7 +33,8 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoCollection<T> GetCollection<T>()
         {
-            return _database.GetCollection<T>(typeof(T).Name);
+            var database = _databaseManagement.GetDatabase();
+            return database.GetCollection<T>(typeof(T).Name);
         }
 
         private IMongoQueryable<T> FilteredQuery<T>(Expression<Func<T, bool>> predicate = null)
@@ -210,7 +210,8 @@ namespace SugarChat.Data.MongoDb
             }
 
             PipelineDefinition<BsonDocument, BsonDocument> pipeline = new PipelineStagePipelineDefinition<BsonDocument, BsonDocument>(pipelineStages);
-            return await _database.GetCollection<BsonDocument>(typeof(T).Name).AggregateAsync(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var database = _databaseManagement.GetDatabase();
+            return await database.GetCollection<BsonDocument>(typeof(T).Name).AggregateAsync(pipeline, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<TDestination>> GetList<TSource, TDestination>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where TSource : class, IEntity where TDestination : class
@@ -223,6 +224,27 @@ namespace SugarChat.Data.MongoDb
                 list.Add(messageCountGroupByGroupId);
             }
             return list;
+        }
+
+
+        public ITransactionManagement BeginTransaction()
+        {
+            _databaseManagement.IsBeginTransaction = true;
+            _databaseManagement.Session.StartTransaction(new TransactionOptions(
+                readConcern: ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                readPreference: ReadPreference.Primary));
+            return new MongoDbTransactionManagement(_databaseManagement);
+        }
+
+        public async Task<ITransactionManagement> BeginTransactionAsync(CancellationToken cancellationToken)
+        {
+            _databaseManagement.IsBeginTransaction = true;
+            _databaseManagement.Session.StartTransaction(new TransactionOptions(
+                readConcern: ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                readPreference: ReadPreference.Primary));
+            return await Task.FromResult(new MongoDbTransactionManagement(_databaseManagement));
         }
     }
 }

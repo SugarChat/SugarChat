@@ -225,26 +225,5 @@ namespace SugarChat.Data.MongoDb
             }
             return list;
         }
-
-
-        public ITransactionManagement BeginTransaction()
-        {
-            _databaseManagement.IsBeginTransaction = true;
-            _databaseManagement.Session.StartTransaction(new TransactionOptions(
-                readConcern: ReadConcern.Snapshot,
-                writeConcern: WriteConcern.WMajority,
-                readPreference: ReadPreference.Primary));
-            return new MongoDbTransactionManagement(_databaseManagement);
-        }
-
-        public async Task<ITransactionManagement> BeginTransactionAsync(CancellationToken cancellationToken)
-        {
-            _databaseManagement.IsBeginTransaction = true;
-            _databaseManagement.Session.StartTransaction(new TransactionOptions(
-                readConcern: ReadConcern.Snapshot,
-                writeConcern: WriteConcern.WMajority,
-                readPreference: ReadPreference.Primary));
-            return await Task.FromResult(new MongoDbTransactionManagement(_databaseManagement));
-        }
     }
 }

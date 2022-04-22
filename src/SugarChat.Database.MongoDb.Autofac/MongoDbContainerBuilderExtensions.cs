@@ -39,6 +39,10 @@ namespace SugarChat.Data.MongoDb.Autofac
                 .As<IDatabaseManagement>()
                 .InstancePerLifetimeScope();
 
+            builder.RegisterType<MongoDbTransactionManagement>()
+                .As<ITransactionManagement>()
+                .InstancePerLifetimeScope();
+
             return builder;
         }
     }

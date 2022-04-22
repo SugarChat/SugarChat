@@ -4,13 +4,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.IRepositories
 {
-    public interface ITransactionManagement : IDisposable
+    public interface ITransactionManagement
     {
-        bool IsBeginTransaction { get; set; }
-        void Commit();
-        Task CommitAsync(CancellationToken cancellationToken);
-        void Rollback();
-        Task RollbackAsync(CancellationToken cancellationToken);
-
+        ITransaction BeginTransaction();
+        Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken);
     }
 }

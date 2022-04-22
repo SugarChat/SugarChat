@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using SugarChat.Core.Domain;
+using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.Friends;
 using SugarChat.Message.Commands.Users;
 using SugarChat.Message.Events.Users;
@@ -20,12 +21,14 @@ namespace SugarChat.Core.Services.Users
         private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
+        private readonly ITransactionManagement _transactionManagement;
 
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider)
+        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManagement transactionManagement)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
+            _transactionManagement = transactionManagement;
         }
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
@@ -112,9 +115,22 @@ namespace SugarChat.Core.Services.Users
 
         public async Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default)
         {
-            var users = _mapper.Map<IEnumerable<User>>(command.Users);
-            await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
-            await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    var users = _mapper.Map<IEnumerable<User>>(command.Users);
+                    await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
+                    await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
             return _mapper.Map<UsersBatchAddedEvent>(command);
         }
     }

@@ -12,46 +12,29 @@ namespace SugarChat.Data.MongoDb
     public class MongoDbTransactionManagement : ITransactionManagement
     {
         private readonly IDatabaseManagement _databaseManagement;
-
         public MongoDbTransactionManagement(IDatabaseManagement databaseManagement)
         {
             _databaseManagement = databaseManagement;
         }
 
-        public void Dispose()
+        public ITransaction BeginTransaction()
         {
-            _databaseManagement.DisposeSession();
-            _databaseManagement.IsBeginTransaction = false;
+            _databaseManagement.IsBeginTransaction = true;
+            _databaseManagement.Session.StartTransaction(new TransactionOptions(
+                readConcern: ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                readPreference: ReadPreference.Primary));
+            return new MongoDbTransaction(_databaseManagement);
         }
 
-        public bool IsBeginTransaction { get; set; }
-
-        public async Task CommitAsync(CancellationToken cancellationToken)
+        public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         {
-            if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
-                throw new Exception("mongodb transaction is not ready");
-            await _databaseManagement.Session.CommitTransactionAsync(cancellationToken);
-        }
-
-        public async Task RollbackAsync(CancellationToken cancellationToken)
-        {
-            if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
-                throw new Exception("mongodb transaction is not ready");
-            await _databaseManagement.Session.AbortTransactionAsync(cancellationToken);
-        }
-
-        public void Commit()
-        {
-            if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
-                throw new Exception("mongodb transaction is not ready");
-            _databaseManagement.Session.CommitTransaction();
-        }
-
-        public void Rollback()
-        {
-            if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
-                throw new Exception("mongodb transaction is not ready");
-            _databaseManagement.Session.AbortTransaction();
+            _databaseManagement.IsBeginTransaction = true;
+            _databaseManagement.Session.StartTransaction(new TransactionOptions(
+                readConcern: ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                readPreference: ReadPreference.Primary));
+            return await Task.FromResult(new MongoDbTransaction(_databaseManagement));
         }
     }
 }

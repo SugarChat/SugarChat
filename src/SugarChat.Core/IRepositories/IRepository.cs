@@ -35,5 +35,6 @@ namespace SugarChat.Core.IRepositories
         void BeginTransaction();
         void CommitTransaction();
         void AbortTransaction();
+        void Dispose();
     }
 }

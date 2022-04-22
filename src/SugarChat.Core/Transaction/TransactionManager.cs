@@ -16,9 +16,10 @@ namespace SugarChat.Core.Transaction
             _repository = repository;
         }
 
-        public void BeginTransaction()
+        public ITransactionManager BeginTransaction()
         {
             _repository.BeginTransaction();
+            return this;
         }
 
         public void CommitTransaction()
@@ -29,6 +30,11 @@ namespace SugarChat.Core.Transaction
         public void AbortTransaction()
         {
             _repository.AbortTransaction();
+        }
+
+        public void Dispose()
+        {
+            _repository.Dispose();
         }
     }
 }

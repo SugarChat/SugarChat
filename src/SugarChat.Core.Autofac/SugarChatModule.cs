@@ -17,7 +17,6 @@ using SugarChat.Core.Services.Users;
 using Mediator.Net.Pipeline;
 using Mediator.Net.Middlewares.Serilog;
 using Serilog;
-using SugarChat.Core.Middlewares.TransactionMiddlewares;
 using SugarChat.Core.Transaction;
 
 namespace SugarChat.Core.Autofac
@@ -59,7 +58,6 @@ namespace SugarChat.Core.Autofac
             config.UseUnifyResponseMiddleware();
             config.UseValidatorMiddleware();
             config.UseNeedUserExist();
-            config.UseTransaction();
         }
 
         private void RegisterAutoMapper(ContainerBuilder builder)

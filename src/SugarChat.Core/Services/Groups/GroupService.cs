@@ -51,32 +51,44 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
-            _transactionManager.BeginTransaction();
-            try
+            using (_transactionManager.BeginTransaction())
             {
-                await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
-            }
-            catch (MongoDB.Driver.MongoWriteException ex)
-            {
-                if (ex.WriteError.Code == 11000)
+                try
                 {
-                    group.CheckNotExist();
+                    await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                 }
-                throw;
+                catch (MongoDB.Driver.MongoWriteException ex)
+                {
+                    if (ex.WriteError.Code == 11000)
+                    {
+                        group.CheckNotExist();
+                    }
+                    _transactionManager.AbortTransaction();
+                    throw;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                try
+                {
+                    GroupUser groupUser = new()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = command.UserId,
+                        GroupId = command.Id,
+                        Role = UserRole.Owner,
+                        CreatedBy = command.CreatedBy
+                    };
+                    await _groupUserDataProvider.AddAsync(groupUser, cancellation);
+                    _transactionManager.CommitTransaction();
+                }
+                catch (Exception)
+                {
+                    _transactionManager.AbortTransaction();
+                    throw;
+                }
             }
-            catch (Exception)
-            {
-                throw;
-            }
-            GroupUser groupUser = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = command.UserId,
-                GroupId = command.Id,
-                Role = UserRole.Owner,
-                CreatedBy = command.CreatedBy
-            };
-            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             return _mapper.Map<GroupAddedEvent>(command);
         }
 
@@ -161,10 +173,21 @@ namespace SugarChat.Core.Services.Groups
             await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
 
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
-            _transactionManager.BeginTransaction();
-            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
 
-            await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+            using (_transactionManager.BeginTransaction())
+            {
+                try
+                {
+                    await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
+                    await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+                    _transactionManager.CommitTransaction();
+                }
+                catch (Exception)
+                {
+                    _transactionManager.AbortTransaction();
+                    throw;
+                }
+            }
 
             return _mapper.Map<GroupDismissedEvent>(command);
         }

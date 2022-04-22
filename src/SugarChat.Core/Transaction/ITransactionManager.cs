@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Transaction
 {
-    public interface ITransactionManager
+    public interface ITransactionManager : IDisposable
     {
-        void BeginTransaction();
+        ITransactionManager BeginTransaction();
 
         void CommitTransaction();
 

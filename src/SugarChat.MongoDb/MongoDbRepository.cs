@@ -14,16 +14,23 @@ using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Message.Paging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using SugarChat.Core.Transaction;
 
 namespace SugarChat.Data.MongoDb
 {
     public class MongoDbRepository : IRepository
     {
+        private MongoDbSettings _settings;
         readonly IMongoDatabase _database;
+        private IMongoDatabase _transationdatabase;
+        IMongoClient _client;
+        IClientSessionHandle _session;
+        bool IsBeginTransaction { get; set; }
 
-        public MongoDbRepository(MongoDbSettings settings)
+        public MongoDbRepository(MongoDbSettings settings, MongoClient client)
         {
-            var client = new MongoClient(settings.ConnectionString);
+            _settings = settings;
+            _client = client;
             _database = client.GetDatabase(settings.DatabaseName);
         }
 
@@ -34,7 +41,10 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoCollection<T> GetCollection<T>()
         {
-            return _database.GetCollection<T>(typeof(T).Name);
+            if (_session != null && IsBeginTransaction)
+                return _transationdatabase.GetCollection<T>(typeof(T).Name);
+            else
+                return _database.GetCollection<T>(typeof(T).Name);
         }
 
         private IMongoQueryable<T> FilteredQuery<T>(Expression<Func<T, bool>> predicate = null)
@@ -117,7 +127,14 @@ namespace SugarChat.Data.MongoDb
             if (entity != null)
             {
                 entity.CreatedDate = DateTimeOffset.Now;
-                await GetCollection<T>().InsertOneAsync(entity, null, cancellationToken).ConfigureAwait(false);
+                if (_session != null && IsBeginTransaction)
+                {
+                    await GetCollection<T>().InsertOneAsync(_session, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await GetCollection<T>().InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
                 return 1;
             }
             return default;
@@ -131,7 +148,14 @@ namespace SugarChat.Data.MongoDb
                 {
                     entity.CreatedDate = DateTimeOffset.Now;
                 }
-                await GetCollection<T>().InsertManyAsync(entities, null, cancellationToken).ConfigureAwait(false);
+                if (_session != null && IsBeginTransaction)
+                {
+                    await GetCollection<T>().InsertManyAsync(_session, entities, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await GetCollection<T>().InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
                 return entities.Count();
             }
             return default;
@@ -142,7 +166,15 @@ namespace SugarChat.Data.MongoDb
             if (entity != null)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
-                var deleteResult = await GetCollection<T>().DeleteOneAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                DeleteResult deleteResult;
+                if (_session != null && IsBeginTransaction)
+                {
+                    deleteResult = await GetCollection<T>().DeleteOneAsync(_session, filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    deleteResult = await GetCollection<T>().DeleteOneAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
                 if (deleteResult.IsAcknowledged)
                 {
                     return (int)deleteResult.DeletedCount;
@@ -156,10 +188,18 @@ namespace SugarChat.Data.MongoDb
             if (entities?.Any() == true)
             {
                 FilterDefinition<T> filter = Builders<T>.Filter.In(e => e.Id, entities.Select(e => e.Id));
-                var deleteCount = await GetCollection<T>().DeleteManyAsync(filter, null, cancellationToken).ConfigureAwait(false);
-                if (deleteCount.IsAcknowledged)
+                DeleteResult deleteResult;
+                if (_session != null && IsBeginTransaction)
                 {
-                    return (int)deleteCount.DeletedCount;
+                    deleteResult = await GetCollection<T>().DeleteManyAsync(_session, filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    deleteResult = await GetCollection<T>().DeleteManyAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                if (deleteResult.IsAcknowledged)
+                {
+                    return (int)deleteResult.DeletedCount;
                 }
             }
             return default;
@@ -171,7 +211,16 @@ namespace SugarChat.Data.MongoDb
             {
                 var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                 entity.LastModifyDate = DateTimeOffset.Now;
-                var replaceResult = await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                ReplaceOneResult replaceResult;
+                if (_session != null && IsBeginTransaction)
+                {
+                    replaceResult = await GetCollection<T>().ReplaceOneAsync(_session, filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    replaceResult = await GetCollection<T>().ReplaceOneAsync(filter, entity, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+
                 if (replaceResult.IsAcknowledged)
                 {
                     return (int)replaceResult.ModifiedCount;
@@ -191,7 +240,15 @@ namespace SugarChat.Data.MongoDb
                     var filter = Builders<T>.Filter.Eq(e => e.Id, entity.Id);
                     updates.Add(new ReplaceOneModel<T>(filter, entity));
                 }
-                var writeResult = await GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken).ConfigureAwait(false);
+                BulkWriteResult<T> writeResult;
+                if (_session != null && IsBeginTransaction)
+                {
+                    writeResult = await GetCollection<T>().BulkWriteAsync(_session, updates, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    writeResult = await GetCollection<T>().BulkWriteAsync(updates, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
                 if (writeResult.IsAcknowledged)
                 {
                     return (int)writeResult.ModifiedCount;
@@ -223,6 +280,41 @@ namespace SugarChat.Data.MongoDb
                 list.Add(messageCountGroupByGroupId);
             }
             return list;
+        }
+
+        public void BeginTransaction()
+        {
+            _session = _client.StartSession();
+            _transationdatabase = _session.Client.GetDatabase(_settings.DatabaseName);
+            _session.StartTransaction(new TransactionOptions(
+                readConcern: ReadConcern.Snapshot,
+                writeConcern: WriteConcern.WMajority,
+                readPreference: ReadPreference.Primary));
+            IsBeginTransaction = true;
+        }
+
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsBeginTransaction)
+            {
+                await _session.CommitTransactionAsync(cancellationToken);
+            }
+            IsBeginTransaction = false;
+        }
+
+        public async Task AbortTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            if (IsBeginTransaction)
+            {
+                await _session.AbortTransactionAsync(cancellationToken);
+            }
+            IsBeginTransaction = false;
+        }
+
+        public void Dispose()
+        {
+            _session?.Dispose();
+            IsBeginTransaction = false;
         }
     }
 }

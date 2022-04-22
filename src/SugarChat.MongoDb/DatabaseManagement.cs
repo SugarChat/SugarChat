@@ -15,10 +15,11 @@ namespace SugarChat.Data.MongoDb
         bool IsBeginTransaction { get; set; }
         IMongoDatabase GetDatabase();
         void DisposeSession();
+        void SetSession();
     }
-    public class DatabaseManagement: IDatabaseManagement
+    public class DatabaseManagement : IDatabaseManagement
     {
-        readonly MongoClient _mongoClient;
+        readonly IMongoClient _mongoClient;
         readonly MongoDbSettings _settings;
 
         private IClientSessionHandle _session;
@@ -26,7 +27,7 @@ namespace SugarChat.Data.MongoDb
 
         public bool IsBeginTransaction { get; set; }
 
-        public DatabaseManagement(MongoClient mongoClient, MongoDbSettings settings)
+        public DatabaseManagement(IMongoClient mongoClient, MongoDbSettings settings)
         {
             _mongoClient = mongoClient;
             _settings = settings;
@@ -34,45 +35,41 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoDatabase _database;
 
-        public IMongoDatabase Database
+        private IMongoDatabase Database()
         {
-            get
+            if (_database == null)
             {
-                if (_database == null)
-                {
-                    _database = _mongoClient.GetDatabase(_settings.DatabaseName);
-                }
-
-                return _database;
+                _database = _mongoClient.GetDatabase(_settings.DatabaseName);
             }
+            return _database;
         }
         private IMongoDatabase _transactionDatabase;
 
-        public IMongoDatabase TransactionDatabase
+        private IMongoDatabase TransactionDatabase()
         {
-            get
+            if (_transactionDatabase == null || _session == null)
             {
-                if (_transactionDatabase == null || _session == null)
-                {
-                    _session = _mongoClient.StartSession();
-                    _session.Client.GetDatabase(_settings.DatabaseName);
-                }
-
-                return _transactionDatabase;
+                _transactionDatabase = _session.Client.GetDatabase(_settings.DatabaseName);
             }
+            return _transactionDatabase;
         }
 
         public IMongoDatabase GetDatabase()
         {
             if (IsBeginTransaction)
-                return _transactionDatabase;
-            return _database;
+                return TransactionDatabase();
+            return Database();
         }
 
         public void DisposeSession()
         {
             _session.Dispose();
             _session = null;
+        }
+
+        public void SetSession()
+        {
+            _session = _mongoClient.StartSession();
         }
     }
 }

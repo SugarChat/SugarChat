@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using SugarChat.Core.IRepositories;
 using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Data.MongoDb.Tools;
@@ -42,6 +43,8 @@ namespace SugarChat.Data.MongoDb.Autofac
             builder.RegisterType<MongoDbTransactionManagement>()
                 .As<ITransactionManagement>()
                 .InstancePerLifetimeScope();
+
+            builder.RegisterType<MongoClient>().As<IMongoClient>().InstancePerLifetimeScope();
 
             return builder;
         }

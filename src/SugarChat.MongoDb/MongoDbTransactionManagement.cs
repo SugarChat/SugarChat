@@ -20,7 +20,7 @@ namespace SugarChat.Data.MongoDb
 
         public void Dispose()
         {
-            _databaseManagement.Session.Dispose();
+            _databaseManagement.DisposeSession();
             _databaseManagement.IsBeginTransaction = false;
         }
 

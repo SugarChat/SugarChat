@@ -293,20 +293,20 @@ namespace SugarChat.Data.MongoDb
             IsBeginTransaction = true;
         }
 
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (IsBeginTransaction)
             {
-                _session.CommitTransaction();
+                await _session.CommitTransactionAsync(cancellationToken);
             }
             IsBeginTransaction = false;
         }
 
-        public void AbortTransaction()
+        public async Task AbortTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (IsBeginTransaction)
             {
-                _session.AbortTransaction();
+                await _session.AbortTransactionAsync(cancellationToken);
             }
             IsBeginTransaction = false;
         }

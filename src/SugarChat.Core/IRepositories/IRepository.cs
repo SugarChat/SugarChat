@@ -33,8 +33,8 @@ namespace SugarChat.Core.IRepositories
         Task<IAsyncCursor<BsonDocument>> GetAggregate<T>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<IEnumerable<TDestination>> GetList<TSource, TDestination>(IEnumerable<string> stages, CancellationToken cancellationToken = default) where TSource : class, IEntity where TDestination : class;
         void BeginTransaction();
-        void CommitTransaction();
-        void AbortTransaction();
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
+        Task AbortTransactionAsync(CancellationToken cancellationToken = default);
         void Dispose();
     }
 }

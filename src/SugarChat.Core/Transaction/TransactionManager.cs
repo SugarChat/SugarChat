@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SugarChat.Core.Transaction
@@ -22,14 +23,14 @@ namespace SugarChat.Core.Transaction
             return this;
         }
 
-        public void CommitTransaction()
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
-            _repository.CommitTransaction();
+            await _repository.CommitTransactionAsync(cancellationToken);
         }
 
-        public void AbortTransaction()
+        public async Task AbortTransactionAsync(CancellationToken cancellationToken = default)
         {
-            _repository.AbortTransaction();
+            await _repository.AbortTransactionAsync(cancellationToken);
         }
 
         public void Dispose()

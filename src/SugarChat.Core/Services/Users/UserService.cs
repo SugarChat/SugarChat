@@ -122,11 +122,11 @@ namespace SugarChat.Core.Services.Users
                 {
                     await _userDataProvider.RemoveRangeAsync(users, cancellationToken).ConfigureAwait(false);
                     await _userDataProvider.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);
-                    _transactionManager.CommitTransaction();
+                    await _transactionManager.CommitTransactionAsync(cancellationToken);
                 }
                 catch (Exception)
                 {
-                    _transactionManager.AbortTransaction();
+                    await _transactionManager.AbortTransactionAsync(cancellationToken);
                     throw;
                 }
             }

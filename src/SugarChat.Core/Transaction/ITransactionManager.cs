@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SugarChat.Core.Transaction
@@ -10,8 +11,8 @@ namespace SugarChat.Core.Transaction
     {
         ITransactionManager BeginTransaction();
 
-        void CommitTransaction();
+        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
 
-        void AbortTransaction();
+        Task AbortTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

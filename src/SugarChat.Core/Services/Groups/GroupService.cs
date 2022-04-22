@@ -63,11 +63,12 @@ namespace SugarChat.Core.Services.Groups
                     {
                         group.CheckNotExist();
                     }
-                    _transactionManager.AbortTransaction();
+                    await _transactionManager.AbortTransactionAsync(cancellation);
                     throw;
                 }
                 catch (Exception)
                 {
+                    await _transactionManager.AbortTransactionAsync(cancellation);
                     throw;
                 }
                 try
@@ -81,11 +82,11 @@ namespace SugarChat.Core.Services.Groups
                         CreatedBy = command.CreatedBy
                     };
                     await _groupUserDataProvider.AddAsync(groupUser, cancellation);
-                    _transactionManager.CommitTransaction();
+                    await _transactionManager.CommitTransactionAsync(cancellation);
                 }
                 catch (Exception)
                 {
-                    _transactionManager.AbortTransaction();
+                    await _transactionManager.AbortTransactionAsync(cancellation);
                     throw;
                 }
             }
@@ -170,21 +171,20 @@ namespace SugarChat.Core.Services.Groups
             group.CheckExist(command.GroupId);
 
             var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
-            await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
-
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
 
             using (_transactionManager.BeginTransaction())
             {
                 try
                 {
+                    await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
                     await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
                     await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
-                    _transactionManager.CommitTransaction();
+                    await _transactionManager.CommitTransactionAsync(cancellation);
                 }
                 catch (Exception)
                 {
-                    _transactionManager.AbortTransaction();
+                    await _transactionManager.AbortTransactionAsync(cancellation);
                     throw;
                 }
             }

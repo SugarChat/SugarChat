@@ -33,25 +33,29 @@ namespace SugarChat.Data.MongoDb
             _settings = settings;
         }
 
-        private IMongoDatabase _database
+        private IMongoDatabase _database;
+
+        private IMongoDatabase Database
         {
             get
             {
                 if (_database == null)
                 {
-                    return _mongoClient.GetDatabase(_settings.DatabaseName);
+                    _database = _mongoClient.GetDatabase(_settings.DatabaseName);
                 }
                 return _database;
             }
         }
 
-        private IMongoDatabase _transactionDatabase
+        private IMongoDatabase _transactionDatabase;
+
+        private IMongoDatabase TransactionDatabase
         {
             get
             {
                 if (_transactionDatabase == null || _session == null)
                 {
-                    return _session.Client.GetDatabase(_settings.DatabaseName);
+                    _transactionDatabase = _session.Client.GetDatabase(_settings.DatabaseName);
                 }
                 return _transactionDatabase;
             }
@@ -60,8 +64,9 @@ namespace SugarChat.Data.MongoDb
         public IMongoDatabase GetDatabase()
         {
             if (IsBeginTransaction)
-                return _transactionDatabase;
-            return _database;
+                return TransactionDatabase;
+            else
+                return Database;
         }
 
         public void DisposeSession()

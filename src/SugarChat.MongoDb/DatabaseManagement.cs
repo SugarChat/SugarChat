@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +15,7 @@ namespace SugarChat.Data.MongoDb
         bool IsBeginTransaction { get; set; }
         IMongoDatabase GetDatabase();
         void DisposeSession();
-        void SetSession();
+        void StartSession();
     }
     public class DatabaseManagement : IDatabaseManagement
     {
@@ -33,32 +33,35 @@ namespace SugarChat.Data.MongoDb
             _settings = settings;
         }
 
-        private IMongoDatabase _database;
-
-        private IMongoDatabase Database()
+        private IMongoDatabase _database
         {
-            if (_database == null)
+            get
             {
-                _database = _mongoClient.GetDatabase(_settings.DatabaseName);
+                if (_database == null)
+                {
+                    return _mongoClient.GetDatabase(_settings.DatabaseName);
+                }
+                return _database;
             }
-            return _database;
         }
-        private IMongoDatabase _transactionDatabase;
 
-        private IMongoDatabase TransactionDatabase()
+        private IMongoDatabase _transactionDatabase
         {
-            if (_transactionDatabase == null || _session == null)
+            get
             {
-                _transactionDatabase = _session.Client.GetDatabase(_settings.DatabaseName);
+                if (_transactionDatabase == null || _session == null)
+                {
+                    return _session.Client.GetDatabase(_settings.DatabaseName);
+                }
+                return _transactionDatabase;
             }
-            return _transactionDatabase;
         }
 
         public IMongoDatabase GetDatabase()
         {
             if (IsBeginTransaction)
-                return TransactionDatabase();
-            return Database();
+                return _transactionDatabase;
+            return _database;
         }
 
         public void DisposeSession()
@@ -67,9 +70,10 @@ namespace SugarChat.Data.MongoDb
             _session = null;
         }
 
-        public void SetSession()
+        public void StartSession()
         {
             _session = _mongoClient.StartSession();
+            IsBeginTransaction = true;
         }
     }
 }

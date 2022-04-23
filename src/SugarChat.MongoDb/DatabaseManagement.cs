@@ -35,7 +35,7 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoDatabase _database;
 
-        private IMongoDatabase Database
+        public IMongoDatabase Database
         {
             get
             {
@@ -49,7 +49,7 @@ namespace SugarChat.Data.MongoDb
 
         private IMongoDatabase _transactionDatabase;
 
-        private IMongoDatabase TransactionDatabase
+        public IMongoDatabase TransactionDatabase
         {
             get
             {

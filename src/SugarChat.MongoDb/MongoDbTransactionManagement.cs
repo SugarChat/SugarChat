@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,8 +29,7 @@ namespace SugarChat.Data.MongoDb
 
         public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
         {
-            _databaseManagement.IsBeginTransaction = true;
-            _databaseManagement.SetSession();
+            _databaseManagement.StartSession();
             _databaseManagement.Session.StartTransaction(new TransactionOptions(
                 readConcern: ReadConcern.Snapshot,
                 writeConcern: WriteConcern.WMajority,

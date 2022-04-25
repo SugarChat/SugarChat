@@ -44,7 +44,10 @@ namespace SugarChat.Data.MongoDb.Autofac
                 .As<ITransactionManager>()
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<MongoClient>().As<IMongoClient>().InstancePerLifetimeScope();
+            builder.Register(c =>
+            {
+                return new MongoClient(settings.ConnectionString);
+            }).As<IMongoClient>().InstancePerLifetimeScope();
 
             return builder;
         }

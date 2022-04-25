@@ -11,9 +11,9 @@ namespace SugarChat.Data.MongoDb
 {
     public class MongoDbTransaction : ITransaction
     {
-        private readonly IDatabaseManagement _databaseManagement;
+        private readonly IDatabaseManager _databaseManagement;
 
-        public MongoDbTransaction(IDatabaseManagement databaseManagement)
+        public MongoDbTransaction(IDatabaseManager databaseManagement)
         {
             _databaseManagement = databaseManagement;
         }
@@ -26,14 +26,14 @@ namespace SugarChat.Data.MongoDb
 
         public bool IsBeginTransaction { get; set; }
 
-        public async Task CommitAsync(CancellationToken cancellationToken)
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
                 throw new Exception("mongodb transaction is not ready");
             await _databaseManagement.Session.CommitTransactionAsync(cancellationToken);
         }
 
-        public async Task RollbackAsync(CancellationToken cancellationToken)
+        public async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             if (_databaseManagement.Session == null || !_databaseManagement.Session.IsInTransaction)
                 throw new Exception("mongodb transaction is not ready");

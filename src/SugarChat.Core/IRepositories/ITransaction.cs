@@ -11,8 +11,8 @@ namespace SugarChat.Core.IRepositories
     {
         bool IsBeginTransaction { get; set; }
         void Commit();
-        Task CommitAsync(CancellationToken cancellationToken);
+        Task CommitAsync(CancellationToken cancellationToken = default);
         void Rollback();
-        Task RollbackAsync(CancellationToken cancellationToken);
+        Task RollbackAsync(CancellationToken cancellationToken = default);
     }
 }

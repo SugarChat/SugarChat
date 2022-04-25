@@ -28,10 +28,10 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
-        private readonly ITransactionManagement _transactionManagement;
+        private readonly ITransactionManager _transactionManagement;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ITransactionManagement transactionManagement)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ITransactionManager transactionManagement)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -50,7 +50,7 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation))
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
                 try
                 {
@@ -62,12 +62,12 @@ namespace SugarChat.Core.Services.Groups
                     {
                         group.CheckNotExist();
                     }
-                    await transaction.RollbackAsync(cancellation);
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync(cancellation);
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
                 try
@@ -80,12 +80,12 @@ namespace SugarChat.Core.Services.Groups
                         Role = UserRole.Owner,
                         CreatedBy = command.CreatedBy
                     };
-                    await _groupUserDataProvider.AddAsync(groupUser, cancellation);
-                    await transaction.CommitAsync(cancellation);
+                    await _groupUserDataProvider.AddAsync(groupUser, cancellation).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync(cancellation);
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
             }
@@ -172,18 +172,18 @@ namespace SugarChat.Core.Services.Groups
             var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
 
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation))
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
                 try
                 {
                     await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
                     await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
                     await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellation);
+                    await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
-                    await transaction.RollbackAsync(cancellation);
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
             }

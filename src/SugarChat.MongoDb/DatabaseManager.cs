@@ -9,7 +9,7 @@ using SugarChat.Data.MongoDb.Settings;
 
 namespace SugarChat.Data.MongoDb
 {
-    public interface IDatabaseManagement
+    public interface IDatabaseManager
     {
         IClientSessionHandle Session { get; }
         bool IsBeginTransaction { get; set; }
@@ -17,7 +17,7 @@ namespace SugarChat.Data.MongoDb
         void DisposeSession();
         void StartSession();
     }
-    public class DatabaseManagement : IDatabaseManagement
+    public class DatabaseManager : IDatabaseManager
     {
         readonly IMongoClient _mongoClient;
         readonly MongoDbSettings _settings;
@@ -27,7 +27,7 @@ namespace SugarChat.Data.MongoDb
 
         public bool IsBeginTransaction { get; set; }
 
-        public DatabaseManagement(IMongoClient mongoClient, MongoDbSettings settings)
+        public DatabaseManager(IMongoClient mongoClient, MongoDbSettings settings)
         {
             _mongoClient = mongoClient;
             _settings = settings;

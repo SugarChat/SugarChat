@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.IRepositories
 {
-    public interface ITransactionManagement
+    public interface ITransactionManager
     {
         ITransaction BeginTransaction();
-        Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+        Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

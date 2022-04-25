@@ -9,10 +9,10 @@ using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Data.MongoDb
 {
-    public class MongoDbTransactionManagement : ITransactionManagement
+    public class MongoDbTransactionManager : ITransactionManager
     {
-        private readonly IDatabaseManagement _databaseManagement;
-        public MongoDbTransactionManagement(IDatabaseManagement databaseManagement)
+        private readonly IDatabaseManager _databaseManagement;
+        public MongoDbTransactionManager(IDatabaseManager databaseManagement)
         {
             _databaseManagement = databaseManagement;
         }
@@ -27,7 +27,7 @@ namespace SugarChat.Data.MongoDb
             return new MongoDbTransaction(_databaseManagement);
         }
 
-        public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+        public async Task<ITransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             _databaseManagement.StartSession();
             _databaseManagement.Session.StartTransaction(new TransactionOptions(

@@ -36,12 +36,12 @@ namespace SugarChat.Data.MongoDb.Autofac
                    .InstancePerLifetimeScope();
 
 
-            builder.RegisterType<DatabaseManagement>()
-                .As<IDatabaseManagement>()
+            builder.RegisterType<DatabaseManager>()
+                .As<IDatabaseManager>()
                 .InstancePerLifetimeScope();
 
-            builder.RegisterType<MongoDbTransactionManagement>()
-                .As<ITransactionManagement>()
+            builder.RegisterType<MongoDbTransactionManager>()
+                .As<ITransactionManager>()
                 .InstancePerLifetimeScope();
 
             builder.RegisterType<MongoClient>().As<IMongoClient>().InstancePerLifetimeScope();

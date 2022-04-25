@@ -21,9 +21,9 @@ namespace SugarChat.Core.Services.Users
         private readonly IMapper _mapper;
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
-        private readonly ITransactionManagement _transactionManagement;
+        private readonly ITransactionManager _transactionManagement;
 
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManagement transactionManagement)
+        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManager transactionManagement)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;

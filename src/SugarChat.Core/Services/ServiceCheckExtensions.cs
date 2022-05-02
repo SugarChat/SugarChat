@@ -124,5 +124,13 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
             }
         }
+        
+        public static void CheckExist(this Emotion emotion, string id)
+        {
+            if (emotion is null)
+            {
+                throw new BusinessWarningException(Prompt.EmotionNotExist.WithParams(id));
+            }
+        }
     }
 }

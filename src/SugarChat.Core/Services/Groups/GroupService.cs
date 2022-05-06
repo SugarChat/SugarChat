@@ -17,6 +17,7 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
+using SugarChat.Core.IRepositories;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -27,15 +28,17 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly ITransactionManager _transactionManagement;
 
         public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ITransactionManager transactionManagement)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
             _userDataProvider = userDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _transactionManagement = transactionManagement;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -47,31 +50,45 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
-            try
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
-                await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
-            }
-            catch (MongoDB.Driver.MongoWriteException ex)
-            {
-                if (ex.WriteError.Code == 11000)
+                try
                 {
-                    group.CheckNotExist();
+                    await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                 }
-                throw;
+                catch (MongoDB.Driver.MongoWriteException ex)
+                {
+                    if (ex.WriteError.Code == 11000)
+                    {
+                        group.CheckNotExist();
+                    }
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    throw;
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    throw;
+                }
+                try
+                {
+                    GroupUser groupUser = new()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = command.UserId,
+                        GroupId = command.Id,
+                        Role = UserRole.Owner,
+                        CreatedBy = command.CreatedBy
+                    };
+                    await _groupUserDataProvider.AddAsync(groupUser, cancellation).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    throw;
+                }
             }
-            catch (Exception)
-            {
-                throw;
-            }
-            GroupUser groupUser = new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserId = command.UserId,
-                GroupId = command.Id,
-                Role = UserRole.Owner,
-                CreatedBy = command.CreatedBy
-            };
-            await _groupUserDataProvider.AddAsync(groupUser, cancellation);
             return _mapper.Map<GroupAddedEvent>(command);
         }
 
@@ -153,12 +170,23 @@ namespace SugarChat.Core.Services.Groups
             group.CheckExist(command.GroupId);
 
             var messages = await _messageDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
-            await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
-
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
-            await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
 
-            await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _messageDataProvider.RemoveRangeAsync(messages, cancellation).ConfigureAwait(false);
+                    await _groupUserDataProvider.RemoveRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
+                    await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    throw;
+                }
+            }
 
             return _mapper.Map<GroupDismissedEvent>(command);
         }

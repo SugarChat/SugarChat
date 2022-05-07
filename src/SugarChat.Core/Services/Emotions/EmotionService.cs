@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,16 +7,8 @@ using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Emotions;
-using SugarChat.Message.Commands.Friends;
-using SugarChat.Message.Commands.Users;
-using SugarChat.Message.Event;
-using SugarChat.Message.Events.Users;
-using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
-using SugarChat.Message.Dtos;
 using SugarChat.Message.Dtos.Emotions;
 using SugarChat.Message.Requests.Emotions;
-using SugarChat.Message.Responses.Emotions;
 
 namespace SugarChat.Core.Services.Emotions
 {
@@ -39,19 +30,19 @@ namespace SugarChat.Core.Services.Emotions
             return await _userDataProvider.GetByIdAsync(id, cancellation).ConfigureAwait(false);
         }
 
-        public async Task<GetEmotionByIdsResponse> GetEmotionByIdsAsync(GetEmotionByIdsRequest request, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<EmotionDto>> GetEmotionByIdsAsync(GetEmotionByIdsRequest request, CancellationToken cancellationToken = default)
         {
             var emotions = await _emotionDataProvider.GetByIdsAsync(request.Ids, cancellationToken).ConfigureAwait(false);;
-            return new() { Emotions = _mapper.Map<IEnumerable<EmotionDto>>(emotions) };
+            return _mapper.Map<IEnumerable<EmotionDto>>(emotions);
         }
 
-        public async Task<GetUserEmotionsResponse> GetUserEmotionsAsync(GetUserEmotionsRequest request, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<EmotionDto>> GetUserEmotionsAsync(GetUserEmotionsRequest request, CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(request.UserId);
             
             var emotions = await _emotionDataProvider.GetByUserAsync(request.UserId, cancellationToken).ConfigureAwait(false);;
-            return new() { Emotions = _mapper.Map<IEnumerable<EmotionDto>>(emotions) };
+            return _mapper.Map<IEnumerable<EmotionDto>>(emotions);
         }
 
         public async Task AddEmotionAsync(AddEmotionCommand command, CancellationToken cancellationToken = default)

@@ -31,18 +31,18 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
         public async Task Should_Get_Emotions_By_Ids()
         {
             var emotions =
-                await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{EmotionOfJerry.Id, EmotionOfTom1.Id, "5"}});
-            emotions.Emotions.Count().ShouldBe(2);
-            emotions.Emotions.Single(o=>o.Id == EmotionOfJerry.Id).Name.ShouldBe("Jerry");
+                (await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{EmotionOfJerry.Id, EmotionOfTom1.Id, "5"}})).ToList();
+            emotions.Count.ShouldBe(2);
+            emotions.Single(o=>o.Id == EmotionOfJerry.Id).Name.ShouldBe("Jerry");
         }
         
         [Fact]
         public async Task Should_Get_User_Emotions()
         {
             var emotions =
-                await _emotionService.GetUserEmotionsAsync(new GetUserEmotionsRequest(){UserId = Tom.Id});
-            emotions.Emotions.Count().ShouldBe(2);
-            emotions.Emotions.Single(o=>o.Id == "1").Name.ShouldBe("Tom1");
+                (await _emotionService.GetUserEmotionsAsync(new GetUserEmotionsRequest() { UserId = Tom.Id })).ToList();
+            emotions.Count.ShouldBe(2);
+            emotions.Single(o=>o.Id == "1").Name.ShouldBe("Tom1");
         }
         
         [Fact]
@@ -51,10 +51,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             await _emotionService.AddEmotionAsync(new AddEmotionCommand(){Id = "4", UserId = Tom.Id, Url = "www.tom.com/tom3", Name = "Tom3"});
             
             var emotions =
-                await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{"4"}});
+                (await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{"4"}})).ToList();
 
-            emotions.Emotions.Count().ShouldBe(1);
-            emotions.Emotions.Single(o=>o.Id == "4").Name.ShouldBe("Tom3");
+            emotions.Count.ShouldBe(1);
+            emotions.Single(o=>o.Id == "4").Name.ShouldBe("Tom3");
         }
         
         [Fact]
@@ -63,10 +63,10 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             await _emotionService.RemoveEmotionAsync(new RemoveEmotionCommand(){Id = "1", UserId = Tom.Id});
             
             var emotions =
-                await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{"1"}});
+                (await _emotionService.GetEmotionByIdsAsync(new GetEmotionByIdsRequest(){Ids = new []{"1"}})).ToList();
 
-            emotions.Emotions.Count().ShouldBe(0);
-            emotions.Emotions.SingleOrDefault(o=>o.Id == "4").ShouldBeNull();
+            emotions.Count.ShouldBe(0);
+            emotions.SingleOrDefault(o=>o.Id == "4").ShouldBeNull();
         }
         
         [Fact]

@@ -1,14 +1,16 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Mediator.Net.Context;
 using Mediator.Net.Contracts;
 using SugarChat.Core.Services.Emotions;
+using SugarChat.Message.Basic;
+using SugarChat.Message.Dtos.Emotions;
 using SugarChat.Message.Requests.Emotions;
-using SugarChat.Message.Responses.Emotions;
 
 namespace SugarChat.Core.Mediator.RequestHandlers.Emotions
 {
-    public class GetUserEmotionsRequestHandler : IRequestHandler<GetUserEmotionsRequest, GetUserEmotionsResponse>
+    public class GetUserEmotionsRequestHandler : IRequestHandler<GetUserEmotionsRequest, SugarChatResponse<IEnumerable<EmotionDto>>>
     {
         private readonly IEmotionService _emotionService;
 
@@ -17,9 +19,10 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Emotions
             _emotionService = emotionService;
         }
 
-        public async Task<GetUserEmotionsResponse> Handle(IReceiveContext<GetUserEmotionsRequest> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<IEnumerable<EmotionDto>>> Handle(IReceiveContext<GetUserEmotionsRequest> context, CancellationToken cancellationToken)
         {
-            return await _emotionService.GetUserEmotionsAsync(context.Message, cancellationToken);
+            var response = await _emotionService.GetUserEmotionsAsync(context.Message, cancellationToken);
+            return new SugarChatResponse<IEnumerable<EmotionDto>>() { Data = response };
         }
     }
 }

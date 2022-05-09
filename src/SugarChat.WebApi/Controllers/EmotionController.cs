@@ -49,7 +49,7 @@ namespace SugarChat.WebApi.Controllers
         
         [Route("getEmotionByIds"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<EmotionDto>>))]
-        public async Task<IActionResult> GetEmotionByIds([FromQuery] GetEmotionByIdsRequest request)
+        public async Task<IActionResult> GetEmotionByIds(GetEmotionByIdsRequest request)
         {
             var response =await _mediator.RequestAsync<GetEmotionByIdsRequest, SugarChatResponse<IEnumerable<EmotionDto>>>(request);
             return Ok(response);

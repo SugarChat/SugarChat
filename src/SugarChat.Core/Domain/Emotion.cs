@@ -1,8 +1,9 @@
-namespace SugarChat.Core.Domain;
-
-public class Emotion : Entity
+namespace SugarChat.Core.Domain
 {
-    public string UserId { get; set; }
-    public string Url { get; set; }
-    public string Name { get; set; }
+    public class Emotion : Entity
+    {
+        public string UserId { get; set; }
+        public string Url { get; set; }
+        public string Name { get; set; }
+    }
 }

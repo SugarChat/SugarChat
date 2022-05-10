@@ -28,6 +28,9 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
         protected User Jerry;
         protected User Spike;
         protected User Tyke;
+        protected Emotion EmotionOfTom1;
+        protected Emotion EmotionOfTom2;
+        protected Emotion EmotionOfJerry;
 
         public ServiceFixture(DatabaseFixture dbFixture) : base(dbFixture)
         {
@@ -41,6 +44,35 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             await AddFriends();
             await AddGroups();
             await AddMessages();
+            await AddEmotions();
+        }
+
+        private async Task AddEmotions()
+        {
+            EmotionOfTom1 = new()
+            {
+                Id = "1",
+                UserId = Tom.Id,
+                Url = "www.tom.com/tom1",
+                Name = "Tom1"
+            };
+            EmotionOfTom2 = new()
+            {
+                Id = "2",
+                UserId = Tom.Id,
+                Url = "www.tom.com/tom2",
+                Name = "Tom2"
+            };
+            EmotionOfJerry = new()
+            {
+                Id = "3",
+                UserId = Jerry.Id,
+                Url = "www.jerry.com/jerry",
+                Name = "Jerry"
+            };
+            await Repository.AddAsync(EmotionOfTom1);
+            await Repository.AddAsync(EmotionOfTom2);
+            await Repository.AddAsync(EmotionOfJerry);
         }
 
         private async Task AddMessages()

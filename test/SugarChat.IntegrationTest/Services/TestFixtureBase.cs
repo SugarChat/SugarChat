@@ -10,7 +10,7 @@ namespace SugarChat.IntegrationTest.Services
 {
     public class TestFixtureBase : TestBase
     {
-        private List<User> users = new List<User>();
+        protected List<User> users = new List<User>();
         protected List<Group> groups = new List<Group>();
         protected List<GroupUser> groupUsers = new List<GroupUser>();
         private List<Friend> friends = new List<Friend>();

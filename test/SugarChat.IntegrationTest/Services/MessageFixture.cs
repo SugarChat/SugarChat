@@ -17,7 +17,6 @@ using System.Linq;
 using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos;
-using SugarChat.Core.Domain;
 
 namespace SugarChat.IntegrationTest.Services
 {

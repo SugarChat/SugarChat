@@ -1,8 +1,9 @@
 using System;
 
-namespace SugarChat.Core.Services.Configurations;
-
-public class ServerConfigurations
+namespace SugarChat.Core.Services.Configurations
 {
-    public int RevokeTimeLimitInMinutes  { get; set; }
+    public class ServerConfigurations
+    {
+        public int RevokeTimeLimitInMinutes  { get; set; }
+    }
 }

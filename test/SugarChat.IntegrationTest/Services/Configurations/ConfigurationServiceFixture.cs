@@ -17,9 +17,9 @@ namespace SugarChat.IntegrationTest.Services.Configurations
             
             await Run<IMediator>(async (configurationService) =>
             {
-                var revokeLimitTimeSpan = TimeSpan.Parse(_configuration["ServerConfigurations:RevokeLimitTimeSpan"]);
+                var revokeTimeLimitInMinutes = int.Parse(_configuration["ServerConfigurations:RevokeTimeLimitInMinutes"]);
                 var response = await configurationService.RequestAsync<GetServerConfigurationsRequest, SugarChatResponse<ServerConfigurationsDto>>(new GetServerConfigurationsRequest());
-                response.Data.RevokeLimitTimeSpan.ShouldBe(revokeLimitTimeSpan);
+                response.Data.RevokeTimeLimitInMinutes.ShouldBe(revokeTimeLimitInMinutes);
             });
       
         }

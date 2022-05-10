@@ -4,5 +4,5 @@ namespace SugarChat.Core.Services.Configurations;
 
 public class ServerConfigurations
 {
-    public TimeSpan RevokeLimitTimeSpan  { get; set; }
+    public int RevokeTimeLimitInMinutes  { get; set; }
 }

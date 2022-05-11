@@ -13,7 +13,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 {
     public class DatabaseFixture : IDisposable
     {
-        public readonly IConfigurationRoot Configuration;
+        public readonly IConfiguration Configuration;
         public readonly IMongoClient Client;
         public ILifetimeScope Container;
         public readonly IRepository Repository;
@@ -32,7 +32,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 {
                     typeof(SugarChat.Core.Services.IService).Assembly
                 }, new RunTimeProvider(RunTimeType.Test)));
-
+            containerBuilder.RegisterInstance(Configuration).As<IConfiguration>();
             Container = containerBuilder.Build().BeginLifetimeScope();
             Repository = Container.Resolve<IRepository>();
             Client = new MongoClient(Configuration["MongoDb:ConnectionString"]);

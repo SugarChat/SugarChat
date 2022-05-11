@@ -21,7 +21,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
     {
         private readonly DatabaseFixture _dbFixture;
         protected readonly IRepository Repository;
-        protected readonly IConfigurationRoot Configuration;
+        protected readonly IConfiguration Configuration;
         protected readonly IMongoClient Client;
         protected readonly ILifetimeScope Container;
 

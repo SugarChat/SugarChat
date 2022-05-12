@@ -67,7 +67,7 @@ namespace SugarChat.Core.Services.Messages
                     cancellationToken))
                 .LastReadTime;
             var messages = _repository.Query<Domain.Message>()
-                .Where(o => o.GroupId == groupId && o.SentTime > (lastReadTime ?? DateTimeOffset.MinValue))
+                .Where(o => o.GroupId == groupId && o.SentTime > (lastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
                 .OrderByDescending(o => o.SentTime);
             return await Task.FromResult(messages);
         }
@@ -80,7 +80,7 @@ namespace SugarChat.Core.Services.Messages
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
             var unreadMessages = messages.Where(o => o.SentBy != userId &&
-                    o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue))
+                    o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
                 .ToList();
 
             return await Task.FromResult(unreadMessages);
@@ -91,7 +91,7 @@ namespace SugarChat.Core.Services.Messages
         {
             var groupIdsIncludingBoth = GetGroupIdsIncludingUserAndFiend(userId, friendId);
             var groupId = GetGroupIdOfUserAndFiend(groupIdsIncludingBoth);
-            var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
+            var messages = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && !o.IsRevoked)
                 .OrderByDescending(o => o.SentTime);
 
             return await Task.FromResult(messages);
@@ -123,7 +123,7 @@ namespace SugarChat.Core.Services.Messages
                 (await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken)).Select(o =>
                     o.GroupId);
             var messages =
-                (await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken))
+                (await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId) && !o.IsRevoked, cancellationToken))
                 .OrderBy(o => o.GroupId).ThenByDescending(o => o.SentTime);
 
             return messages;
@@ -135,7 +135,7 @@ namespace SugarChat.Core.Services.Messages
             var unreadTime = (await _repository.SingleAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
                 cancellationToken)).LastReadTime;
 
-            var query = _repository.Query<Domain.Message>().Where(o => o.SentBy != userId && o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime));
+            var query = _repository.Query<Domain.Message>().Where(o => o.SentBy != userId && o.GroupId == groupId && (unreadTime == null || o.SentTime > unreadTime) && !o.IsRevoked);
 
             if (!string.IsNullOrEmpty(messageId))
             {
@@ -166,7 +166,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<Domain.Message>> GetAllMessagesFromGroupAsync(string groupId, int index = 0, string messageId = null, int count = 0,
             CancellationToken cancellationToken = default)
         {
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId).OrderByDescending(o => o.SentTime).AsEnumerable();
+            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && !o.IsRevoked).OrderByDescending(o => o.SentTime).AsEnumerable();
 
             if (!string.IsNullOrEmpty(messageId))
             {
@@ -192,7 +192,7 @@ namespace SugarChat.Core.Services.Messages
             var message = await _repository.SingleAsync<Domain.Message>(o => o.Id == messageId, cancellationToken);
             var messages =
                 _repository.Query<Domain.Message>()
-                    .Where(o => o.GroupId == message.GroupId && o.SentTime < message.SentTime)
+                    .Where(o => o.GroupId == message.GroupId && o.SentTime < message.SentTime && !o.IsRevoked)
                     .OrderByDescending(o => o.SentTime).Take(count);
 
             return messages;
@@ -200,7 +200,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<PagedResult<Domain.Message>> GetMessagesOfGroupAsync(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default)
         {
-            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId);
+            var query = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && !o.IsRevoked);
             if (fromDate is not null)
             {
                 query = query.Where(x => x.SentTime >= fromDate);
@@ -223,14 +223,14 @@ namespace SugarChat.Core.Services.Messages
         public async Task<Domain.Message> GetLatestMessageOfGroupAsync(string groupId,
             CancellationToken cancellationToken = default)
         {
-            var message = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId)
+            var message = _repository.Query<Domain.Message>().Where(o => o.GroupId == groupId && !o.IsRevoked)
                 .OrderByDescending(o => o.SentTime).FirstOrDefault();
             return await Task.FromResult(message);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == id, cancellationToken)
+            return await _repository.ToListAsync<Domain.Message>(x => x.GroupId == id && !x.IsRevoked, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -276,20 +276,20 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
         {
-            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             var groups = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
-            var messages = await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId) && o.SentBy != userId, cancellationToken);
+            var messages = await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId) && o.SentBy != userId && !o.IsRevoked, cancellationToken);
             var unreadMessages = messages.Where(o => o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue));
             return unreadMessages;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetMessagesByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            var messages = await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken);
+            var messages = await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId) && !x.IsRevoked, cancellationToken);
             return messages;
         }
 
@@ -343,7 +343,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId).OrderByDescending(x => x.SentTime).FirstOrDefaultAsync(cancellationToken);
+            return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefaultAsync(cancellationToken);
         }
 
         private string GetLookup(string userId)
@@ -434,7 +434,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<Domain.Message>(x => ids.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+            return await _repository.ToListAsync<Domain.Message>(x => ids.Contains(x.Id) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
         }
     }
 }

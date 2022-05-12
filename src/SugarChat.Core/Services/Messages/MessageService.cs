@@ -10,7 +10,6 @@ using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.Users;
 using SugarChat.Message.Commands.Messages;
-using SugarChat.Message.Event;
 using SugarChat.Message.Events.Messages;
 using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
@@ -18,6 +17,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests.Messages;
 using SugarChat.Message.Responses.Messages;
 using System.Linq;
+using SugarChat.Core.Services.Configurations;
 using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Messages
@@ -30,11 +30,12 @@ namespace SugarChat.Core.Services.Messages
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IConfigurationDataProvider _configurationDataProvider;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
-            IGroupUserDataProvider groupUserDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -42,6 +43,7 @@ namespace SugarChat.Core.Services.Messages
             _friendDataProvider = friendDataProvider;
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
+            _configurationDataProvider = configurationDataProvider;
         }
 
 
@@ -280,6 +282,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
+            DateTimeOffset now = DateTimeOffset.Now;
             var message = await _messageDataProvider.GetByIdAsync(command.MessageId, cancellationToken).ConfigureAwait(false);
             message.CheckExist(command.MessageId);
             if (message.SentBy != command.UserId)
@@ -287,7 +290,9 @@ namespace SugarChat.Core.Services.Messages
                 throw new BusinessWarningException(Prompt.RevokeOthersMessage.WithParams(command.UserId, command.MessageId));
             }
 
-            if (message.SentTime.Add(command.RevokeTimeLimit) < DateTime.Now)
+            var revokeTimeLimitInMinutes =
+                (await _configurationDataProvider.GetServerConfigurationsAsync(cancellationToken)).RevokeTimeLimitInMinutes;
+            if (message.SentTime.AddMinutes(revokeTimeLimitInMinutes) < now)
             {
                 throw new BusinessWarningException(Prompt.TooLateToRevoke.WithParams(command.UserId, command.MessageId));
             }

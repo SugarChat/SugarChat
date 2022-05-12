@@ -1,12 +1,9 @@
 ﻿using Mediator.Net;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Commands;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
-using SugarChat.Message;
-using SugarChat.Core.Services;
 using SugarChat.Message.Exceptions;
 using SugarChat.Message.Commands.Messages;
 using Newtonsoft.Json;
@@ -17,6 +14,7 @@ using System.Linq;
 using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos;
+using SugarChat.Message.Requests;
 
 namespace SugarChat.IntegrationTest.Services
 {
@@ -105,6 +103,49 @@ namespace SugarChat.IntegrationTest.Services
             });
         }
 
+        [Fact]
+        public async Task ShouldNotGetRevokedMessages()
+        {
+            await Run<IMediator, IRepository, IMessageService>(async (mediator, repository, messageService) =>
+            {
+                string messageId1 = Guid.NewGuid().ToString();
+                string messageId2 = Guid.NewGuid().ToString();
+                string groupId = Guid.NewGuid().ToString();
+                var message = new Core.Domain.Message
+                {
+                    Id = messageId1,
+                    GroupId = groupId,
+                    Content = "Test",
+                    Type = 0,
+                    SentBy = Guid.NewGuid().ToString(),
+                    SentTime = DateTime.Now.AddMinutes(-5),
+                    Payload = "testUrl"
+                };
+                await repository.AddAsync(message);
+                message.Id = messageId2;
+                message.SentTime = DateTime.Now;
+                await repository.AddAsync(message);
+
+                var group = new Group() { Id = groupId };
+                await repository.AddAsync(group);
+
+                var messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
+                    { GroupId = groupId });
+                messages.Messages.Result.Count().ShouldBe(2);
+
+                RevokeMessageCommand command = new RevokeMessageCommand
+                {
+                    MessageId = messageId2,
+                    UserId = message.SentBy
+                };
+
+                await mediator.SendAsync(command);
+                messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
+                    { GroupId = groupId });
+                messages.Messages.Result.Count().ShouldBe(1);
+            });
+        }
+        
         [Fact]
         public async Task ShouldGetLastMessageForGroups()
         {

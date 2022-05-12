@@ -161,5 +161,28 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             return await _repository.ToListAsync<GroupUser>(x => ids.Contains(x.Id), cancellationToken).ConfigureAwait(false);
         }
+
+        public async Task SetMessageReadByIdsAsync(IEnumerable<string> userIds, string groupId, DateTimeOffset lastMessageSentTime,
+            CancellationToken cancellationToken)
+        {
+            IEnumerable<GroupUser> groupUsers =
+                await _repository.ToListAsync<GroupUser>(o =>o.GroupId == groupId && userIds.Contains(o.UserId) , cancellationToken).ConfigureAwait(false);
+
+            if (!groupUsers.Any())
+            {
+                return;
+            }
+            
+            foreach (GroupUser groupUser in groupUsers)
+            {
+                groupUser.LastReadTime = lastMessageSentTime;
+            }
+
+            int affectedLineNum = await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+            if (affectedLineNum < 1)
+            {
+                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUsers.First().Id));
+            }
+        }
     }
 }

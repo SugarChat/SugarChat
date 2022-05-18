@@ -96,11 +96,13 @@ namespace SugarChat.Core.Services.Groups
             }
 
             List<string> customPropertyQuery = new List<string>();
-            if (customProperties!=null && customProperties.Any())
+            if (customProperties != null && customProperties.Any())
             {
                 foreach (var customProperty in customProperties)
                 {
-                    customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':/^{customProperty.Value}$/i}}");
+                    var values = customProperty.Value.Split(',');
+                    values = values.Select(x => $"'{x}'").ToArray();
+                    customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':{{$in:[{string.Join(',', values)}]}}}}");
                 }
                 match = match.Replace("#customProperties#", string.Join(",", customPropertyQuery));
             }

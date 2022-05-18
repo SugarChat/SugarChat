@@ -172,7 +172,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "order", "1" } },
+                        SearchParms = new Dictionary<string, string> { { "Message.order", "1" } },
                         UserId = userId
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
@@ -183,7 +183,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "order", "25" } },
+                        SearchParms = new Dictionary<string, string> { { "Message.order", "25" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
@@ -195,7 +195,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } },
+                        SearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
@@ -207,14 +207,14 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } },
+                        SearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(2);
-                    response.Data.Total.ShouldBe(2);
+                    response.Data.Result.Count().ShouldBe(3);
+                    response.Data.Total.ShouldBe(3);
                 }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
@@ -225,17 +225,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(5);
                     response.Data.Total.ShouldBe(5);
-                }
-                {
-                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
-                    {
-                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        UserId = userId,
-                        GroupIds = new string[] { conversationId, Guid.NewGuid().ToString() }
-                    };
-                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(1);
-                    response.Data.Total.ShouldBe(1);
                 }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest

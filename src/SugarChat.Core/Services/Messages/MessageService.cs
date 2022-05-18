@@ -318,11 +318,16 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, request.GroupIds, cancellationToken).ConfigureAwait(false);
+            var groupIds = new List<string>();
+            if (request.CustomProperties != null && request.CustomProperties.Any() || request.GroupIds.Any())
+            {
+                var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, request.GroupIds, cancellationToken).ConfigureAwait(false);
+                groupIds = groups.Select(x => x.Id).ToList();
+            }
 
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, groups.Select(x => x.Id), cancellationToken).ConfigureAwait(false)
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false)
             };
         }
 

@@ -244,7 +244,7 @@ namespace SugarChat.Core.Services.Messages
             public int Count { get; set; }
         }
 
-        public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds CancellationToken cancellationToken = default)
+        public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             List<string> stages = new List<string>();
             var groupMatch = "";

@@ -96,11 +96,18 @@ namespace SugarChat.Core.Services.Groups
             }
 
             List<string> customPropertyQuery = new List<string>();
-            foreach (var customProperty in customProperties)
+            if (customProperties!=null && customProperties.Any())
             {
-                customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':/^{customProperty.Value}$/i}}");
+                foreach (var customProperty in customProperties)
+                {
+                    customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':/^{customProperty.Value}$/i}}");
+                }
+                match = match.Replace("#customProperties#", string.Join(",", customPropertyQuery));
             }
-            match = match.Replace("#customProperties#", string.Join(",", customPropertyQuery));
+            else
+            {
+                match = match.Replace("#customProperties#", "");
+            }
 
             List<string> stages = new List<string>();
             stages.Add(match);

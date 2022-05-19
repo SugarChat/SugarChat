@@ -157,52 +157,62 @@ namespace SugarChat.Core.Services.Conversations
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
             var conversations = new List<ConversationDto>();
-            if (request.SearchParms == null || request.SearchParms.Count == 0)
+            var conversationsByGroupKeyword = new List<ConversationDto>();
+            var conversationsByMessageKeyword = new List<ConversationDto>();
+
+            if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any()))
             {
                 conversations = await _conversationDataProvider.GetConversationsByUser(request.UserId, request.PageSettings, cancellationToken).ConfigureAwait(false);
-                return new PagedResult<ConversationDto> { Result = conversations, Total = conversations.Count };
-            }
-            var searchGroupParms = new Dictionary<string, string>();
-            var searchMessageParms = new Dictionary<string, string>();
-
-            foreach (var searchParm in request.SearchParms)
-            {
-                if (searchParm.Key.StartsWith("Group."))
+                if (!conversations.Any())
                 {
-                    searchGroupParms.Add(searchParm.Key.Replace("Group.", ""), searchParm.Value);
-                }
-                if (searchParm.Key.StartsWith("Message."))
-                {
-                    searchMessageParms.Add(searchParm.Key.Replace("Message.", ""), searchParm.Value);
-                }
-                if (searchParm.Key == Message.Constant.Content)
-                {
-                    searchMessageParms.Add(searchParm.Key, searchParm.Value);
+                    return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
                 }
             }
-
-            var conversationsByGroupKeyword = new List<ConversationDto>();
-            if (searchGroupParms.Any())
+            else
             {
-                conversationsByGroupKeyword = await _conversationDataProvider.GetConversationsByGroupKeywordAsync(request.UserId, searchGroupParms, cancellationToken).ConfigureAwait(false);
-            }
-            var conversationsByMessageKeyword = new List<ConversationDto>();
-            if (searchMessageParms.Any())
-            {
-                conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, searchMessageParms, request.IsExactSearch, cancellationToken).ConfigureAwait(false);
-            }
-            if (conversationsByGroupKeyword.Any() && conversationsByMessageKeyword.Any())
-            {
-                return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
-            }
+                if (request.GroupSearchParms != null && request.GroupSearchParms.Any())
+                {
+                    conversationsByGroupKeyword = await _conversationDataProvider.GetConversationsByGroupKeywordAsync(request.UserId, request.GroupSearchParms, cancellationToken).ConfigureAwait(false);
+                }
 
-            conversations = conversationsByGroupKeyword.Union(conversationsByMessageKeyword)
-                .OrderByDescending(x => x.UnreadCount)
-                .ThenByDescending(x => x.LastMessageSentTime)
-                .Skip((request.PageSettings.PageNum - 1) * request.PageSettings.PageSize)
-                .Take(request.PageSettings.PageSize)
-                .ToList();
+                if (request.MessageSearchParms != null && request.MessageSearchParms.Any())
+                {
+                    var searchGroupParms = new Dictionary<string, string>();
+                    var searchMessageParms = new Dictionary<string, string>();
+                    foreach (var searchParm in request.MessageSearchParms)
+                    {
+                        if (searchParm.Key.StartsWith("Group."))
+                        {
+                            searchGroupParms.Add(searchParm.Key.Replace("Group.", ""), searchParm.Value);
+                        }
+                        if (searchParm.Key.StartsWith("Message."))
+                        {
+                            searchMessageParms.Add(searchParm.Key.Replace("Message.", ""), searchParm.Value);
+                        }
+                        if (searchParm.Key == Message.Constant.Content)
+                        {
+                            searchMessageParms.Add(searchParm.Key, searchParm.Value);
+                        }
+                    }
 
+                    conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, searchGroupParms, searchMessageParms, request.IsExactSearch, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (!conversationsByGroupKeyword.Any() && !conversationsByMessageKeyword.Any())
+                {
+                    return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
+                }
+
+                var aaa = conversationsByGroupKeyword.Union(conversationsByMessageKeyword).GroupBy(x => x.ConversationID).Select(x => x.FirstOrDefault()).ToArray();
+                conversations = conversationsByGroupKeyword.Union(conversationsByMessageKeyword)
+                    .GroupBy(x=>x.ConversationID)
+                    .Select(x=>x.FirstOrDefault())
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastMessageSentTime)
+                    .Skip((request.PageSettings.PageNum - 1) * request.PageSettings.PageSize)
+                    .Take(request.PageSettings.PageSize)
+                    .ToList();
+            }
             var groups = (await _groupDataProvider.GetByIdsAsync(conversations.Select(x => x.ConversationID), null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
             foreach (var conversation in conversations)

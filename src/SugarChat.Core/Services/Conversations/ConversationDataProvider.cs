@@ -55,8 +55,8 @@ namespace SugarChat.Core.Services.Conversations
             var groupParms = new List<string>();
             foreach (var searchParm in searchParms)
             {
-                var values = string.Join(",", searchParm.Value.Select(x => $"'{x}'"));
-                groupParms.Add($"{{'CustomProperties.{searchParm.Key}':{{$in:[values]}}}}");
+                var values = searchParm.Value.Split(',').Select(x => $"'{x}'");
+                groupParms.Add($"{{'CustomProperties.{searchParm.Key}':{{$in:[{string.Join(",", values)}]}}}}");
             }
             var group = $@"
 {{$match:
@@ -72,13 +72,13 @@ namespace SugarChat.Core.Services.Conversations
 {{
     $lookup:{{
         from:'GroupUser',
-        let:{{_Group_Id:'$_id'}},
+        let:{{groupId:'$_id'}},
         pipeline:[
             {{$match:
                 {{$expr:
                     {{$and:
                         [
-                            {{$eq:['$GroupId','$$_Group_Id']}},
+                            {{$eq:['$GroupId','$$groupId']}},
                             {{$eq:['$UserId','{userId}']}}
                         ]
                     }}
@@ -90,18 +90,24 @@ namespace SugarChat.Core.Services.Conversations
 }}
 ";
 
+            var groupUserShow = "{$project: {_id:0,GroupId:'$_id',size_of_groupUser: {$size:'$GroupUser'},GroupUser:1}}";
+
+            var groupUserFilter = "{$match:{'size_of_groupUser':{$gt:0}}}";
+
+            var groupUserSet = "{$set:{GroupUser:{$arrayElemAt:['$GroupUser',0]}}}";
+
             var unReadCount = @$"
 {{
     $lookup:{{
         from:'Message',
-        let:{{groupUser_GroupId:'$GroupId',groupUser_LastReadTime:'$LastReadTime'}},
+        let:{{groupId:'$GroupId',lastReadTime:'$GroupUser.LastReadTime'}},
         pipeline:[
             {{$match:
                 {{$expr:
                     {{$and:
                         [
-                            {{$eq:['$GroupId','$$groupUser_GroupId']}},
-                            {{$gt:['$SentTime','$$groupUser_LastReadTime']}},
+                            {{$eq:['$GroupId','$$groupId']}},
+                            {{$gt:['$SentTime','$$lastReadTime']}},
                             {{$ne:['$SentBy','{userId}']}}
                         ]
                     }}
@@ -117,13 +123,13 @@ namespace SugarChat.Core.Services.Conversations
 {
     $lookup:{
         from:'Message',
-        let:{groupUser_GroupId:'$GroupId',groupUser_LastReadTime:'$LastReadTime'},
+        let:{groupId:'$GroupId'},
         pipeline:[
             {$match:
                 {$expr:
                     {$and:
                         [
-                            {$eq:['$GroupId','$$groupUser_GroupId']}
+                            {$eq:['$GroupId','$$groupId']}
                         ]
                     }
                 }
@@ -136,12 +142,15 @@ namespace SugarChat.Core.Services.Conversations
 ";
 
             var set = "{$set:{Message2:{$arrayElemAt:['$Message2',0]}}}";
-            var project = "{$project:{Count:{$size:'$Message1'},SeneTime:'$Message2.SentTime'}}";
-            var sort = "{$sort:{Count:-1,SeneTime:-1}}";
+            var project = "{$project:{_id:0,ConversationID:'$GroupId',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
+            var sort = "{$sort:{UnreadCount:-1,LastMessageSentTime:-1}}";
             var limit = "{$limit:100}";
 
             stages.Add(group);
             stages.Add(groupUser);
+            stages.Add(groupUserShow);
+            stages.Add(groupUserFilter);
+            stages.Add(groupUserSet);
             stages.Add(unReadCount);
             stages.Add(lastReadTime);
             stages.Add(set);
@@ -152,25 +161,30 @@ namespace SugarChat.Core.Services.Conversations
             return result.ToList();
         }
 
-        public async Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
+        public async Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId,
+            Dictionary<string, string> searchGroupParms,
+            Dictionary<string, string> searchMessageParms,
+            bool isExactSearch,
+            CancellationToken cancellationToken = default)
         {
-            if (searchParms.Count == 0)
+            if (searchMessageParms.Count == 0)
             {
                 return default;
             }
 
-            var match = @"
+            var messageFilter = @"
 {$match:
     {$and:[
         #match_and_or#
     ]}
 }
 ";
-            if (searchParms is not null && searchParms.Any())
+
+            if (searchMessageParms is not null && searchMessageParms.Any())
             {
                 StringBuilder match_and_or = new StringBuilder("{$or:[");
 
-                foreach (var searchParm in searchParms)
+                foreach (var searchParm in searchMessageParms)
                 {
                     string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
                     var keyword = searchParm.Value.Replace(@"\", @"\\");
@@ -195,22 +209,54 @@ namespace SugarChat.Core.Services.Conversations
                     }
                 }
                 match_and_or.Append("]}");
-                match = match.Replace("#match_and_or#", match_and_or.ToString());
+                messageFilter = messageFilter.Replace("#match_and_or#", match_and_or.ToString());
             }
 
             string groupByGroupId = "{$group:{_id:'$GroupId'}}";
 
-            string groupUser = $@"
+            var groupParms = new List<string>();
+            foreach (var searchGroupParm in searchGroupParms)
+            {
+                var values = searchGroupParm.Value.Split(',').Select(x => $"'{x}'");
+                groupParms.Add($"{{$in:['$CustomProperties.{searchGroupParm.Key}',[{string.Join(",", values)}]]}}");
+            }
+            string group = $@"
 {{
     $lookup:{{
-        from:'GroupUser',
-        let:{{message_GroupId:'$_id'}},
+        from:'Group',
+        let:{{groupId:'$_id'}},
         pipeline:[
             {{$match:
                 {{$expr:
                     {{$and:
                         [
-                            {{$eq:['$GroupId','$$message_GroupId']}},
+                            {{$eq:['$_id','$$groupId']}},
+                            {string.Join(',', groupParms)}
+                        ]
+                    }}
+                }}
+            }}
+        ],
+        as:'Group'
+    }}
+}}
+";
+
+            string groupShow = "{$project:{_id:0,GroupId:'$_id',size_of_group:{$size:'$Group'}}}";
+
+            string groupFilter= "{$match:{'size_of_group':{$gt:0}}}";
+
+            string groupUser = $@"
+{{
+    $lookup:{{
+        from:'GroupUser',
+        let:{{groupId:'$GroupId'}},
+        pipeline:[
+            {{$match:
+                {{$expr:
+                    {{$and:
+                        [
+                            {{$eq:['$GroupId','$$groupId']}},
                             {{$eq:['$UserId','{userId}']}}
                         ]
                     }}
@@ -221,22 +267,25 @@ namespace SugarChat.Core.Services.Conversations
     }}
 }}
 ";
-            var groupUserShow = "{$project:{size_of_GroupUser:{$size:'$GroupUser'}}}";
 
-            var groupGroupFilter = "{$match:{'size_of_GroupUser':{$gt:0}}}";
+            var groupUserShow = "{$project:{GroupId:1,size_of_GroupUser:{$size:'$GroupUser'},GroupUser:1}}";
+
+            var groupUserFilter = "{$match:{'size_of_GroupUser':{$gt:0}}}";
+
+            var groupUserSet = "{$set:{GroupUser:{$arrayElemAt:['$GroupUser',0]}}}";
 
             var unReadCount = @$"
 {{
     $lookup:{{
         from:'Message',
-        let:{{group_Id:'$_id',groupUser_LastReadTime:'$LastReadTime'}},
+        let:{{groupId:'$GroupId',lastReadTime:'$GroupUser.LastReadTime'}},
         pipeline:[
             {{$match:
                 {{$expr:
                     {{$and:
                         [
-                            {{$eq:['$GroupId','$$group_Id']}},
-                            {{$gt:['$SentTime','$$groupUser_LastReadTime']}},
+                            {{$eq:['$GroupId','$$groupId']}},
+                            {{$gt:['$SentTime','$$lastReadTime']}},
                             {{$ne:['$SentBy','{userId}']}}
                         ]
                     }}
@@ -252,13 +301,13 @@ namespace SugarChat.Core.Services.Conversations
 {
     $lookup:{
         from:'Message',
-        let:{group_Id:'$_id'},
+        let:{groupId:'$GroupId'},
         pipeline:[
             {$match:
                 {$expr:
                     {$and:
                         [
-                            {$eq:['$GroupId','$$group_Id']}
+                            {$eq:['$GroupId','$$groupId']}
                         ]
                     }
                 }
@@ -271,15 +320,19 @@ namespace SugarChat.Core.Services.Conversations
 ";
 
             var set = "{$set:{Message2:{$arrayElemAt:['$Message2',0]}}}";
-            var show = "{$project:{_id:0,ConversationID:'$_id',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
+            var show = "{$project:{_id:0,ConversationID:'$GroupId',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
             var sort = "{$sort:{UnreadCount:-1,LastMessageSentTime:-1}}";
             var limit = "{$limit:100}";
             List<string> stages = new List<string>();
-            stages.Add(match);
+            stages.Add(messageFilter);
             stages.Add(groupByGroupId);
+            stages.Add(group);
+            stages.Add(groupShow);
+            stages.Add(groupFilter);
             stages.Add(groupUser);
             stages.Add(groupUserShow);
-            stages.Add(groupGroupFilter);
+            stages.Add(groupUserFilter);
+            stages.Add(groupUserSet);
             stages.Add(unReadCount);
             stages.Add(lastReadTime);
             stages.Add(set);
@@ -305,14 +358,14 @@ namespace SugarChat.Core.Services.Conversations
 {{
     $lookup:{{
         from:'Message',
-        let:{{group_Id:'$_id',groupUser_LastReadTime:'$LastReadTime'}},
+        let:{{groupId:'$GroupId',lastReadTime:'$LastReadTime'}},
         pipeline:[
             {{$match:
                 {{$expr:
                     {{$and:
                         [
-                            {{$eq:['$GroupId','$$group_Id']}},
-                            {{$gt:['$SentTime','$$groupUser_LastReadTime']}},
+                            {{$eq:['$GroupId','$$groupId']}},
+                            {{$gt:['$SentTime','$$lastReadTime']}},
                             {{$ne:['$SentBy','{userId}']}}
                         ]
                     }}
@@ -328,13 +381,13 @@ namespace SugarChat.Core.Services.Conversations
 {
     $lookup:{
         from:'Message',
-        let:{group_Id:'$_id'},
+        let:{groupId:'$GroupId'},
         pipeline:[
             {$match:
                 {$expr:
                     {$and:
                         [
-                            {$eq:['$GroupId','$$group_Id']}
+                            {$eq:['$GroupId','$$groupId']}
                         ]
                     }
                 }
@@ -346,7 +399,7 @@ namespace SugarChat.Core.Services.Conversations
 }
 ";
             var set = "{$set:{Message2:{$arrayElemAt:['$Message2',0]}}}";
-            var show = "{$project:{_id:0,ConversationID:'$_id',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
+            var show = "{$project:{_id:0,ConversationID:'$GroupId',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
             var sort = "{$sort:{UnreadCount:-1,LastMessageSentTime:-1}}";
             var skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
             var limit = $"{{$limit:{pageSettings.PageSize}}}";
@@ -357,6 +410,7 @@ namespace SugarChat.Core.Services.Conversations
             stages.Add(set);
             stages.Add(show);
             stages.Add(sort);
+            stages.Add(skip);
             stages.Add(limit);
 
             var result = await _repository.GetList<GroupUser, ConversationDto>(stages, cancellationToken).ConfigureAwait(false);

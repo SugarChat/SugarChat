@@ -172,7 +172,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Message.order", "1" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Message.order", "1" } },
                         UserId = userId
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
@@ -183,7 +183,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Message.order", "25" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Message.order", "25" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
@@ -195,7 +195,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true
                     };
@@ -207,7 +207,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" } },
                         UserId = userId,
                         IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 }
@@ -230,7 +230,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Content", "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Content", "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!" } },
                         UserId = userId,
                         IsExactSearch = false,
                         GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 }

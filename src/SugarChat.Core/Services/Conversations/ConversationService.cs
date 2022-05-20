@@ -203,7 +203,6 @@ namespace SugarChat.Core.Services.Conversations
                     return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
                 }
 
-                var aaa = conversationsByGroupKeyword.Union(conversationsByMessageKeyword).GroupBy(x => x.ConversationID).Select(x => x.FirstOrDefault()).ToArray();
                 conversations = conversationsByGroupKeyword.Union(conversationsByMessageKeyword)
                     .GroupBy(x=>x.ConversationID)
                     .Select(x=>x.FirstOrDefault())

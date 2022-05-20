@@ -46,9 +46,9 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<List<ConversationDto>> GetConversationsByGroupKeywordAsync(string userId, Dictionary<string, string> searchParms, CancellationToken cancellationToken = default)
         {
-            if (searchParms.Count == 0)
+            if (searchParms == null || !searchParms.Any())
             {
-                return default;
+                return new List<ConversationDto>();
             }
 
             List<string> stages = new List<string>();
@@ -167,9 +167,9 @@ namespace SugarChat.Core.Services.Conversations
             bool isExactSearch,
             CancellationToken cancellationToken = default)
         {
-            if (searchMessageParms.Count == 0)
+            if (searchMessageParms == null || !searchMessageParms.Any())
             {
-                return default;
+                return new List<ConversationDto>();
             }
 
             var messageFilter = @"
@@ -215,10 +215,13 @@ namespace SugarChat.Core.Services.Conversations
             string groupByGroupId = "{$group:{_id:'$GroupId'}}";
 
             var groupParms = new List<string>();
-            foreach (var searchGroupParm in searchGroupParms)
+            if (searchGroupParms != null && searchGroupParms.Any())
             {
-                var values = searchGroupParm.Value.Split(',').Select(x => $"'{x}'");
-                groupParms.Add($"{{$in:['$CustomProperties.{searchGroupParm.Key}',[{string.Join(",", values)}]]}}");
+                foreach (var searchGroupParm in searchGroupParms)
+                {
+                    var values = searchGroupParm.Value.Split(',').Select(x => $"'{x}'");
+                    groupParms.Add($"{{$in:['$CustomProperties.{searchGroupParm.Key}',[{string.Join(",", values)}]]}}");
+                }
             }
             string group = $@"
 {{
@@ -244,7 +247,7 @@ namespace SugarChat.Core.Services.Conversations
 
             string groupShow = "{$project:{_id:0,GroupId:'$_id',size_of_group:{$size:'$Group'}}}";
 
-            string groupFilter= "{$match:{'size_of_group':{$gt:0}}}";
+            string groupFilter = "{$match:{'size_of_group':{$gt:0}}}";
 
             string groupUser = $@"
 {{
@@ -344,7 +347,7 @@ namespace SugarChat.Core.Services.Conversations
             return result.ToList(); ;
         }
 
-        public async Task<List<ConversationDto>> GetConversationsByUser(string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
+        public async Task<List<ConversationDto>> GetConversationsByUserAsync(string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
             var groupUser = $@"
 {{$match:{{

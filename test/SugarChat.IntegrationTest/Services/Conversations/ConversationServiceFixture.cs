@@ -20,6 +20,7 @@ using Xunit;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Basic;
+using SugarChat.Core.Services.Conversations;
 
 namespace SugarChat.IntegrationTest.Services.Conversations
 {
@@ -239,6 +240,46 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     response.Data.Result.Count().ShouldBe(1);
                     response.Data.Total.ShouldBe(1);
                 }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        GroupSearchParms = new Dictionary<string, string> { { "A", "3" } },
+                        UserId = userId,
+                        IsExactSearch = true,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4 }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        GroupSearchParms = new Dictionary<string, string> { { "B", "0" } },
+                        UserId = userId,
+                        IsExactSearch = true,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4 }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(3);
+                    response.Data.Total.ShouldBe(3);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        GroupSearchParms = new Dictionary<string, string> { { "A", "2,3" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "Message.order", "11" }, { "Message.text", "test8" }, { "Content", "是" }, { "Group.A", "2,3" } },
+                        UserId = userId,
+                        IsExactSearch = true,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4 }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(2);
+                    response.Data.Total.ShouldBe(2);
+                }
             });
         }
 
@@ -320,6 +361,62 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     var lastMessage = await messageDataProvider.GetLastMessageBygGroupIdAsync(groupId5);
                     lastMessage.Content.ShouldBe("888");
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetConversationsByGroupKeyword()
+        {
+            await Run<IConversationDataProvider>(async conversationDataProvider =>
+            {
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, new Dictionary<string, string> { { "A", "3" }, { "B", "1" } });
+                    conversations.Single().ConversationID.ShouldBe(groupId4);
+                }
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, new Dictionary<string, string> { { "B", "0" } });
+                    conversations.Count.ShouldBe(3);
+                }
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, null);
+                    conversations.Count.ShouldBe(0);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetConversationsByMessageKeyword()
+        {
+            await Run<IConversationDataProvider>(async conversationDataProvider =>
+            {
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, null, null, false);
+                    conversations.Count.ShouldBe(0);
+                }
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, null, new Dictionary<string, string> { { "Content", "是" } }, false);
+                    conversations.Single().ConversationID.ShouldBe(groupId4);
+                }
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "B", "0" } }, new Dictionary<string, string> { { "order", "1" } }, false);
+                    conversations.Single().ConversationID.ShouldBe(conversationId);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldGetConversationsByUser()
+        {
+            await Run<IConversationDataProvider>(async conversationDataProvider =>
+            {
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[9].Id, new PageSettings { PageNum = 1, PageSize = 10 });
+                    conversations.Count.ShouldBe(5);
+                }
+                {
+                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[0].Id, new PageSettings { PageNum = 1, PageSize = 10 });
+                    conversations.Count.ShouldBe(1);
                 }
             });
         }

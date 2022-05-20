@@ -4,6 +4,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace SugarChat.IntegrationTest.Services
@@ -103,22 +104,21 @@ namespace SugarChat.IntegrationTest.Services
 
         private void GenerateGroupCollection(Dictionary<string, string> groupDic)
         {
-            foreach (var m in groupDic)
+            for (int i = 0; i < groupDic.Count; i++)
             {
                 groups.Add(new Group
                 {
                     AvatarUrl = "",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTimeOffset.Now,
-                    CustomProperties = new Dictionary<string, string>(),
+                    CustomProperties = new Dictionary<string, string> { { "A", i.ToString() }, { "B", (i % 2).ToString() } },
                     Description = "A Test Group!",
-                    Id = m.Key,
+                    Id = groupDic.ElementAt(i).Key,
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
-                    Name = m.Value
+                    Name = groupDic.ElementAt(i).Value
                 });
             }
-
         }
         private void GenerateUserCollection(Dictionary<string, string> userDic)
         {

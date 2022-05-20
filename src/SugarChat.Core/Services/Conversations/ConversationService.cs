@@ -162,7 +162,7 @@ namespace SugarChat.Core.Services.Conversations
 
             if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any()))
             {
-                conversations = await _conversationDataProvider.GetConversationsByUser(request.UserId, request.PageSettings, cancellationToken).ConfigureAwait(false);
+                conversations = await _conversationDataProvider.GetConversationsByUserAsync(request.UserId, request.PageSettings, cancellationToken).ConfigureAwait(false);
                 if (!conversations.Any())
                 {
                     return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };

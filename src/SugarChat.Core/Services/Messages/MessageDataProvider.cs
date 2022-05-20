@@ -246,17 +246,25 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            var groupUsers = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            if (groupIds.Any())
-            {
-                groupUsers = groupUsers.Where(x => groupIds.Contains(x.GroupId)).ToList();
-            }
-            var _groupIds = groupUsers.Select(x => x.GroupId);
-            if (_groupIds.Count() == 0) return 0;
-
             List<string> stages = new List<string>();
+            var groupMatch = "";
+            if (groupIds.Count() > 0)
+            {
+                var groupIdsStr = "," + string.Join(",", groupIds.Select(x => $"'{x}'"));
+                groupMatch = $"{{GroupId:{{$in:[{groupIdsStr}]}}}}";
+            }
+            var match = $@"
+{{
+    $match:
+        {{$and:
+        [
+            {{'UserId':{{$in:['{userId}']}}}}
+            {groupMatch}
+        ]
+    }}
+}}
+";
             var lookup = GetLookup(userId);
-            var match = GetMatch(userId, _groupIds);
             string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
             string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
             string project2 = "{$project:{_id:0}}";

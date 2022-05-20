@@ -12,4 +12,10 @@
     <ProjectReference Include="..\SugarChat.Core\SugarChat.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="SugarChat.Message">
+      <HintPath>..\SugarChat.Message.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

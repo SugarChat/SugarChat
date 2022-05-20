@@ -24,6 +24,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="SugarChat.Message">
+        <HintPath>..\SugarChat.Message.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
       <None Update="SugarChat.WebApi.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

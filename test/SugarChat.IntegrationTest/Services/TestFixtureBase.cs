@@ -110,7 +110,6 @@ namespace SugarChat.IntegrationTest.Services
                     AvatarUrl = "",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTimeOffset.Now,
-                    CustomProperties = new Dictionary<string, string>(),
                     Description = "A Test Group!",
                     Id = m.Key,
                     LastModifyDate = DateTimeOffset.Now,

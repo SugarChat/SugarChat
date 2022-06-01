@@ -18,6 +18,7 @@ using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
 using SugarChat.Core.IRepositories;
+using SugarChat.Core.Services.GroupCustomProperties;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -29,9 +30,15 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
         private readonly ITransactionManager _transactionManagement;
+        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
 
-        public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ITransactionManager transactionManagement)
+        public GroupService(IMapper mapper,
+            IGroupDataProvider groupDataProvider,
+            IUserDataProvider userDataProvider,
+            IGroupUserDataProvider groupUserDataProvider,
+            IMessageDataProvider messageDataProvider,
+            ITransactionManager transactionManagement,
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -39,6 +46,7 @@ namespace SugarChat.Core.Services.Groups
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
             _transactionManagement = transactionManagement;
+            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -50,11 +58,22 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
+            var groupCustomPropertys = new List<Domain.GroupCustomProperty>();
+            foreach (var customProperty in command.CustomProperties)
+            {
+                groupCustomPropertys.Add(new Domain.GroupCustomProperty
+                {
+                    GroupId = group.Id,
+                    Key = customProperty.Key,
+                    Value = customProperty.Value
+                });
+            }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
                 try
                 {
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
+                    await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomPropertys, cancellation).ConfigureAwait(false);
                 }
                 catch (MongoDB.Driver.MongoWriteException ex)
                 {

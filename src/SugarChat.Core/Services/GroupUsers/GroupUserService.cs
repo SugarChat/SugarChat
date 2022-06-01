@@ -120,7 +120,6 @@ namespace SugarChat.Core.Services.GroupUsers
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId,
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(command.UserId, command.GroupId);
-            groupUser.CustomProperties = command.CustomProperties;
             await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);

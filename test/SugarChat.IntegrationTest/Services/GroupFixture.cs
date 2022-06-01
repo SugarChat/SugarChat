@@ -161,7 +161,7 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } }
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "a11" }, { "userId", "b12" } }
                     });
                     response.Data.Count().ShouldBe(1);
                 }
@@ -169,7 +169,7 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } },
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "a11" }, { "userId", "b12" } },
                         SearchAllGroup = true
                     });
                     response.Data.Count().ShouldBe(2);

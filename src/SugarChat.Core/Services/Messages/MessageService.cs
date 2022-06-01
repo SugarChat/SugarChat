@@ -248,12 +248,12 @@ namespace SugarChat.Core.Services.Messages
                 return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
             }
         }
-        
+
         public async Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(
             SetMessageReadByUserIdsBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);;
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
 
             IEnumerable<GroupUser> groupUsers = (await _groupUserDataProvider.GetMembersByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false)).ToList();
@@ -263,7 +263,7 @@ namespace SugarChat.Core.Services.Messages
                 throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
             }
 
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken).ConfigureAwait(false);;
+            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             if (lastMessageOfGroup is not null)
             {
                 DateTimeOffset lastMessageSentTime = lastMessageOfGroup.SentTime;
@@ -273,7 +273,7 @@ namespace SugarChat.Core.Services.Messages
                 }
 
                 await _groupUserDataProvider.SetMessageReadByIdsAsync(command.UserIds, command.GroupId, lastMessageSentTime,
-                    cancellationToken).ConfigureAwait(false);;
+                    cancellationToken).ConfigureAwait(false);
             }
 
             return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
@@ -318,9 +318,16 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
+            var groupIds = new List<string>();
+            if (request.CustomProperties != null && request.CustomProperties.Any() || request.GroupIds.Any())
+            {
+                var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, request.GroupIds, cancellationToken).ConfigureAwait(false);
+                groupIds = groups.Select(x => x.Id).ToList();
+            }
+
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, request.GroupIds, cancellationToken)
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false)
             };
         }
 

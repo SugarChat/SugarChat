@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Domain
 {
-    public class GroupCustomProperty : Entity
+    public class MessageCustomProperty : Entity
     {
-        public GroupCustomProperty()
+        public MessageCustomProperty()
         {
             Id = Guid.NewGuid().ToString();
         }
 
-        public string GroupId { get; set; }
+        public string MessageId { get; set; }
 
         public string Key { get; set; }
 

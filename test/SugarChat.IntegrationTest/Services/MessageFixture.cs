@@ -51,7 +51,7 @@ namespace SugarChat.IntegrationTest.Services
                      && x.Payload == command.Payload
                      && x.CreatedBy == command.CreatedBy
                      && x.CustomProperties == command.CustomProperties);
-                message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
+                //message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
             });
         }
 
@@ -252,7 +252,7 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.SentTime = Convert.ToDateTime("2020-1-1");
                     messageDto.IsSystem = true;
                     messageDto.IsRevoked = true;
-                    messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                    //messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
                 }
                 var updateMessageDataCommand = new UpdateMessageDataCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
                 {
@@ -274,7 +274,7 @@ namespace SugarChat.IntegrationTest.Services
                     messageUpdateAfter.IsSystem.ShouldBe(messageDto.IsSystem);
                     messageUpdateAfter.Payload.ShouldBe(messageDto.Payload);
                     messageUpdateAfter.IsRevoked.ShouldBe(messageDto.IsRevoked);
-                    messageUpdateAfter.CustomProperties.ShouldBe(messageDto.CustomProperties);
+                    //messageUpdateAfter.CustomProperties.ShouldBe(messageDto.CustomProperties);
                     messageUpdateAfter.CreatedBy.ShouldBe(message.CreatedBy);
                     messageUpdateAfter.CreatedDate.ShouldBe(message.CreatedDate);
                 }

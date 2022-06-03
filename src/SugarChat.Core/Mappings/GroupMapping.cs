@@ -12,14 +12,14 @@ namespace SugarChat.Core.Mappings
     {
         public GroupMapping()
         {
-            CreateMap<AddGroupCommand, Group>();
+            CreateMap<AddGroupCommand, Group>().ForMember(dest => dest.CustomProperties, opt => opt.Ignore());
             CreateMap<AddGroupCommand, GroupAddedEvent>();
             CreateMap<RemoveGroupCommand, GroupRemovedEvent>();
             CreateMap<UpdateGroupProfileCommand, Group>();
             CreateMap<Group, GroupDto>();
             CreateMap<UpdateGroupProfileCommand, GroupAddedEvent>();
             CreateMap<UpdateGroupProfileCommand, GroupProfileUpdatedEvent>();
-            CreateMap<DismissGroupCommand, GroupDismissedEvent>();           
+            CreateMap<DismissGroupCommand, GroupDismissedEvent>();
             CreateMap<AddUserToGroupCommand, UserAddedToGroupEvent>();
             CreateMap<RemoveUserFromGroupCommand, UserRemovedFromGroupEvent>();
         }

@@ -129,7 +129,7 @@ namespace SugarChat.IntegrationTest.Services
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
-                    CustomProperties = new Dictionary<string, string>(),
+                    //CustomProperties = new Dictionary<string, string>(),,
                     LastModifyDate = DateTimeOffset.Now,
                     DisplayName = m.Value,
                     AvatarUrl = "",
@@ -144,7 +144,7 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                CustomProperties = new Dictionary<string, string>(),
+                //CustomProperties = new Dictionary<string, string>(),,
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
                 FriendId = friendId, //用户9
@@ -159,7 +159,7 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                CustomProperties = new Dictionary<string, string>(),
+                //CustomProperties = new Dictionary<string, string>(),,
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
                 GroupId = groupId,//组1
@@ -173,7 +173,7 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                CustomProperties = customProperties,
+                //CustomProperties = customProperties,
                 LastModifyDate = DateTimeOffset.Now,
                 GroupId = groupId,
                 Content = content,

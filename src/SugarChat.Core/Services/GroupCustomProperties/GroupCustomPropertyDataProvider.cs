@@ -23,9 +23,19 @@ namespace SugarChat.Core.Services.GroupCustomProperties
             await _repository.AddRangeAsync(groupCustomProperty, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<GroupCustomProperty>> GetPropertyByGroupId(string groupId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<GroupCustomProperty>> GetPropertiesByGroupIds(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<GroupCustomProperty>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<GroupCustomProperty>> GetPropertiesByGroupId(string groupId, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<GroupCustomProperty>(x => x.GroupId == groupId, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RemoveRangeAsync(IEnumerable<GroupCustomProperty> groupCustomProperties, CancellationToken cancellationToken = default)
+        {
+            await _repository.RemoveRangeAsync(groupCustomProperties, cancellationToken).ConfigureAwait(false);
         }
     }
 }

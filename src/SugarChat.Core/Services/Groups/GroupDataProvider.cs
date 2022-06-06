@@ -84,18 +84,13 @@ namespace SugarChat.Core.Services.Groups
             {
                 var query = _repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId));
                 Expression<Func<GroupCustomProperty, bool>> expression = x => x.Key == customProperties.ElementAt(0).Key && x.Value == customProperties.ElementAt(0).Value;
-                //for (int i = 1; i < customProperties.Count; i++)
-                //{
-                //    var index = i;
-                //    Expression<Func<GroupCustomProperty, bool>> _expression = x => x.Key == customProperties.ElementAt(index).Key && x.Value == customProperties.ElementAt(index).Value;
-                //    expression = expression.Or(_expression);
-                //}
+                for (int i = 1; i < customProperties.Count; i++)
+                {
+                    var index = i;
+                    Expression<Func<GroupCustomProperty, bool>> _expression = x => x.Key == customProperties.ElementAt(index).Key && x.Value == customProperties.ElementAt(index).Value;
+                    expression = expression.Or(_expression);
+                }
                 query = query.Where(expression);
-                //foreach (var customProperty in customProperties)
-                //{
-
-                //    //query = query.Where(x => x.Key == customProperty.Key && x.Value == customProperty.Value);
-                //}
                 var groupCustomProperties = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
                 if (groupCustomProperties.Any())
                 {

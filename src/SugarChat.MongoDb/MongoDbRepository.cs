@@ -49,6 +49,11 @@ namespace SugarChat.Data.MongoDb
             return await FilteredQuery(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<List<T>> ToListAsync<T>(IAsyncCursorSource<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity
+        {
+            return await IAsyncCursorSourceExtensions.ToListAsync(source, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings,
             Expression<Func<T, bool>> predicate = null,
             CancellationToken cancellationToken = default) where T : class, IEntity
@@ -106,7 +111,7 @@ namespace SugarChat.Data.MongoDb
                     .ConfigureAwait(false);
         }
 
-        public IMongoQueryable<T> Query<T>() where T : class, IEntity
+        public IQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
                 .AsQueryable();

@@ -15,6 +15,7 @@ using MongoDB.Driver.Linq;
 using System.Linq.Expressions;
 using SugarChat.Core.Extensions;
 using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -84,7 +85,6 @@ namespace SugarChat.Core.Services.Groups
             if (customProperties != null && customProperties.Any())
             {
                 var query = _repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId));
-                Expression<Func<GroupCustomProperty, bool>> expression = x => x.Key == customProperties.ElementAt(0).Key && x.Value == customProperties.ElementAt(0).Value;
                 var sb1 = new StringBuilder(
                     $"{nameof(GroupCustomProperty.Key)}=\"{customProperties.ElementAt(0).Key}\" && {nameof(GroupCustomProperty.Value)} == \"{customProperties.ElementAt(0).Value}\"");
                 for (int i = 1; i < customProperties.Count; i++)
@@ -93,17 +93,18 @@ namespace SugarChat.Core.Services.Groups
                     var sb2 = new StringBuilder($"{nameof(GroupCustomProperty.Key)}=\"{customProperties.ElementAt(index).Key}\" && {nameof(GroupCustomProperty.Value)} == \"{customProperties.ElementAt(index).Value}\"");
                     sb1.Append($" || {sb2}");
                 }
-                query = (IMongoQueryable<GroupCustomProperty>)query.Where(sb1.ToString());
-                var groupCustomProperties = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
-                if (groupCustomProperties.Any())
+                query = query.Where(sb1.ToString());
+                var groupCustomProperties = await _repository.ToListAsync((IAsyncCursorSource<GroupCustomProperty>) query,cancellationToken).ConfigureAwait(false);
+                var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
+                var _groupIds = new List<string>();
+                foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
                 {
-                    var _groupIds = groupCustomProperties.Select(x => x.GroupId);
-                    groupIds = groupIds.Intersect(_groupIds).ToList();
+                    if (groupCustomPropertyGroup.Count() == customProperties.Count())
+                    {
+                        _groupIds.Add(groupCustomPropertyGroup.Key);
+                    }
                 }
-                else
-                {
-                    return new List<Group>();
-                }
+                groupIds = groupIds.Intersect(_groupIds).ToList();
             }
             if (pageSettings != null)
             {

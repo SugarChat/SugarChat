@@ -12,6 +12,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using MongoDB.Driver.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace SugarChat.Core.Services.Messages
 {

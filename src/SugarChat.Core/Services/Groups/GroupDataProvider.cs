@@ -14,6 +14,7 @@ using SugarChat.Message.Paging;
 using MongoDB.Driver.Linq;
 using System.Linq.Expressions;
 using SugarChat.Core.Extensions;
+using System.Linq.Dynamic.Core;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -32,12 +33,12 @@ namespace SugarChat.Core.Services.Groups
                 .ConfigureAwait(false);
         }
 
-        public async Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
+        public async Task<Message.Paging.PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
             CancellationToken cancellationToken = default)
         {
             var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
                 .OrderByDescending(o => o.LastModifyDate);
-            var result = new PagedResult<Group>();
+            var result = new Message.Paging.PagedResult<Group>();
             if (pageSettings != null)
             {
                 result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
@@ -80,17 +81,19 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<Group>> GetByCustomProperties(List<string> groupIds, Dictionary<string, string> customProperties, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
-            if (customProperties != null)
+            if (customProperties != null && customProperties.Any())
             {
                 var query = _repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId));
                 Expression<Func<GroupCustomProperty, bool>> expression = x => x.Key == customProperties.ElementAt(0).Key && x.Value == customProperties.ElementAt(0).Value;
+                var sb1 = new StringBuilder(
+                    $"{nameof(GroupCustomProperty.Key)}=\"{customProperties.ElementAt(0).Key}\" && {nameof(GroupCustomProperty.Value)} == \"{customProperties.ElementAt(0).Value}\"");
                 for (int i = 1; i < customProperties.Count; i++)
                 {
                     var index = i;
-                    Expression<Func<GroupCustomProperty, bool>> _expression = x => x.Key == customProperties.ElementAt(index).Key && x.Value == customProperties.ElementAt(index).Value;
-                    expression = expression.Or(_expression);
+                    var sb2 = new StringBuilder($"{nameof(GroupCustomProperty.Key)}=\"{customProperties.ElementAt(index).Key}\" && {nameof(GroupCustomProperty.Value)} == \"{customProperties.ElementAt(index).Value}\"");
+                    sb1.Append($" || {sb2}");
                 }
-                query = query.Where(expression);
+                query = (IMongoQueryable<GroupCustomProperty>)query.Where(sb1.ToString());
                 var groupCustomProperties = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
                 if (groupCustomProperties.Any())
                 {

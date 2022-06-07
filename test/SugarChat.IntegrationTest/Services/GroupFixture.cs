@@ -161,14 +161,14 @@ namespace SugarChat.IntegrationTest.Services
                         });
                     }
                 }
-                //{
-                //    var request = new GetGroupByCustomPropertiesRequest()
-                //    {
-                //        UserId = Guid.NewGuid().ToString()
-                //    };
-                //    var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
-                //    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(request.UserId).Message);
-                //}
+                {
+                    var request = new GetGroupByCustomPropertiesRequest()
+                    {
+                        UserId = Guid.NewGuid().ToString()
+                    };
+                    var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
+                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(request.UserId).Message);
+                }
                 {
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
@@ -176,15 +176,6 @@ namespace SugarChat.IntegrationTest.Services
                         CustomProperties = new Dictionary<string, string> { { "merchId", "a11" }, { "userId", "b12" } }
                     });
                     response.Data.Count().ShouldBe(1);
-                }
-                {
-                    var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
-                    {
-                        UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "a11" }, { "userId", "b12" } },
-                        SearchAllGroup = true
-                    });
-                    response.Data.Count().ShouldBe(2);
                 }
             });
         }

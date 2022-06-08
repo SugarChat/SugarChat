@@ -13,7 +13,7 @@ namespace SugarChat.Core.Mappings
         public MessageMapping()
         {
             CreateMap<Domain.Message, MessageDto>().ReverseMap();
-            CreateMap<SendMessageCommand, Domain.Message>().ForMember(dest => dest.CustomProperties, opt => opt.Ignore());
+            CreateMap<SendMessageCommand, Domain.Message>();
             CreateMap<SendMessageCommand, MessageSavedEvent>();
             CreateMap<RevokeMessageCommand, MessageRevokedEvent>();
             CreateMap<SetMessageReadByUserBasedOnGroupIdCommand, MessageReadSetByUserBasedOnGroupIdEvent>();

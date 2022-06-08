@@ -16,7 +16,7 @@ namespace SugarChat.Core.IRepositories
     public interface IRepository
     {
         Task<List<T>> ToListAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
-        Task<List<T>> ToListAsync<T>(IAsyncCursorSource<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity;
+        Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity;
         Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings, IQueryable<T> query = null, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;

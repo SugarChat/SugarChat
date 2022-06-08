@@ -320,10 +320,10 @@ namespace SugarChat.Core.Services.Messages
             Domain.Message message = _mapper.Map<Domain.Message>(command);
             message.SentTime = DateTime.Now;
 
-            var messageCustomPropertys = new List<Domain.MessageCustomProperty>();
+            var messageCustomProperties = new List<MessageCustomProperty>();
             foreach (var customProperty in command.CustomProperties)
             {
-                messageCustomPropertys.Add(new Domain.MessageCustomProperty
+                messageCustomProperties.Add(new MessageCustomProperty
                 {
                     MessageId = command.Id,
                     Key = customProperty.Key,
@@ -333,7 +333,7 @@ namespace SugarChat.Core.Services.Messages
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             try
             {
-                await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomPropertys, cancellationToken).ConfigureAwait(false);
+                await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
                 await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -413,7 +413,7 @@ namespace SugarChat.Core.Services.Messages
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
-                message.CustomProperties = _messageCustomProperties;
+                //message.CustomProperties = _messageCustomProperties;
             }
         }
     }

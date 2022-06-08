@@ -195,13 +195,26 @@ namespace SugarChat.IntegrationTest.Services
                     });
                     for (int j = 0; j < 3; j++)
                     {
+                        var messageId = Guid.NewGuid().ToString();
                         await repository.AddAsync(new Core.Domain.Message
                         {
-                            Id = Guid.NewGuid().ToString(),
+                            Id = messageId,
                             GroupId = groupIds[i].ToString(),
                             Content = @"a \^$.*?+| b{1}[a]" + i + j,
                             SentTime = DateTimeOffset.Now,
-                            //CustomProperties = new Dictionary<string, string> { { "AAA", @"\^$.*?+|{1}[a]" + i + j }, { "BBB", i + @"\^$.*?+|{1}[a]" + j + j } }
+                            //CustomProperties1 = new Dictionary<string, string> { { "AAA", @"\^$.*?+|{1}[a]" + i + j }, { "BBB", i + @"\^$.*?+|{1}[a]" + j + j } }
+                        });
+                        await repository.AddAsync(new MessageCustomProperty
+                        {
+                            MessageId = messageId,
+                            Key = "AAA",
+                            Value = @"\^$.*?+|{1}[a]" + i + j
+                        });
+                        await repository.AddAsync(new MessageCustomProperty
+                        {
+                            MessageId = messageId,
+                            Key = "BBB",
+                            Value = i + @"\^$.*?+|{1}[a]" + j + j
                         });
                     }
                 }
@@ -209,10 +222,19 @@ namespace SugarChat.IntegrationTest.Services
                     var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
                         new Dictionary<string, string> {
                         { "AAA", @"\^$.*?+|{1}[a]" + 0 + 0 },
-                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 + 1 },
+                        { "BBB", 0 + @"\^$.*?+|{1}[a]" + 0 + 0 },
                         { "Content", @"a \^$.*?+| b{1}[a]" + 2 + 2 }
                         }, true);
-                    result.Result.Count().ShouldBe(3);
+                    result.Result.Count().ShouldBe(2);
+                }
+                {
+                    var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),
+                        new Dictionary<string, string> {
+                        { "AAA", @"\^$.*?+|{1}[a]" + 1 + 0 },
+                        { "BBB", 1 + @"\^$.*?+|{1}[a]" + 0 + 0 },
+                        { "Content", @"a \^$.*?+| b{1}[a]0"}
+                        }, false);
+                    result.Result.Count().ShouldBe(2);
                 }
                 {
                     var result = groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds.Select(x => x.ToString()),

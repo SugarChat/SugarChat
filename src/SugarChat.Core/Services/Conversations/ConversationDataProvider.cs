@@ -8,16 +8,19 @@ using SugarChat.Message.Dtos.Conversations;
 using SugarChat.Message.Paging;
 using SugarChat.Core.Domain;
 using System.Text;
+using SugarChat.Core.Services.Groups;
 
 namespace SugarChat.Core.Services.Conversations
 {
     public class ConversationDataProvider : IConversationDataProvider
     {
         private readonly IRepository _repository;
+        private readonly IGroupDataProvider _groupDataProvider;
 
-        public ConversationDataProvider(IRepository repository)
+        public ConversationDataProvider(IRepository repository, IGroupDataProvider groupDataProvider)
         {
             _repository = repository;
+            _groupDataProvider = groupDataProvider;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
@@ -171,180 +174,206 @@ namespace SugarChat.Core.Services.Conversations
             {
                 return new List<ConversationDto>();
             }
-
-            var messageFilter = @"
-{$match:
-    {$and:[
-        #match_and_or#
-    ]}
-}
-";
-
-            if (searchMessageParms is not null && searchMessageParms.Any())
+            var conversations = new List<ConversationDto>();
+            var groupIds1 = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(null, searchMessageParms, isExactSearch, cancellationToken);
+            var groupIds2 = (await _groupDataProvider.GetByCustomProperties(null, searchGroupParms, null, cancellationToken)).Select(x => x.Id);
+            var groupIds = groupIds1.Union(groupIds2);
+            var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
+            var messageGroups = from a in _repository.Query<Domain.Message>()
+                      join b in groupUsers on a.GroupId equals b.GroupId
+                      where a.SentTime > b.LastReadTime
+                      group a by a.GroupId into c
+                      select new
+                      {
+                          GroupId = c.Key,
+                          UnReadCount = c.Count(),
+                          LastMessageSentTime = c.Max(x => x.SentTime)
+                      };
+            foreach (var groupUser in groupUsers)
             {
-                StringBuilder match_and_or = new StringBuilder("{$or:[");
-
-                foreach (var searchParm in searchMessageParms)
+                var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
+                conversations.Add(new ConversationDto
                 {
-                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
-                    var keyword = searchParm.Value.Replace(@"\", @"\\");
-                    foreach (var item in chars)
-                    {
-                        keyword = keyword.Replace(item, @"\" + item);
-                    }
-                    if (searchParm.Key == Message.Constant.Content)
-                    {
-                        match_and_or.Append($"{{Content:/{keyword}/i}}");
-                    }
-                    else
-                    {
-                        if (isExactSearch)
-                        {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{keyword}$/i}},");
-                        }
-                        else
-                        {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/{keyword}/i}},");
-                        }
-                    }
-                }
-                match_and_or.Append("]}");
-                messageFilter = messageFilter.Replace("#match_and_or#", match_and_or.ToString());
+                    ConversationID = groupUser.GroupId,
+                    LastMessageSentTime = messageGroup.LastMessageSentTime,
+                    UnreadCount = messageGroup.UnReadCount
+                });
             }
+            return conversations;
+            //var groupUsers=await _repository.ToListAsync()
+            //            var messageFilter = @"
+            //{$match:
+            //    {$and:[
+            //        #match_and_or#
+            //    ]}
+            //}
+            //";
 
-            string groupByGroupId = "{$group:{_id:'$GroupId'}}";
+            //            if (searchMessageParms is not null && searchMessageParms.Any())
+            //            {
+            //                StringBuilder match_and_or = new StringBuilder("{$or:[");
 
-            var groupParms = new List<string>();
-            if (searchGroupParms != null && searchGroupParms.Any())
-            {
-                foreach (var searchGroupParm in searchGroupParms)
-                {
-                    var values = searchGroupParm.Value.Split(',').Select(x => $"'{x}'");
-                    groupParms.Add($"{{$in:['$CustomProperties.{searchGroupParm.Key}',[{string.Join(",", values)}]]}}");
-                }
-            }
-            string group = $@"
-{{
-    $lookup:{{
-        from:'Group',
-        let:{{groupId:'$_id'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$and:
-                        [
-                            {{$eq:['$_id','$$groupId']}},
-                            {string.Join(',', groupParms)}
-                        ]
-                    }}
-                }}
-            }}
-        ],
-        as:'Group'
-    }}
-}}
-";
+            //                foreach (var searchParm in searchMessageParms)
+            //                {
+            //                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
+            //                    var keyword = searchParm.Value.Replace(@"\", @"\\");
+            //                    foreach (var item in chars)
+            //                    {
+            //                        keyword = keyword.Replace(item, @"\" + item);
+            //                    }
+            //                    if (searchParm.Key == Message.Constant.Content)
+            //                    {
+            //                        match_and_or.Append($"{{Content:/{keyword}/i}}");
+            //                    }
+            //                    else
+            //                    {
+            //                        if (isExactSearch)
+            //                        {
+            //                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{keyword}$/i}},");
+            //                        }
+            //                        else
+            //                        {
+            //                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/{keyword}/i}},");
+            //                        }
+            //                    }
+            //                }
+            //                match_and_or.Append("]}");
+            //                messageFilter = messageFilter.Replace("#match_and_or#", match_and_or.ToString());
+            //            }
 
-            string groupShow = "{$project:{_id:0,GroupId:'$_id',size_of_group:{$size:'$Group'}}}";
+            //            string groupByGroupId = "{$group:{_id:'$GroupId'}}";
 
-            string groupFilter = "{$match:{'size_of_group':{$gt:0}}}";
+            //            var groupParms = new List<string>();
+            //            if (searchGroupParms != null && searchGroupParms.Any())
+            //            {
+            //                foreach (var searchGroupParm in searchGroupParms)
+            //                {
+            //                    var values = searchGroupParm.Value.Split(',').Select(x => $"'{x}'");
+            //                    groupParms.Add($"{{$in:['$CustomProperties.{searchGroupParm.Key}',[{string.Join(",", values)}]]}}");
+            //                }
+            //            }
+            //            string group = $@"
+            //{{
+            //    $lookup:{{
+            //        from:'Group',
+            //        let:{{groupId:'$_id'}},
+            //        pipeline:[
+            //            {{$match:
+            //                {{$expr:
+            //                    {{$and:
+            //                        [
+            //                            {{$eq:['$_id','$$groupId']}},
+            //                            {string.Join(',', groupParms)}
+            //                        ]
+            //                    }}
+            //                }}
+            //            }}
+            //        ],
+            //        as:'Group'
+            //    }}
+            //}}
+            //";
 
-            string groupUser = $@"
-{{
-    $lookup:{{
-        from:'GroupUser',
-        let:{{groupId:'$GroupId'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$and:
-                        [
-                            {{$eq:['$GroupId','$$groupId']}},
-                            {{$eq:['$UserId','{userId}']}}
-                        ]
-                    }}
-                }}
-            }}
-        ],
-        as:'GroupUser'
-    }}
-}}
-";
+            //            string groupShow = "{$project:{_id:0,GroupId:'$_id',size_of_group:{$size:'$Group'}}}";
 
-            var groupUserShow = "{$project:{GroupId:1,size_of_GroupUser:{$size:'$GroupUser'},GroupUser:1}}";
+            //            string groupFilter = "{$match:{'size_of_group':{$gt:0}}}";
 
-            var groupUserFilter = "{$match:{'size_of_GroupUser':{$gt:0}}}";
+            //            string groupUser = $@"
+            //{{
+            //    $lookup:{{
+            //        from:'GroupUser',
+            //        let:{{groupId:'$GroupId'}},
+            //        pipeline:[
+            //            {{$match:
+            //                {{$expr:
+            //                    {{$and:
+            //                        [
+            //                            {{$eq:['$GroupId','$$groupId']}},
+            //                            {{$eq:['$UserId','{userId}']}}
+            //                        ]
+            //                    }}
+            //                }}
+            //            }}
+            //        ],
+            //        as:'GroupUser'
+            //    }}
+            //}}
+            //";
 
-            var groupUserSet = "{$set:{GroupUser:{$arrayElemAt:['$GroupUser',0]}}}";
+            //            var groupUserShow = "{$project:{GroupId:1,size_of_GroupUser:{$size:'$GroupUser'},GroupUser:1}}";
 
-            var unReadCount = @$"
-{{
-    $lookup:{{
-        from:'Message',
-        let:{{groupId:'$GroupId',lastReadTime:'$GroupUser.LastReadTime'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$and:
-                        [
-                            {{$eq:['$GroupId','$$groupId']}},
-                            {{$gt:['$SentTime','$$lastReadTime']}},
-                            {{$ne:['$SentBy','{userId}']}}
-                        ]
-                    }}
-                }}
-            }},
-        ],
-        as:'Message1'
-    }}
-}}
-";
+            //            var groupUserFilter = "{$match:{'size_of_GroupUser':{$gt:0}}}";
 
-            var lastReadTime = @"
-{
-    $lookup:{
-        from:'Message',
-        let:{groupId:'$GroupId'},
-        pipeline:[
-            {$match:
-                {$expr:
-                    {$and:
-                        [
-                            {$eq:['$GroupId','$$groupId']}
-                        ]
-                    }
-                }
-            },
-            {$sort:{SentTime:1}}
-        ],
-        as:'Message2'
-    }
-}
-";
+            //            var groupUserSet = "{$set:{GroupUser:{$arrayElemAt:['$GroupUser',0]}}}";
 
-            var set = "{$set:{Message2:{$arrayElemAt:['$Message2',0]}}}";
-            var show = "{$project:{_id:0,ConversationID:'$GroupId',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
-            var sort = "{$sort:{UnreadCount:-1,LastMessageSentTime:-1}}";
-            var limit = "{$limit:100}";
-            List<string> stages = new List<string>();
-            stages.Add(messageFilter);
-            stages.Add(groupByGroupId);
-            stages.Add(group);
-            stages.Add(groupShow);
-            stages.Add(groupFilter);
-            stages.Add(groupUser);
-            stages.Add(groupUserShow);
-            stages.Add(groupUserFilter);
-            stages.Add(groupUserSet);
-            stages.Add(unReadCount);
-            stages.Add(lastReadTime);
-            stages.Add(set);
-            stages.Add(show);
-            stages.Add(sort);
-            stages.Add(limit);
+            //            var unReadCount = @$"
+            //{{
+            //    $lookup:{{
+            //        from:'Message',
+            //        let:{{groupId:'$GroupId',lastReadTime:'$GroupUser.LastReadTime'}},
+            //        pipeline:[
+            //            {{$match:
+            //                {{$expr:
+            //                    {{$and:
+            //                        [
+            //                            {{$eq:['$GroupId','$$groupId']}},
+            //                            {{$gt:['$SentTime','$$lastReadTime']}},
+            //                            {{$ne:['$SentBy','{userId}']}}
+            //                        ]
+            //                    }}
+            //                }}
+            //            }},
+            //        ],
+            //        as:'Message1'
+            //    }}
+            //}}
+            //";
 
-            var result = await _repository.GetList<Domain.Message, ConversationDto>(stages, cancellationToken).ConfigureAwait(false);
-            return result.ToList(); ;
+            //            var lastReadTime = @"
+            //{
+            //    $lookup:{
+            //        from:'Message',
+            //        let:{groupId:'$GroupId'},
+            //        pipeline:[
+            //            {$match:
+            //                {$expr:
+            //                    {$and:
+            //                        [
+            //                            {$eq:['$GroupId','$$groupId']}
+            //                        ]
+            //                    }
+            //                }
+            //            },
+            //            {$sort:{SentTime:1}}
+            //        ],
+            //        as:'Message2'
+            //    }
+            //}
+            //";
+
+            //            var set = "{$set:{Message2:{$arrayElemAt:['$Message2',0]}}}";
+            //            var show = "{$project:{_id:0,ConversationID:'$GroupId',UnreadCount:{$size:'$Message1'},LastMessageSentTime:'$Message2.SentTime'}}";
+            //            var sort = "{$sort:{UnreadCount:-1,LastMessageSentTime:-1}}";
+            //            var limit = "{$limit:100}";
+            //            List<string> stages = new List<string>();
+            //            stages.Add(messageFilter);
+            //            stages.Add(groupByGroupId);
+            //            stages.Add(group);
+            //            stages.Add(groupShow);
+            //            stages.Add(groupFilter);
+            //            stages.Add(groupUser);
+            //            stages.Add(groupUserShow);
+            //            stages.Add(groupUserFilter);
+            //            stages.Add(groupUserSet);
+            //            stages.Add(unReadCount);
+            //            stages.Add(lastReadTime);
+            //            stages.Add(set);
+            //            stages.Add(show);
+            //            stages.Add(sort);
+            //            stages.Add(limit);
+
+            //            var result = await _repository.GetList<Domain.Message, ConversationDto>(stages, cancellationToken).ConfigureAwait(false);
+            //            return result.ToList();
         }
 
         public async Task<List<ConversationDto>> GetConversationsByUserAsync(string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)

@@ -44,14 +44,13 @@ namespace SugarChat.IntegrationTest.Services
                     CustomProperties = new Dictionary<string, string> { { "Number", "1" } }
                 };
                 await mediator.SendAsync(command);
-                var message = await repository.SingleAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
+                (await repository.AnyAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
                      && x.Content == command.Content
                      && x.Type == command.Type
                      && x.SentBy == command.SentBy
                      && x.Payload == command.Payload
-                     && x.CreatedBy == command.CreatedBy
-                     && x.CustomProperties == command.CustomProperties);
-                //message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
+                     && x.CreatedBy == command.CreatedBy)).ShouldBeTrue();
+                (await repository.AnyAsync<MessageCustomProperty>(x => x.MessageId == command.Id && x.Key == "Number" && x.Value == "1")).ShouldBeTrue();
             });
         }
 
@@ -130,7 +129,7 @@ namespace SugarChat.IntegrationTest.Services
                 await repository.AddAsync(group);
 
                 var messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
-                    { GroupId = groupId });
+                { GroupId = groupId });
                 messages.Messages.Result.Count().ShouldBe(2);
 
                 RevokeMessageCommand command = new RevokeMessageCommand
@@ -141,11 +140,11 @@ namespace SugarChat.IntegrationTest.Services
 
                 await mediator.SendAsync(command);
                 messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
-                    { GroupId = groupId });
+                { GroupId = groupId });
                 messages.Messages.Result.Count().ShouldBe(1);
             });
         }
-        
+
         [Fact]
         public async Task ShouldGetLastMessageForGroups()
         {
@@ -199,7 +198,7 @@ namespace SugarChat.IntegrationTest.Services
             {
                 var userId1 = Guid.NewGuid().ToString();
                 var userId2 = Guid.NewGuid().ToString();
-                var groupId1= Guid.NewGuid().ToString();
+                var groupId1 = Guid.NewGuid().ToString();
                 var groupId2 = Guid.NewGuid().ToString();
                 await repository.AddAsync(new Group
                 {

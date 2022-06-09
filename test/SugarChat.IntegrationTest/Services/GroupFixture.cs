@@ -201,8 +201,7 @@ namespace SugarChat.IntegrationTest.Services
                             Id = messageId,
                             GroupId = groupIds[i].ToString(),
                             Content = @"a \^$.*?+| b{1}[a]" + i + j,
-                            SentTime = DateTimeOffset.Now,
-                            //CustomProperties1 = new Dictionary<string, string> { { "AAA", @"\^$.*?+|{1}[a]" + i + j }, { "BBB", i + @"\^$.*?+|{1}[a]" + j + j } }
+                            SentTime = DateTimeOffset.Now
                         });
                         await repository.AddAsync(new MessageCustomProperty
                         {

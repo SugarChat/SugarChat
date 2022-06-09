@@ -177,25 +177,7 @@ namespace SugarChat.Core.Services.Conversations
 
                 if (request.MessageSearchParms != null && request.MessageSearchParms.Any())
                 {
-                    var searchGroupParms = new Dictionary<string, string>();
-                    var searchMessageParms = new Dictionary<string, string>();
-                    foreach (var searchParm in request.MessageSearchParms)
-                    {
-                        if (searchParm.Key.StartsWith("Group."))
-                        {
-                            searchGroupParms.Add(searchParm.Key.Replace("Group.", ""), searchParm.Value);
-                        }
-                        if (searchParm.Key.StartsWith("Message."))
-                        {
-                            searchMessageParms.Add(searchParm.Key.Replace("Message.", ""), searchParm.Value);
-                        }
-                        if (searchParm.Key == Message.Constant.Content)
-                        {
-                            searchMessageParms.Add(searchParm.Key, searchParm.Value);
-                        }
-                    }
-
-                    conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, searchGroupParms, searchMessageParms, request.IsExactSearch, cancellationToken).ConfigureAwait(false);
+                    conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, request.MessageSearchParms, request.IsExactSearch, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (!conversationsByGroupKeyword.Any() && !conversationsByMessageKeyword.Any())
@@ -204,8 +186,8 @@ namespace SugarChat.Core.Services.Conversations
                 }
 
                 conversations = conversationsByGroupKeyword.Union(conversationsByMessageKeyword)
-                    .GroupBy(x=>x.ConversationID)
-                    .Select(x=>x.FirstOrDefault())
+                    .GroupBy(x => x.ConversationID)
+                    .Select(x => x.FirstOrDefault())
                     .OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastMessageSentTime)
                     .Skip((request.PageSettings.PageNum - 1) * request.PageSettings.PageSize)

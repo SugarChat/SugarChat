@@ -16,7 +16,6 @@ namespace SugarChat.IntegrationTest.Services
         protected List<Group> groups = new List<Group>();
         protected List<GroupUser> groupUsers = new List<GroupUser>();
         private List<Friend> friends = new List<Friend>();
-        private List<Core.Domain.Message> messages = new List<Core.Domain.Message>();
 
         public string userId = Guid.NewGuid().ToString();
         public string conversationId = Guid.NewGuid().ToString();
@@ -43,7 +42,7 @@ namespace SugarChat.IntegrationTest.Services
                 { groupId5, "TestGroup5" },
                 { groupId6, "TestGroup6" }
             };
-            GenerateGroupCollection(groupDic);
+            GenerateGroupCollection(repository, groupDic);
             repository.AddRangeAsync(groups, default(CancellationToken)).Wait();
 
             var userId1 = Guid.NewGuid().ToString();
@@ -92,22 +91,21 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(userId, groupId5));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
-            GenerateMessage(repository,conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", 0, userId9, new Dictionary<string, string> { { "text", "test1" }, { "order", "11" } }, "{\"text\":\"test1\",\"order\":\"11\"}");
-            GenerateMessage(repository,conversationId, "你好", 0, userId9, new Dictionary<string, string> { { "text", "test2" }, { "order", "12" } }, "{\"text\":\"test2\",\"order\":\"12\"}");
-            GenerateMessage(repository,conversationId, "[图片]", 1, userId, new Dictionary<string, string> { { "text", "test3" }, { "order", "13" } }, "{\"text\":\"test3\",\"order\":\"13\"}");
-            GenerateMessage(repository,groupId4, "TestUser1邀请TestUser2加入了群聊", 0, userId, new Dictionary<string, string> { { "text", "test4" }, { "order", "24" } }, "{\"text\":\"test4\",\"order\":\"24\"}");
-            GenerateMessage(repository,groupId4, "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!", 0, userId1, new Dictionary<string, string> { { "text", "test5" }, { "order", "25" } }, "{\"text\":\"test5\",\"order\":\"25\"}");
-            GenerateMessage(repository,groupId4, "是啊,又到了不动都能出汗的季节了", 0, userId2, new Dictionary<string, string> { { "text", "test6" }, { "order", "26" } }, "{\"text\":\"test6\",\"order\":\"26\"}");
-            GenerateMessage(repository,groupId4, "谁说不是呢", 0, userId3, new Dictionary<string, string> { { "text", "test7" }, { "order", "37" } }, "{\"text\":\"test7\",\"order\":\"37\"}");
-            GenerateMessage(repository,groupId5, "888", 0, userId, new Dictionary<string, string> { { "text", "test8" }, { "order", "8" } }, "{\"text\":\"test8\",\"order\":\"8\"}");
-            repository.AddRangeAsync(messages, default(CancellationToken)).Wait();
+            GenerateMessage(repository, conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", 0, userId9, new Dictionary<string, string> { { "text", "test1" }, { "order", "11" } }, "{\"text\":\"test1\",\"order\":\"11\"}");
+            GenerateMessage(repository, conversationId, "你好", 0, userId9, new Dictionary<string, string> { { "text", "test2" }, { "order", "12" } }, "{\"text\":\"test2\",\"order\":\"12\"}");
+            GenerateMessage(repository, conversationId, "[图片]", 1, userId, new Dictionary<string, string> { { "text", "test3" }, { "order", "13" } }, "{\"text\":\"test3\",\"order\":\"13\"}");
+            GenerateMessage(repository, groupId4, "TestUser1邀请TestUser2加入了群聊", 0, userId, new Dictionary<string, string> { { "text", "test4" }, { "order", "24" } }, "{\"text\":\"test4\",\"order\":\"24\"}");
+            GenerateMessage(repository, groupId4, "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!", 0, userId1, new Dictionary<string, string> { { "text", "test5" }, { "order", "25" } }, "{\"text\":\"test5\",\"order\":\"25\"}");
+            GenerateMessage(repository, groupId4, "是啊,又到了不动都能出汗的季节了", 0, userId2, new Dictionary<string, string> { { "text", "test6" }, { "order", "26" } }, "{\"text\":\"test6\",\"order\":\"26\"}");
+            GenerateMessage(repository, groupId4, "谁说不是呢", 0, userId3, new Dictionary<string, string> { { "text", "test7" }, { "order", "37" } }, "{\"text\":\"test7\",\"order\":\"37\"}");
+            GenerateMessage(repository, groupId5, "888", 0, userId, new Dictionary<string, string> { { "text", "test8" }, { "order", "8" } }, "{\"text\":\"test8\",\"order\":\"8\"}");
         }
 
-        private void GenerateGroupCollection(Dictionary<string, string> groupDic)
+        private void GenerateGroupCollection(IRepository repository, Dictionary<string, string> groupDic)
         {
             for (int i = 0; i < groupDic.Count; i++)
             {
-                groups.Add(new Group
+                repository.AddAsync(new Group
                 {
                     AvatarUrl = "",
                     CreatedBy = Guid.NewGuid().ToString(),
@@ -117,7 +115,19 @@ namespace SugarChat.IntegrationTest.Services
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
                     Name = groupDic.ElementAt(i).Value
-                });
+                }, default(CancellationToken)).Wait();
+                repository.AddAsync(new GroupCustomProperty
+                {
+                    GroupId = groupDic.ElementAt(i).Key,
+                    Key = "A",
+                    Value = i.ToString()
+                }, default(CancellationToken)).Wait();
+                repository.AddAsync(new GroupCustomProperty
+                {
+                    GroupId = groupDic.ElementAt(i).Key,
+                    Key = "B",
+                    Value = (i % 2).ToString()
+                }, default(CancellationToken)).Wait();
             }
         }
         private void GenerateUserCollection(Dictionary<string, string> userDic)
@@ -130,7 +140,6 @@ namespace SugarChat.IntegrationTest.Services
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
-                    //CustomProperties = new Dictionary<string, string>(),,
                     LastModifyDate = DateTimeOffset.Now,
                     DisplayName = m.Value,
                     AvatarUrl = "",
@@ -160,7 +169,6 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                //CustomProperties = new Dictionary<string, string>(),,
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
                 GroupId = groupId,//组1
@@ -175,7 +183,6 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                //CustomProperties = customProperties,
                 LastModifyDate = DateTimeOffset.Now,
                 GroupId = groupId,
                 Content = content,
@@ -184,7 +191,7 @@ namespace SugarChat.IntegrationTest.Services
                 SentTime = DateTimeOffset.Now,
                 IsSystem = true,
                 Payload = payload
-            });
+            }, default(CancellationToken)).Wait();
             var messageCustomProperties = new List<MessageCustomProperty>();
             foreach (var customProperty in customProperties)
             {
@@ -195,7 +202,7 @@ namespace SugarChat.IntegrationTest.Services
                     Value = customProperty.Value
                 });
             }
-            repository.AddRangeAsync(messageCustomProperties);
+            repository.AddRangeAsync(messageCustomProperties, default(CancellationToken)).Wait();
         }
     }
 }

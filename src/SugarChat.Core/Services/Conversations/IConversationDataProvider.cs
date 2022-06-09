@@ -17,7 +17,7 @@ namespace SugarChat.Core.Services.Conversations
 
         Task<List<ConversationDto>> GetConversationsByGroupKeywordAsync(string userId, Dictionary<string, string> searchParms, CancellationToken cancellationToken = default);
 
-        Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId, Dictionary<string, string> searchGroupParms, Dictionary<string, string> searchMessageParms, bool isExactSearch, CancellationToken cancellationToken = default);
+        Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default);
 
         Task<List<ConversationDto>> GetConversationsByUserAsync(string userId, PageSettings pageSettings, CancellationToken cancellationToken = default);
     }

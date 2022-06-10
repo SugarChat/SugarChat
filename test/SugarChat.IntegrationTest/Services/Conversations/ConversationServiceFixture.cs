@@ -300,7 +300,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     result.ShouldContain(groupId4);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } }, false);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false);
                     result.Count().ShouldBe(2);
                 }
             });

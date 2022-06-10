@@ -321,27 +321,30 @@ namespace SugarChat.Core.Services.Messages
             message.SentTime = DateTime.Now;
 
             var messageCustomProperties = new List<MessageCustomProperty>();
-            foreach (var customProperty in command.CustomProperties)
+            if (command.CustomProperties != null && command.CustomProperties.Any())
             {
-                messageCustomProperties.Add(new MessageCustomProperty
+                foreach (var customProperty in command.CustomProperties)
                 {
-                    MessageId = command.Id,
-                    Key = customProperty.Key,
-                    Value = customProperty.Value
-                });
+                    messageCustomProperties.Add(new MessageCustomProperty
+                    {
+                        MessageId = command.Id,
+                        Key = customProperty.Key,
+                        Value = customProperty.Value
+                    });
+                }
             }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-            try
-            {
-                await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
-                await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
-                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                throw;
-            }
+                try
+                {
+                    await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
 
             return _mapper.Map<MessageSavedEvent>(command);
         }

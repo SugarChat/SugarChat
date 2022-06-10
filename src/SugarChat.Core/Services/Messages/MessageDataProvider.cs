@@ -247,40 +247,21 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            List<string> stages = new List<string>();
-            var groupMatch = "";
-            if (groupIds.Count() > 0)
+            var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
+            if (groupIds is not null && groupIds.Any())
             {
-                var groupIdsStr = "," + string.Join(",", groupIds.Select(x => $"'{x}'"));
-                groupMatch = $"{{GroupId:{{$in:[{groupIdsStr}]}}}}";
+                query = query.Where(x => groupIds.Contains(x.GroupId));
             }
-            var match = $@"
-{{
-    $match:
-        {{$and:
-        [
-            {{'UserId':{{$in:['{userId}']}}}}
-            {groupMatch}
-        ]
-    }}
-}}
-";
-            var lookup = GetLookup(userId);
-            string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
-            string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
-            string project2 = "{$project:{_id:0}}";
-            stages.Add(match);
-            stages.Add(lookup);
-            stages.Add(project1);
-            stages.Add(group);
-            stages.Add(project2);
+            var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+            var count = (from a in groupUsers
+                         join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                         where b.SentTime > a.LastReadTime || a.LastReadTime is null
+                         select b).Count();
 
-            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(stages, cancellationToken)).ToListAsync(cancellationToken);
-            if (bsonDocuments.Count() == 0)
-                return 0;
-
-            var MessageCount = BsonSerializer.Deserialize<MessageCount>(bsonDocuments.FirstOrDefault());
-            return MessageCount.Count;
+            var aaa= (from a in groupUsers
+                     join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                     select b).ToArray();
+            return count;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
@@ -352,7 +333,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefaultAsync(cancellationToken);
+            return await ((IMongoQueryable<Domain.Message>)_repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime)).FirstOrDefaultAsync(cancellationToken);
         }
 
         private string GetLookup(string userId)

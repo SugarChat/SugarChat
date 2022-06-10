@@ -97,7 +97,7 @@ namespace SugarChat.Core.Services.Groups
                     foreach (var value in values)
                     {
                         var _value = value.Replace("\\", "\\\\");
-                        var _sb = $"{nameof(GroupCustomProperty.Key)}=\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
+                        var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
                         sb.Append($" || {_sb}");
                     }
                     
@@ -114,10 +114,6 @@ namespace SugarChat.Core.Services.Groups
                     }
                 }
                 groupIds = _groupIds;
-            }
-            else
-            {
-                return new List<Group>();
             }
             if (pageSettings != null)
             {
@@ -145,7 +141,7 @@ namespace SugarChat.Core.Services.Groups
                         var value = contentSearchParm.Value.Replace("\\", "\\\\");
                         if (isExactSearch)
                         {
-                            sb.Append($" || {Message.Constant.Content}=\"{value}\"");
+                            sb.Append($" || {Message.Constant.Content}==\"{value}\"");
                         }
                         else
                         {
@@ -164,8 +160,16 @@ namespace SugarChat.Core.Services.Groups
                         foreach (var value in values)
                         {
                             var _value = customPropertySearchParm.Value.Replace("\\", "\\\\");
-                            var _sb = $"{nameof(MessageCustomProperty.Key)}=\"{customPropertySearchParm.Key}\" && {nameof(MessageCustomProperty.Value)} == \"{_value}\"";
-                            sb.Append($" || {_sb}");
+                            if (isExactSearch)
+                            {
+                                var _sb = $"{nameof(MessageCustomProperty.Key)}==\"{customPropertySearchParm.Key}\" && {nameof(MessageCustomProperty.Value)} == \"{_value}\"";
+                                sb.Append($" || {_sb}");
+                            }
+                            else
+                            {
+                                var _sb = $"{nameof(MessageCustomProperty.Key)}.Contains(\"{customPropertySearchParm.Key}\") && {nameof(MessageCustomProperty.Value)}.Contains(\"{_value}\")";
+                                sb.Append($" || {_sb}");
+                            }
                         }
                     }
                     var messageCustomProperties = await _repository.ToListAsync(_repository.Query<MessageCustomProperty>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);

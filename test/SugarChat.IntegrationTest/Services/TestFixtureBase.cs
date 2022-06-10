@@ -105,7 +105,7 @@ namespace SugarChat.IntegrationTest.Services
         {
             for (int i = 0; i < groupDic.Count; i++)
             {
-                repository.AddAsync(new Group
+                groups.Add(new Group
                 {
                     AvatarUrl = "",
                     CreatedBy = Guid.NewGuid().ToString(),
@@ -115,7 +115,7 @@ namespace SugarChat.IntegrationTest.Services
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
                     Name = groupDic.ElementAt(i).Value
-                }, default(CancellationToken)).Wait();
+                });
                 repository.AddAsync(new GroupCustomProperty
                 {
                     GroupId = groupDic.ElementAt(i).Key,

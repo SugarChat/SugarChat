@@ -58,6 +58,7 @@ namespace SugarChat.Data.MongoDb
             Expression<Func<T, bool>> predicate = null,
             CancellationToken cancellationToken = default) where T : class, IEntity
         {
+            var query = FilteredQuery(predicate);
             var result = await ToListAsync(FilteredQuery(predicate).Paging(pageSettings), cancellationToken).ConfigureAwait(false);
             var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
             return new PagedResult<T> { Result = result, Total = total };

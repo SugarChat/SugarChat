@@ -144,8 +144,7 @@ namespace SugarChat.IntegrationTest.Services
                         });
                         await repository.AddAsync(new Group
                         {
-                            Id = groupId,
-                            //CustomProperties = new Dictionary<string, string> { { "merchId", $"a{i + 1}{i + 1}" }, { "userId", $"b{i + 1}{i + 2}" } }
+                            Id = groupId
                         });
                         await repository.AddAsync(new GroupCustomProperty
                         {

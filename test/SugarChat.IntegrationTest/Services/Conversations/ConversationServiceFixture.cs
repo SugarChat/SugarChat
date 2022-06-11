@@ -61,7 +61,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      CreatedBy = Guid.NewGuid().ToString(),
                      CreatedDate = DateTimeOffset.Now,
                      LastModifyBy = Guid.NewGuid().ToString(),
-                     //CustomProperties = new Dictionary<string, string>(),
                      LastModifyDate = DateTimeOffset.Now,
                      GroupId = conversationId,
                      Content = "TestGroupMessageRead",

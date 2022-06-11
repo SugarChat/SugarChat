@@ -154,7 +154,6 @@ namespace SugarChat.IntegrationTest.Services
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTimeOffset.Now,
                 LastModifyBy = Guid.NewGuid().ToString(),
-                //CustomProperties = new Dictionary<string, string>(),,
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
                 FriendId = friendId, //用户9

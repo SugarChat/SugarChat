@@ -4,18 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Paging;
-using MongoDB.Driver.Linq;
-using System.Linq.Expressions;
-using SugarChat.Core.Extensions;
 using System.Linq.Dynamic.Core;
-using Microsoft.EntityFrameworkCore;
 
 namespace SugarChat.Core.Services.Groups
 {

@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
-using MongoDB.Driver.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace SugarChat.Core.Services.Messages
@@ -257,10 +253,6 @@ namespace SugarChat.Core.Services.Messages
                          join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                          where b.SentTime > a.LastReadTime || a.LastReadTime is null
                          select b).Count();
-
-            var aaa= (from a in groupUsers
-                     join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                     select b).ToArray();
             return count;
         }
 
@@ -285,136 +277,101 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
-            List<string> stages = new List<string>();
-            var lookup1 = GetLookup(userId);
-            var lookup2 = @"
-{
-    $lookup:{
-        from:'Message',
-        let:{groupUser_GroupId:'$GroupId'},
-        pipeline:[
-            {$match:
-                {$expr:
-                    {$eq:['$GroupId','$$groupUser_GroupId']}
+            groupIds = groupIds ?? new List<string>();
+            var groupUsers = pageSettings == null ? await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId)
+                : (await _repository.ToPagedListAsync<GroupUser>(pageSettings, x => groupIds.Contains(x.GroupId) && x.UserId == userId)).Result;
+            var messageGroups = (from a in groupUsers
+                                 join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null) && b.SentBy != userId
+                                 group b by b.GroupId into c
+                                 select new
+                                 {
+                                     GroupId = c.Key,
+                                     UnReadCount = c.Count(),
+                                     LastMessageSentTime = c.Max(x => x.SentTime)
+                                 }).ToList();
+            List<MessageCountGroupByGroupId> result = new List<MessageCountGroupByGroupId>();
+            foreach (var groupUser in groupUsers)
+            {
+                var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
+                var messageCountGroupByGroupId = new MessageCountGroupByGroupId
+                {
+                    GroupId = groupUser.GroupId
+                };
+                if (messageGroup != null)
+                {
+                    messageCountGroupByGroupId.Count = messageGroup.UnReadCount;
+                    messageCountGroupByGroupId.LastSentTime = messageGroup.LastMessageSentTime;
                 }
-            },
-            {$sort:{SentTime:-1}},
-            {$limit:1}
-        ],
-        as:'stockdata2'
-    }
-}
-";
-            var set = "{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
-            var match = GetMatch(userId, groupIds);
-            string project = "{$project:{_id:0,GroupId:1,LastSentTime:'$stockdata2.SentTime',Count:{$size:'$stockdata'}}}";
-            string sort = "{$sort:{Count:-1,LastSentTime:-1}}";
-            string skip = ""; string limit = "";
-            if (pageSettings is not null)
-            {
-                skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
-                limit = $"{{$limit:{pageSettings.PageSize}}}";
+                result.Add(messageCountGroupByGroupId);
             }
-            stages.Add(match);
-            stages.Add(lookup1);
-            stages.Add(lookup2);
-            stages.Add(set);
-            stages.Add(project);
-            stages.Add(sort);
-            if (pageSettings is not null)
-            {
-                stages.Add(skip);
-                stages.Add(limit);
-            }
-
-            var result = await _repository.GetList<GroupUser, MessageCountGroupByGroupId>(stages, cancellationToken).ConfigureAwait(false);
             return result;
         }
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return await ((IMongoQueryable<Domain.Message>)_repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime)).FirstOrDefaultAsync(cancellationToken);
-        }
-
-        private string GetLookup(string userId)
-        {
-            string lookup = $@"
-{{
-    $lookup:{{
-        from:'Message',
-        let:{{groupUser_GroupId:'$GroupId',groupUser_LastReadTime:'$LastReadTime'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$and:
-                        [
-                            {{$eq:['$GroupId','$$groupUser_GroupId']}},
-                            {{$gt:['$SentTime','$$groupUser_LastReadTime']}},
-                            {{$ne:['$SentBy','{userId}']}}
-                        ]
-                    }}
-                }}
-            }},
-        ],
-        as:'stockdata'
-    }}
-}}
-";
-            return lookup;
-        }
-
-        private string GetMatch(string userId, IEnumerable<string> groupIds)
-        {
-            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            string match = $@"
-{{$match:{{
-    $and:[
-        {{GroupId:{{$in:[{groupIdsStr}]}}}},
-        {{UserId:'{userId}'}}
-    ]
-}}}}
-";
-            return match;
+            return (await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId && !x.IsRevoked)).OrderByDescending(x => x.SentTime).FirstOrDefault();
+            //return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime)).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            List<string> stages = new List<string>();
-            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            string match = $@"
-{{$match:{{
-    _id:{{$in:[{groupIdsStr}]}}
-}}}}
-";
-            var lookup = $@"
-{{
-    $lookup:{{
-        from:'Message',
-        let:{{group_GroupId:'$_id'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$eq:['$GroupId','$$group_GroupId']}}
-                }}
-            }},
-            {{$sort:{{SentTime:-1}}}},
-            {{$limit:1}}
-
-        ],
-        as:'stockdata'
-    }}
-}}
-";
-            string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
-            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
-            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
-            stages.Add(match);
-            stages.Add(lookup);
-            stages.Add(set);
-            stages.Add(project);
-            stages.Add(replaceRoot);
-            var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
+            var messages = await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+            var result = new List<Domain.Message>();
+            foreach (var groupId in groupIds)
+            {
+                var message = messages.Where(x => x.GroupId == groupId).OrderByDescending(x => x.SentTime).FirstOrDefault();
+                if (message != null)
+                {
+                    result.Add(message);
+                }
+            }
             return result;
+            //var messages = await _repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId)).OrderByDescending(x => x.SentTime).GroupBy(x => x.GroupId).Select(x => x.FirstOrDefault()).ToListAsync(cancellationToken).ConfigureAwait(false);
+            //var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId)).GroupBy(x => x.GroupId).Select(x => x.OrderByDescending(x => x.SentTime).FirstOrDefault())).ConfigureAwait(false);
+            //return messages;
+            //var messages = (from a in _repository.Query<Domain.Message>()
+            //                where groupIds.Contains(a.GroupId)
+            //                orderby a.SentTime descending
+            //                group a by a.GroupId into b
+            //                select b.OrderByDescending(x=>x.SentTime).FirstOrDefault()).ToList();
+            //return messages;
+            //            List<string> stages = new List<string>();
+            //            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
+            //            string match = $@"
+            //{{$match:{{
+            //    _id:{{$in:[{groupIdsStr}]}}
+            //}}}}
+            //";
+            //            var lookup = $@"
+            //{{
+            //    $lookup:{{
+            //        from:'Message',
+            //        let:{{group_GroupId:'$_id'}},
+            //        pipeline:[
+            //            {{$match:
+            //                {{$expr:
+            //                    {{$eq:['$GroupId','$$group_GroupId']}}
+            //                }}
+            //            }},
+            //            {{$sort:{{SentTime:-1}}}},
+            //            {{$limit:1}}
+
+            //        ],
+            //        as:'stockdata'
+            //    }}
+            //}}
+            //";
+            //            string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
+            //            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
+            //            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
+            //            stages.Add(match);
+            //            stages.Add(lookup);
+            //            stages.Add(set);
+            //            stages.Add(project);
+            //            stages.Add(replaceRoot);
+            //            var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
+            //            return result;
         }
 
         public async Task UpdateRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)

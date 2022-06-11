@@ -292,7 +292,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
-                    //CustomProperties = new Dictionary<string, string>(),
                     Description = "Test Paging",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,

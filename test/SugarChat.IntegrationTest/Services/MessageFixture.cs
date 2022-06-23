@@ -251,13 +251,13 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.SentTime = Convert.ToDateTime("2020-1-1");
                     messageDto.IsSystem = true;
                     messageDto.IsRevoked = true;
-                    //messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                    messageDto.CustomProperties = new List<MessageCustomPropertyDto> { new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "Number", Value = "123456" } };
                 }
                 var updateMessageDataCommand = new UpdateMessageDataCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
-                {
-                    var response = await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
-                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageDataCommand.UserId).Message);
-                }
+
+                var response = await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
+                response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageDataCommand.UserId).Message);
+
                 updateMessageDataCommand.UserId = userId1;
                 await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
                 var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
@@ -273,9 +273,9 @@ namespace SugarChat.IntegrationTest.Services
                     messageUpdateAfter.IsSystem.ShouldBe(messageDto.IsSystem);
                     messageUpdateAfter.Payload.ShouldBe(messageDto.Payload);
                     messageUpdateAfter.IsRevoked.ShouldBe(messageDto.IsRevoked);
-                    //messageUpdateAfter.CustomProperties.ShouldBe(messageDto.CustomProperties);
                     messageUpdateAfter.CreatedBy.ShouldBe(message.CreatedBy);
                     messageUpdateAfter.CreatedDate.ShouldBe(message.CreatedDate);
+                    (await repository.AnyAsync<MessageCustomProperty>(x => x.MessageId == messageUpdateAfter.Id && x.Key == "Number" && x.Value == "123456")).ShouldBeTrue();
                 }
             });
         }

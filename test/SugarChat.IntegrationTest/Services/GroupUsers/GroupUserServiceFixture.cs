@@ -36,7 +36,6 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                 }, default(CancellationToken));
 
                 var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
-                //groupUser.CustomProperties["Signature"].ShouldBe("The closer you get to the essence, the less confused you will be");
             });
         }
 

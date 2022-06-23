@@ -397,8 +397,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     conversations.Single().ConversationID.ShouldBe(groupId4);
                 }
                 {
-                    //var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "B", "0" } }, new Dictionary<string, string> { { "order", "1" } }, false);
-                    //conversations.Single().ConversationID.ShouldBe(conversationId);
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "order", "1" } }, false);
+                    conversations.Single().ConversationID.ShouldBe(conversationId);
                 }
             });
         }

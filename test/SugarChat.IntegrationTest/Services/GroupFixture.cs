@@ -44,9 +44,9 @@ namespace SugarChat.IntegrationTest.Services
                     Id = command.UserId
                 });
                 await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
-                var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
-                //group.CustomProperties.GetValueOrDefault("MerchId").ShouldBe("1");
-                //group.CustomProperties.GetValueOrDefault("OrderId").ShouldBe("2");
+                var groupCustomProperties = await repository.ToListAsync<GroupCustomProperty>(x => x.GroupId == command.Id);
+                groupCustomProperties.Any(x => x.Key == "MerchId" && x.Value == "1").ShouldBeTrue();
+                groupCustomProperties.Any(x => x.Key == "OrderId" && x.Value == "2").ShouldBeTrue();
                 (await repository.CountAsync<GroupUser>()).ShouldBe(1);
             });
             await Run<IMediator, IRepository>(async (mediator, repository) =>

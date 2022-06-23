@@ -72,6 +72,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
             CancellationToken cancellationToken = default)
         {
+            //??????????????
             var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
             var groupIds = groups.Select(x => x.GroupId);
             var messages =
@@ -311,11 +312,11 @@ namespace SugarChat.Core.Services.Messages
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
             return (await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId && !x.IsRevoked)).OrderByDescending(x => x.SentTime).FirstOrDefault();
-            //return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime)).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
+            //???????????????????????
             var messages = await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
             var result = new List<Domain.Message>();
             foreach (var groupId in groupIds)
@@ -327,51 +328,6 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
             return result;
-            //var messages = await _repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId)).OrderByDescending(x => x.SentTime).GroupBy(x => x.GroupId).Select(x => x.FirstOrDefault()).ToListAsync(cancellationToken).ConfigureAwait(false);
-            //var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId)).GroupBy(x => x.GroupId).Select(x => x.OrderByDescending(x => x.SentTime).FirstOrDefault())).ConfigureAwait(false);
-            //return messages;
-            //var messages = (from a in _repository.Query<Domain.Message>()
-            //                where groupIds.Contains(a.GroupId)
-            //                orderby a.SentTime descending
-            //                group a by a.GroupId into b
-            //                select b.OrderByDescending(x=>x.SentTime).FirstOrDefault()).ToList();
-            //return messages;
-            //            List<string> stages = new List<string>();
-            //            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            //            string match = $@"
-            //{{$match:{{
-            //    _id:{{$in:[{groupIdsStr}]}}
-            //}}}}
-            //";
-            //            var lookup = $@"
-            //{{
-            //    $lookup:{{
-            //        from:'Message',
-            //        let:{{group_GroupId:'$_id'}},
-            //        pipeline:[
-            //            {{$match:
-            //                {{$expr:
-            //                    {{$eq:['$GroupId','$$group_GroupId']}}
-            //                }}
-            //            }},
-            //            {{$sort:{{SentTime:-1}}}},
-            //            {{$limit:1}}
-
-            //        ],
-            //        as:'stockdata'
-            //    }}
-            //}}
-            //";
-            //            string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
-            //            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
-            //            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
-            //            stages.Add(match);
-            //            stages.Add(lookup);
-            //            stages.Add(set);
-            //            stages.Add(project);
-            //            stages.Add(replaceRoot);
-            //            var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
-            //            return result;
         }
 
         public async Task UpdateRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)

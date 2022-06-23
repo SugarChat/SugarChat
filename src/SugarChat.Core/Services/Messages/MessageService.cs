@@ -358,7 +358,7 @@ namespace SugarChat.Core.Services.Messages
             var groupIds = new List<string>();
             if (request.CustomProperties != null && request.CustomProperties.Any() || request.GroupIds.Any())
             {
-                var groups = await _groupDataProvider.GetByCustomProperties(request.GroupIds.ToList(), request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
+                var groups = await _groupDataProvider.GetByCustomProperties(request.GroupIds, request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
                 groupIds = groups.Select(x => x.Id).ToList();
             }
 
@@ -398,6 +398,7 @@ namespace SugarChat.Core.Services.Messages
                 var _user = users.SingleOrDefault(x => x.Id == message.SentBy);
                 _user.CheckExist(message.SentBy);
             }
+            var messageCustomProperties = new List<MessageCustomProperty>();
             foreach (var updateMessageDto in command.Messages)
             {
                 var message = messages.FirstOrDefault(x => x.Id == updateMessageDto.Id);
@@ -405,8 +406,31 @@ namespace SugarChat.Core.Services.Messages
                 {
                     _mapper.Map(updateMessageDto, message);
                 }
+                if (updateMessageDto.CustomProperties != null && updateMessageDto.CustomProperties.Any())
+                {
+                    foreach (var customProperty in updateMessageDto.CustomProperties)
+                    {
+                        messageCustomProperties.Add(new MessageCustomProperty
+                        {
+                            MessageId = updateMessageDto.Id,
+                            Key = customProperty.Key,
+                            Value = customProperty.Value
+                        });
+                    }
+                }
             }
-            await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                try
+                {
+                    await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
         }
 
         private async Task GetPropertiesForMessages(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
@@ -416,7 +440,7 @@ namespace SugarChat.Core.Services.Messages
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
-                //message.CustomProperties = _messageCustomProperties;
+                message.CustomProperties = _messageCustomProperties;
             }
         }
     }

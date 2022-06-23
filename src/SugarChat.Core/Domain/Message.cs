@@ -1,5 +1,6 @@
 ﻿using SugarChat.Message;
 using System;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Domain
 {
@@ -13,5 +14,6 @@ namespace SugarChat.Core.Domain
         public bool IsSystem { get; set; }
         public string Payload { get; set; }
         public bool IsRevoked { get; set; }
+        public IEnumerable<MessageCustomProperty> CustomProperties { get; set; }
     }
 }

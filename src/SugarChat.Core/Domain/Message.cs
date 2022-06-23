@@ -1,10 +1,10 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using SugarChat.Message;
 using System;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Domain
 {
-    [BsonIgnoreExtraElements]
     public class Message : Entity
     {
         public string GroupId { get; set; }
@@ -15,5 +15,7 @@ namespace SugarChat.Core.Domain
         public bool IsSystem { get; set; }
         public string Payload { get; set; }
         public bool IsRevoked { get; set; }
+        [BsonIgnore]
+        public IEnumerable<MessageCustomProperty> CustomProperties { get; set; }
     }
 }

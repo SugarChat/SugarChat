@@ -9,7 +9,6 @@ namespace SugarChat.Core.Domain
         public string CreatedBy { get; set; }
         public DateTimeOffset CreatedDate { get; set; }
         public string LastModifyBy { get; set; }
-        public Dictionary<string, string> CustomProperties { get; set; }
         public DateTimeOffset LastModifyDate { get; set; }
     }
 }

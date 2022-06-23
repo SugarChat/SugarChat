@@ -4,13 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Paging;
+using System.Linq.Dynamic.Core;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -29,12 +27,12 @@ namespace SugarChat.Core.Services.Groups
                 .ConfigureAwait(false);
         }
 
-        public async Task<PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
+        public async Task<Message.Paging.PagedResult<Group>> GetByIdsAsync(IEnumerable<string> ids, PageSettings pageSettings,
             CancellationToken cancellationToken = default)
         {
             var query = _repository.Query<Group>().Where(o => ids.Contains(o.Id))
                 .OrderByDescending(o => o.LastModifyDate);
-            var result = new PagedResult<Group>();
+            var result = new Message.Paging.PagedResult<Group>();
             if (pageSettings != null)
             {
                 result = await _repository.ToPagedListAsync(pageSettings, query, cancellationToken).ConfigureAwait(false);
@@ -75,103 +73,124 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<Group>> GetByCustomProperties(Dictionary<string, string> customProperties, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Group>> GetByCustomProperties(IEnumerable<string> groupIds, Dictionary<string, string> customProperties, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
-            var match = @"
-{$match:
-    {$and:[
-        {_id:{$in:[#GroupIds#]}},
-        #customProperties#
-    ]}
-}
-";
-            if (groupIds.Count() > 0)
-            {
-                var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-                match = match.Replace("#GroupIds#", groupIdsStr);
-            }
-            else
-            {
-                match = match.Replace("{_id:{$in:[#GroupIds#]}},", "");
-            }
-
-            List<string> customPropertyQuery = new List<string>();
+            groupIds = groupIds ?? new List<string>();
             if (customProperties != null && customProperties.Any())
             {
+                var query = _repository.Query<GroupCustomProperty>();
+                if (groupIds.Any())
+                {
+                    query = query.Where(x => groupIds.Contains(x.GroupId));
+                }
+                var sb = new StringBuilder();
                 foreach (var customProperty in customProperties)
                 {
                     var values = customProperty.Value.Split(',');
-                    values = values.Select(x => $"'{x}'").ToArray();
-                    customPropertyQuery.Add($"{{'CustomProperties.{customProperty.Key}':{{$in:[{string.Join(',', values)}]}}}}");
+                    foreach (var value in values)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
+                        sb.Append($" || {_sb}");
+                    }
+                    
                 }
-                match = match.Replace("#customProperties#", string.Join(",", customPropertyQuery));
+                query = query.Where(sb.ToString().Substring(4));
+                var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+                var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
+                var _groupIds = new List<string>();
+                foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
+                {
+                    if (groupCustomPropertyGroup.Count() == customProperties.Count())
+                    {
+                        _groupIds.Add(groupCustomPropertyGroup.Key);
+                    }
+                }
+                groupIds = _groupIds;
+            }
+            if (pageSettings != null)
+            {
+                return (await _repository.ToPagedListAsync<Group>(pageSettings, x => groupIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Result;
             }
             else
             {
-                match = match.Replace("#customProperties#", "");
+                return await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id));
             }
-
-            List<string> stages = new List<string>();
-            stages.Add(match);
-            var result = await _repository.GetList<Group, Group>(stages, cancellationToken).ConfigureAwait(false);
-            return result;
         }
 
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
         {
-            var match = @"
-{$match:
-    {$and:[
-        {GroupId:{$in:[#GroupIds#]}},
-        #match_and_or#
-    ]}
-}
-";
-            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            match = match.Replace("#GroupIds#", groupIdsStr);
-            if (searchParms is not null && searchParms.Any())
+            groupIds = groupIds ?? new List<string>();
+            if (searchParms != null && searchParms.Any())
             {
-                StringBuilder match_and_or = new StringBuilder("{$or:[");
-
-                foreach (var searchParm in searchParms)
+                var messageIds = new List<string>();
+                var contentSearchParms = searchParms.Where(x => x.Key == Message.Constant.Content);
+                var customPropertySearchParms = searchParms.Where(x => x.Key != Message.Constant.Content);
+                if (contentSearchParms.Any())
                 {
-                    string[] chars = new string[] { "^", "$", ".", "*", "?", "+", "|", "{", "}", "[", "]", "/" };
-                    var keyword = searchParm.Value.Replace(@"\", @"\\");
-                    foreach (var item in chars)
+                    var sb = new StringBuilder();
+                    foreach (var contentSearchParm in contentSearchParms)
                     {
-                        keyword = keyword.Replace(item, @"\" + item);
-                    }
-                    if (searchParm.Key == Message.Constant.Content)
-                    {
-                        match_and_or.Append($"{{Content:/{keyword}/i}}");
-                    }
-                    else
-                    {
+                        var value = contentSearchParm.Value.Replace("\\", "\\\\");
                         if (isExactSearch)
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/^{keyword}$/i}},");
+                            sb.Append($" || {Message.Constant.Content}==\"{value}\"");
                         }
                         else
                         {
-                            match_and_or.Append($"{{'CustomProperties.{searchParm.Key}':/{keyword}/i}},");
+                            sb.Append($" || {Message.Constant.Content}.Contains(\"{value}\")");
                         }
                     }
+                    var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                    messageIds = messages.Select(x => x.Id).ToList();
                 }
-                match_and_or.Append("]}");
-                match = match.Replace("#match_and_or#", match_and_or.ToString());
+                if (customPropertySearchParms.Any())
+                {
+                    var sb = new StringBuilder();
+                    foreach (var customPropertySearchParm in customPropertySearchParms)
+                    {
+                        var values = customPropertySearchParm.Value.Split(',');
+                        foreach (var value in values)
+                        {
+                            var _value = customPropertySearchParm.Value.Replace("\\", "\\\\");
+                            if (isExactSearch)
+                            {
+                                var _sb = $"{nameof(MessageCustomProperty.Key)}==\"{customPropertySearchParm.Key}\" && {nameof(MessageCustomProperty.Value)} == \"{_value}\"";
+                                sb.Append($" || {_sb}");
+                            }
+                            else
+                            {
+                                var _sb = $"{nameof(MessageCustomProperty.Key)}.Contains(\"{customPropertySearchParm.Key}\") && {nameof(MessageCustomProperty.Value)}.Contains(\"{_value}\")";
+                                sb.Append($" || {_sb}");
+                            }
+                        }
+                    }
+                    var messageCustomProperties = await _repository.ToListAsync(_repository.Query<MessageCustomProperty>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                    var messageCustomPropertyGroups = messageCustomProperties.GroupBy(x => x.MessageId);
+                    var _messageIds = new List<string>();
+                    foreach (var messageCustomPropertyGroup in messageCustomPropertyGroups)
+                    {
+                        if (messageCustomPropertyGroup.Count() == customPropertySearchParms.Count())
+                        {
+                            _messageIds.Add(messageCustomPropertyGroup.Key);
+                        }
+                    }
+                    messageIds.AddRange(_messageIds);
+                }
+                var _groupIds = (await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id))).Select(x => x.GroupId);
+                if (groupIds.Any())
+                {
+                    return groupIds.Intersect(_groupIds).ToList();
+                }
+                else
+                {
+                    return _groupIds;
+                }
             }
             else
             {
-                return groupIds;
+                return new List<string>();
             }
-            var group = "{$group:{_id:'$GroupId'}}";
-
-            List<string> stages = new List<string>();
-            stages.Add(match);
-            stages.Add(group);
-
-            var result = await _repository.GetList<Domain.Message, Group>(stages, cancellationToken).ConfigureAwait(false);
-            return result.Select(x => x.Id);
         }
     }
 }

@@ -51,7 +51,7 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.Type)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
             {
                 groupIds = groupIds.Intersect(request.GroupIds).ToArray();
@@ -156,7 +156,7 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.Type)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
             {
                 groupIds = groupIds.Intersect(request.GroupIds).ToArray();

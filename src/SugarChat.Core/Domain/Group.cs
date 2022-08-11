@@ -7,5 +7,6 @@ namespace SugarChat.Core.Domain
         public string Name { get; set; }
         public string AvatarUrl { get; set; }
         public string Description { get; set; }
+        public int Type { get; set; }
     }
 }

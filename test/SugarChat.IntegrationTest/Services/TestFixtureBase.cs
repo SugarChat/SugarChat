@@ -115,7 +115,8 @@ namespace SugarChat.IntegrationTest.Services
                     Id = m.Key,
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
-                    Name = m.Value
+                    Name = m.Value,
+                    Type = 10
                 });
             }
 

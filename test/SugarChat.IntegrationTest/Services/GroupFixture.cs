@@ -33,7 +33,8 @@ namespace SugarChat.IntegrationTest.Services
                     UserId = Guid.NewGuid().ToString(),
                     Id = Guid.NewGuid().ToString(),
                     CustomProperties = new Dictionary<string, string> { { "MerchId", "1" }, { "OrderId", "2" } },
-                    CreatedBy = Guid.NewGuid().ToString()
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    Type = 10
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
@@ -47,6 +48,7 @@ namespace SugarChat.IntegrationTest.Services
                 var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
                 group.CustomProperties.GetValueOrDefault("MerchId").ShouldBe("1");
                 group.CustomProperties.GetValueOrDefault("OrderId").ShouldBe("2");
+                group.Type.ShouldBe(10);
                 (await repository.CountAsync<GroupUser>()).ShouldBe(1);
             });
             await Run<IMediator, IRepository>(async (mediator, repository) =>
@@ -72,7 +74,8 @@ namespace SugarChat.IntegrationTest.Services
             {
                 groups.Add(new Group
                 {
-                    Id = Guid.NewGuid().ToString()
+                    Id = Guid.NewGuid().ToString(),
+                    Type = 1
                 });
             }
             List<GroupUser> groupUsers = new List<GroupUser>();
@@ -115,7 +118,7 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.AnyAsync<Group>(x => x.Id == command.GroupId)).ShouldBeFalse();
                 (await repository.AnyAsync<GroupUser>(x => x.Id == command.GroupId)).ShouldBeFalse();
                 (await repository.AnyAsync<Core.Domain.Message>(x => x.Id == command.GroupId)).ShouldBeFalse();
-                (await repository.CountAsync<Group>()).ShouldBe(4);
+                (await repository.CountAsync<Group>(x => x.Type == 1)).ShouldBe(4);
                 (await repository.CountAsync<GroupUser>()).ShouldBe(8);
                 (await repository.CountAsync<Core.Domain.Message>()).ShouldBe(12);
             });
@@ -145,14 +148,16 @@ namespace SugarChat.IntegrationTest.Services
                         await repository.AddAsync(new Group
                         {
                             Id = groupId,
-                            CustomProperties = new Dictionary<string, string> { { "merchId", $"a{i + 1}{i + 1}" }, { "userId", $"b{i + 1}{i + 2}" } }
+                            CustomProperties = new Dictionary<string, string> { { "merchId", $"a{i + 1}{i + 1}" }, { "userId", $"b{i + 1}{i + 2}" } },
+                            Type = 2
                         });
                     }
                 }
                 {
                     var request = new GetGroupByCustomPropertiesRequest()
                     {
-                        UserId = Guid.NewGuid().ToString()
+                        UserId = Guid.NewGuid().ToString(),
+                        Type = 2
                     };
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
                     response.Message.ShouldBe(Prompt.UserNoExists.WithParams(request.UserId).Message);
@@ -161,18 +166,22 @@ namespace SugarChat.IntegrationTest.Services
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
-                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } }
+                        CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } },
+                        Type = 2
                     });
                     response.Data.Count().ShouldBe(1);
+                    response.Data.First().Type.ShouldBe(2);
                 }
                 {
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
                     {
                         UserId = userIds[0],
                         CustomProperties = new Dictionary<string, string> { { "merchId", "A11" }, { "userId", "B12" } },
-                        SearchAllGroup = true
+                        SearchAllGroup = true,
+                        Type = 2
                     });
                     response.Data.Count().ShouldBe(2);
+                    response.Data.Count(x => x.Type == 2).ShouldBe(2);
                 }
             });
         }

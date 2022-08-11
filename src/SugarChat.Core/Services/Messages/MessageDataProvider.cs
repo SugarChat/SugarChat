@@ -72,15 +72,27 @@ namespace SugarChat.Core.Services.Messages
             return await Task.FromResult(messages);
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default, int type = 0)
         {
-            var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            var groupIds = groups.Select(x => x.GroupId);
+            var groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == userId && b.Type == type
+                              select new
+                              {
+                                  a.Id,
+                                  a.CustomProperties,
+                                  a.UserId,
+                                  a.GroupId,
+                                  a.Role,
+                                  a.MessageRemindType,
+                                  a.LastReadTime
+                              }).ToList();
+            //var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
+            var groupIds = groupUsers.Select(x => x.GroupId);
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
             var unreadMessages = messages.Where(o => o.SentBy != userId &&
-                    o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
+                    o.SentTime > (groupUsers.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
                 .ToList();
 
             return await Task.FromResult(unreadMessages);

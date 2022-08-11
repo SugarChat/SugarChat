@@ -28,11 +28,34 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id, CancellationToken cancellationToken = default, int type = 0)
         {
-            return await _repository.ToListAsync<GroupUser>(o => o.UserId == id, cancellationToken)
-                .ConfigureAwait(false);
+            var groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == id && b.Type == type
+                              select new
+                              {
+                                  a.Id,
+                                  a.CustomProperties,
+                                  a.UserId,
+                                  a.GroupId,
+                                  a.Role,
+                                  a.MessageRemindType
+                              }).ToList();
+            var result = new List<GroupUser>();
+            foreach (var groupUser in groupUsers)
+            {
+                result.Add(new GroupUser
+                {
+                    Id = groupUser.Id,
+                    CustomProperties = groupUser.CustomProperties,
+                    UserId = groupUser.UserId,
+                    GroupId = groupUser.GroupId,
+                    Role = groupUser.Role,
+                    MessageRemindType = groupUser.MessageRemindType
+                });
+            }
+            return result;
         }
 
         public async Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id,
@@ -166,13 +189,13 @@ namespace SugarChat.Core.Services.GroupUsers
             CancellationToken cancellationToken)
         {
             IEnumerable<GroupUser> groupUsers =
-                await _repository.ToListAsync<GroupUser>(o =>o.GroupId == groupId && userIds.Contains(o.UserId) , cancellationToken).ConfigureAwait(false);
+                await _repository.ToListAsync<GroupUser>(o => o.GroupId == groupId && userIds.Contains(o.UserId), cancellationToken).ConfigureAwait(false);
 
             if (!groupUsers.Any())
             {
                 return;
             }
-            
+
             foreach (GroupUser groupUser in groupUsers)
             {
                 groupUser.LastReadTime = lastMessageSentTime;

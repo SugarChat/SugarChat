@@ -62,7 +62,7 @@ namespace SugarChat.Core.Services.Messages
             return new GetAllUnreadToUserResponse
             {
                 Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken))
+                    await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken, request.Type))
             };
         }
 

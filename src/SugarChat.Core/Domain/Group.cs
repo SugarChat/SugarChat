@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Domain
 {
+    [BsonIgnoreExtraElements]
     public class Group : Entity
     {
         public string Name { get; set; }

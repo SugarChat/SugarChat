@@ -119,7 +119,7 @@ namespace SugarChat.Core.Services.Groups
             User user = await GetUserAsync(request.UserId, cancellation).ConfigureAwait(false);
             user.CheckExist(request.UserId);
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation).ConfigureAwait(false);
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation, request.Type).ConfigureAwait(false);
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
             foreach (var group in groups.Result)
@@ -239,7 +239,7 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.UserId);
 
             List<string> groupIds = new List<string>();
-            groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+            groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.Type).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
             if (!groupIds.Any())
             {
                 return new GroupDto[] { };

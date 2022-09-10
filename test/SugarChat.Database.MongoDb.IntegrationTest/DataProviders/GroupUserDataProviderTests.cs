@@ -77,7 +77,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_GroupUsers_By_User_Id()
         {
-            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id);
+            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id, type: 11);
             tomGroupUsers.Count().ShouldBe(2);
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryGroup.Id).ShouldNotBeNull();
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryAndTykeGroup.Id).ShouldNotBeNull();

@@ -123,7 +123,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             TomAndJerryGroup = new()
             {
                 Id = "1",
-                Description = "Friend group of Tom and Jerry"
+                Description = "Friend group of Tom and Jerry",
+                Type = 11
             };
             TomInTomAndJerry = new()
             {
@@ -144,7 +145,8 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             TomAndJerryAndTykeGroup = new()
             {
                 Id = "2",
-                Description = "Multi group of Tom and Jerry and Tyke"
+                Description = "Multi group of Tom and Jerry and Tyke",
+                Type = 11
             };
             TomInTomAndJerryAndTyke = new()
             {

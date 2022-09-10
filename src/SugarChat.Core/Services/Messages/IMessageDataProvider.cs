@@ -16,8 +16,7 @@ namespace SugarChat.Core.Services.Messages
         Task RemoveAsync(Domain.Message message, CancellationToken cancellationToken = default);
         Task<IEnumerable<Domain.Message>> GetUnreadToUserWithFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default);
-        Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
-            CancellationToken cancellationToken = default);
+        Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default, int? type = null);
         Task<IEnumerable<Domain.Message>> GetAllHistoryToUserWithFriendAsync(string userId, string friendId,
             CancellationToken cancellationToken = default);
         Task<IEnumerable<Domain.Message>> GetAllHistoryToUserAsync(string userId,

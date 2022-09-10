@@ -114,7 +114,8 @@ namespace SugarChat.IntegrationTest.Services
                     Id = groupDic.ElementAt(i).Key,
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
-                    Name = groupDic.ElementAt(i).Value
+                    Name = groupDic.ElementAt(i).Value,
+                    Type = 10
                 });
                 repository.AddAsync(new GroupCustomProperty
                 {

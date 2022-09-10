@@ -57,6 +57,13 @@ namespace SugarChat.Core.Services.Conversations
             var conversations = new List<ConversationDto>();
             var groupIds = (await _groupDataProvider.GetByCustomProperties(null, searchParms, null, cancellationToken)).Select(x => x.Id);
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
+
+            //var aaa = (from a in _repository.Query<GroupUser>()
+            //           where groupIds.Contains(a.GroupId)
+            //           join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+            //           where b.SentTime > a.LastReadTime
+            //           select a).ToList();
+
             var messageGroups = (from a in groupUsers
                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                                  where b.SentTime > a.LastReadTime

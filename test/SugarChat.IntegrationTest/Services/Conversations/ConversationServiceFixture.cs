@@ -173,7 +173,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        MessageSearchParms = new Dictionary<string, string> { { "order", "11" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "order", "1" } },
                         UserId = userId
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
@@ -183,7 +183,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        GroupSearchParms = new Dictionary<string, string> { { "order", "1" } },
+                        MessageSearchParms = new Dictionary<string, string> { { "order", "1" } },
                         UserId = userId,
                         Type = 10
                     };
@@ -306,18 +306,18 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IGroupDataProvider>(async (mediator, repository, groupDataProvider) =>
             {
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "11" } }, true);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "11" } }, true, default, 10);
                     result.Count().ShouldBe(1);
                     result.FirstOrDefault().ShouldBe(conversationId);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "2" } }, false);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "2" } }, false, default, 10);
                     result.Count().ShouldBe(2);
                     result.ShouldContain(conversationId);
                     result.ShouldContain(groupId4);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false, default, 10);
                     result.Count().ShouldBe(2);
                 }
             });
@@ -407,15 +407,15 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IConversationDataProvider>(async conversationDataProvider =>
             {
                 {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, null, false);
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, null, false, default, 10);
                     conversations.Count.ShouldBe(0);
                 }
                 {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "Content", "是" } }, false);
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "Content", "是" } }, false, default, 10);
                     conversations.Single().ConversationID.ShouldBe(groupId4);
                 }
                 {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "order", "1" } }, false);
+                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "order", "1" } }, false, default, 10);
                     conversations.Single().ConversationID.ShouldBe(conversationId);
                 }
             });

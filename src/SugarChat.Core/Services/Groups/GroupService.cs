@@ -240,7 +240,7 @@ namespace SugarChat.Core.Services.Groups
 
             List<string> groupIds = new List<string>();
             groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.Type).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
-            if (!groupIds.Any())
+            if (!request.SearchAllGroup && !groupIds.Any())
             {
                 return new GroupDto[] { };
             }

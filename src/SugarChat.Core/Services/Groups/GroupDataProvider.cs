@@ -93,7 +93,6 @@ namespace SugarChat.Core.Services.Groups
                         var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
                         sb.Append($" || {_sb}");
                     }
-                    
                 }
                 query = query.Where(sb.ToString().Substring(4));
                 var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
@@ -118,7 +117,7 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null)
         {
             groupIds = groupIds ?? new List<string>();
             if (searchParms != null && searchParms.Any())
@@ -179,13 +178,10 @@ namespace SugarChat.Core.Services.Groups
                 }
                 var _groupIds = (await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id))).Select(x => x.GroupId);
                 if (groupIds.Any())
-                {
-                    return groupIds.Intersect(_groupIds).ToList();
-                }
+                    groupIds = groupIds.Intersect(_groupIds).ToList();
                 else
-                {
-                    return _groupIds;
-                }
+                    groupIds = _groupIds;
+                return (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && (x.Type == type || (type == 0 && x.Type == null)))).Select(x => x.Id);
             }
             else
             {

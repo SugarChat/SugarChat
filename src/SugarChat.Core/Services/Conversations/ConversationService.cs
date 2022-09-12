@@ -162,7 +162,7 @@ namespace SugarChat.Core.Services.Conversations
 
             if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any()))
             {
-                conversations = await _conversationDataProvider.GetConversationsByUserAsync(request.UserId, request.PageSettings, cancellationToken).ConfigureAwait(false);
+                conversations = await _conversationDataProvider.GetConversationsByUserAsync(request.UserId, request.PageSettings, cancellationToken, request.Type).ConfigureAwait(false);
                 if (!conversations.Any())
                 {
                     return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
@@ -172,12 +172,12 @@ namespace SugarChat.Core.Services.Conversations
             {
                 if (request.GroupSearchParms != null && request.GroupSearchParms.Any())
                 {
-                    conversationsByGroupKeyword = await _conversationDataProvider.GetConversationsByGroupKeywordAsync(request.UserId, request.GroupSearchParms, cancellationToken).ConfigureAwait(false);
+                    conversationsByGroupKeyword = await _conversationDataProvider.GetConversationsByGroupKeywordAsync(request.UserId, request.GroupSearchParms, cancellationToken, request.Type).ConfigureAwait(false);
                 }
 
                 if (request.MessageSearchParms != null && request.MessageSearchParms.Any())
                 {
-                    conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, request.MessageSearchParms, request.IsExactSearch, cancellationToken).ConfigureAwait(false);
+                    conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, request.MessageSearchParms, request.IsExactSearch, cancellationToken, request.Type).ConfigureAwait(false);
                 }
 
                 if (!conversationsByGroupKeyword.Any() && !conversationsByMessageKeyword.Any())

@@ -86,5 +86,12 @@ namespace SugarChat.WebApi.Controllers
             var response =await _mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(request);
             return Ok(response);
         }
+
+        [Route("MigrateCustomProperty"), HttpPost]
+        public async Task<IActionResult> MigrateCustomProperty(MigrateGroupCustomPropertyCommand command)
+        {
+            var response = await _mediator.SendAsync<MigrateGroupCustomPropertyCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

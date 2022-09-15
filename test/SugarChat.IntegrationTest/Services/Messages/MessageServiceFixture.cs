@@ -108,5 +108,42 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 lastReadTime.FirstOrDefault().ToString().ShouldBe(lastMessage.SentTime.ToString());
             });
         }
+
+        [Fact]
+        public async Task ShouldMigrateCustomProperty()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var messages = new List<Core.Domain.Message>();
+                for (int i = 0; i < 35; i++)
+                {
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "key1" + i, "value1" + i }, { "key2" + i, "value2" + i } }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString()
+                    });
+                }
+                await repository.AddRangeAsync(messages);
+                var response = await mediator.SendAsync<MigrateMessageCustomPropertyCommand, SugarChatResponse>(new MigrateMessageCustomPropertyCommand());
+                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null)).ShouldBe(0);
+                var messageIds = messages.Select(x => x.Id).ToList();
+                (await repository.CountAsync<MessageCustomProperty>(x => messageIds.Contains(x.MessageId))).ShouldBe(70);
+            });
+        }
     }
 }

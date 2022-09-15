@@ -16,7 +16,8 @@ namespace SugarChat.Core.Domain
         public bool IsSystem { get; set; }
         public string Payload { get; set; }
         public bool IsRevoked { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
         [BsonIgnore]
-        public IEnumerable<MessageCustomProperty> CustomProperties { get; set; }
+        public IEnumerable<MessageCustomProperty> CustomPropertyList { get; set; }
     }
 }

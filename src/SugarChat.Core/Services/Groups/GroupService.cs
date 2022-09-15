@@ -19,6 +19,7 @@ using SugarChat.Message;
 using System;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.GroupCustomProperties;
+using Serilog;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -64,17 +65,17 @@ namespace SugarChat.Core.Services.Groups
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                     if (command.CustomProperties != null)
                     {
-                        var groupCustomPropertys = new List<Domain.GroupCustomProperty>();
+                        var groupCustomProperties = new List<Domain.GroupCustomProperty>();
                         foreach (var customProperty in command.CustomProperties)
                         {
-                            groupCustomPropertys.Add(new Domain.GroupCustomProperty
+                            groupCustomProperties.Add(new Domain.GroupCustomProperty
                             {
                                 GroupId = group.Id,
                                 Key = customProperty.Key,
                                 Value = customProperty.Value
                             });
                         }
-                        await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomPropertys, cancellation).ConfigureAwait(false);
+                        await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
                     }
                 }
                 catch (MongoDB.Driver.MongoWriteException ex)
@@ -125,7 +126,7 @@ namespace SugarChat.Core.Services.Groups
             foreach (var group in groups.Result)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == group.Id).ToList();
-                group.CustomProperties = _groupCustomProperties;
+                group.CustomPropertyList = _groupCustomProperties;
             }
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
             PagedResult<GroupDto> groupsDto = new()
@@ -183,7 +184,7 @@ namespace SugarChat.Core.Services.Groups
                 };
             }
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
-            group.CustomProperties = groupCustomProperties;
+            group.CustomPropertyList = groupCustomProperties;
             var groupDto = _mapper.Map<GroupDto>(group);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
@@ -254,6 +255,40 @@ namespace SugarChat.Core.Services.Groups
             }
 
             return groupDtos;
+        }
+
+        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        {
+            var total = await _groupDataProvider.GetCountAsync(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+            var pageSize = 10;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var groups = await _groupDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+                        var groupCustomProperties = new List<GroupCustomProperty>();
+                        foreach (var group in groups)
+                        {
+                            foreach (var customProperty in group.CustomProperties)
+                            {
+                                groupCustomProperties.Add(new GroupCustomProperty { GroupId = group.Id, Key = customProperty.Key, Value = customProperty.Value });
+                            }
+                            group.CustomProperties = null;
+                        }
+                        await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
+                        await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate Group CustomProperty Error");
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    }
+                }
+            }
         }
     }
 }

@@ -21,6 +21,7 @@ using SugarChat.Core.Services.Configurations;
 using SugarChat.Message.Paging;
 using SugarChat.Core.Services.MessageCustomProperties;
 using SugarChat.Core.IRepositories;
+using Serilog;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -440,7 +441,41 @@ namespace SugarChat.Core.Services.Messages
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
-                message.CustomProperties = _messageCustomProperties;
+                message.CustomPropertyList = _messageCustomProperties;
+            }
+        }
+
+        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        {
+            var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+            var pageSize = 10;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var messages = await _messageDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+                        var messageCustomProperties = new List<MessageCustomProperty>();
+                        foreach (var message in messages)
+                        {
+                            foreach (var customProperty in message.CustomProperties)
+                            {
+                                messageCustomProperties.Add(new MessageCustomProperty { MessageId = message.Id, Key = customProperty.Key, Value = customProperty.Value });
+                            }
+                            message.CustomProperties = null;
+                        }
+                        await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
+                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate Message CustomProperty Error");
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    }
+                }
             }
         }
     }

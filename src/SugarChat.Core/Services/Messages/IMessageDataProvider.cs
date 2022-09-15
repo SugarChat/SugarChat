@@ -2,6 +2,7 @@
 using SugarChat.Message.Paging;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,5 +49,9 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
+
+        Task<int> GetCountAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

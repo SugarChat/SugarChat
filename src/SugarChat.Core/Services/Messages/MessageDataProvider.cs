@@ -9,6 +9,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -350,6 +351,16 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync<Domain.Message>(x => ids.Contains(x.Id) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetCountAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
         }
     }
 }

@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 using SugarChat.Message.Paging;
 using Xunit;
 using SugarChat.Message.Basic;
+using SugarChat.Core.Domain;
+using SugarChat.Core.IRepositories;
+using System;
 
 namespace SugarChat.IntegrationTest.Services.Groups
 {
@@ -75,6 +78,43 @@ namespace SugarChat.IntegrationTest.Services.Groups
             await Run<IMediator>(async (mediator) =>
             {
                 var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand());
+            });
+        }
+
+        [Fact]
+        public async Task ShouldMigrateCustomProperty()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var groups = new List<Group>();
+                for (int i = 0; i < 35; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "key1" + i, "value1" + i }, { "key2" + i, "value2" + i } }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString()
+                    });
+                }
+                await repository.AddRangeAsync(groups);
+                var response = await mediator.SendAsync<MigrateGroupCustomPropertyCommand, SugarChatResponse>(new MigrateGroupCustomPropertyCommand());
+                (await repository.CountAsync<Group>(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null)).ShouldBe(0);
+                var groupIds = groups.Select(x => x.Id).ToList();
+                (await repository.CountAsync<GroupCustomProperty>(x => groupIds.Contains(x.GroupId))).ShouldBe(70);
             });
         }
     }

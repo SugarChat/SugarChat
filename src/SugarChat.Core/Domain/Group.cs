@@ -10,7 +10,8 @@ namespace SugarChat.Core.Domain
         public string AvatarUrl { get; set; }
         public string Description { get; set; }
         public int? Type { get; set; }
+        public Dictionary<string, string> CustomProperties { get; set; }
         [BsonIgnore]
-        public IEnumerable<GroupCustomProperty> CustomProperties { get; set; }
+        public IEnumerable<GroupCustomProperty> CustomPropertyList { get; set; }
     }
 }

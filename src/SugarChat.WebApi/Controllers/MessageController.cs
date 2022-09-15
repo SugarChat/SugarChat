@@ -120,5 +120,12 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("MigrateCustomProperty"), HttpPost]
+        public async Task<IActionResult> MigrateCustomProperty(MigrateMessageCustomPropertyCommand command)
+        {
+            var response = await _mediator.SendAsync<MigrateMessageCustomPropertyCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

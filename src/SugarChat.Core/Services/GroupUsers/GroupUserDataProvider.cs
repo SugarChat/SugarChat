@@ -36,7 +36,6 @@ namespace SugarChat.Core.Services.GroupUsers
                               select new
                               {
                                   a.Id,
-                                  //a.CustomProperties,
                                   a.UserId,
                                   a.GroupId,
                                   a.Role,
@@ -48,7 +47,6 @@ namespace SugarChat.Core.Services.GroupUsers
                 result.Add(new GroupUser
                 {
                     Id = groupUser.Id,
-                    //CustomProperties = groupUser.CustomProperties,
                     UserId = groupUser.UserId,
                     GroupId = groupUser.GroupId,
                     Role = groupUser.Role,

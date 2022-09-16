@@ -72,14 +72,12 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default, int? type = null)
         {
-            //??????????????
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
                               where a.UserId == userId && b.Type == type || (type == 0 && b.Type == null)
                               select new
                               {
                                   a.Id,
-                                  //a.CustomProperties,
                                   a.UserId,
                                   a.GroupId,
                                   a.Role,
@@ -291,7 +289,9 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
-            groupIds = groupIds ?? new List<string>();
+            if (groupIds == null || !groupIds.Any())
+                return new List<MessageCountGroupByGroupId>();
+
             var groupUsers = pageSettings == null ? await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId)
                 : (await _repository.ToPagedListAsync<GroupUser>(pageSettings, x => groupIds.Contains(x.GroupId) && x.UserId == userId)).Result;
             var messageGroups = (from a in groupUsers
@@ -324,17 +324,22 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return (await _repository.ToListAsync<Domain.Message>(x => x.GroupId == groupId && !x.IsRevoked)).OrderByDescending(x => x.SentTime).FirstOrDefault();
+            return  _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefault();
         }
 
         public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            //???????????????????????
-            var messages = await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+            var messageIds = (from a in _repository.Query<Domain.Message>()
+                              where groupIds.Contains(a.GroupId)
+                              orderby a.SentTime descending
+                              group a by a.GroupId into b
+                              select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
+
+            var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
             var result = new List<Domain.Message>();
             foreach (var groupId in groupIds)
             {
-                var message = messages.Where(x => x.GroupId == groupId).OrderByDescending(x => x.SentTime).FirstOrDefault();
+                var message = messages.Where(x => x.GroupId == groupId).FirstOrDefault();
                 if (message != null)
                 {
                     result.Add(message);

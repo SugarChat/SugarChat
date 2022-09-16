@@ -45,8 +45,6 @@ namespace SugarChat.Core.Services.Conversations
             return query.Take(count).AsEnumerable();
         }
 
-
-
         public async Task<List<ConversationDto>> GetConversationsByGroupKeywordAsync(string userId, Dictionary<string, string> searchParms, CancellationToken cancellationToken = default, int? type = null)
         {
             if (searchParms == null || !searchParms.Any())
@@ -55,14 +53,9 @@ namespace SugarChat.Core.Services.Conversations
             }
 
             var conversations = new List<ConversationDto>();
+            //Type??????????
             var groupIds = (await _groupDataProvider.GetByCustomProperties(null, searchParms, null, cancellationToken)).Select(x => x.Id);
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
-
-            //var aaa = (from a in _repository.Query<GroupUser>()
-            //           where groupIds.Contains(a.GroupId)
-            //           join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-            //           where b.SentTime > a.LastReadTime
-            //           select a).ToList();
 
             var messageGroups = (from a in groupUsers
                                  join b in _repository.Query<Group>() on a.GroupId equals b.Id
@@ -101,6 +94,7 @@ namespace SugarChat.Core.Services.Conversations
             var conversations = new List<ConversationDto>();
             var groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(null, searchParms, isExactSearch, cancellationToken, type);
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
+            //?????????????
             var messageGroups = (from a in groupUsers
                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                                  where b.SentTime > a.LastReadTime

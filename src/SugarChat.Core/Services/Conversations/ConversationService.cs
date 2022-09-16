@@ -156,6 +156,10 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
+            if (request.SearchParms != null && request.SearchParms != new Dictionary<string, string>()
+                && (request.MessageSearchParms == null && request.MessageSearchParms == new Dictionary<string, string>()))
+                request.MessageSearchParms = request.SearchParms;
+
             var conversations = new List<ConversationDto>();
             var conversationsByGroupKeyword = new List<ConversationDto>();
             var conversationsByMessageKeyword = new List<ConversationDto>();

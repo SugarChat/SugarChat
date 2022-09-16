@@ -79,10 +79,10 @@ namespace SugarChat.IntegrationTest.Services.Messages
         [Fact]
         public async Task ShouldSetMessageReadByUserIdsBasedOnGroupId()
         {
-            var groupId = groups.SingleOrDefault(o=>o.Id == groupId4)?.Id;
+            var groupId = groups.SingleOrDefault(o => o.Id == groupId4)?.Id;
             var userIds = groupUsers.Where(o => o.GroupId == groupId).Select(o => o.UserId).ToList();
             userIds.Count().ShouldBeGreaterThan(1);
-            
+
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
                 var lastMessage =
@@ -91,7 +91,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     (await repository.ToListAsync<GroupUser>(
                         x => x.GroupId == groupId)).Select(o => o.LastReadTime).Distinct().ToList();
                 lastReadTime.FirstOrDefault().ToString().ShouldNotBe(lastMessage.SentTime.ToString());
-                
+
                 var command = new SetMessageReadByUserIdsBasedOnGroupIdCommand()
                 {
                     UserIds = userIds,
@@ -140,7 +140,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 }
                 await repository.AddRangeAsync(messages);
                 var response = await mediator.SendAsync<MigrateMessageCustomPropertyCommand, SugarChatResponse>(new MigrateMessageCustomPropertyCommand());
-                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null)).ShouldBe(0);
+                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
                 var messageIds = messages.Select(x => x.Id).ToList();
                 (await repository.CountAsync<MessageCustomProperty>(x => messageIds.Contains(x.MessageId))).ShouldBe(70);
             });

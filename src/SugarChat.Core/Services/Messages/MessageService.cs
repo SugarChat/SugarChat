@@ -335,6 +335,7 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            { 
                 try
                 {
                     await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
@@ -346,7 +347,7 @@ namespace SugarChat.Core.Services.Messages
                     await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
                 }
-
+            }
             return _mapper.Map<MessageSavedEvent>(command);
         }
 
@@ -356,16 +357,9 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var groupIds = new List<string>();
-            if (request.CustomProperties != null && request.CustomProperties.Any() || request.GroupIds.Any())
-            {
-                var groups = await _groupDataProvider.GetByCustomProperties(request.GroupIds, request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
-                groupIds = groups.Select(x => x.Id).ToList();
-            }
-
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false)
+                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, request.GroupIds, cancellationToken).ConfigureAwait(false)
             };
         }
 
@@ -421,6 +415,7 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            { 
                 try
                 {
                     await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
@@ -432,12 +427,13 @@ namespace SugarChat.Core.Services.Messages
                     await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
                 }
+            }
         }
 
         private async Task GetPropertiesForMessages(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
         {
             var messageIds = messages.Select(x => x.Id);
-            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds);
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
@@ -447,7 +443,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task MigrateCustomProperty(CancellationToken cancellation = default)
         {
-            var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+            var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
             var pageSize = 10;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
@@ -456,7 +452,7 @@ namespace SugarChat.Core.Services.Messages
                 {
                     try
                     {
-                        var messages = await _messageDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != new Dictionary<string, string> { } && x.CustomProperties != null, cancellation).ConfigureAwait(false);
+                        var messages = await _messageDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
                         var messageCustomProperties = new List<MessageCustomProperty>();
                         foreach (var message in messages)
                         {

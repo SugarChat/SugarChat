@@ -75,9 +75,13 @@ namespace SugarChat.IntegrationTest.Services.Groups
         [Fact]
         public async Task ShouldRemoveGroup()
         {
-            await Run<IMediator>(async (mediator) =>
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand());
+                repository.Query<Group>().Count(x=>x.Id== groupId1).ShouldBe(1);
+                repository.Query<GroupCustomProperty>().Count(x => x.GroupId == groupId1).ShouldBe(2);
+                var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand { Id = groupId1 });
+                repository.Query<Group>().Count(x => x.Id == groupId1).ShouldBe(0);
+                repository.Query<GroupCustomProperty>().Count(x => x.GroupId == groupId1).ShouldBe(0);
             });
         }
 
@@ -112,7 +116,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
                 }
                 await repository.AddRangeAsync(groups);
                 var response = await mediator.SendAsync<MigrateGroupCustomPropertyCommand, SugarChatResponse>(new MigrateGroupCustomPropertyCommand());
-                (await repository.CountAsync<Group>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
+                (await repository.CountAsync<Group>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(35);
                 var groupIds = groups.Select(x => x.Id).ToList();
                 (await repository.CountAsync<GroupCustomProperty>(x => groupIds.Contains(x.GroupId))).ShouldBe(70);
             });

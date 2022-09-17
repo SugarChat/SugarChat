@@ -335,7 +335,7 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-            { 
+            {
                 try
                 {
                     await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
@@ -414,10 +414,12 @@ namespace SugarChat.Core.Services.Messages
                     }
                 }
             }
+            var oldMessageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(command.Messages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-            { 
+            {
                 try
                 {
+                    await _messageCustomPropertyDataProvider.RemoveRangeAsync(oldMessageCustomProperties, cancellationToken).ConfigureAwait(false);
                     await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
                     await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
@@ -444,7 +446,7 @@ namespace SugarChat.Core.Services.Messages
         public async Task MigrateCustomProperty(CancellationToken cancellation = default)
         {
             var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
-            var pageSize = 10;
+            var pageSize = 5000;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {
@@ -460,9 +462,9 @@ namespace SugarChat.Core.Services.Messages
                             {
                                 messageCustomProperties.Add(new MessageCustomProperty { MessageId = message.Id, Key = customProperty.Key, Value = customProperty.Value });
                             }
-                            message.CustomProperties = null;
+                            //message.CustomProperties = null;
                         }
-                        await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
+                        //await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
                         await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellation).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                     }

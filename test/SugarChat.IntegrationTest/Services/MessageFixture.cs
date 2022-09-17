@@ -239,6 +239,7 @@ namespace SugarChat.IntegrationTest.Services
                     sendMessageCommands.Add(sendMessageCommand);
                     await mediator.SendAsync(sendMessageCommand);
                 }
+                repository.Query<MessageCustomProperty>().Count().ShouldBe(3);
                 var messages = await repository.ToListAsync<Core.Domain.Message>();
                 var messageDtos = mapper.Map<IEnumerable<MessageDto>>(messages);
                 foreach (var messageDto in messageDtos)
@@ -251,7 +252,10 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.SentTime = Convert.ToDateTime("2020-1-1");
                     messageDto.IsSystem = true;
                     messageDto.IsRevoked = true;
-                    messageDto.CustomProperties = new List<MessageCustomPropertyDto> { new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "Number", Value = "123456" } };
+                    messageDto.CustomProperties = new List<MessageCustomPropertyDto> {
+                        new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "Number", Value = "123456" },
+                        new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "A", Value = "A" }
+                    };
                 }
                 var updateMessageDataCommand = new UpdateMessageDataCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
 
@@ -277,6 +281,7 @@ namespace SugarChat.IntegrationTest.Services
                     messageUpdateAfter.CreatedDate.ShouldBe(message.CreatedDate);
                     (await repository.AnyAsync<MessageCustomProperty>(x => x.MessageId == messageUpdateAfter.Id && x.Key == "Number" && x.Value == "123456")).ShouldBeTrue();
                 }
+                repository.Query<MessageCustomProperty>().Count().ShouldBe(6);
             });
         }
 
@@ -307,6 +312,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     new string[] { "1", "2" }.Contains(message.Content).ShouldBeTrue();
                 }
+                repository.Query<MessageCustomProperty>().Count(x => messageIds.Contains(x.MessageId)).ShouldBe(2);
             });
         }
     }

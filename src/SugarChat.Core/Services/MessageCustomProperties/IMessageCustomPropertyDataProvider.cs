@@ -13,5 +13,7 @@ namespace SugarChat.Core.Services.MessageCustomProperties
         Task AddRangeAsync(IEnumerable<MessageCustomProperty> groupCustomProperty, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<MessageCustomProperty>> GetPropertiesByMessageIds(IEnumerable<string> messageIds, CancellationToken cancellationToken = default);
+
+        Task RemoveRangeAsync(IEnumerable<MessageCustomProperty> messageCustomProperties, CancellationToken cancellationToken = default);
     }
 }

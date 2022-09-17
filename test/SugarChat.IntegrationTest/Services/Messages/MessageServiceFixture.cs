@@ -140,7 +140,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 }
                 await repository.AddRangeAsync(messages);
                 var response = await mediator.SendAsync<MigrateMessageCustomPropertyCommand, SugarChatResponse>(new MigrateMessageCustomPropertyCommand());
-                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
+                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(35);
                 var messageIds = messages.Select(x => x.Id).ToList();
                 (await repository.CountAsync<MessageCustomProperty>(x => messageIds.Contains(x.MessageId))).ShouldBe(70);
             });

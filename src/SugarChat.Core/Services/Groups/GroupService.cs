@@ -123,12 +123,12 @@ namespace SugarChat.Core.Services.Groups
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation, request.Type).ConfigureAwait(false);
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
-            foreach (var group in groups.Result)
+            var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
+            foreach (var group in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == group.Id).ToList();
-                group.CustomPropertyList = _groupCustomProperties;
+                group.CustomProperties = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
             }
-            var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
             PagedResult<GroupDto> groupsDto = new()
             {
                 Result = groupDtos,
@@ -183,9 +183,10 @@ namespace SugarChat.Core.Services.Groups
                     Group = null
                 };
             }
-            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
-            group.CustomPropertyList = groupCustomProperties;
+
             var groupDto = _mapper.Map<GroupDto>(group);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
+            groupDto.CustomProperties = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(groupCustomProperties);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
@@ -259,8 +260,8 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task MigrateCustomProperty(CancellationToken cancellation = default)
         {
-            var total = await _groupDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties!=new Dictionary<string, string> (), cancellation).ConfigureAwait(false);
-            var pageSize = 10;
+            var total = await _groupDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
+            var pageSize = 500;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {
@@ -276,9 +277,9 @@ namespace SugarChat.Core.Services.Groups
                             {
                                 groupCustomProperties.Add(new GroupCustomProperty { GroupId = group.Id, Key = customProperty.Key, Value = customProperty.Value });
                             }
-                            group.CustomProperties = null;
+                            //group.CustomProperties = null;
                         }
-                        await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
+                        //await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
                         await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                     }

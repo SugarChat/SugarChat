@@ -116,7 +116,7 @@ namespace SugarChat.IntegrationTest.Services.Groups
                 }
                 await repository.AddRangeAsync(groups);
                 var response = await mediator.SendAsync<MigrateGroupCustomPropertyCommand, SugarChatResponse>(new MigrateGroupCustomPropertyCommand());
-                (await repository.CountAsync<Group>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(35);
+                (await repository.CountAsync<Group>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
                 var groupIds = groups.Select(x => x.Id).ToList();
                 (await repository.CountAsync<GroupCustomProperty>(x => groupIds.Contains(x.GroupId))).ShouldBe(70);
             });

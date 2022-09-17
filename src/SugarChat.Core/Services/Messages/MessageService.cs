@@ -462,9 +462,9 @@ namespace SugarChat.Core.Services.Messages
                             {
                                 messageCustomProperties.Add(new MessageCustomProperty { MessageId = message.Id, Key = customProperty.Key, Value = customProperty.Value });
                             }
-                            //message.CustomProperties = null;
+                            message.CustomProperties = new Dictionary<string, string>();
                         }
-                        //await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
+                        await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
                         await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellation).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                     }

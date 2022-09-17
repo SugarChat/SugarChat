@@ -277,9 +277,9 @@ namespace SugarChat.Core.Services.Groups
                             {
                                 groupCustomProperties.Add(new GroupCustomProperty { GroupId = group.Id, Key = customProperty.Key, Value = customProperty.Value });
                             }
-                            //group.CustomProperties = null;
+                            group.CustomProperties = new Dictionary<string, string>();
                         }
-                        //await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
+                        await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
                         await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellation).ConfigureAwait(false);
                     }

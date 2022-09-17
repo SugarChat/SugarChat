@@ -11,8 +11,6 @@ namespace SugarChat.Core.Domain
         public string AvatarUrl { get; set; }
         public string Description { get; set; }
         public int? Type { get; set; }
-        [Obsolete("过时", false)]
-        public Dictionary<string, string> CustomProperties { get; set; }
         [BsonIgnore]
         public IEnumerable<GroupCustomProperty> CustomPropertyList { get; set; }
     }

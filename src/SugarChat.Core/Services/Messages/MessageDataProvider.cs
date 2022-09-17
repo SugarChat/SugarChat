@@ -76,7 +76,7 @@ namespace SugarChat.Core.Services.Messages
         {
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == userId && b.Type == type || (type == 0 && b.Type == null)
+                              where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null))
                               select new
                               {
                                   a.Id,
@@ -87,7 +87,6 @@ namespace SugarChat.Core.Services.Messages
                                   a.MessageRemindType,
                                   a.LastReadTime
                               }).ToList();
-            //var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
             var groupIds = groupUsers.Select(x => x.GroupId);
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);

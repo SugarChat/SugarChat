@@ -32,7 +32,7 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == id && b.Type == type || (type == 0 && b.Type == null)
+                              where a.UserId == id && (b.Type == type || (type == 0 && b.Type == null))
                               select new
                               {
                                   a.Id,

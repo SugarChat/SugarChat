@@ -252,7 +252,7 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.SentTime = Convert.ToDateTime("2020-1-1");
                     messageDto.IsSystem = true;
                     messageDto.IsRevoked = true;
-                    messageDto.CustomProperties = new List<MessageCustomPropertyDto> {
+                    messageDto.CustomPropertyList = new List<MessageCustomPropertyDto> {
                         new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "Number", Value = "123456" },
                         new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = "A", Value = "A" }
                     };

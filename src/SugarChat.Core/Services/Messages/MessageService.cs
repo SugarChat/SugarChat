@@ -401,9 +401,9 @@ namespace SugarChat.Core.Services.Messages
                 {
                     _mapper.Map(updateMessageDto, message);
                 }
-                if (updateMessageDto.CustomProperties != null && updateMessageDto.CustomProperties.Any())
+                if (updateMessageDto.CustomPropertyList != null && updateMessageDto.CustomPropertyList.Any())
                 {
-                    foreach (var customProperty in updateMessageDto.CustomProperties)
+                    foreach (var customProperty in updateMessageDto.CustomPropertyList)
                     {
                         messageCustomProperties.Add(new MessageCustomProperty
                         {

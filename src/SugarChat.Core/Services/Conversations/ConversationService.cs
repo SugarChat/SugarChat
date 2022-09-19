@@ -81,7 +81,7 @@ namespace SugarChat.Core.Services.Conversations
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListByUserIdAsync3: " + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListByUserIdAsync4: " + sw.ElapsedMilliseconds);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == messageCountGroupByGroupId.GroupId).ToList();

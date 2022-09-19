@@ -291,8 +291,12 @@ namespace SugarChat.Core.Services.Messages
             if (groupIds == null || !groupIds.Any())
                 return new List<MessageCountGroupByGroupId>();
 
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             var groupUsers = pageSettings == null ? await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId)
                 : (await _repository.ToPagedListAsync<GroupUser>(pageSettings, x => groupIds.Contains(x.GroupId) && x.UserId == userId)).Result;
+            sw.Stop();
+            Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync1: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var messageGroups = (from a in groupUsers
                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                                  where (b.SentTime > a.LastReadTime || a.LastReadTime == null) && b.SentBy != userId
@@ -303,6 +307,8 @@ namespace SugarChat.Core.Services.Messages
                                      UnReadCount = c.Count(),
                                      LastMessageSentTime = c.Max(x => x.SentTime)
                                  }).ToList();
+            sw.Stop();
+            Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync2: " + sw.ElapsedMilliseconds);
             List<MessageCountGroupByGroupId> result = new List<MessageCountGroupByGroupId>();
             foreach (var groupUser in groupUsers)
             {

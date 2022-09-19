@@ -298,12 +298,12 @@ namespace SugarChat.Core.Services.Messages
             Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync1: " + sw.ElapsedMilliseconds);
             sw.Restart();
 
-            var messages= (from a in groupUsers
-                           join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                           where (b.SentTime > a.LastReadTime || a.LastReadTime == null) && b.SentBy != userId
-                           select new {b.GroupId,b.SentTime }).ToList();
+            var messages = (from a in groupUsers
+                            join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                            where (b.SentTime > a.LastReadTime || a.LastReadTime == null) && b.SentBy != userId
+                            select new { b.GroupId, b.SentTime }).ToList();
             sw.Stop();
-            Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync2: " + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning($"GetMessageUnreadCountGroupByGroupIdsAsync2: {sw.ElapsedMilliseconds}, count: {messages.Count}");
             sw.Restart();
             var messageGroups = messages.GroupBy(x => x.GroupId).ToList();
             //var messageGroups = (from a in groupUsers
@@ -339,7 +339,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return  _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefault();
+            return _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefault();
         }
 
         public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)

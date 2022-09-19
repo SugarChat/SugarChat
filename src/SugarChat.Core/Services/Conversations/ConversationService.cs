@@ -52,25 +52,36 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
         {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
-
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationListByUserIdAsync1: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.Type)).Select(x => x.GroupId).ToArray();
             if (request.GroupIds.Any())
             {
                 groupIds = groupIds.Intersect(request.GroupIds).ToArray();
             }
 
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationListByUserIdAsync2: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var conversations = new List<ConversationDto>();
             if (groupIds.Length == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
 
             var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
 
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationListByUserIdAsync3: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationListByUserIdAsync3: " + sw.ElapsedMilliseconds);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == messageCountGroupByGroupId.GroupId).ToList();

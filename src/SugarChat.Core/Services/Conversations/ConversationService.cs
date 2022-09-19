@@ -18,6 +18,7 @@ using SugarChat.Message.Paging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using SugarChat.Core.Services.GroupCustomProperties;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -29,6 +30,7 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
 
         public ConversationService(
             IMapper mapper,
@@ -36,7 +38,8 @@ namespace SugarChat.Core.Services.Conversations
             IGroupUserDataProvider groupUserDataProvider,
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
-            IMessageDataProvider messageDataProvider)
+            IMessageDataProvider messageDataProvider,
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -44,6 +47,7 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
@@ -66,15 +70,19 @@ namespace SugarChat.Core.Services.Conversations
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == messageCountGroupByGroupId.GroupId).ToList();
                 var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
+                groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
+                groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
-                    GroupProfile = _mapper.Map<GroupDto>(group),
+                    GroupProfile = groupDto,
                     UnreadCount = messageCountGroupByGroupId.Count
                 };
                 if (lastMessage is not null)

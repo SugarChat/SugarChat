@@ -297,14 +297,15 @@ namespace SugarChat.Core.Services.Messages
             sw.Stop();
             Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync1: " + sw.ElapsedMilliseconds);
             sw.Restart();
-
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
-            var filter = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId);
-            var messages = await _repository.ToListAsync(filter, cancellationToken).ConfigureAwait(false);
-            sw.Stop();
-            Serilog.Log.Warning($"GetMessageUnreadCountGroupByGroupIdsAsync2: {sw.ElapsedMilliseconds}, count: {messages.Count}");
-            sw.Restart();
-            var messageGroups = messages.GroupBy(x => x.GroupId).ToList();
+            var messages =await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId), cancellationToken).ConfigureAwait(false);
+            var messageGroups = messages.GroupBy(x => x.GroupId).Select(x => new
+            {
+                GroupId = x.Key,
+                UnReadCount = x.Count(),
+                LastMessageSentTime = x.Max(x => x.SentTime)
+            }).ToList();
+
             //var messageGroups = (from a in groupUsers
             //                     join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
             //                     where (b.SentTime > a.LastReadTime || a.LastReadTime == null) && b.SentBy != userId
@@ -316,20 +317,20 @@ namespace SugarChat.Core.Services.Messages
             //                         LastMessageSentTime = c.Max(x => x.SentTime)
             //                     }).ToList();
             sw.Stop();
-            Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync3: " + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetMessageUnreadCountGroupByGroupIdsAsync2: " + sw.ElapsedMilliseconds);
 
             List<MessageCountGroupByGroupId> result = new List<MessageCountGroupByGroupId>();
             foreach (var groupUser in groupUsers)
             {
-                var messageGroup = messageGroups.FirstOrDefault(x => x.Key == groupUser.GroupId);
+                var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
                 var messageCountGroupByGroupId = new MessageCountGroupByGroupId
                 {
                     GroupId = groupUser.GroupId
                 };
                 if (messageGroup != null)
                 {
-                    messageCountGroupByGroupId.Count = messageGroup.Count();
-                    messageCountGroupByGroupId.LastSentTime = messageGroup.Max(x => x.SentTime);
+                    messageCountGroupByGroupId.Count = messageGroup.UnReadCount;
+                    messageCountGroupByGroupId.LastSentTime = messageGroup.LastMessageSentTime;
                 }
                 result.Add(messageCountGroupByGroupId);
             }

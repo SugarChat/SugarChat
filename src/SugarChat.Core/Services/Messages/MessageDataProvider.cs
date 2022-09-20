@@ -299,7 +299,8 @@ namespace SugarChat.Core.Services.Messages
             sw.Restart();
 
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
-            var messages = await _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var filter = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId);
+            var messages = await _repository.ToListAsync(filter, cancellationToken).ConfigureAwait(false);
             sw.Stop();
             Serilog.Log.Warning($"GetMessageUnreadCountGroupByGroupIdsAsync2: {sw.ElapsedMilliseconds}, count: {messages.Count}");
             sw.Restart();

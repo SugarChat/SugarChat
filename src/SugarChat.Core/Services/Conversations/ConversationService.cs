@@ -154,7 +154,6 @@ namespace SugarChat.Core.Services.Conversations
             return _mapper.Map<ConversationRemovedEvent>(command);
         }
 
-
         private async Task<ConversationDto> GetConversationDto(GroupUser groupUser,
             CancellationToken cancellationToken = default)
         {
@@ -219,12 +218,16 @@ namespace SugarChat.Core.Services.Conversations
             }
             var groups = (await _groupDataProvider.GetByIdsAsync(conversations.Select(x => x.ConversationID), null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
             foreach (var conversation in conversations)
             {
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == conversation.ConversationID).ToList();
                 var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == conversation.ConversationID);
                 var group = groups.SingleOrDefault(x => x.Id == conversation.ConversationID);
                 var groupDto = _mapper.Map<GroupDto>(group);
-                conversation.GroupProfile = _mapper.Map<GroupDto>(group);
+                groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
+                groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
+                conversation.GroupProfile = groupDto;
                 if (lastMessage is not null)
                 {
                     conversation.LastMessage = _mapper.Map<MessageDto>(lastMessage);

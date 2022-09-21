@@ -53,15 +53,15 @@ namespace SugarChat.Core.Services.Conversations
             }
 
             var conversations = new List<ConversationDto>();
-            //Type??????????
-            var groupIds = (await _groupDataProvider.GetByCustomProperties(null, searchParms, null, cancellationToken)).Select(x => x.Id);
+            var groupIds = (await _groupDataProvider.GetByCustomProperties(null, searchParms, null, cancellationToken)).Where(x => x.Type == type || (type == 0 && x.Type == null)).Select(x => x.Id);
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
 
+            var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
+            var messages = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
             var messageGroups = (from a in groupUsers
-                                 join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                                 join c in _repository.Query<Domain.Message>() on a.GroupId equals c.GroupId
-                                 where c.SentTime > a.LastReadTime && (b.Type == type || (type == 0 && b.Type == null))
-                                 group c by c.GroupId into c
+                                 join b in messages on a.GroupId equals b.GroupId
+                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null)
+                                 group b by b.GroupId into c
                                  select new
                                  {
                                      GroupId = c.Key,
@@ -94,10 +94,12 @@ namespace SugarChat.Core.Services.Conversations
             var conversations = new List<ConversationDto>();
             var groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(null, searchParms, isExactSearch, cancellationToken, type);
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
-            //?????????????
+
+            var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
+            var messages = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
             var messageGroups = (from a in groupUsers
-                                 join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                                 where b.SentTime > a.LastReadTime
+                                 join b in messages on a.GroupId equals b.GroupId
+                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null)
                                  group b by b.GroupId into c
                                  select new
                                  {

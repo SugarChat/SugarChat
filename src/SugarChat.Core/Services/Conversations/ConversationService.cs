@@ -181,10 +181,13 @@ namespace SugarChat.Core.Services.Conversations
             var conversations = new List<ConversationDto>();
             var conversationsByGroupKeyword = new List<ConversationDto>();
             var conversationsByMessageKeyword = new List<ConversationDto>();
-
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any()))
             {
                 conversations = await _conversationDataProvider.GetConversationsByUserAsync(request.UserId, request.PageSettings, cancellationToken, request.Type).ConfigureAwait(false);
+                sw.Stop();
+                Serilog.Log.Warning("GetConversationByKeyword1: " + sw.ElapsedMilliseconds);
+                sw.Restart();
                 if (!conversations.Any())
                 {
                     return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
@@ -195,11 +198,17 @@ namespace SugarChat.Core.Services.Conversations
                 if (request.GroupSearchParms != null && request.GroupSearchParms.Any())
                 {
                     conversationsByGroupKeyword = await _conversationDataProvider.GetConversationsByGroupKeywordAsync(request.UserId, request.GroupSearchParms, cancellationToken, request.Type).ConfigureAwait(false);
+                    sw.Stop();
+                    Serilog.Log.Warning("GetConversationByKeyword2: " + sw.ElapsedMilliseconds);
+                    sw.Restart();
                 }
 
                 if (request.MessageSearchParms != null && request.MessageSearchParms.Any())
                 {
                     conversationsByMessageKeyword = await _conversationDataProvider.GetConversationsByMessageKeywordAsync(request.UserId, request.MessageSearchParms, request.IsExactSearch, cancellationToken, request.Type).ConfigureAwait(false);
+                    sw.Stop();
+                    Serilog.Log.Warning("GetConversationByKeyword3: " + sw.ElapsedMilliseconds);
+                    sw.Restart();
                 }
 
                 if (!conversationsByGroupKeyword.Any() && !conversationsByMessageKeyword.Any())
@@ -217,8 +226,16 @@ namespace SugarChat.Core.Services.Conversations
                     .ToList();
             }
             var groups = (await _groupDataProvider.GetByIdsAsync(conversations.Select(x => x.ConversationID), null, cancellationToken)).Result;
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationByKeyword4: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationByKeyword5: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationByKeyword6: " + sw.ElapsedMilliseconds);
             foreach (var conversation in conversations)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == conversation.ConversationID).ToList();

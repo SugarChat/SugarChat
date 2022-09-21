@@ -178,7 +178,7 @@ namespace SugarChat.Core.Services.Conversations
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
             if (request.SearchParms != null && request.SearchParms != new Dictionary<string, string>()
-                && (request.MessageSearchParms == null && request.MessageSearchParms == new Dictionary<string, string>()))
+                && (request.MessageSearchParms == null || request.MessageSearchParms == new Dictionary<string, string>()))
                 request.MessageSearchParms = request.SearchParms;
 
             var conversations = new List<ConversationDto>();

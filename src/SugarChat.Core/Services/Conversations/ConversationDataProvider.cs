@@ -128,17 +128,34 @@ namespace SugarChat.Core.Services.Conversations
         {
             var conversations = new List<ConversationDto>();
             var groupUsers = await _repository.ToListAsync<GroupUser>(x => x.UserId == userId);
+            var groupIds = (from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                            where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null))
+                            select a.GroupId).ToList();
+            groupUsers = groupUsers.Where(x => groupIds.Contains(x.GroupId)).ToList();
+
+            var messages = _repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
             var messageGroups = (from a in groupUsers
-                                 join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                                 join c in _repository.Query<Domain.Message>() on a.GroupId equals c.GroupId
-                                 where c.SentTime > a.LastReadTime && (b.Type == type || (type == 0 && b.Type == null))
-                                 group c by c.GroupId into c
+                                 join b in messages on a.GroupId equals b.GroupId
+                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null)
+                                 group b by b.GroupId into c
                                  select new
                                  {
                                      GroupId = c.Key,
                                      UnReadCount = c.Count(),
                                      LastMessageSentTime = c.Max(x => x.SentTime)
                                  }).ToList();
+            //var messageGroups = (from a in groupUsers
+            //                     join b in _repository.Query<Group>() on a.GroupId equals b.Id
+            //                     join c in _repository.Query<Domain.Message>() on a.GroupId equals c.GroupId
+            //                     where c.SentTime > a.LastReadTime && (b.Type == type || (type == 0 && b.Type == null))
+            //                     group c by c.GroupId into c
+            //                     select new
+            //                     {
+            //                         GroupId = c.Key,
+            //                         UnReadCount = c.Count(),
+            //                         LastMessageSentTime = c.Max(x => x.SentTime)
+            //                     }).ToList();
             foreach (var groupUser in groupUsers)
             {
                 var conversationDto = new ConversationDto

@@ -429,11 +429,11 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IConversationDataProvider>(async conversationDataProvider =>
             {
                 {
-                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[9].Id, new PageSettings { PageNum = 1, PageSize = 10 });
+                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[9].Id, new PageSettings { PageNum = 1, PageSize = 10 }, default, 10);
                     conversations.Count.ShouldBe(5);
                 }
                 {
-                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[0].Id, new PageSettings { PageNum = 1, PageSize = 10 });
+                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[0].Id, new PageSettings { PageNum = 1, PageSize = 10 }, default, 10);
                     conversations.Count.ShouldBe(1);
                 }
             });

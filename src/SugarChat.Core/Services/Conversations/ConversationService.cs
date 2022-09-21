@@ -236,6 +236,7 @@ namespace SugarChat.Core.Services.Conversations
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
             sw.Stop();
             Serilog.Log.Warning("GetConversationByKeyword6: " + sw.ElapsedMilliseconds);
+            sw.Restart();
             foreach (var conversation in conversations)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == conversation.ConversationID).ToList();
@@ -250,6 +251,8 @@ namespace SugarChat.Core.Services.Conversations
                     conversation.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                 }
             }
+            sw.Stop();
+            Serilog.Log.Warning("GetConversationByKeyword7: " + sw.ElapsedMilliseconds);
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = conversations.Count };
         }

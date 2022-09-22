@@ -262,7 +262,7 @@ namespace SugarChat.Core.Services.Messages
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
             var count = (from a in groupUsers
                          join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                         where b.SentTime > a.LastReadTime || a.LastReadTime is null
+                         where (b.SentTime > a.LastReadTime || a.LastReadTime is null) && b.SentBy != userId
                          select b).Count();
             return count;
         }

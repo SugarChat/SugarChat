@@ -27,7 +27,15 @@ namespace SugarChat.IntegrationTest.Services.Messages
                         UserId = userId
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                    response.Data.ShouldBe(8);
+                    response.Data.ShouldBe(5);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId9
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(1);
                 }
                 {
                     var request = new GetUnreadMessageCountRequest()
@@ -36,7 +44,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                         GroupIds = new string[] { groups[3].Id }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                    response.Data.ShouldBe(4);
+                    response.Data.ShouldBe(3);
                 }
             });
         }

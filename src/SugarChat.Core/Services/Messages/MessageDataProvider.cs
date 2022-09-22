@@ -247,11 +247,6 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        class MessageCount
-        {
-            public int Count { get; set; }
-        }
-
         public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
@@ -260,10 +255,38 @@ namespace SugarChat.Core.Services.Messages
                 query = query.Where(x => groupIds.Contains(x.GroupId));
             }
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-            var count = (from a in groupUsers
-                         join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                         where (b.SentTime > a.LastReadTime || a.LastReadTime is null) && b.SentBy != userId
-                         select b).Count();
+            var groupUsersByAdminOrOwner = groupUsers.Where(x => x.Role is Message.UserRole.Admin or Message.UserRole.Owner).ToList();
+            var groupUsersByMember = groupUsers.Where(x => x.Role == Message.UserRole.Member).ToList();
+
+            var count = 0;
+            if (groupUsersByAdminOrOwner.Any())
+            {
+                var _groupIds = groupUsersByAdminOrOwner.Select(x => x.GroupId).ToList();
+                var messageIds = (from a in _repository.Query<GroupUser>()
+                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                                  where _groupIds.Contains(a.GroupId) && b.SentBy != userId && a.Role == Message.UserRole.Member
+                                  select b.Id).ToList();
+                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.GroupId, x.SentTime }).ToList();
+                var _count = (from a in groupUsersByAdminOrOwner
+                              join b in _messages on a.GroupId equals b.GroupId
+                              where b.SentTime > a.LastReadTime || a.LastReadTime is null
+                              select b).Count();
+                count += _count;
+            }
+            if (groupUsersByMember.Any())
+            {
+                var _groupIds = groupUsersByMember.Select(x => x.GroupId).ToList();
+                var messageIds = (from a in _repository.Query<GroupUser>()
+                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                                  where _groupIds.Contains(a.GroupId) && b.SentBy != userId
+                                  select b.Id).ToList();
+                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.GroupId, x.SentTime }).ToList();
+                var _count = (from a in groupUsersByMember
+                              join b in _messages on a.GroupId equals b.GroupId
+                              where b.SentTime > a.LastReadTime || a.LastReadTime is null
+                              select b).Count();
+                count += _count;
+            }
             return count;
         }
 

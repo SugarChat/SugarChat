@@ -27,6 +27,16 @@ namespace SugarChat.IntegrationTest.Services
         public string groupId5 = Guid.NewGuid().ToString();
         public string groupId6 = Guid.NewGuid().ToString();
 
+        public string userId1 = Guid.NewGuid().ToString();
+        public string userId2 = Guid.NewGuid().ToString();
+        public string userId3 = Guid.NewGuid().ToString();
+        public string userId4 = Guid.NewGuid().ToString();
+        public string userId5 = Guid.NewGuid().ToString();
+        public string userId6 = Guid.NewGuid().ToString();
+        public string userId7 = Guid.NewGuid().ToString();
+        public string userId8 = Guid.NewGuid().ToString();
+        public string userId9 = Guid.NewGuid().ToString();
+
         public TestFixtureBase()
         {
             GenerateTestCollections(Container.Resolve<IRepository>(), userId, conversationId);
@@ -44,16 +54,6 @@ namespace SugarChat.IntegrationTest.Services
             };
             GenerateGroupCollection(repository, groupDic);
             repository.AddRangeAsync(groups, default(CancellationToken)).Wait();
-
-            var userId1 = Guid.NewGuid().ToString();
-            var userId2 = Guid.NewGuid().ToString();
-            var userId3 = Guid.NewGuid().ToString();
-            var userId4 = Guid.NewGuid().ToString();
-            var userId5 = Guid.NewGuid().ToString();
-            var userId6 = Guid.NewGuid().ToString();
-            var userId7 = Guid.NewGuid().ToString();
-            var userId8 = Guid.NewGuid().ToString();
-            var userId9 = Guid.NewGuid().ToString();
 
             var userDic = new Dictionary<string, string>
             {
@@ -82,7 +82,7 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(userId6, groupId2));
             groupUsers.Add(GenerateGroupUser(userId7, groupId2));
             groupUsers.Add(GenerateGroupUser(userId, conversationId));
-            groupUsers.Add(GenerateGroupUser(userId9, conversationId));
+            groupUsers.Add(GenerateGroupUser(userId9, conversationId, UserRole.Admin));
             groupUsers.Add(GenerateGroupUser(userId1, groupId4));
             groupUsers.Add(GenerateGroupUser(userId, groupId4));
             groupUsers.Add(GenerateGroupUser(userId2, groupId4));
@@ -161,7 +161,7 @@ namespace SugarChat.IntegrationTest.Services
                 BecomeFriendAt = DateTimeOffset.Now
             };
         }
-        private GroupUser GenerateGroupUser(string userId, string groupId)
+        private GroupUser GenerateGroupUser(string userId, string groupId, UserRole userRole = UserRole.Member)
         {
             return new GroupUser
             {
@@ -171,7 +171,8 @@ namespace SugarChat.IntegrationTest.Services
                 LastModifyBy = Guid.NewGuid().ToString(),
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
-                GroupId = groupId,//组1
+                GroupId = groupId,//组1,
+                Role = userRole
             };
         }
         private void GenerateMessage(IRepository repository, string groupId, string content, int type, string sentBy, Dictionary<string, string> customProperties, string payload)

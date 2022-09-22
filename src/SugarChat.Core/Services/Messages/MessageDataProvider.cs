@@ -265,12 +265,12 @@ namespace SugarChat.Core.Services.Messages
                 var messageIds = (from a in _repository.Query<GroupUser>()
                                   join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                                   where _groupIds.Contains(a.GroupId) && b.SentBy != userId && a.Role == Message.UserRole.Member
-                                  select b.Id).ToList();
-                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.GroupId, x.SentTime }).ToList();
+                                  select b.Id).ToList().Distinct();
+                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.Id, x.GroupId, x.SentTime }).ToList();
                 var _count = (from a in groupUsersByAdminOrOwner
                               join b in _messages on a.GroupId equals b.GroupId
                               where b.SentTime > a.LastReadTime || a.LastReadTime is null
-                              select b).Count();
+                              select b.Id.Distinct()).Count();
                 count += _count;
             }
             if (groupUsersByMember.Any())
@@ -279,12 +279,12 @@ namespace SugarChat.Core.Services.Messages
                 var messageIds = (from a in _repository.Query<GroupUser>()
                                   join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
                                   where _groupIds.Contains(a.GroupId) && b.SentBy != userId
-                                  select b.Id).ToList();
-                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.GroupId, x.SentTime }).ToList();
+                                  select b.Id).ToList().Distinct();
+                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.Id, x.GroupId, x.SentTime }).ToList();
                 var _count = (from a in groupUsersByMember
                               join b in _messages on a.GroupId equals b.GroupId
                               where b.SentTime > a.LastReadTime || a.LastReadTime is null
-                              select b).Count();
+                              select b.Id.Distinct()).Count();
                 count += _count;
             }
             return count;

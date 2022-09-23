@@ -262,10 +262,11 @@ namespace SugarChat.Core.Services.Messages
             if (groupUsersByAdminOrOwner.Any())
             {
                 var _groupIds = groupUsersByAdminOrOwner.Select(x => x.GroupId).ToList();
-                var messageIds = (from a in _repository.Query<GroupUser>()
-                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                                  where _groupIds.Contains(a.GroupId) && b.SentBy != userId && a.Role == Message.UserRole.Member
-                                  select b.Id).ToList().Distinct();
+                var _userIds = _repository.Query<GroupUser>().Where(x => _groupIds.Contains(x.GroupId)
+                        && (x.Role == Message.UserRole.Admin || x.Role == Message.UserRole.Owner))
+                        .Select(x => x.UserId).ToList();
+
+                var messageIds = _repository.Query<Domain.Message>().Where(x => _groupIds.Contains(x.GroupId) && !_userIds.Contains(x.SentBy)).Select(x => x.Id).ToList();
                 var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.Id, x.GroupId, x.SentTime }).ToList();
                 var _count = (from a in groupUsersByAdminOrOwner
                               join b in _messages on a.GroupId equals b.GroupId

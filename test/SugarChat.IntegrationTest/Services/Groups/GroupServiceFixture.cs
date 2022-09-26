@@ -27,15 +27,15 @@ namespace SugarChat.IntegrationTest.Services.Groups
             await Run<IMediator>(async (mediator) =>
             {
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1 }, Type = 10 });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1 }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(5);
                 }
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 2 }, Type = 10 });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 2 }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(2);
                 }
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = null, Type = 10 });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = null, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(5);
                 }
             });
@@ -62,13 +62,13 @@ namespace SugarChat.IntegrationTest.Services.Groups
                     Id = conversationId,
                     Name = "内部沟通群",
                     Description = "进行及时有效的沟通",
-                    Type = 10
+                    GroupType = 10
 
                 }, default(CancellationToken));
 
                 var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
                 reponse.Data.Name.ShouldBe("内部沟通群");
-                reponse.Data.Type.ShouldBe(10);
+                reponse.Data.GroupType.ShouldBe(10);
             });
         }
 

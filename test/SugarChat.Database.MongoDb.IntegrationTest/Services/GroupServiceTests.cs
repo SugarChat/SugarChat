@@ -66,7 +66,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             {
                 UserId = "1",
                 PageSettings = new PageSettings {PageNum = 1},
-                Type = 11
+                GroupType = 11
             };
             GetGroupsOfUserResponse getGroupsOfUserResponse =
                 await _groupService.GetGroupsOfUserAsync(getGroupsOfUserRequest);

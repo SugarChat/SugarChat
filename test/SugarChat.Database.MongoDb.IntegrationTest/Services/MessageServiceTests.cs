@@ -30,7 +30,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetAllUnreadToUserRequest getAllUnreadToUserRequest = new()
             {
                 UserId = Tom.Id,
-                Type = 11
+                GroupType = 11
             };
             GetAllUnreadToUserResponse getAllUnreadToUserResponse =
                 await _messageService.GetAllUnreadToUserAsync(getAllUnreadToUserRequest);
@@ -51,7 +51,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GetAllUnreadToUserRequest getAllUnreadToUserRequest = new()
             {
                 UserId = "0",
-                Type = 11
+                GroupType = 11
             };
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _messageService.GetAllUnreadToUserAsync(getAllUnreadToUserRequest));

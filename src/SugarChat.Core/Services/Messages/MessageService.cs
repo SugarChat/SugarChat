@@ -68,7 +68,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken, request.Type);
+            var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken, request.GroupType);
             await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
             return new GetAllUnreadToUserResponse
             {

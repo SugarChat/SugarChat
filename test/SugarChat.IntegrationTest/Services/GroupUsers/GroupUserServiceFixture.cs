@@ -41,7 +41,7 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                 }, default(CancellationToken));
                 {
                     var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
-                    reponse.Data.First(x => x.UserId == userId).CustomPropertyList.Count().ShouldBe(1);
+                    reponse.Data.First(x => x.UserId == userId).CustomPropertyList.Count(x => x.Key == "Signature").ShouldBe(1);
                     var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 }
             });

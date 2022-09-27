@@ -357,14 +357,15 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            return new GetUnreadMessageCountResponse
-            {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+            var (_, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
                     request.GroupIds,
                     cancellationToken,
                     request.FilterByGroupCustomProperties,
                     request.FilterByGroupUserCustomProperties,
-                    request.FilterByMessageCustomProperties).ConfigureAwait(false)
+                    request.FilterByMessageCustomProperties).ConfigureAwait(false);
+            return new GetUnreadMessageCountResponse
+            {
+                Count = count
             };
         }
 

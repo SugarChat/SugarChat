@@ -32,10 +32,19 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 {
                     var request = new GetUnreadMessageCountRequest()
                     {
-                        UserId = userId9
+                        UserId = userId2
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                    response.Data.ShouldBe(1);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId2,
+                        FilterByGroupUserCustomProperties = new Dictionary<string, List<string>> { { "userType", new List<string> { "admin" } } }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(2);
                 }
                 {
                     var request = new GetUnreadMessageCountRequest()

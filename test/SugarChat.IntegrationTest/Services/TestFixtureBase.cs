@@ -74,21 +74,21 @@ namespace SugarChat.IntegrationTest.Services
             GenerateFriend(userId, userId9);
             repository.AddRangeAsync(friends, default(CancellationToken)).Wait();
 
-            groupUsers.Add(GenerateGroupUser(userId, groupId1));
-            groupUsers.Add(GenerateGroupUser(userId9, groupId1));
-            groupUsers.Add(GenerateGroupUser(userId8, groupId1));
-            groupUsers.Add(GenerateGroupUser(userId, groupId2));
-            groupUsers.Add(GenerateGroupUser(userId5, groupId2));
-            groupUsers.Add(GenerateGroupUser(userId6, groupId2));
-            groupUsers.Add(GenerateGroupUser(userId7, groupId2));
-            groupUsers.Add(GenerateGroupUser(userId, conversationId));
-            groupUsers.Add(GenerateGroupUser(userId9, conversationId, UserRole.Admin));
-            groupUsers.Add(GenerateGroupUser(userId1, groupId4));
-            groupUsers.Add(GenerateGroupUser(userId, groupId4));
-            groupUsers.Add(GenerateGroupUser(userId2, groupId4));
-            groupUsers.Add(GenerateGroupUser(userId4, groupId4));
-            groupUsers.Add(GenerateGroupUser(userId3, groupId4));
-            groupUsers.Add(GenerateGroupUser(userId, groupId5));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId1));
+            groupUsers.Add(GenerateGroupUser(repository, userId9, groupId1));
+            groupUsers.Add(GenerateGroupUser(repository, userId8, groupId1));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId2));
+            groupUsers.Add(GenerateGroupUser(repository, userId5, groupId2));
+            groupUsers.Add(GenerateGroupUser(repository, userId6, groupId2));
+            groupUsers.Add(GenerateGroupUser(repository, userId7, groupId2));
+            groupUsers.Add(GenerateGroupUser(repository, userId, conversationId));
+            groupUsers.Add(GenerateGroupUser(repository, userId9, conversationId));
+            groupUsers.Add(GenerateGroupUser(repository, userId1, groupId4));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId4));
+            groupUsers.Add(GenerateGroupUser(repository, userId2, groupId4, new Dictionary<string, string> { { "userType", "admin" } }));
+            groupUsers.Add(GenerateGroupUser(repository, userId4, groupId4));
+            groupUsers.Add(GenerateGroupUser(repository, userId3, groupId4, new Dictionary<string, string> { { "userType", "admin" } }));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId5));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
             GenerateMessage(repository, conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", 0, userId9, new Dictionary<string, string> { { "text", "test1" }, { "order", "11" } }, "{\"text\":\"test1\",\"order\":\"11\"}");
@@ -161,9 +161,9 @@ namespace SugarChat.IntegrationTest.Services
                 BecomeFriendAt = DateTimeOffset.Now
             };
         }
-        private GroupUser GenerateGroupUser(string userId, string groupId, UserRole userRole = UserRole.Member)
+        private GroupUser GenerateGroupUser(IRepository repository, string userId, string groupId, Dictionary<string, string> customProperties = null)
         {
-            return new GroupUser
+            var groupUser = new GroupUser
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedBy = Guid.NewGuid().ToString(),
@@ -171,9 +171,18 @@ namespace SugarChat.IntegrationTest.Services
                 LastModifyBy = Guid.NewGuid().ToString(),
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
-                GroupId = groupId,//组1,
-                Role = userRole
+                GroupId = groupId,//组1
             };
+
+            if (customProperties != null)
+            {
+                foreach (var customProperty in customProperties)
+                {
+                    repository.AddAsync(new GroupUserCustomProperty { GroupUserId = groupUser.Id, Key = customProperty.Key, Value = customProperty.Value }, default(CancellationToken)).Wait();
+                }
+            }
+
+            return groupUser;
         }
         private void GenerateMessage(IRepository repository, string groupId, string content, int type, string sentBy, Dictionary<string, string> customProperties, string payload)
         {

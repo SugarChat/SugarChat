@@ -70,6 +70,12 @@ namespace SugarChat.Core.Services.Conversations
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
+            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+                    request.GroupIds,
+                    cancellationToken,
+                    request.FilterUnreadCountByGroupCustomProperties,
+                    request.FilterUnreadCountByGroupUserCustomProperties,
+                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
 
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
@@ -79,11 +85,12 @@ namespace SugarChat.Core.Services.Conversations
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
                 groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
+                var unreadCount = groupUnreadCounts.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId)?.UnReadCount;
                 var conversationDto = new ConversationDto
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
                     GroupProfile = groupDto,
-                    UnreadCount = messageCountGroupByGroupId.Count
+                    UnreadCount = unreadCount ?? 0
                 };
                 if (lastMessage is not null)
                 {
@@ -103,7 +110,15 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
+            var (_, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+                    new List<string> { request.ConversationId },
+                    cancellationToken,
+                    request.FilterUnreadCountByGroupCustomProperties,
+                    request.FilterUnreadCountByGroupUserCustomProperties,
+                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
+
             var conversationDto = await GetConversationDto(groupUser, cancellationToken);
+            conversationDto.UnreadCount = count;
 
             return new GetConversationProfileResponse
             {
@@ -207,8 +222,17 @@ namespace SugarChat.Core.Services.Conversations
             var groups = (await _groupDataProvider.GetByIdsAsync(conversations.Select(x => x.ConversationID), null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
+            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+                    request.GroupIds,
+                    cancellationToken,
+                    request.FilterUnreadCountByGroupCustomProperties,
+                    request.FilterUnreadCountByGroupUserCustomProperties,
+                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
+
             foreach (var conversation in conversations)
             {
+                var unreadCount = groupUnreadCounts.FirstOrDefault(x => x.GroupId == conversation.ConversationID)?.UnReadCount;
+                conversation.UnreadCount = unreadCount ?? 0;
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == conversation.ConversationID).ToList();
                 var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == conversation.ConversationID);
                 var group = groups.SingleOrDefault(x => x.Id == conversation.ConversationID);
@@ -216,6 +240,7 @@ namespace SugarChat.Core.Services.Conversations
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
                 groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
                 conversation.GroupProfile = groupDto;
+
                 if (lastMessage is not null)
                 {
                     conversation.LastMessage = _mapper.Map<MessageDto>(lastMessage);

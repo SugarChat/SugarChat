@@ -171,10 +171,11 @@ namespace SugarChat.Core.Services.GroupUsers
                     await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
                     await _groupUserCustomPropertyDataProvider.RemoveRangeAsync(groupUserCustomProperties, cancellationToken).ConfigureAwait(false);
                     await _groupUserCustomPropertyDataProvider.AddRangeAsync(newGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
-
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
                 }
             }

@@ -10,6 +10,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -247,48 +248,91 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        public async Task<int> GetUnreadMessageCountAsync(string userId,
+            IEnumerable<string> groupIds,
+            CancellationToken cancellationToken = default,
+            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
+            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
+            Dictionary<string, List<string>> filterByMessageCustomProperties = null
+            )
         {
+            var groupIdsByFilter = new List<string>();
+            if (filterByGroupCustomProperties != null)
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in filterByGroupCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                    }
+                }
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>(), sb.ToString().Substring(4));
+                var groupCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                groupIdsByFilter = groupCustomProperties.Select(x => x.GroupId).Distinct().ToList();
+            }
+
+            var userIdsByFilter = new List<string>();
+            if (filterByGroupUserCustomProperties != null)
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in filterByGroupUserCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                    }
+                }
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>(), sb.ToString().Substring(4));
+                var groupUserCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                var groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
+                userIdsByFilter = (await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Select(x => x.UserId).ToList();
+            }
+
+            var messageIdsByFilter = new List<string>();
+            if (filterByMessageCustomProperties != null)
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in filterByMessageCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                    }
+                }
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.MessageCustomProperty>(), sb.ToString().Substring(4));
+                var messageCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                messageIdsByFilter = messageCustomProperties.Select(x => x.MessageId).Distinct().ToList();
+            }
+
             var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
             if (groupIds is not null && groupIds.Any())
             {
                 query = query.Where(x => groupIds.Contains(x.GroupId));
             }
+            if (groupIdsByFilter.Any())
+            {
+                query = query.Where(x => !groupIdsByFilter.Contains(x.GroupId));
+            }
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-            var groupUsersByAdminOrOwner = groupUsers.Where(x => x.Role is Message.UserRole.Admin or Message.UserRole.Owner).ToList();
-            var groupUsersByMember = groupUsers.Where(x => x.Role == Message.UserRole.Member).ToList();
 
-            var count = 0;
-            if (groupUsersByAdminOrOwner.Any())
+            var groupIdsByUser = groupUsers.Select(x => x.GroupId).ToList();
+            var queryByMessage = _repository.Query<Domain.Message>().Where(x => groupIdsByUser.Contains(x.GroupId) && x.SentBy != userId);
+            if (userIdsByFilter.Any())
             {
-                var _groupIds = groupUsersByAdminOrOwner.Select(x => x.GroupId).ToList();
-                var _userIds = _repository.Query<GroupUser>().Where(x => _groupIds.Contains(x.GroupId)
-                        && (x.Role == Message.UserRole.Admin || x.Role == Message.UserRole.Owner))
-                        .Select(x => x.UserId).ToList();
-
-                var messageIds = _repository.Query<Domain.Message>().Where(x => _groupIds.Contains(x.GroupId) && !_userIds.Contains(x.SentBy)).Select(x => x.Id).ToList();
-                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.Id, x.GroupId, x.SentTime }).ToList();
-                var _count = (from a in groupUsersByAdminOrOwner
-                              join b in _messages on a.GroupId equals b.GroupId
-                              where b.SentTime > a.LastReadTime || a.LastReadTime is null
-                              select b.Id.Distinct()).Count();
-                count += _count;
+                queryByMessage = queryByMessage.Where(x => !userIdsByFilter.Contains(x.SentBy));
             }
-            if (groupUsersByMember.Any())
+            if (messageIdsByFilter.Any())
             {
-                var _groupIds = groupUsersByMember.Select(x => x.GroupId).ToList();
-                var messageIds = (from a in _repository.Query<GroupUser>()
-                                  join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
-                                  where _groupIds.Contains(a.GroupId) && b.SentBy != userId
-                                  select b.Id).ToList().Distinct();
-                var _messages = _repository.Query<Domain.Message>().Where(x => messageIds.Contains(x.Id)).Select(x => new { x.Id, x.GroupId, x.SentTime }).ToList();
-                var _count = (from a in groupUsersByMember
-                              join b in _messages on a.GroupId equals b.GroupId
-                              where b.SentTime > a.LastReadTime || a.LastReadTime is null
-                              select b.Id.Distinct()).Count();
-                count += _count;
+                queryByMessage = queryByMessage.Where(x => !messageIdsByFilter.Contains(x.Id));
             }
-            return count;
+            return await _repository.CountAsync(queryByMessage, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)

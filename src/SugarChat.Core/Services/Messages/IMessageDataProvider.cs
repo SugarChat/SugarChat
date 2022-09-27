@@ -34,7 +34,13 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default);
 
-        Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+        Task<int> GetUnreadMessageCountAsync(string userId,
+            IEnumerable<string> groupIds,
+            CancellationToken cancellationToken = default,
+            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
+            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
+            Dictionary<string, List<string>> filterByMessageCustomProperties = null
+            );
 
         Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 

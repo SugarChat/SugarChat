@@ -89,6 +89,11 @@ namespace SugarChat.Data.MongoDb
             return await FilteredQuery(predicate).CountAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<int> CountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity
+        {
+            return await ((IMongoQueryable<T>)source).CountAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             return await FilteredQuery(predicate).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);

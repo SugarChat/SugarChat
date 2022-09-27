@@ -65,14 +65,15 @@ namespace SugarChat.Core.Services.Groups
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                     if (command.CustomProperties != null)
                     {
-                        var groupCustomProperties = new List<Domain.GroupCustomProperty>();
+                        var groupCustomProperties = new List<GroupCustomProperty>();
                         foreach (var customProperty in command.CustomProperties)
                         {
-                            groupCustomProperties.Add(new Domain.GroupCustomProperty
+                            groupCustomProperties.Add(new GroupCustomProperty
                             {
                                 GroupId = group.Id,
                                 Key = customProperty.Key,
-                                Value = customProperty.Value
+                                Value = customProperty.Value,
+                                CreatedBy = command.CreatedBy
                             });
                         }
                         await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);

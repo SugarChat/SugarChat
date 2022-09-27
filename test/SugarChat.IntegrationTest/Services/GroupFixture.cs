@@ -34,7 +34,7 @@ namespace SugarChat.IntegrationTest.Services
                     Id = Guid.NewGuid().ToString(),
                     CustomProperties = new Dictionary<string, string> { { "MerchId", "1" }, { "OrderId", "2" } },
                     CreatedBy = Guid.NewGuid().ToString(),
-                    GroupType = 10
+                    Type = 10
                 };
                 {
                     var response = await mediator.SendAsync<AddGroupCommand, SugarChatResponse>(command);
@@ -182,7 +182,7 @@ namespace SugarChat.IntegrationTest.Services
                         GroupType = 2
                     });
                     response.Data.Count().ShouldBe(1);
-                    response.Data.First().GroupType.ShouldBe(2);
+                    response.Data.First().Type.ShouldBe(2);
                 }
                 {
                     var response = await mediator.RequestAsync<GetGroupByCustomPropertiesRequest, SugarChatResponse<IEnumerable<GroupDto>>>(new GetGroupByCustomPropertiesRequest()
@@ -193,7 +193,7 @@ namespace SugarChat.IntegrationTest.Services
                         GroupType = 2
                     });
                     response.Data.Count().ShouldBe(1);
-                    response.Data.Count(x => x.GroupType == 2).ShouldBe(1);
+                    response.Data.Count(x => x.Type == 2).ShouldBe(1);
                 }
             });
         }

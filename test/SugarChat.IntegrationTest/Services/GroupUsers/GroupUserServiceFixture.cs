@@ -24,6 +24,11 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                await repository.AddAsync(new GroupUserCustomProperty { GroupUserId = groupUsers[7].Id, Key = "Key", Value = "Value" });
+                {
+                    var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                    reponse.Data.First(x => x.UserId == userId).CustomPropertyList.Count().ShouldBe(1);
+                }
                 await mediator.SendAsync<SetGroupMemberCustomFieldCommand, SugarChatResponse>(new SetGroupMemberCustomFieldCommand
                 {
                     GroupId = conversationId,
@@ -34,16 +39,20 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                     }
 
                 }, default(CancellationToken));
-
-                var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
+                {
+                    var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                    reponse.Data.First(x => x.UserId == userId).CustomPropertyList.Count().ShouldBe(1);
+                    var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
+                }
             });
         }
 
         [Fact]
         public async Task ShouldGetMembersOfGroup()
         {
-            await Run<IMediator>(async (mediator) =>
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                await repository.AddAsync(new GroupUserCustomProperty { GroupUserId = groupUsers[7].Id, Key = "Key", Value = "Value" });
                 var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
                 reponse.Data.Count().ShouldBe(2);
             });

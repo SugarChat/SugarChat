@@ -7,6 +7,8 @@ using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
+using System.Linq.Expressions;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -204,6 +206,16 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUsers.First().Id));
             }
+        }
+
+        public async Task<int> GetCountAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
         }
     }
 }

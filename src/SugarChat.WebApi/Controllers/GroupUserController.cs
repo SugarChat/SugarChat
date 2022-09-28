@@ -142,5 +142,12 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<UpdateGroupUserDataCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("MigrateCustomPropertyWhenRoleEqual0"), HttpPost]
+        public async Task<IActionResult> MigrateCustomPropertyWhenRoleEqual0(MigrateGroupUserCustomPropertyCommand command)
+        {
+            var response = await _mediator.SendAsync<MigrateGroupUserCustomPropertyCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
     }
 }

@@ -14,6 +14,7 @@ using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Basic;
 using System;
 using SugarChat.Message.Commands.Groups;
+using SugarChat.Message.Commands.Users;
 
 namespace SugarChat.IntegrationTest.Services.GroupUsers
 {
@@ -75,6 +76,33 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
             {
                 var reponse = await mediator.RequestAsync<GetUserIdsByGroupIdsRequest, SugarChatResponse<IEnumerable<string>>>(new GetUserIdsByGroupIdsRequest { GroupIds = new List<string> { conversationId } });
                 reponse.Data.Count().ShouldBe(2);
+            });
+        }
+
+        [Fact]
+        public async Task ShouldMigrateCustomPropertyWhenRoleEqual0()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                List<string> userIds = new List<string>();
+                for (int i = 0; i < 10; i++)
+                {
+                    userIds.Add(Guid.NewGuid().ToString());
+                    await mediator.SendAsync(new AddUserCommand { Id = userIds[i], DisplayName = "name" + i });
+                }
+
+                List<string> groupIds = new List<string>();
+                foreach (var groupType in new int[] { 0, 1 })
+                {
+                    groupIds.Add(Guid.NewGuid().ToString());
+                    await mediator.SendAsync(new AddGroupCommand { Id = groupIds[groupType], UserId = userIds[0], Type = groupType });
+                    await mediator.SendAsync(new AddGroupMemberCommand { GroupId = groupIds[groupType], AdminId = userIds[0], GroupUserIds = userIds.Skip(1), Role = Message.UserRole.Member });
+                }
+
+                await mediator.SendAsync(new MigrateGroupUserCustomPropertyCommand());
+                (await repository.CountAsync<GroupUserCustomProperty>()).ShouldBe(12);
+                (await repository.CountAsync<GroupUserCustomProperty>(x => x.Key == "UserType" && x.Value == "Merchant")).ShouldBe(1);
+                (await repository.CountAsync<GroupUserCustomProperty>(x => x.Key == "UserType" && x.Value == "Customer")).ShouldBe(9);
             });
         }
     }

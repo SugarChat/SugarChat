@@ -19,6 +19,8 @@ using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.Services.GroupUserCustomProperties;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
+using SugarChat.Message.Paging;
+using Serilog;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -481,6 +483,37 @@ namespace SugarChat.Core.Services.GroupUsers
                 {
                     await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
+                }
+            }
+        }
+
+        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        {
+            var filterGroupIds =  _groupDataProvider.GetGroupIds(x => x.Type != 0 && x.Type != null);
+
+            var total = await _groupUserDataProvider.GetCountAsync(x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+            var pageSize = 10;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var groupUsers = await _groupUserDataProvider.GetListAsync(new PageSettings { PageNum = i, PageSize = pageSize }, x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+                        var groupUserCustomProperties = new List<GroupUserCustomProperty>();
+                        foreach (var groupUser in groupUsers)
+                        {
+                            groupUserCustomProperties.Add(new GroupUserCustomProperty { GroupUserId = groupUser.Id, Key = "UserType", Value = groupUser.Role == UserRole.Member ? "Customer" : "Merchant" });
+                        }
+                        await _groupUserCustomPropertyDataProvider.AddRangeAsync(groupUserCustomProperties, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate GroupUser CustomProperty Error");
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    }
                 }
             }
         }

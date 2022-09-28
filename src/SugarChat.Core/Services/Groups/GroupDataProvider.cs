@@ -204,5 +204,10 @@ namespace SugarChat.Core.Services.Groups
         {
             await _repository.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
         }
+
+        public IEnumerable<string> GetGroupIds(Expression<Func<Group, bool>> predicate = null)
+        {
+            return _repository.Query<Group>().Where(predicate).Select(x => x.Id).ToList();
+        }
     }
 }

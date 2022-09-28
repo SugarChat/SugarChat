@@ -248,12 +248,12 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<(List<GroupUnReadCount>, int)> GetUnreadMessageCountAsync(string userId,
+        public async Task<(List<GroupUnReadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
-            CancellationToken cancellationToken = default,
             Dictionary<string, List<string>> filterByGroupCustomProperties = null,
             Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null
+            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
+            CancellationToken cancellationToken = default
             )
         {
             var groupIdsByFilter = new List<string>();

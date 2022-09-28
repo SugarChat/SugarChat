@@ -70,12 +70,12 @@ namespace SugarChat.Core.Services.Conversations
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
-            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
                     request.GroupIds,
-                    cancellationToken,
                     request.FilterUnreadCountByGroupCustomProperties,
                     request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
+                    request.FilterUnreadCountByMessageCustomProperties,
+                    cancellationToken).ConfigureAwait(false);
 
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {
@@ -110,12 +110,12 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
-            var (_, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
                     new List<string> { request.ConversationId },
-                    cancellationToken,
                     request.FilterUnreadCountByGroupCustomProperties,
                     request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
+                    request.FilterUnreadCountByMessageCustomProperties,
+                    cancellationToken).ConfigureAwait(false);
 
             var conversationDto = await GetConversationDto(groupUser, cancellationToken);
             conversationDto.UnreadCount = count;
@@ -222,12 +222,12 @@ namespace SugarChat.Core.Services.Conversations
             var groups = (await _groupDataProvider.GetByIdsAsync(conversations.Select(x => x.ConversationID), null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(conversations.Select(x => x.ConversationID), cancellationToken).ConfigureAwait(false);
-            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId,
+            var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
                     request.GroupIds,
-                    cancellationToken,
                     request.FilterUnreadCountByGroupCustomProperties,
                     request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties).ConfigureAwait(false);
+                    request.FilterUnreadCountByMessageCustomProperties,
+                    cancellationToken).ConfigureAwait(false);
 
             foreach (var conversation in conversations)
             {

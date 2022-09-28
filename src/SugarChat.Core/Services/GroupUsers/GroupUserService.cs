@@ -492,7 +492,7 @@ namespace SugarChat.Core.Services.GroupUsers
             var filterGroupIds =  _groupDataProvider.GetGroupIds(x => x.Type != 0 && x.Type != null);
 
             var total = await _groupUserDataProvider.GetCountAsync(x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
-            var pageSize = 10;
+            var pageSize = 5000;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {

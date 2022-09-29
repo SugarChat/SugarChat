@@ -261,7 +261,7 @@ namespace SugarChat.Core.Services.Groups
             return groupDtos;
         }
 
-        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
         {
             var total = await _groupDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
             var pageSize = 500;

@@ -450,7 +450,7 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
-        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
         {
             var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
             var pageSize = 5000;

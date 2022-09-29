@@ -105,5 +105,25 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                 (await repository.CountAsync<GroupUserCustomProperty>(x => x.Key == "UserType" && x.Value == "Customer")).ShouldBe(9);
             });
         }
+
+        [Fact]
+        public async Task ShouldJudgeUserInGroup()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                {
+                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = Guid.NewGuid().ToString(), UserId = Guid.NewGuid().ToString() });
+                    response.Data.ShouldBe(false);
+                }
+                {
+                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = conversationId, UserId = userId2 });
+                    response.Data.ShouldBe(false);
+                }
+                {
+                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = conversationId, UserId = userId });
+                    response.Data.ShouldBe(true);
+                }
+            });
+        }
     }
 }

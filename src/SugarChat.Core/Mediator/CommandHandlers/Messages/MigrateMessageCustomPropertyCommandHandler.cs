@@ -21,7 +21,7 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Messages
         }
         public async Task<SugarChatResponse> Handle(IReceiveContext<MigrateMessageCustomPropertyCommand> context, CancellationToken cancellationToken)
         {
-            await _messageService.MigrateCustomProperty(cancellationToken).ConfigureAwait(false);
+            await _messageService.MigrateCustomPropertyAsync(cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }
     }

@@ -149,5 +149,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<MigrateGroupUserCustomPropertyCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("JudgeUserInGroup"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]
+        public async Task<IActionResult> JudgeUserInGroup(JudgeUserInGroupCommand command)
+        {
+            var response = await _mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(command);
+            return Ok(response);
+        }
     }
 }

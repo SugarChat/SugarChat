@@ -50,7 +50,6 @@ namespace SugarChat.Core.Services.GroupUsers
             _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
         }
 
-
         public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
             CancellationToken cancellationToken = default)
         {
@@ -487,9 +486,9 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task MigrateCustomProperty(CancellationToken cancellation = default)
+        public async Task MigrateCustomPropertyAsnc(CancellationToken cancellation = default)
         {
-            var filterGroupIds =  _groupDataProvider.GetGroupIds(x => x.Type != 0 && x.Type != null);
+            var filterGroupIds = _groupDataProvider.GetGroupIds(x => x.Type != 0 && x.Type != null);
 
             var total = await _groupUserDataProvider.GetCountAsync(x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
             var pageSize = 5000;
@@ -516,6 +515,11 @@ namespace SugarChat.Core.Services.GroupUsers
                     }
                 }
             }
+        }
+
+        public async Task<bool> JudgeUserInGroupAsync(JudgeUserInGroupCommand command, CancellationToken cancellation = default)
+        {
+            return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, new List<string> { command.UserId }, cancellation).ConfigureAwait(false)).Any();
         }
     }
 }

@@ -53,6 +53,6 @@ namespace SugarChat.Core.Services.Messages
 
         Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
 
-        Task MigrateCustomProperty(CancellationToken cancellation = default);
+        Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
     }
 }

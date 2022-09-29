@@ -12,17 +12,19 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    public class MigrateGroupUserCustomPropertyCommandHandler : ICommandHandler<MigrateGroupUserCustomPropertyCommand, SugarChatResponse>
+    public class JudgeUserInGroupCommandHandler : ICommandHandler<JudgeUserInGroupCommand, SugarChatResponse<bool>>
     {
         private readonly IGroupUserService _groupUserService;
-        public MigrateGroupUserCustomPropertyCommandHandler(IGroupUserService groupUserService)
+        public JudgeUserInGroupCommandHandler(IGroupUserService groupUserService)
         {
             _groupUserService = groupUserService;
         }
-        public async Task<SugarChatResponse> Handle(IReceiveContext<MigrateGroupUserCustomPropertyCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<bool>> Handle(IReceiveContext<JudgeUserInGroupCommand> context, CancellationToken cancellationToken)
         {
-            await _groupUserService.MigrateCustomPropertyAsnc(cancellationToken).ConfigureAwait(false);
-            return new SugarChatResponse();
+            return new SugarChatResponse<bool>()
+            {
+                Data = await _groupUserService.JudgeUserInGroupAsync(context.Message, cancellationToken).ConfigureAwait(false)
+            };
         }
     }
 }

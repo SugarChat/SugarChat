@@ -334,6 +334,7 @@ namespace SugarChat.Core.Services.Messages
                     });
                 }
             }
+            message.CustomProperties = null;
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
                 try

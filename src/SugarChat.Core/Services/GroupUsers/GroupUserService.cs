@@ -248,7 +248,6 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupOwnerChangedEvent>(command);
         }
 
-
         public async Task<GroupMemberAddedEvent> AddGroupMembersAsync(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default)
         {
@@ -286,7 +285,8 @@ namespace SugarChat.Core.Services.GroupUsers
                             UserId = groupUserId,
                             GroupId = command.GroupId,
                             Role = command.Role,
-                            CreatedBy = command.CreatedBy
+                            CreatedBy = command.CreatedBy,
+                            LastReadTime = DateTime.Now
                         });
                         if (command.CustomProperties != null)
                         {
@@ -391,7 +391,6 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupMemberRoleSetEvent>(command);
         }
 
-
         private void CheckProperties(Dictionary<string, string> properties)
         {
             if (properties is null || !properties.Any())
@@ -399,7 +398,6 @@ namespace SugarChat.Core.Services.GroupUsers
                 throw new BusinessWarningException(Prompt.NoCustomProperty);
             }
         }
-
 
         private void CheckNotSameGroupUser(string newOwnerId, string ownerId)
         {

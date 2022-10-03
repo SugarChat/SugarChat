@@ -33,7 +33,7 @@ namespace SugarChat.Core.Services.Admin
                     {
                         if (groupBy.Count() > 1)
                         {
-                            needDeleteGroupCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedBy).Skip(1).ToList());
+                            needDeleteGroupCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedDate).Skip(1).ToList());
                         }
                     }
                 }
@@ -57,7 +57,7 @@ namespace SugarChat.Core.Services.Admin
                     {
                         if (groupBy.Count() > 1)
                         {
-                            needDeleteGroupUserCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedBy).Skip(1).ToList());
+                            needDeleteGroupUserCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedDate).Skip(1).ToList());
                         }
                     }
                 }
@@ -77,11 +77,25 @@ namespace SugarChat.Core.Services.Admin
                     {
                         if (groupBy.Count() > 1)
                         {
-                            needDeleteMessageCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedBy).Skip(1).ToList());
+                            needDeleteMessageCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedDate).Skip(1).ToList());
                         }
                     }
                 }
                 //await _repository.RemoveRangeAsync(needDeleteMessageCustomProperties);
+            }
+            {
+                var groupUserGroups = _repository.Query<GroupUser>().GroupBy(x => new { x.GroupId, x.UserId }).Where(x => x.Count() > 1).ToList();
+                var groupIds = groupUserGroups.Select(x => x.Key.GroupId).ToList();
+                var userIds = groupUserGroups.Select(x => x.Key.UserId).ToList();
+                var groupUsers = _repository.Query<GroupUser>().Where(x => groupIds.Contains(x.GroupId) && userIds.Contains(x.UserId)).ToList();
+
+                var needDeleteGroupUsers = new List<GroupUser>();
+                foreach (var groupUserGroup in groupUserGroups)
+                {
+                    var _groupUser = groupUsers.Where(x => x.GroupId == groupUserGroup.Key.GroupId && x.UserId == groupUserGroup.Key.UserId).OrderBy(x => x.CreatedDate).Skip(1).ToList();
+                    needDeleteGroupUsers.AddRange(_groupUser);
+                }
+                //await _repository.RemoveRangeAsync(needDeleteGroupUsers);
             }
         }
     }

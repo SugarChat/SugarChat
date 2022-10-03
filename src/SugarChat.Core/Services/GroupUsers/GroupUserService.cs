@@ -265,11 +265,8 @@ namespace SugarChat.Core.Services.GroupUsers
                 }
             }
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken);
-            if (groupUsers.Any())
-            {
-                throw new BusinessWarningException(Prompt.SomeGroupUsersExist);
-            }
+            IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x=>x.UserId);
+           var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x));
 
             var needAddGroupUsers = new List<GroupUser>();
             var groupUserCustomProperties = new List<GroupUserCustomProperty>();
@@ -277,7 +274,7 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 try
                 {
-                    foreach (var groupUserId in command.GroupUserIds)
+                    foreach (var groupUserId in needAddGroupUserIds)
                     {
                         needAddGroupUsers.Add(new GroupUser
                         {

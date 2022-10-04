@@ -282,6 +282,7 @@ namespace SugarChat.Core.Services.Messages
             var userIdsByFilter = new List<string>();
             if (filterByGroupUserCustomProperties != null)
             {
+                var groupUserIds = _repository.Query<GroupUser>().Where(x => groupIds.Contains(x.GroupId)).Select(x => x.Id).ToList();
                 var sb = new StringBuilder();
                 foreach (var dic in filterByGroupUserCustomProperties)
                 {
@@ -292,9 +293,9 @@ namespace SugarChat.Core.Services.Messages
                         sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
                     }
                 }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>(), sb.ToString().Substring(4));
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.Id)), sb.ToString().Substring(4));
                 var groupUserCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
-                var groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
+                groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
                 userIdsByFilter = (await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Select(x => x.UserId).ToList();
             }
             sw.Stop();

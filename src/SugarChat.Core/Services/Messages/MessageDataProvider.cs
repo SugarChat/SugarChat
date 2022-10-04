@@ -271,7 +271,7 @@ namespace SugarChat.Core.Services.Messages
                         sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
                     }
                 }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>(), sb.ToString().Substring(4));
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
                 var groupCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
                 groupIdsByFilter = groupCustomProperties.Select(x => x.GroupId).Distinct().ToList();
             }

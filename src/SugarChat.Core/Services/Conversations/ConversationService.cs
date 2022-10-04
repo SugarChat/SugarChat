@@ -58,7 +58,7 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest1" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest1 " + sw.ElapsedMilliseconds);
             sw.Restart();
 
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToArray();
@@ -67,7 +67,7 @@ namespace SugarChat.Core.Services.Conversations
                 groupIds = groupIds.Intersect(request.GroupIds).ToArray();
             }
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest2" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest2 " + sw.ElapsedMilliseconds);
             sw.Restart();
 
             var conversations = new List<ConversationDto>();
@@ -76,20 +76,20 @@ namespace SugarChat.Core.Services.Conversations
 
             var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest3" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest3 " + sw.ElapsedMilliseconds);
             sw.Restart();
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest4" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest4 " + sw.ElapsedMilliseconds);
             sw.Restart();
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest5" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest5 " + sw.ElapsedMilliseconds);
             sw.Restart();
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest6" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest6 " + sw.ElapsedMilliseconds);
             sw.Restart();
             var (groupUnreadCounts, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
                     request.GroupIds,
@@ -98,7 +98,7 @@ namespace SugarChat.Core.Services.Conversations
                     request.FilterUnreadCountByMessageCustomProperties,
                     cancellationToken).ConfigureAwait(false);
             sw.Stop();
-            Serilog.Log.Warning("GetConversationListRequest7" + sw.ElapsedMilliseconds);
+            Serilog.Log.Warning("GetConversationListRequest7 " + sw.ElapsedMilliseconds);
 
             foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
             {

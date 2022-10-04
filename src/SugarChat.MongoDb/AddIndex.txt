@@ -11,6 +11,11 @@ db.Message.createIndex({"SendTime":-1});
 db.GroupCustomProperty.createIndex({"GroupId":1});
 db.GroupCustomProperty.createIndex({"Key":1});
 db.GroupCustomProperty.createIndex({"Value":1});
+
 db.MessageCustomProperty.createIndex({"MessageId":1});
 db.MessageCustomProperty.createIndex({"Key":1});
 db.MessageCustomProperty.createIndex({"Value":1});
+
+db.GroupUserCustomProperty.createIndex({"GroupUserId":1});
+db.GroupUserCustomProperty.createIndex({"Key":1});
+db.GroupUserCustomProperty.createIndex({"Value":1});

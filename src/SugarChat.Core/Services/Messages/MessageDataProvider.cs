@@ -256,6 +256,10 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default
             )
         {
+            if (!groupIds.Any())
+            {
+                groupIds = _repository.Query<GroupUser>().Where(x => x.UserId == userId).Select(x => x.GroupId).Distinct().ToList();
+            }
             var groupIdsByFilter = new List<string>();
             if (filterByGroupCustomProperties != null)
             {
@@ -288,7 +292,7 @@ namespace SugarChat.Core.Services.Messages
                         sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
                     }
                 }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.Id)), sb.ToString().Substring(4));
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.GroupUserId)), sb.ToString().Substring(4));
                 var groupUserCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
                 groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
                 userIdsByFilter = (await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Select(x => x.UserId).ToList();
@@ -308,7 +312,7 @@ namespace SugarChat.Core.Services.Messages
                         sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
                     }
                 }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.MessageCustomProperty>().Where(x => messageIds.Contains(x.Id)), sb.ToString().Substring(4));
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.MessageCustomProperty>().Where(x => messageIds.Contains(x.MessageId)), sb.ToString().Substring(4));
                 var messageCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
                 messageIdsByFilter = messageCustomProperties.Select(x => x.MessageId).Distinct().ToList();
             }

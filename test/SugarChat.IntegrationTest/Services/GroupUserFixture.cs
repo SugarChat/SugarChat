@@ -282,13 +282,13 @@ namespace SugarChat.IntegrationTest.Services
                 command.GroupUserIds = userIds.Take(2).ToList();
                 await mediator.SendAsync(command);
                 (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(2);
-                (await repository.CountAsync<GroupUserCustomProperty>(x => command.GroupUserIds.Contains(x.GroupUserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(4);
+                (await repository.CountAsync<GroupUserCustomProperty>(x => x.CreatedBy == command.CreatedBy)).ShouldBe(4);
 
                 command.AdminId = groupOwnerId;
                 command.GroupUserIds = new string[] { userIds[1] };
                 await mediator.SendAsync(command);
                 (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(1);
-                (await repository.CountAsync<GroupUserCustomProperty>(x => command.GroupUserIds.Contains(x.GroupUserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(2);
+                (await repository.CountAsync<GroupUserCustomProperty>(x => x.CreatedBy == command.CreatedBy)).ShouldBe(4);
             });
         }
 

@@ -95,9 +95,11 @@ namespace SugarChat.Core.Services.Conversations
                 if (lastMessage is not null)
                 {
                     conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                    conversationDto.LastMessageSentTime = lastMessage.SentTime;
                 }
                 conversations.Add(conversationDto);
             }
+            conversations = conversations.OrderByDescending(x => x.UnreadCount).ThenByDescending(x => x.LastMessageSentTime).ToList();
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
         }
@@ -244,8 +246,10 @@ namespace SugarChat.Core.Services.Conversations
                 if (lastMessage is not null)
                 {
                     conversation.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                    conversation.LastMessageSentTime = lastMessage.SentTime;
                 }
             }
+            conversations = conversations.OrderByDescending(x => x.UnreadCount).ThenByDescending(x => x.LastMessageSentTime).ToList();
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = conversations.Count };
         }

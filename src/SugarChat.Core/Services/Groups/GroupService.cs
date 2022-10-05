@@ -82,11 +82,11 @@ namespace SugarChat.Core.Services.Groups
                 }
                 catch (MongoDB.Driver.MongoWriteException ex)
                 {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     if (ex.WriteError.Code == 11000)
                     {
                         group.CheckNotExist();
                     }
-                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
                 catch (Exception)

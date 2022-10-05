@@ -265,8 +265,8 @@ namespace SugarChat.Core.Services.GroupUsers
                 }
             }
 
-            IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x=>x.UserId);
-           var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x));
+            IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
+            var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x));
 
             var needAddGroupUsers = new List<GroupUser>();
             var groupUserCustomProperties = new List<GroupUserCustomProperty>();
@@ -276,7 +276,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 {
                     foreach (var groupUserId in needAddGroupUserIds)
                     {
-                        needAddGroupUsers.Add(new GroupUser
+                        var groupUser = new GroupUser
                         {
                             Id = Guid.NewGuid().ToString(),
                             UserId = groupUserId,
@@ -284,14 +284,15 @@ namespace SugarChat.Core.Services.GroupUsers
                             Role = command.Role,
                             CreatedBy = command.CreatedBy,
                             LastReadTime = DateTime.Now
-                        });
+                        };
+                        needAddGroupUsers.Add(groupUser);
                         if (command.CustomProperties != null)
                         {
                             foreach (var customProperty in command.CustomProperties)
                             {
                                 groupUserCustomProperties.Add(new GroupUserCustomProperty
                                 {
-                                    GroupUserId = groupUserId,
+                                    GroupUserId = groupUser.Id,
                                     Key = customProperty.Key,
                                     Value = customProperty.Value,
                                     CreatedBy = command.CreatedBy

@@ -375,8 +375,7 @@ namespace SugarChat.Core.Services.Messages
             if (groupIds == null || !groupIds.Any())
                 return new List<MessageCountGroupByGroupId>();
 
-            var groupUsers = pageSettings == null ? await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId)
-                : (await _repository.ToPagedListAsync<GroupUser>(pageSettings, x => groupIds.Contains(x.GroupId) && x.UserId == userId)).Result;
+            var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
 
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
             var messages = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
@@ -406,7 +405,14 @@ namespace SugarChat.Core.Services.Messages
                 }
                 result.Add(messageCountGroupByGroupId);
             }
-            result = result.OrderByDescending(x => x.Count).ToList();
+            if (pageSettings != null)
+                result = result.OrderByDescending(x => x.Count)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
+                    .Take(pageSettings.PageSize).ToList();
+            else
+                result = result.OrderByDescending(x => x.Count).ThenByDescending(x => x.LastSentTime).ToList();
+
             return result;
         }
 

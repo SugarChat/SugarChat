@@ -65,7 +65,13 @@ namespace SugarChat.Core.Services.Conversations
             if (groupIds.Count == 0)
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
 
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(user.Id,
+                    groupIds,
+                    request.PageSettings,
+                    request.FilterUnreadCountByGroupCustomProperties,
+                    request.FilterUnreadCountByGroupUserCustomProperties,
+                    request.FilterUnreadCountByMessageCustomProperties,
+                    cancellationToken);
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
@@ -236,7 +242,13 @@ namespace SugarChat.Core.Services.Conversations
                 //    .Take(request.PageSettings.PageSize)
                 //    .ToList();
             }
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, request.UserId, request.PageSettings, cancellationToken);
+            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(request.UserId,
+                    groupIds,
+                    request.PageSettings,
+                    request.FilterUnreadCountByGroupCustomProperties,
+                    request.FilterUnreadCountByGroupUserCustomProperties,
+                    request.FilterUnreadCountByMessageCustomProperties,
+                    cancellationToken);
             var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
             var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);

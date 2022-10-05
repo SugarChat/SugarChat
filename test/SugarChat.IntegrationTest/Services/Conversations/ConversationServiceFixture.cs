@@ -331,7 +331,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
             {
                 {
-                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(new string[] { conversationId, groupId4, groupId5 }, userId, null);
+                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).Count.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).Count.ShouldBe(3);
@@ -354,7 +354,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     });
                 }
                 {
-                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(new string[] { conversationId, groupId4, groupId5 }, userId, null);
+                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).Count.ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == groupId4).Count.ShouldBe(3);

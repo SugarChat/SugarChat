@@ -370,7 +370,13 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(string userId,
+            IEnumerable<string> groupIds,
+            PageSettings pageSettings,
+            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
+            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
+            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
+            CancellationToken cancellationToken = default)
         {
             if (groupIds == null || !groupIds.Any())
                 return new List<MessageCountGroupByGroupId>();
@@ -386,23 +392,24 @@ namespace SugarChat.Core.Services.Messages
                                  select new
                                  {
                                      GroupId = c.Key,
-                                     UnReadCount = c.Count(),
                                      LastMessageSentTime = c.Max(x => x.SentTime)
                                  }).ToList();
+
+            var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, filterByGroupCustomProperties, filterByGroupUserCustomProperties, filterByMessageCustomProperties, cancellationToken).ConfigureAwait(false);
 
             List<MessageCountGroupByGroupId> result = new List<MessageCountGroupByGroupId>();
             foreach (var groupUser in groupUsers)
             {
+                var groupUnreadCount = groupUnreadCounts.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
                 var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
                 var messageCountGroupByGroupId = new MessageCountGroupByGroupId
                 {
                     GroupId = groupUser.GroupId
                 };
                 if (messageGroup != null)
-                {
-                    messageCountGroupByGroupId.Count = messageGroup.UnReadCount;
                     messageCountGroupByGroupId.LastSentTime = messageGroup.LastMessageSentTime;
-                }
+                if (groupUnreadCount != null)
+                    messageCountGroupByGroupId.Count = groupUnreadCount.UnReadCount;
                 result.Add(messageCountGroupByGroupId);
             }
             if (pageSettings != null)

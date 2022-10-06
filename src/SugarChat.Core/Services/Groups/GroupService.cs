@@ -58,6 +58,7 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellation).ConfigureAwait(false);
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
                 try
@@ -66,18 +67,21 @@ namespace SugarChat.Core.Services.Groups
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                     if (command.CustomProperties != null)
                     {
-                        var groupCustomProperties = new List<GroupCustomProperty>();
+                        var _groupCustomProperties = new List<GroupCustomProperty>();
                         foreach (var customProperty in command.CustomProperties)
                         {
-                            groupCustomProperties.Add(new GroupCustomProperty
+                            if (!groupCustomProperties.Any(x => x.Key == customProperty.Key && x.Value == customProperty.Value))
                             {
-                                GroupId = group.Id,
-                                Key = customProperty.Key,
-                                Value = customProperty.Value,
-                                CreatedBy = command.CreatedBy
-                            });
+                                _groupCustomProperties.Add(new GroupCustomProperty
+                                {
+                                    GroupId = group.Id,
+                                    Key = customProperty.Key,
+                                    Value = customProperty.Value,
+                                    CreatedBy = command.CreatedBy
+                                });
+                            }
                         }
-                        await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
+                        await _groupCustomPropertyDataProvider.AddRangeAsync(_groupCustomProperties, cancellation).ConfigureAwait(false);
                     }
                 }
                 catch (MongoDB.Driver.MongoWriteException ex)

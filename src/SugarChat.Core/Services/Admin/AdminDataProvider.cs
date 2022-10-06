@@ -20,6 +20,10 @@ namespace SugarChat.Core.Services.Admin
         public async void RepairData()
         {
             {
+                //var groupIds= _repository.Query<Group>().Select(x => x.Id).ToList();
+                //var aaa = _repository.Query<GroupCustomProperty>().Where(x => !groupIds.Contains(x.GroupId)).ToList();
+            }
+            {
                 var groupIds = _repository.Query<GroupCustomProperty>().GroupBy(x => new { x.GroupId, x.Key, x.Value }).Where(x => x.Count() > 1).Select(x => x.Key.GroupId).ToList();
                 groupIds = groupIds.Distinct().ToList();
                 var groupCustomProperties = _repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)).ToList();

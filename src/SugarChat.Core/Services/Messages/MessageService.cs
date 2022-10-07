@@ -447,7 +447,7 @@ namespace SugarChat.Core.Services.Messages
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
                 message.CustomPropertyList = _messageCustomProperties;
-                message.CustomProperties = _messageCustomProperties.ToDictionary(x => x.Key, x => x.Value);
+                message.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             }
         }
 

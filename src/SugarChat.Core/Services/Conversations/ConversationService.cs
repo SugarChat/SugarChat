@@ -90,7 +90,7 @@ namespace SugarChat.Core.Services.Conversations
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
-                groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 //var unreadCount = groupUnreadCounts.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId)?.UnReadCount;
                 var conversationDto = new ConversationDto
                 {
@@ -260,7 +260,7 @@ namespace SugarChat.Core.Services.Conversations
                 var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
-                groupDto.CustomProperties = _groupCustomProperties.ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,

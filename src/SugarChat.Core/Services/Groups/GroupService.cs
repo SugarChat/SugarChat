@@ -202,7 +202,7 @@ namespace SugarChat.Core.Services.Groups
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
             if (groupDto.CustomProperties.Count < groupCustomProperties.Count())
-                Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.");
+                Log.Warning("GetGroupProfileAsync: An item with the same key has already been added.");
 
             return new GetGroupProfileResponse
             {

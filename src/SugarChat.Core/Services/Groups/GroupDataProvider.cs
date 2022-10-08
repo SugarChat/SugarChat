@@ -74,7 +74,7 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<Group>> GetByCustomProperties(IEnumerable<string> groupIds, Dictionary<string, string> customProperties, PageSettings pageSettings, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Group>> GetByCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, string> customProperties, PageSettings pageSettings, CancellationToken cancellationToken = default)
         {
             groupIds = groupIds ?? new List<string>();
             if (customProperties != null && customProperties.Any())

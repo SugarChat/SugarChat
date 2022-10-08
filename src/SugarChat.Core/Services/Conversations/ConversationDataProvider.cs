@@ -45,46 +45,6 @@ namespace SugarChat.Core.Services.Conversations
             return query.Take(count).AsEnumerable();
         }
 
-        public async Task<List<ConversationDto>> GetConversationsByGroupKeywordAsync(string userId, Dictionary<string, string> searchParms, CancellationToken cancellationToken = default, int? type = null)
-        {
-            if (searchParms == null || !searchParms.Any())
-            {
-                return new List<ConversationDto>();
-            }
-
-            var conversations = new List<ConversationDto>();
-            var groupIds = (await _groupDataProvider.GetByCustomProperties(null, searchParms, null, cancellationToken)).Where(x => x.Type == type || (type == 0 && x.Type == null)).Select(x => x.Id);
-            var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
-
-            var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
-            var messages = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
-            var messageGroups = (from a in groupUsers
-                                 join b in messages on a.GroupId equals b.GroupId
-                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null)
-                                 group b by b.GroupId into c
-                                 select new
-                                 {
-                                     GroupId = c.Key,
-                                     UnReadCount = c.Count(),
-                                     LastMessageSentTime = c.Max(x => x.SentTime)
-                                 }).ToList();
-            foreach (var groupUser in groupUsers)
-            {
-                var conversationDto = new ConversationDto
-                {
-                    ConversationID = groupUser.GroupId
-                };
-                var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
-                if (messageGroup != null)
-                {
-                    conversationDto.LastMessageSentTime = messageGroup.LastMessageSentTime;
-                    conversationDto.UnreadCount = messageGroup.UnReadCount;
-                }
-                conversations.Add(conversationDto);
-            }
-            return conversations;
-        }
-
         public async Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null)
         {
             if (searchParms == null || !searchParms.Any())

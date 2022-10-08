@@ -400,34 +400,47 @@ namespace SugarChat.Core.Services.Messages
                 var _user = users.SingleOrDefault(x => x.Id == message.SentBy);
                 _user.CheckExist(message.SentBy);
             }
-            var messageCustomProperties = new List<MessageCustomProperty>();
-            foreach (var updateMessageDto in command.Messages)
+
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(command.Messages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
+            var oldMessageCustomProperties = new List<MessageCustomProperty>();
+            var newMessageCustomProperties = new List<MessageCustomProperty>();
+            foreach (var messageDto in command.Messages)
             {
-                var message = messages.FirstOrDefault(x => x.Id == updateMessageDto.Id);
+                if (messageDto.CustomProperties != null && messageDto.CustomProperties.Any() && (messageDto.CustomPropertyList == null || !messageDto.CustomPropertyList.Any()))
+                {
+                    foreach (var customProperty in messageDto.CustomProperties)
+                    {
+                        var _customPropertyList = new List<MessageCustomPropertyDto>();
+                        _customPropertyList.Add(new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = customProperty.Key, Value = customProperty.Value });
+                        messageDto.CustomPropertyList = _customPropertyList;
+                    }
+                }
+                var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
                 if (message != null)
                 {
-                    _mapper.Map(updateMessageDto, message);
-                }
-                if (updateMessageDto.CustomPropertyList != null && updateMessageDto.CustomPropertyList.Any())
-                {
-                    foreach (var customProperty in updateMessageDto.CustomPropertyList)
+                    _mapper.Map(messageDto, message);
+                    if (messageDto.CustomPropertyList != null && messageDto.CustomPropertyList.Any())
                     {
-                        messageCustomProperties.Add(new MessageCustomProperty
+                        oldMessageCustomProperties.AddRange(messageCustomProperties.Where(x => x.MessageId == message.Id).ToList());
+                        foreach (var customProperty in messageDto.CustomPropertyList)
                         {
-                            MessageId = updateMessageDto.Id,
-                            Key = customProperty.Key,
-                            Value = customProperty.Value
-                        });
+                            newMessageCustomProperties.Add(new MessageCustomProperty
+                            {
+                                MessageId = messageDto.Id,
+                                Key = customProperty.Key,
+                                Value = customProperty.Value
+                            });
+                        }
                     }
                 }
             }
-            var oldMessageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(command.Messages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
+
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
                     await _messageCustomPropertyDataProvider.RemoveRangeAsync(oldMessageCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageCustomPropertyDataProvider.AddRangeAsync(newMessageCustomProperties, cancellationToken).ConfigureAwait(false);
                     await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }

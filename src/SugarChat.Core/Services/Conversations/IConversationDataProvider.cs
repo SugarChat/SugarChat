@@ -15,8 +15,6 @@ namespace SugarChat.Core.Services.Conversations
             int count = 15,
             CancellationToken cancellationToken = default);
 
-        Task<List<ConversationDto>> GetConversationsByGroupKeywordAsync(string userId, Dictionary<string, string> searchParms, CancellationToken cancellationToken = default, int? type = null);
-
         Task<List<ConversationDto>> GetConversationsByMessageKeywordAsync(string userId, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null);
 
         Task<List<ConversationDto>> GetConversationsByUserAsync(string userId, PageSettings pageSettings, CancellationToken cancellationToken = default, int? type = null);

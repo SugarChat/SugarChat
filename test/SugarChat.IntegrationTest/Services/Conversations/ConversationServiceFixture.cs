@@ -333,9 +333,9 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
                     result.Count().ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == conversationId).Count.ShouldBe(2);
-                    result.FirstOrDefault(x => x.GroupId == groupId4).Count.ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == groupId5).Count.ShouldBe(0);
+                    result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
+                    result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
+                    result.FirstOrDefault(x => x.GroupId == groupId5).UnreadCount.ShouldBe(0);
 
                     await repository.AddAsync(new Core.Domain.Message
                     {
@@ -356,9 +356,9 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
                     result.Count().ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == conversationId).Count.ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == groupId4).Count.ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == groupId5).Count.ShouldBe(0);
+                    result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(3);
+                    result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
+                    result.FirstOrDefault(x => x.GroupId == groupId5).UnreadCount.ShouldBe(0);
                 }
             });
         }
@@ -379,26 +379,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     var lastMessage = await messageDataProvider.GetLastMessageBygGroupIdAsync(groupId5);
                     lastMessage.Content.ShouldBe("888");
-                }
-            });
-        }
-
-        [Fact]
-        public async Task ShouldGetConversationsByGroupKeyword()
-        {
-            await Run<IConversationDataProvider>(async conversationDataProvider =>
-            {
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, new Dictionary<string, string> { { "A", "3" }, { "B", "1" } }, default, 10);
-                    conversations.Single().ConversationID.ShouldBe(groupId4);
-                }
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, new Dictionary<string, string> { { "B", "0" } }, default, 10);
-                    conversations.Count.ShouldBe(3);
-                }
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByGroupKeywordAsync(users[9].Id, null, default, 10);
-                    conversations.Count.ShouldBe(0);
                 }
             });
         }

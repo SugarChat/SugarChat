@@ -248,7 +248,7 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<(List<GroupUnReadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId,
+        public async Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
             Dictionary<string, List<string>> filterByGroupCustomProperties = null,
             Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
@@ -345,10 +345,10 @@ namespace SugarChat.Core.Services.Messages
                         select b).ToList();
 
             var messagesGroup = messages.GroupBy(x => x.GroupId).ToList();
-            List<GroupUnReadCount> groupUnReadCounts = new List<GroupUnReadCount>();
-            messagesGroup.ForEach(x => { groupUnReadCounts.Add(new GroupUnReadCount { GroupId = x.Key, UnReadCount = x.Count() }); });
+            List<GroupUnreadCount> groupUnreadCounts = new List<GroupUnreadCount>();
+            messagesGroup.ForEach(x => { groupUnreadCounts.Add(new GroupUnreadCount { GroupId = x.Key, UnreadCount = x.Count() }); });
 
-            return (groupUnReadCounts, messages.Count());
+            return (groupUnreadCounts, messages.Count());
         }
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
@@ -409,16 +409,16 @@ namespace SugarChat.Core.Services.Messages
                 if (messageGroup != null)
                     messageCountGroupByGroupId.LastSentTime = messageGroup.LastMessageSentTime;
                 if (groupUnreadCount != null)
-                    messageCountGroupByGroupId.Count = groupUnreadCount.UnReadCount;
+                    messageCountGroupByGroupId.UnreadCount = groupUnreadCount.UnreadCount;
                 result.Add(messageCountGroupByGroupId);
             }
             if (pageSettings != null)
-                result = result.OrderByDescending(x => x.Count)
+                result = result.OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
                     .Take(pageSettings.PageSize).ToList();
             else
-                result = result.OrderByDescending(x => x.Count).ThenByDescending(x => x.LastSentTime).ToList();
+                result = result.OrderByDescending(x => x.UnreadCount).ThenByDescending(x => x.LastSentTime).ToList();
 
             return result;
         }
@@ -470,9 +470,9 @@ namespace SugarChat.Core.Services.Messages
         }
     }
 
-    public class GroupUnReadCount
+    public class GroupUnreadCount
     {
         public string GroupId { get; set; }
-        public int UnReadCount { get; set; }
+        public int UnreadCount { get; set; }
     }
 }

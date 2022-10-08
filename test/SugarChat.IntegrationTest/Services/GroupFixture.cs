@@ -192,8 +192,8 @@ namespace SugarChat.IntegrationTest.Services
                         SearchAllGroup = true,
                         GroupType = 2
                     });
-                    response.Data.Count().ShouldBe(1);
-                    response.Data.Count(x => x.Type == 2).ShouldBe(1);
+                    response.Data.Count().ShouldBe(2);
+                    response.Data.Count(x => x.Type == 2).ShouldBe(2);
                 }
             });
         }

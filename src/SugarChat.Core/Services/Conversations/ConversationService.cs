@@ -89,7 +89,7 @@ namespace SugarChat.Core.Services.Conversations
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
                     GroupProfile = groupDto,
-                    UnreadCount = messageCountGroupByGroupId.Count,
+                    UnreadCount = messageCountGroupByGroupId.UnreadCount,
                     LastMessageSentTime = messageCountGroupByGroupId.LastSentTime
                 };
                 if (lastMessage is not null)
@@ -195,7 +195,9 @@ namespace SugarChat.Core.Services.Conversations
             {
                 if (request.GroupSearchParms != null && request.GroupSearchParms.Any())
                 {
-                    var _groupIds = (await _groupDataProvider.GetByCustomProperties(groupIds, request.GroupSearchParms, null, cancellationToken)).Where(x => x.Type == request.GroupType || (request.GroupType == 0 && x.Type == null)).Select(x => x.Id);
+                    var _groupIds = (await _groupDataProvider.GetByCustomPropertiesAsync(groupIds, request.GroupSearchParms, null, cancellationToken))
+                            .Where(x => x.Type == request.GroupType || (request.GroupType == 0 && x.Type == null))
+                            .Select(x => x.Id);
                     filterGroupIds.AddRange(_groupIds);
                 }
 
@@ -233,7 +235,7 @@ namespace SugarChat.Core.Services.Conversations
                 {
                     ConversationID = messageCountGroupByGroupId.GroupId,
                     GroupProfile = groupDto,
-                    UnreadCount = messageCountGroupByGroupId.Count,
+                    UnreadCount = messageCountGroupByGroupId.UnreadCount,
                     LastMessageSentTime = messageCountGroupByGroupId.LastSentTime
                 };
                 if (lastMessage is not null)

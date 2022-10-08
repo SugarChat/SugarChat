@@ -255,12 +255,15 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.UserId);
 
             List<string> groupIds = new List<string>();
-            groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
-            if (!request.SearchAllGroup && !groupIds.Any())
+            if (!request.SearchAllGroup)
             {
-                return new GroupDto[] { };
+                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                if (!groupIds.Any())
+                {
+                    return new GroupDto[] { };
+                }
             }
-            var groups = await _groupDataProvider.GetByCustomProperties(groupIds, request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
+            var groups = await _groupDataProvider.GetByCustomPropertiesAsync(groupIds, request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
             var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);

@@ -20,10 +20,6 @@ namespace SugarChat.Core.Services.Admin
         public async void RepairData()
         {
             {
-                //var groupIds= _repository.Query<Group>().Select(x => x.Id).ToList();
-                //var aaa = _repository.Query<GroupCustomProperty>().Where(x => !groupIds.Contains(x.GroupId)).ToList();
-            }
-            {
                 var groupIds = _repository.Query<GroupCustomProperty>().GroupBy(x => new { x.GroupId, x.Key, x.Value }).Where(x => x.Count() > 1).Select(x => x.Key.GroupId).ToList();
                 groupIds = groupIds.Distinct().ToList();
                 var groupCustomProperties = _repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)).ToList();
@@ -41,11 +37,7 @@ namespace SugarChat.Core.Services.Admin
                         }
                     }
                 }
-                //await _repository.RemoveRangeAsync(needDeleteGroupCustomProperties);
-
-                //var ccc = groupCustomProperties.Count(x => x.CreatedBy == null);
-                //var aaa = groupCustomProperties.Where(x => !needDeleteGroupCustomProperties.Select(y => y.Id).Contains(x.Id) && x.CreatedBy != null).ToList();
-                //var bbb = needDeleteGroupCustomProperties.Any(x => x.CreatedBy == null);
+                await _repository.RemoveRangeAsync(needDeleteGroupCustomProperties);
             }
             {
                 var groupUserIds = _repository.Query<GroupUserCustomProperty>().GroupBy(x => new { x.GroupUserId, x.Key, x.Value }).Where(x => x.Count() > 1).Select(x => x.Key.GroupUserId).ToList();
@@ -65,7 +57,7 @@ namespace SugarChat.Core.Services.Admin
                         }
                     }
                 }
-                //await _repository.RemoveRangeAsync(needDeleteGroupUserCustomProperties);
+                await _repository.RemoveRangeAsync(needDeleteGroupUserCustomProperties);
             }
             {
                 var messageIds = _repository.Query<MessageCustomProperty>().GroupBy(x => new { x.MessageId, x.Key, x.Value }).Where(x => x.Count() > 1).Select(x => x.Key.MessageId).ToList();
@@ -85,7 +77,7 @@ namespace SugarChat.Core.Services.Admin
                         }
                     }
                 }
-                //await _repository.RemoveRangeAsync(needDeleteMessageCustomProperties);
+                await _repository.RemoveRangeAsync(needDeleteMessageCustomProperties);
             }
             {
                 var groupUserGroups = _repository.Query<GroupUser>().GroupBy(x => new { x.GroupId, x.UserId }).Where(x => x.Count() > 1).ToList();
@@ -99,7 +91,7 @@ namespace SugarChat.Core.Services.Admin
                     var _groupUser = groupUsers.Where(x => x.GroupId == groupUserGroup.Key.GroupId && x.UserId == groupUserGroup.Key.UserId).OrderBy(x => x.CreatedDate).Skip(1).ToList();
                     needDeleteGroupUsers.AddRange(_groupUser);
                 }
-                //await _repository.RemoveRangeAsync(needDeleteGroupUsers);
+                await _repository.RemoveRangeAsync(needDeleteGroupUsers);
             }
         }
     }

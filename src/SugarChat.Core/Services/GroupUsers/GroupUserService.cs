@@ -270,7 +270,7 @@ namespace SugarChat.Core.Services.GroupUsers
             }
 
             IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
-            var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x));
+            var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct();
 
             var needAddGroupUsers = new List<GroupUser>();
             var groupUserCustomProperties = new List<GroupUserCustomProperty>();
@@ -329,10 +329,9 @@ namespace SugarChat.Core.Services.GroupUsers
             IEnumerable<GroupUser> groupUsers =
                 await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIdList,
                     cancellationToken);
-            if (groupUsers.Count() != command.UserIdList.Count)
-            {
-                throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
-            }
+            if (!groupUsers.Any())
+                return _mapper.Map<GroupMemberRemovedEvent>(command);
+
             if (groupUsers.Any(o => o.Role == UserRole.Owner))
             {
                 throw new BusinessWarningException(Prompt.RemoveOwnerFromGroup);

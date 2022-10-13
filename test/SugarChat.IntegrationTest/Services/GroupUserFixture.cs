@@ -338,11 +338,6 @@ namespace SugarChat.IntegrationTest.Services
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
                 (await repository.CountAsync<GroupUserCustomProperty>()).ShouldBe(3);
-
-                {
-                    var response = await mediator.SendAsync<RemoveGroupMemberCommand, SugarChatResponse>(command);
-                    response.Message.ShouldBe(Prompt.NotAllGroupUsersExist.Message);
-                }
             });
         }
 

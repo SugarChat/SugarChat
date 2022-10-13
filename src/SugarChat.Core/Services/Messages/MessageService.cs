@@ -270,11 +270,8 @@ namespace SugarChat.Core.Services.Messages
             group.CheckExist(command.GroupId);
 
             IEnumerable<GroupUser> groupUsers = (await _groupUserDataProvider.GetMembersByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false)).ToList();
-            var groupUserIds = groupUsers.Select(o => o.UserId);
-            if (command.UserIds.Except(groupUserIds).Any())
-            {
-                throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
-            }
+            if (!groupUsers.Any())
+                return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
 
             Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             if (lastMessageOfGroup is not null)

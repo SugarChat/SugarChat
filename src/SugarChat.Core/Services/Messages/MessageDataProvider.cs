@@ -256,6 +256,7 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default
             )
         {
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             if (!groupIds.Any())
             {
                 groupIds = _repository.Query<GroupUser>().Where(x => x.UserId == userId).Select(x => x.GroupId).Distinct().ToList();
@@ -281,7 +282,10 @@ namespace SugarChat.Core.Services.Messages
             var userIdsByFilter = new List<string>();
             if (filterByGroupUserCustomProperties != null)
             {
+                sw.Start();
                 var groupUserIds = _repository.Query<GroupUser>().Where(x => groupIds.Contains(x.GroupId)).Select(x => x.Id).ToList();
+                sw.Stop();
+                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync1 " + sw.ElapsedMilliseconds);
                 var sb = new StringBuilder();
                 foreach (var dic in filterByGroupUserCustomProperties)
                 {
@@ -292,10 +296,16 @@ namespace SugarChat.Core.Services.Messages
                         sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
                     }
                 }
+                sw.Restart();
                 var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.GroupUserId)), sb.ToString().Substring(4));
                 var groupUserCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                sw.Stop();
+                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync2 " + sw.ElapsedMilliseconds);
                 groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
+                sw.Restart();
                 userIdsByFilter = (await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Select(x => x.UserId).ToList();
+                sw.Stop();
+                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync3 " + sw.ElapsedMilliseconds);
             }
 
             var messageIdsByFilter = new List<string>();
@@ -326,7 +336,10 @@ namespace SugarChat.Core.Services.Messages
             {
                 query = query.Where(x => !groupIdsByFilter.Contains(x.GroupId));
             }
+            sw.Restart();
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync4 " + sw.ElapsedMilliseconds);
 
             var groupIdsByUser = groupUsers.Select(x => x.GroupId).ToList();
             var queryByMessage = _repository.Query<Domain.Message>().Where(x => groupIdsByUser.Contains(x.GroupId) && x.SentBy != userId);
@@ -338,11 +351,19 @@ namespace SugarChat.Core.Services.Messages
             {
                 queryByMessage = queryByMessage.Where(x => !messageIdsByFilter.Contains(x.Id));
             }
+
+            sw.Restart();
             var messages = queryByMessage.Select(x => new { x.GroupId, x.Id, x.SentTime }).ToList();
+            sw.Stop();
+            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync5 " + sw.ElapsedMilliseconds);
+
+            sw.Restart();
             messages = (from a in groupUsers
                         join b in messages on a.GroupId equals b.GroupId
                         where b.SentTime > a.LastReadTime || a.LastReadTime is null
                         select b).ToList();
+            sw.Stop();
+            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync6 " + sw.ElapsedMilliseconds);
 
             var messagesGroup = messages.GroupBy(x => x.GroupId).ToList();
             List<GroupUnreadCount> groupUnreadCounts = new List<GroupUnreadCount>();

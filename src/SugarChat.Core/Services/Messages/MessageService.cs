@@ -69,10 +69,11 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(userId);
 
             var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken, request.GroupType);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllUnreadToUserResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -91,10 +92,11 @@ namespace SugarChat.Core.Services.Messages
             friend.CheckExist(request.UserId, request.FriendId);
 
             var messages = await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadToUserFromFriendResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -113,10 +115,11 @@ namespace SugarChat.Core.Services.Messages
             friend.CheckExist(request.UserId, request.FriendId);
 
             var messages = await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserFromFriendResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -128,10 +131,11 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(userId);
 
             var messages = await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -151,10 +155,11 @@ namespace SugarChat.Core.Services.Messages
             groupUser.CheckExist(request.UserId, request.GroupId);
 
             var messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -174,10 +179,11 @@ namespace SugarChat.Core.Services.Messages
             groupUser.CheckExist(request.UserId, request.GroupId);
 
             var messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllMessagesFromGroupResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -188,12 +194,13 @@ namespace SugarChat.Core.Services.Messages
             group.CheckExist(request.GroupId);
 
             var messages = await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
-            await GetPropertiesForMessages(messages.Result, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages.Result);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
                 Messages = new PagedResult<MessageDto>
                 {
-                    Result = _mapper.Map<IEnumerable<MessageDto>>(messages.Result),
+                    Result = messageDtos,
                     Total = messages.Total
                 }
             };
@@ -209,10 +216,11 @@ namespace SugarChat.Core.Services.Messages
             var messages =
                 await _messageDataProvider.GetMessagesOfGroupBeforeAsync(request.MessageId, request.Count,
                     cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -373,8 +381,9 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(request.UserId);
 
             var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
-            await GetPropertiesForMessages(messages, cancellationToken).ConfigureAwait(false);
-            return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
+            var messageDtos = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList();
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
+            return messageDtos;
         }
 
         public async Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default)
@@ -449,14 +458,14 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
-        private async Task GetPropertiesForMessages(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken)
+        private async Task GetPropertiesForMessages(IEnumerable<MessageDto> messages, CancellationToken cancellationToken)
         {
             var messageIds = messages.Select(x => x.Id);
             var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
             foreach (var message in messages)
             {
-                var _messageCustomProperties = messageCustomProperties.Where(x => x.Id == message.Id).ToList();
-                message.CustomPropertyList = _messageCustomProperties;
+                var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == message.Id).ToList();
+                message.CustomPropertyList = _mapper.Map<IEnumerable<MessageCustomPropertyDto>>(_messageCustomProperties);
                 message.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             }
         }

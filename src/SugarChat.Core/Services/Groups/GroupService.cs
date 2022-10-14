@@ -126,9 +126,19 @@ namespace SugarChat.Core.Services.Groups
             User user = await GetUserAsync(request.UserId, cancellation).ConfigureAwait(false);
             user.CheckExist(request.UserId);
 
+            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation, request.GroupType).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetGroupsOfUserAsync1 " + sw.ElapsedMilliseconds);
+            sw.Restart();
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetGroupsOfUserAsync2 " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
+            sw.Stop();
+            Serilog.Log.Warning("GetGroupsOfUserAsync3 " + sw.ElapsedMilliseconds);
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
             foreach (var groupDto in groupDtos)
             {

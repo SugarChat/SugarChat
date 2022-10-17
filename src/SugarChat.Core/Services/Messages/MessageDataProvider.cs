@@ -381,27 +381,37 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default
             )
         {
-            if (filterByGroupUserCustomProperties != null)
-            {
-                var sb = new StringBuilder();
-                foreach (var dic in filterByGroupUserCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
-                    }
-                }
+            //if (filterByGroupUserCustomProperties != null)
+            //{
+            //    var sb = new StringBuilder();
+            //    foreach (var dic in filterByGroupUserCustomProperties)
+            //    {
+            //        foreach (var value in dic.Value)
+            //        {
+            //            var _value = value.Replace("\\", "\\\\");
+            //            var _key = dic.Key.Replace("\\", "\\\\");
+            //            sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+            //        }
+            //    }
 
-                var linq = from gucp in _repository.Query<GroupUserCustomProperty>()
-                           join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
-                           select gucp;
-                var aaa = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(linq, sb.ToString().Substring(4));
-                var bbb = aaa.ToList();
-            }
+            //    var linq = from gucp in _repository.Query<GroupUserCustomProperty>()
+            //               join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
+            //               select gucp;
+            //    var aaa = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(linq, sb.ToString().Substring(4));
+            //    var bbb = aaa.ToList();
+            //}
 
-            //var count = (from gu in _repository.Query<GroupUser>()
+            //var aaa = from gucp in _repository.Query<GroupUserCustomProperty>()
+            //          join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
+            //          group gucp by gucp.GroupUserId into g
+            //          select new
+            //          {
+            //              Key = g.Key,
+            //              Count = g.Count()
+            //          };
+            //var bbb = aaa.ToList();
+
+            //var aaa = (from gu in _repository.Query<GroupUser>()
             //             join g in _repository.Query<Group>() on gu.GroupId equals g.Id
             //             join m in _repository.Query<Domain.Message>() on g.Id equals m.GroupId
             //             where gu.UserId == userId && gu.LastReadTime < m.SentTime

@@ -139,7 +139,11 @@ namespace SugarChat.Core.Services.Groups
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
             sw.Stop();
             Serilog.Log.Warning("GetGroupsOfUserAsync3 " + sw.ElapsedMilliseconds);
+            sw.Restart();
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
+            sw.Stop();
+            Serilog.Log.Warning("GetGroupsOfUserAsync4 " + sw.ElapsedMilliseconds);
+            sw.Restart();
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
@@ -149,6 +153,8 @@ namespace SugarChat.Core.Services.Groups
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
                     Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.");
             }
+            sw.Stop();
+            Serilog.Log.Warning("GetGroupsOfUserAsync5 " + sw.ElapsedMilliseconds);
             PagedResult<GroupDto> groupsDto = new()
             {
                 Result = groupDtos,

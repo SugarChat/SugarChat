@@ -256,6 +256,7 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default
             )
         {
+            //var aaa = GetUnreadCountByGroupIdsAsync2(userId, groupIds, filterByGroupCustomProperties, filterByGroupUserCustomProperties, filterByMessageCustomProperties);
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             if (!groupIds.Any())
             {
@@ -370,6 +371,49 @@ namespace SugarChat.Core.Services.Messages
             messagesGroup.ForEach(x => { groupUnreadCounts.Add(new GroupUnreadCount { GroupId = x.Key, UnreadCount = x.Count() }); });
 
             return (groupUnreadCounts, messages.Count());
+        }
+
+        private (List<GroupUnreadCount>, int) GetUnreadCountByGroupIdsAsync2(string userId,
+            IEnumerable<string> groupIds,
+            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
+            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
+            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
+            CancellationToken cancellationToken = default
+            )
+        {
+            if (filterByGroupUserCustomProperties != null)
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in filterByGroupUserCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                    }
+                }
+
+                var linq = from gucp in _repository.Query<GroupUserCustomProperty>()
+                           join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
+                           select gucp;
+                var aaa = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(linq, sb.ToString().Substring(4));
+                var bbb = aaa.ToList();
+            }
+
+            //var count = (from gu in _repository.Query<GroupUser>()
+            //             join g in _repository.Query<Group>() on gu.GroupId equals g.Id
+            //             join m in _repository.Query<Domain.Message>() on g.Id equals m.GroupId
+            //             where gu.UserId == userId && gu.LastReadTime < m.SentTime
+            //             select m.Id).Count();
+
+            //var aaa = (from gu in _repository.Query<GroupUser>()
+            //           where gu.LastModifyDate > gu.CreatedDate
+            //           select gu.Id).Count();
+
+            //var aaa = _repository.Query<GroupUser>().Where(x => x.LastModifyDate > x.CreatedDate).Count();
+
+            return (new List<GroupUnreadCount>(), 0);
         }
 
         public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)

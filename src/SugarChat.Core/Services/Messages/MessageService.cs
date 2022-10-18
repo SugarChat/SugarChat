@@ -240,10 +240,10 @@ namespace SugarChat.Core.Services.Messages
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, message.GroupId,
                     cancellationToken);
             groupUser.CheckExist(command.UserId, message.GroupId);
-            groupUser.CheckLastReadTimeEarlierThan(message.SentTime);
 
-            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, message.GroupId, message.SentTime,
-                cancellationToken);
+            groupUser.UnreadCount = 0;
+            groupUser.LastReadTime = DateTime.Now;
+
             return _mapper.Map<MessageReadSetByUserBasedOnMessageIdEvent>(command);
         }
 

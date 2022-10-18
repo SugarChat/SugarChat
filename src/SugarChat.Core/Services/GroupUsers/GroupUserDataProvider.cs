@@ -73,29 +73,6 @@ namespace SugarChat.Core.Services.GroupUsers
                 .ConfigureAwait(false);
         }
 
-        public async Task SetMessageReadAsync(string userId, string groupId, DateTimeOffset messageSentTime,
-            CancellationToken cancellationToken = default)
-        {
-            GroupUser groupUser =
-                await _repository.SingleOrDefaultAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
-                    cancellationToken);
-            if (groupUser is null)
-            {
-                throw new ArgumentException();
-            }
-            if (groupUser.LastReadTime == messageSentTime)
-            {
-                return;
-            }
-            groupUser.LastReadTime = messageSentTime;
-
-            int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
-            if (affectedLineNum != 1)
-            {
-                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUser.Id));
-            }
-        }
-
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellationToken = default)
         {
             int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellationToken);

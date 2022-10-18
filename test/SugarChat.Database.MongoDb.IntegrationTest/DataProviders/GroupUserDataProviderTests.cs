@@ -124,21 +124,5 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(Spike.Id, TomAndJerryGroup.Id);
             tomInTomAndJerryGroupUser.ShouldBeNull();
         }
-        
-        [Fact]
-        public async Task Should_Set_Message_Read_To_Proper_Time()
-        {
-            await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id, BaseTime);
-            GroupUser tomInTomAndJerryGroupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(Tom.Id, TomAndJerryGroup.Id);
-            tomInTomAndJerryGroupUser.LastReadTime.ShouldBe(BaseTime);
-        }
-        
-        [Fact]
-        public async Task Should_Not_Set_Incorrect_Message_Read()
-        {
-            await Assert.ThrowsAnyAsync<ArgumentException>(async () =>
-                await _groupUserDataProvider.SetMessageReadAsync(Spike.Id, TomAndJerryGroup.Id, BaseTime));
-        }
     }
 }

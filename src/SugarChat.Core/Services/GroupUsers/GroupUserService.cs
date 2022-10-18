@@ -274,7 +274,6 @@ namespace SugarChat.Core.Services.GroupUsers
 
             var needAddGroupUsers = new List<GroupUser>();
             var groupUserCustomProperties = new List<GroupUserCustomProperty>();
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
@@ -287,8 +286,7 @@ namespace SugarChat.Core.Services.GroupUsers
                             UserId = groupUserId,
                             GroupId = command.GroupId,
                             Role = command.Role,
-                            CreatedBy = command.CreatedBy,
-                            LastReadTime = lastMessageOfGroup?.SentTime
+                            CreatedBy = command.CreatedBy
                         };
                         needAddGroupUsers.Add(groupUser);
                         if (command.CustomProperties != null)

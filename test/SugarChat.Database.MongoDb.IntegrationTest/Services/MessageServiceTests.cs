@@ -493,7 +493,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             GroupUser groupUser = await Repository.SingleAsync<GroupUser>(o =>
                 o.UserId == setMessageReadByUserBasedOnGroupIdCommand.UserId &&
                 o.GroupId == setMessageReadByUserBasedOnGroupIdCommand.GroupId);
-            groupUser.LastReadTime.ShouldBe(MessageOfGroupTomAndJerry2.SentTime);
+            groupUser.UnreadCount.ShouldBe(0);
         }
 
         [Fact]
@@ -530,22 +530,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
                 UserId = Tyke.Id,
                 GroupId = TomAndJerryGroup.Id
             };
-            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(
-                    setMessageReadByUserBasedOnGroupIdCommand));
-        }
-
-        [Fact]
-        public async Task
-            Should_Not_Set_Message_Read_By_User_Based_On_Group_Id_When_Last_Read_Time_Later_The_Message()
-        {
-            SetMessageReadByUserBasedOnGroupIdCommand setMessageReadByUserBasedOnGroupIdCommand = new()
-            {
-                UserId = Tom.Id,
-                GroupId = TomAndJerryGroup.Id
-            };
-            TomInTomAndJerry.LastReadTime = MessageOfGroupTomAndJerry2.SentTime.AddSeconds(5);
-            await Repository.UpdateAsync(TomInTomAndJerry);
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
                 await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(
                     setMessageReadByUserBasedOnGroupIdCommand));

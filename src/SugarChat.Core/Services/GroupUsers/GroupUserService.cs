@@ -208,25 +208,25 @@ namespace SugarChat.Core.Services.GroupUsers
                 }
             }
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken);
-            if (groupUsers.Any())
+            IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
+            var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct();
+            if (needAddGroupUserIds.Any())
             {
-                throw new BusinessWarningException(Prompt.SomeGroupUsersExist);
-            }
-
-            var needAddGroupUsers = new List<GroupUser>();
-            foreach (var groupUserId in command.GroupUserIds)
-            {
-                needAddGroupUsers.Add(new GroupUser
+                var needAddGroupUsers = new List<GroupUser>();
+                foreach (var groupUserId in needAddGroupUserIds)
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = groupUserId,
-                    GroupId = command.GroupId,
-                    Role = command.Role,
-                    CreatedBy = command.CreatedBy
-                });
+                    var groupUser = new GroupUser
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = groupUserId,
+                        GroupId = command.GroupId,
+                        Role = command.Role,
+                        CreatedBy = command.CreatedBy
+                    };
+                    needAddGroupUsers.Add(groupUser);
+                }
+                await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
             }
-            await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }

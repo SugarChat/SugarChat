@@ -55,9 +55,14 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId, request.GroupIds, request.PageSettings, cancellationToken).ConfigureAwait(false);
-
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            if (!groupIds.Any())
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId,
+                    request.GroupIds,
+                    request.PageSettings,
+                    cancellationToken, request.GroupType).ConfigureAwait(false);
 
             var conversations = new List<ConversationDto>();
             if (!unreadCountAndLastSentTimeByGroupIds.Any())
@@ -164,6 +169,9 @@ namespace SugarChat.Core.Services.Conversations
                 request.MessageSearchParms = request.SearchParms;
 
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            if (!groupIds.Any())
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+
             var filterGroupIds = new List<string>();
             var conversations = new List<ConversationDto>();
             if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any())) { }
@@ -189,7 +197,11 @@ namespace SugarChat.Core.Services.Conversations
                     groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
             }
 
-            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId, groupIds, request.PageSettings, cancellationToken);
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId,
+                    groupIds,
+                    request.PageSettings,
+                    cancellationToken,
+                    request.GroupType).ConfigureAwait(false);
             if (!unreadCountAndLastSentTimeByGroupIds.Any())
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
 

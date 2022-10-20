@@ -243,6 +243,7 @@ namespace SugarChat.Core.Services.Messages
 
             groupUser.UnreadCount = 0;
             groupUser.LastReadTime = DateTime.Now;
+            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageReadSetByUserBasedOnMessageIdEvent>(command);
         }

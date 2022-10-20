@@ -81,13 +81,13 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(repository, userId5, groupId2));
             groupUsers.Add(GenerateGroupUser(repository, userId6, groupId2));
             groupUsers.Add(GenerateGroupUser(repository, userId7, groupId2));
-            groupUsers.Add(GenerateGroupUser(repository, userId, conversationId));
-            groupUsers.Add(GenerateGroupUser(repository, userId9, conversationId));
-            groupUsers.Add(GenerateGroupUser(repository, userId1, groupId4));
-            groupUsers.Add(GenerateGroupUser(repository, userId, groupId4));
-            groupUsers.Add(GenerateGroupUser(repository, userId2, groupId4, new Dictionary<string, string> { { "userType", "admin" } }));
-            groupUsers.Add(GenerateGroupUser(repository, userId4, groupId4));
-            groupUsers.Add(GenerateGroupUser(repository, userId3, groupId4, new Dictionary<string, string> { { "userType", "admin" } }));
+            groupUsers.Add(GenerateGroupUser(repository, userId, conversationId, 2));
+            groupUsers.Add(GenerateGroupUser(repository, userId9, conversationId, 1));
+            groupUsers.Add(GenerateGroupUser(repository, userId1, groupId4, 3));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId4, 3));
+            groupUsers.Add(GenerateGroupUser(repository, userId2, groupId4, 3, new Dictionary<string, string> { { "userType", "admin" } }));
+            groupUsers.Add(GenerateGroupUser(repository, userId4, groupId4, 4));
+            groupUsers.Add(GenerateGroupUser(repository, userId3, groupId4, 3, new Dictionary<string, string> { { "userType", "admin" } }));
             groupUsers.Add(GenerateGroupUser(repository, userId, groupId5));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
@@ -161,7 +161,7 @@ namespace SugarChat.IntegrationTest.Services
                 BecomeFriendAt = DateTimeOffset.Now
             };
         }
-        private GroupUser GenerateGroupUser(IRepository repository, string userId, string groupId, Dictionary<string, string> customProperties = null)
+        private GroupUser GenerateGroupUser(IRepository repository, string userId, string groupId, int unreadCount = 0, Dictionary<string, string> customProperties = null)
         {
             var groupUser = new GroupUser
             {
@@ -172,6 +172,7 @@ namespace SugarChat.IntegrationTest.Services
                 LastModifyDate = DateTimeOffset.Now,
                 UserId = userId, //用户10
                 GroupId = groupId,//组1
+                UnreadCount = unreadCount
             };
 
             if (customProperties != null)

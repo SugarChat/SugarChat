@@ -127,6 +127,16 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(request.UserId);
 
             IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, cancellation, request.GroupType).ConfigureAwait(false);
+            if (!groupUsers.Any())
+                return new()
+                {
+                    Groups = new()
+                    {
+                        Result = new List<GroupDto>(),
+                        Total = 0
+                    }
+                };
+
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);

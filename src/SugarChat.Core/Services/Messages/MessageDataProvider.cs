@@ -292,6 +292,10 @@ namespace SugarChat.Core.Services.Messages
             int? type = null)
         {
             var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, cancellationToken, type).ConfigureAwait(false);
+            if (!groupUsers.Any())
+            {
+                return new List<UnreadCountAndLastMessageByGroupId>();
+            }
 
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
             var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
@@ -311,6 +315,7 @@ namespace SugarChat.Core.Services.Messages
                     unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                     unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
                 }
+                unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }
             return unreadCountAndLastMessageByGroupIds
                     .OrderByDescending(x => x.UnreadCount)

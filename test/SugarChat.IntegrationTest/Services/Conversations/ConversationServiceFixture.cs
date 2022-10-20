@@ -85,8 +85,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      GroupType = 10
                  };
                  var response = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
-                 response.Data.Where(x => x.ConversationID == conversationId)
-                 .FirstOrDefault().UnreadCount.ShouldBe(0);
+                 response.Data.Where(x => x.ConversationID == conversationId).FirstOrDefault().UnreadCount.ShouldBe(0);
              });
         }
 
@@ -331,7 +330,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
             {
                 {
-                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings());
+                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), type: 10);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
@@ -354,9 +353,9 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     });
                 }
                 {
-                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
+                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), type: 10);
                     result.Count().ShouldBe(3);
-                    result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(3);
+                    result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == groupId5).UnreadCount.ShouldBe(0);
                 }

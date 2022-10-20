@@ -366,12 +366,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
-                    request.GroupIds,
-                    request.FilterByGroupCustomProperties,
-                    request.FilterByGroupUserCustomProperties,
-                    request.FilterByMessageCustomProperties,
-                    cancellationToken).ConfigureAwait(false);
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, request.GroupIds, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessageCountResponse
             {
                 Count = count

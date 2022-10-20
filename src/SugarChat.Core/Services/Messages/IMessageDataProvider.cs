@@ -34,27 +34,17 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default);
 
-        Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId,
-            IEnumerable<string> groupIds,
-            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
-            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
-            CancellationToken cancellationToken = default
-            );
+        Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetMessagesByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken);
-
-        Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(string userId,
+        Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastSentTimeGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
             PageSettings pageSettings,
-            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
-            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken = default,
+            int? type = null);
 
         Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
 

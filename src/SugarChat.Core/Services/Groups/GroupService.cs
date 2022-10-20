@@ -123,27 +123,13 @@ namespace SugarChat.Core.Services.Groups
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {
-            User user = await GetUserAsync(request.UserId, cancellation).ConfigureAwait(false);
+            User user = await _userDataProvider.GetByIdAsync(request.UserId, cancellation).ConfigureAwait(false);
             user.CheckExist(request.UserId);
 
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation, request.GroupType).ConfigureAwait(false);
-            sw.Stop();
-            Serilog.Log.Warning("GetGroupsOfUserAsync1 " + sw.ElapsedMilliseconds);
-            sw.Restart();
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, cancellation, request.GroupType).ConfigureAwait(false);
             PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
-            sw.Stop();
-            Serilog.Log.Warning("GetGroupsOfUserAsync2 " + sw.ElapsedMilliseconds);
-            sw.Restart();
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
-            sw.Stop();
-            Serilog.Log.Warning("GetGroupsOfUserAsync3 " + sw.ElapsedMilliseconds);
-            sw.Restart();
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
-            sw.Stop();
-            Serilog.Log.Warning("GetGroupsOfUserAsync4 " + sw.ElapsedMilliseconds);
-            sw.Restart();
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
@@ -153,8 +139,7 @@ namespace SugarChat.Core.Services.Groups
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
                     Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.");
             }
-            sw.Stop();
-            Serilog.Log.Warning("GetGroupsOfUserAsync5 " + sw.ElapsedMilliseconds);
+
             PagedResult<GroupDto> groupsDto = new()
             {
                 Result = groupDtos,
@@ -188,11 +173,6 @@ namespace SugarChat.Core.Services.Groups
                 }
             }
             return _mapper.Map<GroupRemovedEvent>(command);
-        }
-
-        private async Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
-        {
-            return await _userDataProvider.GetByIdAsync(id, cancellation).ConfigureAwait(false);
         }
 
         public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
@@ -273,7 +253,7 @@ namespace SugarChat.Core.Services.Groups
             List<string> groupIds = new List<string>();
             if (!request.SearchAllGroup)
             {
-                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, cancellationToken, request.GroupType).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
                 if (!groupIds.Any())
                 {
                     return new GroupDto[] { };

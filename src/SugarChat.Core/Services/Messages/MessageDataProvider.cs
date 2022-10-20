@@ -11,6 +11,8 @@ using SugarChat.Message.Paging;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Text;
+using AutoMapper;
+using SugarChat.Core.Services.GroupUsers;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -18,10 +20,14 @@ namespace SugarChat.Core.Services.Messages
     {
 
         private readonly IRepository _repository;
+        private readonly IMapper _mapper;
+        private readonly IGroupUserDataProvider _groupUserDataProvider;
 
-        public MessageDataProvider(IRepository repository)
+        public MessageDataProvider(IRepository repository, IMapper mapper, IGroupUserDataProvider groupUserDataProvider)
         {
             _repository = repository;
+            _mapper = mapper;
+            _groupUserDataProvider = groupUserDataProvider;
         }
 
         public async Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default)
@@ -248,187 +254,21 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId,
-            IEnumerable<string> groupIds,
-            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
-            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
-            CancellationToken cancellationToken = default
-            )
+        public async Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            //var aaa = GetUnreadCountByGroupIdsAsync2(userId, groupIds, filterByGroupCustomProperties, filterByGroupUserCustomProperties, filterByMessageCustomProperties);
-            System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-            if (!groupIds.Any())
-            {
-                groupIds = _repository.Query<GroupUser>().Where(x => x.UserId == userId).Select(x => x.GroupId).Distinct().ToList();
-            }
-            var groupIdsByFilter = new List<string>();
-            if (filterByGroupCustomProperties != null)
-            {
-                var sb = new StringBuilder();
-                foreach (var dic in filterByGroupCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
-                    }
-                }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
-                var groupCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
-                groupIdsByFilter = groupCustomProperties.Select(x => x.GroupId).Distinct().ToList();
-            }
-
-            var userIdsByFilter = new List<string>();
-            if (filterByGroupUserCustomProperties != null)
-            {
-                sw.Start();
-                var groupUserIds = _repository.Query<GroupUser>().Where(x => groupIds.Contains(x.GroupId)).Select(x => x.Id).ToList();
-                sw.Stop();
-                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync1 " + sw.ElapsedMilliseconds);
-                var sb = new StringBuilder();
-                foreach (var dic in filterByGroupUserCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
-                    }
-                }
-                sw.Restart();
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.GroupUserId)), sb.ToString().Substring(4));
-                var groupUserCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
-                sw.Stop();
-                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync2 " + sw.ElapsedMilliseconds);
-                groupUserIds = groupUserCustomProperties.Select(x => x.GroupUserId).ToList();
-                sw.Restart();
-                userIdsByFilter = (await _repository.ToListAsync<GroupUser>(x => groupUserIds.Contains(x.Id), cancellationToken).ConfigureAwait(false)).Select(x => x.UserId).ToList();
-                sw.Stop();
-                Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync3 " + sw.ElapsedMilliseconds);
-            }
-
-            var messageIdsByFilter = new List<string>();
-            if (filterByMessageCustomProperties != null)
-            {
-                var messageIds = _repository.Query<Domain.Message>().Where(x => groupIds.Contains(x.GroupId)).Select(x => x.Id).ToList();
-                var sb = new StringBuilder();
-                foreach (var dic in filterByMessageCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
-                    }
-                }
-                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.MessageCustomProperty>().Where(x => messageIds.Contains(x.MessageId)), sb.ToString().Substring(4));
-                var messageCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
-                messageIdsByFilter = messageCustomProperties.Select(x => x.MessageId).Distinct().ToList();
-            }
-
             var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
-            if (groupIds is not null && groupIds.Any())
+            if (groupIds != null && groupIds.Any())
             {
                 query = query.Where(x => groupIds.Contains(x.GroupId));
             }
-            if (groupIdsByFilter.Any())
-            {
-                query = query.Where(x => !groupIdsByFilter.Contains(x.GroupId));
-            }
-            sw.Restart();
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-            sw.Stop();
-            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync4 " + sw.ElapsedMilliseconds);
-
-            var groupIdsByUser = groupUsers.Select(x => x.GroupId).ToList();
-            var queryByMessage = _repository.Query<Domain.Message>().Where(x => groupIdsByUser.Contains(x.GroupId) && x.SentBy != userId);
-            if (userIdsByFilter.Any())
+            var groupUnreadCounts = new List<GroupUnreadCount>();
+            foreach (var groupUser in groupUsers)
             {
-                queryByMessage = queryByMessage.Where(x => !userIdsByFilter.Contains(x.SentBy));
-            }
-            if (messageIdsByFilter.Any())
-            {
-                queryByMessage = queryByMessage.Where(x => !messageIdsByFilter.Contains(x.Id));
+                groupUnreadCounts.Add(new GroupUnreadCount { GroupId = groupUser.GroupId, UnreadCount = groupUser.UnreadCount });
             }
 
-            sw.Restart();
-            var messages = queryByMessage.Select(x => new { x.GroupId, x.Id, x.SentTime }).ToList();
-            sw.Stop();
-            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync5 " + sw.ElapsedMilliseconds);
-
-            sw.Restart();
-            messages = (from a in groupUsers
-                        join b in messages on a.GroupId equals b.GroupId
-                        where b.SentTime > a.LastReadTime || a.LastReadTime is null
-                        select b).ToList();
-            sw.Stop();
-            Serilog.Log.Warning("GetUnreadCountByGroupIdsAsync6 " + sw.ElapsedMilliseconds);
-
-            var messagesGroup = messages.GroupBy(x => x.GroupId).ToList();
-            List<GroupUnreadCount> groupUnreadCounts = new List<GroupUnreadCount>();
-            messagesGroup.ForEach(x => { groupUnreadCounts.Add(new GroupUnreadCount { GroupId = x.Key, UnreadCount = x.Count() }); });
-
-            return (groupUnreadCounts, messages.Count());
-        }
-
-        private (List<GroupUnreadCount>, int) GetUnreadCountByGroupIdsAsync2(string userId,
-            IEnumerable<string> groupIds,
-            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
-            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
-            CancellationToken cancellationToken = default
-            )
-        {
-            //if (filterByGroupUserCustomProperties != null)
-            //{
-            //    var sb = new StringBuilder();
-            //    foreach (var dic in filterByGroupUserCustomProperties)
-            //    {
-            //        foreach (var value in dic.Value)
-            //        {
-            //            var _value = value.Replace("\\", "\\\\");
-            //            var _key = dic.Key.Replace("\\", "\\\\");
-            //            sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
-            //        }
-            //    }
-
-            //    var linq = from gucp in _repository.Query<GroupUserCustomProperty>()
-            //               join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
-            //               select gucp;
-            //    var aaa = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(linq, sb.ToString().Substring(4));
-            //    var bbb = aaa.ToList();
-            //}
-
-            //var aaa = from gucp in _repository.Query<GroupUserCustomProperty>()
-            //          join gu in _repository.Query<GroupUser>() on gucp.GroupUserId equals gu.Id
-            //          group gucp by gucp.GroupUserId into g
-            //          select new
-            //          {
-            //              Key = g.Key,
-            //              Count = g.Count()
-            //          };
-            //var bbb = aaa.ToList();
-
-            //var aaa = (from gu in _repository.Query<GroupUser>()
-            //             join g in _repository.Query<Group>() on gu.GroupId equals g.Id
-            //             join m in _repository.Query<Domain.Message>() on g.Id equals m.GroupId
-            //             where gu.UserId == userId && gu.LastReadTime < m.SentTime
-            //             select m.Id).Count();
-
-            //var aaa = (from gu in _repository.Query<GroupUser>()
-            //           where gu.LastModifyDate > gu.CreatedDate
-            //           select gu.Id).Count();
-
-            //var aaa = _repository.Query<GroupUser>().Where(x => x.LastModifyDate > x.CreatedDate).Count();
-
-            return (new List<GroupUnreadCount>(), 0);
-        }
-
-        public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
-        {
-            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
+            return (groupUnreadCounts, groupUsers.Sum(x => x.UnreadCount));
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
@@ -445,57 +285,38 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(string userId,
+        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastSentTimeGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
             PageSettings pageSettings,
-            Dictionary<string, List<string>> filterByGroupCustomProperties = null,
-            Dictionary<string, List<string>> filterByGroupUserCustomProperties = null,
-            Dictionary<string, List<string>> filterByMessageCustomProperties = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            int? type = null)
         {
-            if (groupIds == null || !groupIds.Any())
-                return new List<MessageCountGroupByGroupId>();
-
-            var groupUsers = await _repository.ToListAsync<GroupUser>(x => groupIds.Contains(x.GroupId) && x.UserId == userId);
+            var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, cancellationToken, type).ConfigureAwait(false);
 
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
-            var messages = _repository.Query<Domain.Message>().Where(x => groupIdsByGroupUser.Contains(x.GroupId) && x.SentBy != userId).Select(x => new { x.GroupId, x.SentTime }).ToList();
-            var messageGroups = (from a in groupUsers
-                                 join b in messages on a.GroupId equals b.GroupId
-                                 where (b.SentTime > a.LastReadTime || a.LastReadTime == null)
-                                 group b by b.GroupId into c
-                                 select new
-                                 {
-                                     GroupId = c.Key,
-                                     LastMessageSentTime = c.Max(x => x.SentTime)
-                                 }).ToList();
+            var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
+            var lastMessages = await GetLastMessageForGroupsAsync(groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
 
-            var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, filterByGroupCustomProperties, filterByGroupUserCustomProperties, filterByMessageCustomProperties, cancellationToken).ConfigureAwait(false);
-
-            List<MessageCountGroupByGroupId> result = new List<MessageCountGroupByGroupId>();
-            foreach (var groupUser in groupUsers)
+            var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
+            foreach (var groupUnreadCount in groupUnreadCounts)
             {
-                var groupUnreadCount = groupUnreadCounts.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
-                var messageGroup = messageGroups.FirstOrDefault(x => x.GroupId == groupUser.GroupId);
-                var messageCountGroupByGroupId = new MessageCountGroupByGroupId
+                var lastMessage = lastMessages.FirstOrDefault(x => x.GroupId == groupUnreadCount.GroupId);
+                var unreadCountAndLastMessageByGroupId = new UnreadCountAndLastMessageByGroupId
                 {
-                    GroupId = groupUser.GroupId
+                    GroupId = groupUnreadCount.GroupId,
+                    UnreadCount = groupUnreadCount.UnreadCount
                 };
-                if (messageGroup != null)
-                    messageCountGroupByGroupId.LastSentTime = messageGroup.LastMessageSentTime;
-                if (groupUnreadCount != null)
-                    messageCountGroupByGroupId.UnreadCount = groupUnreadCount.UnreadCount;
-                result.Add(messageCountGroupByGroupId);
+                if (lastMessage != null)
+                {
+                    unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                    unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
+                }
             }
-            if (pageSettings != null)
-                result = result.OrderByDescending(x => x.UnreadCount)
+            return unreadCountAndLastMessageByGroupIds
+                    .OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
                     .Take(pageSettings.PageSize).ToList();
-            else
-                result = result.OrderByDescending(x => x.UnreadCount).ThenByDescending(x => x.LastSentTime).ToList();
-
-            return result;
         }
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)

@@ -55,47 +55,33 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
-            if (request.GroupIds.Any())
-            {
-                groupIds = groupIds.Intersect(request.GroupIds).ToList();
-            }
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId, request.GroupIds, request.PageSettings, cancellationToken).ConfigureAwait(false);
+
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
 
             var conversations = new List<ConversationDto>();
-            if (groupIds.Count == 0)
+            if (!unreadCountAndLastSentTimeByGroupIds.Any())
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
 
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(user.Id,
-                    groupIds,
-                    request.PageSettings,
-                    request.FilterUnreadCountByGroupCustomProperties,
-                    request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties,
-                    cancellationToken);
-            var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
+            var groupIdResults = unreadCountAndLastSentTimeByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
 
-            foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
+            foreach (var unreadCountAndLastSentTimeByGroupId in unreadCountAndLastSentTimeByGroupIds)
             {
-                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == messageCountGroupByGroupId.GroupId).ToList();
-                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
-                var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == unreadCountAndLastSentTimeByGroupId.GroupId).ToList();
+                var group = groups.SingleOrDefault(x => x.Id == unreadCountAndLastSentTimeByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
                 groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
-                    ConversationID = messageCountGroupByGroupId.GroupId,
+                    ConversationID = unreadCountAndLastSentTimeByGroupId.GroupId,
                     GroupProfile = groupDto,
-                    UnreadCount = messageCountGroupByGroupId.UnreadCount,
-                    LastMessageSentTime = messageCountGroupByGroupId.LastSentTime
+                    UnreadCount = unreadCountAndLastSentTimeByGroupId.UnreadCount,
+                    LastMessageSentTime = unreadCountAndLastSentTimeByGroupId.LastSentTime,
+                    LastMessage = unreadCountAndLastSentTimeByGroupId.LastMessage
                 };
-                if (lastMessage is not null)
-                {
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
-                }
                 conversations.Add(conversationDto);
             }
 
@@ -110,12 +96,7 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
-            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId,
-                    new List<string> { request.ConversationId },
-                    request.FilterUnreadCountByGroupCustomProperties,
-                    request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties,
-                    cancellationToken).ConfigureAwait(false);
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, new List<string> { request.ConversationId }, cancellationToken).ConfigureAwait(false);
 
             var conversationDto = await GetConversationDto(groupUser, cancellationToken);
             conversationDto.UnreadCount = count;
@@ -182,13 +163,8 @@ namespace SugarChat.Core.Services.Conversations
                 && (request.MessageSearchParms == null || request.MessageSearchParms == new Dictionary<string, string>()))
                 request.MessageSearchParms = request.SearchParms;
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
             var filterGroupIds = new List<string>();
-            if (request.GroupIds.Any())
-            {
-                groupIds = groupIds.Intersect(request.GroupIds).ToList();
-            }
-
             var conversations = new List<ConversationDto>();
             if ((request.GroupSearchParms == null || !request.GroupSearchParms.Any()) && (request.MessageSearchParms == null || !request.MessageSearchParms.Any())) { }
             else
@@ -212,36 +188,29 @@ namespace SugarChat.Core.Services.Conversations
                 else
                     groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
             }
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(request.UserId,
-                    groupIds,
-                    request.PageSettings,
-                    request.FilterUnreadCountByGroupCustomProperties,
-                    request.FilterUnreadCountByGroupUserCustomProperties,
-                    request.FilterUnreadCountByMessageCustomProperties,
-                    cancellationToken);
-            var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
+
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId, groupIds, request.PageSettings, cancellationToken);
+            if (!unreadCountAndLastSentTimeByGroupIds.Any())
+                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
+
+            var groupIdResults = unreadCountAndLastSentTimeByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
-            foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
+            foreach (var unreadCountAndLastSentTimeByGroupId in unreadCountAndLastSentTimeByGroupIds)
             {
-                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == messageCountGroupByGroupId.GroupId).ToList();
-                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
-                var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == unreadCountAndLastSentTimeByGroupId.GroupId).ToList();
+                var group = groups.SingleOrDefault(x => x.Id == unreadCountAndLastSentTimeByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
                 groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
                 groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
-                    ConversationID = messageCountGroupByGroupId.GroupId,
+                    ConversationID = unreadCountAndLastSentTimeByGroupId.GroupId,
                     GroupProfile = groupDto,
-                    UnreadCount = messageCountGroupByGroupId.UnreadCount,
-                    LastMessageSentTime = messageCountGroupByGroupId.LastSentTime
+                    UnreadCount = unreadCountAndLastSentTimeByGroupId.UnreadCount,
+                    LastMessageSentTime = unreadCountAndLastSentTimeByGroupId.LastSentTime,
+                    LastMessage = unreadCountAndLastSentTimeByGroupId.LastMessage
                 };
-                if (lastMessage is not null)
-                {
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
-                }
                 conversations.Add(conversationDto);
             }
 

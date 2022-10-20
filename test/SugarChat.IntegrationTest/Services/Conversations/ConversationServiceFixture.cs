@@ -331,7 +331,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
             {
                 {
-                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
+                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings());
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
@@ -354,7 +354,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     });
                 }
                 {
-                    var result = await messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
+                    var result = await messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, null);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
@@ -379,42 +379,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                 {
                     var lastMessage = await messageDataProvider.GetLastMessageBygGroupIdAsync(groupId5);
                     lastMessage.Content.ShouldBe("888");
-                }
-            });
-        }
-
-        [Fact]
-        public async Task ShouldGetConversationsByMessageKeyword()
-        {
-            await Run<IConversationDataProvider>(async conversationDataProvider =>
-            {
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, null, false, default, 10);
-                    conversations.Count.ShouldBe(0);
-                }
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "Content", "是" } }, false, default, 10);
-                    conversations.Single().ConversationID.ShouldBe(groupId4);
-                }
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByMessageKeywordAsync(users[9].Id, new Dictionary<string, string> { { "order", "1" } }, false, default, 10);
-                    conversations.Single().ConversationID.ShouldBe(conversationId);
-                }
-            });
-        }
-
-        [Fact]
-        public async Task ShouldGetConversationsByUser()
-        {
-            await Run<IConversationDataProvider>(async conversationDataProvider =>
-            {
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[9].Id, new PageSettings { PageNum = 1, PageSize = 10 }, default, 10);
-                    conversations.Count.ShouldBe(5);
-                }
-                {
-                    var conversations = await conversationDataProvider.GetConversationsByUserAsync(users[0].Id, new PageSettings { PageNum = 1, PageSize = 10 }, default, 10);
-                    conversations.Count.ShouldBe(1);
                 }
             });
         }

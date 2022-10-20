@@ -34,15 +34,13 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly ISecurityManager _securityManager;
         private readonly ITransactionManager _transactionManagement;
         private readonly IGroupUserCustomPropertyDataProvider _groupUserCustomPropertyDataProvider;
-        private readonly IMessageDataProvider _messageDataProvider;
 
         public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider,
             ISecurityManager securityManager,
             ITransactionManager transactionManagement,
-            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider,
-            IMessageDataProvider messageDataProvider)
+            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -51,7 +49,6 @@ namespace SugarChat.Core.Services.GroupUsers
             _securityManager = securityManager;
             _transactionManagement = transactionManagement;
             _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
-            _messageDataProvider = messageDataProvider;
         }
 
         public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
@@ -136,6 +133,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 groupUserDto.DisplayName = user?.DisplayName;
                 var _groupUserCustomProperties = groupUserCustomProperties.Where(x => x.GroupUserId == groupUserDto.Id).ToList();
                 groupUserDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupUserCustomPropertyDto>>(_groupUserCustomProperties);
+                groupUserDto.CustomProperties = groupUserCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             }
 
             return new GetMembersOfGroupResponse

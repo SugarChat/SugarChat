@@ -267,48 +267,61 @@ namespace SugarChat.Core.Services.GroupUsers
                 }
             }
 
-            IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
-            var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct();
-
-            var needAddGroupUsers = new List<GroupUser>();
-            var groupUserCustomProperties = new List<GroupUserCustomProperty>();
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            var time = 0;
+            while (time < 3)
             {
-                try
+                IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
+                var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct();
+                if (!needAddGroupUserIds.Any())
                 {
-                    foreach (var groupUserId in needAddGroupUserIds)
+                    break;
+                }
+
+                var needAddGroupUsers = new List<GroupUser>();
+                var groupUserCustomProperties = new List<GroupUserCustomProperty>();
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    try
                     {
-                        var groupUser = new GroupUser
+                        foreach (var groupUserId in needAddGroupUserIds)
                         {
-                            Id = Guid.NewGuid().ToString(),
-                            UserId = groupUserId,
-                            GroupId = command.GroupId,
-                            Role = command.Role,
-                            CreatedBy = command.CreatedBy
-                        };
-                        needAddGroupUsers.Add(groupUser);
-                        if (command.CustomProperties != null)
-                        {
-                            foreach (var customProperty in command.CustomProperties)
+                            var groupUser = new GroupUser
                             {
-                                groupUserCustomProperties.Add(new GroupUserCustomProperty
+                                Id = Guid.NewGuid().ToString(),
+                                UserId = groupUserId,
+                                GroupId = command.GroupId,
+                                Role = command.Role,
+                                CreatedBy = command.CreatedBy
+                            };
+                            needAddGroupUsers.Add(groupUser);
+                            if (command.CustomProperties != null)
+                            {
+                                foreach (var customProperty in command.CustomProperties)
                                 {
-                                    GroupUserId = groupUser.Id,
-                                    Key = customProperty.Key,
-                                    Value = customProperty.Value,
-                                    CreatedBy = command.CreatedBy
-                                });
+                                    groupUserCustomProperties.Add(new GroupUserCustomProperty
+                                    {
+                                        GroupUserId = groupUser.Id,
+                                        Key = customProperty.Key,
+                                        Value = customProperty.Value,
+                                        CreatedBy = command.CreatedBy
+                                    });
+                                }
                             }
                         }
+                        await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
+                        await _groupUserCustomPropertyDataProvider.AddRangeAsync(groupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
                     }
-                    await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
-                    await _groupUserCustomPropertyDataProvider.AddRangeAsync(groupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                    throw;
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        time++;
+                        if (time > 2)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
 

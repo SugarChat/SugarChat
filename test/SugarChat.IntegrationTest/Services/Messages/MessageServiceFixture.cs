@@ -24,15 +24,18 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 {
                     var request = new GetUnreadMessageCountRequest()
                     {
-                        UserId = userId
+                        UserId = userId,
+                        GroupType = 10
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                    response.Data.ShouldBe(5);
+                    response.Data.ShouldBe(6);
                 }
                 {
                     var request = new GetUnreadMessageCountRequest()
                     {
-                        UserId = userId2
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(3);
@@ -41,7 +44,49 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     var request = new GetUnreadMessageCountRequest()
                     {
                         UserId = userId,
-                        GroupIds = new string[] { groups[3].Id }
+                        GroupType = 10,
+                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } },
+                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(0);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } },
+                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "4" } } }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(1);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId2,
+                        GroupType = 10
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupIds = new string[] { groups[3].Id },
+                        GroupType = 10
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(3);
@@ -80,7 +125,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
                 var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(8);
+                response.Data.Count().ShouldBe(9);
             });
         }
 

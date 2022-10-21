@@ -21,6 +21,10 @@ namespace SugarChat.Core.Services.Groups
 
         Task<IEnumerable<Group>> GetByCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, string> customProperties, PageSettings pageSettings, CancellationToken cancellationToken = default);
 
+        Task<IEnumerable<string>> GetGroupIdByIncludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> includeCustomProperties, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> excludeCustomProperties, CancellationToken cancellationToken = default);
+
         Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null);
 
         Task<int> GetCountAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default);

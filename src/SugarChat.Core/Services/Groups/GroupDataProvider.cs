@@ -118,6 +118,76 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
+        public async Task<IEnumerable<string>> GetGroupIdByIncludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> includeCustomProperties, CancellationToken cancellationToken = default)
+        {
+            if (includeCustomProperties == null || !includeCustomProperties.Any())
+            {
+                return groupIds;
+            }
+            if (includeCustomProperties.Count() == 1 && includeCustomProperties.First().Value.Count == 1)
+            {
+                var key = includeCustomProperties.First().Key;
+                var value = includeCustomProperties.First().Value.First();
+                var query = _repository.Query<GroupCustomProperty>().Where(x => x.Key == key && x.Value == value);
+                if (groupIds.Any())
+                {
+                    query = query.Where(x => groupIds.Contains(x.GroupId));
+                }
+                return query.Select(x => x.GroupId).ToList();
+            }
+            else
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in includeCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                    }
+                }
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
+                var groupCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                return groupCustomProperties.Select(x => x.GroupId).ToList();
+            }
+        }
+
+        public async Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> excludeCustomProperties, CancellationToken cancellationToken = default)
+        {
+            if (excludeCustomProperties == null || !excludeCustomProperties.Any())
+            {
+                return new List<string>();
+            }
+            if (excludeCustomProperties.Count() == 1 && excludeCustomProperties.First().Value.Count == 1)
+            {
+                var key = excludeCustomProperties.First().Key;
+                var value = excludeCustomProperties.First().Value.First();
+                var query = _repository.Query<GroupCustomProperty>().Where(x => x.Key == key && x.Value == value);
+                if (groupIds.Any())
+                {
+                    query = query.Where(x => groupIds.Contains(x.GroupId));
+                }
+                return query.Select(x => x.GroupId).ToList();
+            }
+            else
+            {
+                var sb = new StringBuilder();
+                foreach (var dic in excludeCustomProperties)
+                {
+                    foreach (var value in dic.Value)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _key = dic.Key.Replace("\\", "\\\\");
+                        sb.Append($" || (Key!=\"{_key}\" && Value!=\"{_value}\")");
+                    }
+                }
+                var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
+                var groupCustomProperties = await _repository.ToListAsync(where, cancellationToken).ConfigureAwait(false);
+                return groupCustomProperties.Select(x => x.GroupId).ToList();
+            }
+        }
+
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null)
         {
             groupIds = groupIds ?? new List<string>();

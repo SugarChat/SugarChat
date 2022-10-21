@@ -88,7 +88,8 @@ namespace SugarChat.IntegrationTest.Services
             groupUsers.Add(GenerateGroupUser(repository, userId2, groupId4, 3, new Dictionary<string, string> { { "userType", "admin" } }));
             groupUsers.Add(GenerateGroupUser(repository, userId4, groupId4, 4));
             groupUsers.Add(GenerateGroupUser(repository, userId3, groupId4, 3, new Dictionary<string, string> { { "userType", "admin" } }));
-            groupUsers.Add(GenerateGroupUser(repository, userId, groupId5));
+            groupUsers.Add(GenerateGroupUser(repository, userId, groupId5, 1));
+            groupUsers.Add(GenerateGroupUser(repository, userId1, groupId5, 1));
             repository.AddRangeAsync(groupUsers, default(CancellationToken)).Wait();
 
             GenerateMessage(repository, conversationId, "我通过了你的朋友验证请求,现在我们可以开始聊天了", 0, userId9, new Dictionary<string, string> { { "text", "test1" }, { "order", "11" } }, "{\"text\":\"test1\",\"order\":\"11\"}");
@@ -98,6 +99,7 @@ namespace SugarChat.IntegrationTest.Services
             GenerateMessage(repository, groupId4, "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!", 0, userId1, new Dictionary<string, string> { { "text", "test5" }, { "order", "25" } }, "{\"text\":\"test5\",\"order\":\"25\"}");
             GenerateMessage(repository, groupId4, "是啊,又到了不动都能出汗的季节了", 0, userId2, new Dictionary<string, string> { { "text", "test6" }, { "order", "26" } }, "{\"text\":\"test6\",\"order\":\"26\"}");
             GenerateMessage(repository, groupId4, "谁说不是呢", 0, userId3, new Dictionary<string, string> { { "text", "test7" }, { "order", "37" } }, "{\"text\":\"test7\",\"order\":\"37\"}");
+            GenerateMessage(repository, groupId5, "999", 0, userId1, new Dictionary<string, string> { { "text", "test9" }, { "order", "9" } }, "{\"text\":\"test9\",\"order\":\"9\"}");
             GenerateMessage(repository, groupId5, "888", 0, userId, new Dictionary<string, string> { { "text", "test8" }, { "order", "8" } }, "{\"text\":\"test8\",\"order\":\"8\"}");
         }
 

@@ -143,7 +143,6 @@ namespace SugarChat.Core.Services.Groups
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
-                groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(_groupCustomProperties);
                 groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
 
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
@@ -202,7 +201,6 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
-            groupDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupCustomPropertyDto>>(groupCustomProperties);
             groupDto.CustomProperties = groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);

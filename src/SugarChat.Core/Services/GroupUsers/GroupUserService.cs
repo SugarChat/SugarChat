@@ -132,8 +132,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 groupUserDto.AvatarUrl = user?.AvatarUrl;
                 groupUserDto.DisplayName = user?.DisplayName;
                 var _groupUserCustomProperties = groupUserCustomProperties.Where(x => x.GroupUserId == groupUserDto.Id).ToList();
-                groupUserDto.CustomPropertyList = _mapper.Map<IEnumerable<GroupUserCustomPropertyDto>>(_groupUserCustomProperties);
-                groupUserDto.CustomProperties = groupUserCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupUserDto.CustomProperties = _groupUserCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             }
 
             return new GetMembersOfGroupResponse
@@ -448,23 +447,14 @@ namespace SugarChat.Core.Services.GroupUsers
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             foreach (var groupUserDto in command.GroupUsers)
             {
-                if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any() && (groupUserDto.CustomPropertyList == null || !groupUserDto.CustomPropertyList.Any()))
-                {
-                    foreach (var customProperty in groupUserDto.CustomProperties)
-                    {
-                        var _customPropertyList = new List<GroupUserCustomPropertyDto>();
-                        _customPropertyList.Add(new GroupUserCustomPropertyDto { GroupUserId = groupUserDto.Id, Key = customProperty.Key, Value = customProperty.Value });
-                        groupUserDto.CustomPropertyList = _customPropertyList;
-                    }
-                }
                 var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
                 if (groupUser != null)
                 {
                     _mapper.Map(groupUserDto, groupUser);
-                    if (groupUserDto.CustomPropertyList != null && groupUserDto.CustomPropertyList.Any())
+                    if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any())
                     {
                         oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
-                        foreach (var customProperty in groupUserDto.CustomPropertyList)
+                        foreach (var customProperty in groupUserDto.CustomProperties)
                         {
                             newGroupUserCustomProperties.Add(new GroupUserCustomProperty
                             {

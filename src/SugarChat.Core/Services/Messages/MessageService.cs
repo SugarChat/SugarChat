@@ -311,6 +311,12 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
         {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+
+            GroupUser sendBy = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.SentBy, command.GroupId, cancellationToken);
+            sendBy.CheckExist(command.SentBy, command.GroupId);
+
             Domain.Message message = _mapper.Map<Domain.Message>(command);
             message.SentTime = DateTime.Now;
 
@@ -331,11 +337,11 @@ namespace SugarChat.Core.Services.Messages
 
             var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
-            if (command.FilterUnreadCountByGroupUserCustomProperties != null && command.FilterUnreadCountByGroupUserCustomProperties.Any())
+            if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
             {
                 var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
                 var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
-                        command.FilterUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                        command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
                 groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
             }
             foreach (var groupUser in groupUsers)
@@ -367,7 +373,21 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, request.GroupIds, cancellationToken).ConfigureAwait(false);
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+
+            var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            if (!groupIds.Any())
+                return new GetUnreadMessageCountResponse
+                {
+                    Count = 0
+                };
+
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessageCountResponse
             {
                 Count = count
@@ -411,23 +431,14 @@ namespace SugarChat.Core.Services.Messages
             var newMessageCustomProperties = new List<MessageCustomProperty>();
             foreach (var messageDto in command.Messages)
             {
-                if (messageDto.CustomProperties != null && messageDto.CustomProperties.Any() && (messageDto.CustomPropertyList == null || !messageDto.CustomPropertyList.Any()))
-                {
-                    foreach (var customProperty in messageDto.CustomProperties)
-                    {
-                        var _customPropertyList = new List<MessageCustomPropertyDto>();
-                        _customPropertyList.Add(new MessageCustomPropertyDto { MessageId = messageDto.Id, Key = customProperty.Key, Value = customProperty.Value });
-                        messageDto.CustomPropertyList = _customPropertyList;
-                    }
-                }
                 var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
                 if (message != null)
                 {
                     _mapper.Map(messageDto, message);
-                    if (messageDto.CustomPropertyList != null && messageDto.CustomPropertyList.Any())
+                    if (messageDto.CustomProperties != null && messageDto.CustomProperties.Any())
                     {
                         oldMessageCustomProperties.AddRange(messageCustomProperties.Where(x => x.MessageId == message.Id).ToList());
-                        foreach (var customProperty in messageDto.CustomPropertyList)
+                        foreach (var customProperty in messageDto.CustomProperties)
                         {
                             newMessageCustomProperties.Add(new MessageCustomProperty
                             {
@@ -464,7 +475,6 @@ namespace SugarChat.Core.Services.Messages
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == message.Id).ToList();
-                message.CustomPropertyList = _mapper.Map<IEnumerable<MessageCustomPropertyDto>>(_messageCustomProperties);
                 message.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             }
         }

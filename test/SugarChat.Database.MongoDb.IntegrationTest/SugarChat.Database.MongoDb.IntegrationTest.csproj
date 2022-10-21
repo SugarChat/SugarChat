@@ -35,12 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="SugarChat.Message">
-      <HintPath>..\..\src\SugarChat.Message.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

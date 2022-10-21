@@ -10,7 +10,6 @@ COPY ./src/SugarChat.MongoDb ./build/SugarChat.MongoDb
 COPY ./src/SugarChat.Database.MongoDb.Autofac ./build/SugarChat.Database.MongoDb.Autofac
 COPY ./src/SugarChat.SignalR.ServerClient ./build/SugarChat.SignalR.ServerClient
 COPY ./src/SugarChat.WebApi ./build/SugarChat.WebApi
-COPY ./src/SugarChat.Message.dll ./build/SugarChat.Message.dll
 
 RUN dotnet publish build/SugarChat.WebApi -c Release -o out
 

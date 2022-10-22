@@ -317,11 +317,21 @@ namespace SugarChat.Core.Services.Messages
                 }
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }
-            return unreadCountAndLastMessageByGroupIds
-                    .OrderByDescending(x => x.UnreadCount)
-                    .ThenByDescending(x => x.LastSentTime)
-                    .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
-                    .Take(pageSettings.PageSize).ToList();
+            if (pageSettings == null)
+            {
+                return unreadCountAndLastMessageByGroupIds
+                        .OrderByDescending(x => x.UnreadCount)
+                        .ThenByDescending(x => x.LastSentTime)
+                        .ToList();
+            }
+            else
+            {
+                return unreadCountAndLastMessageByGroupIds
+                        .OrderByDescending(x => x.UnreadCount)
+                        .ThenByDescending(x => x.LastSentTime)
+                        .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
+                        .Take(pageSettings.PageSize).ToList();
+            }
         }
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)

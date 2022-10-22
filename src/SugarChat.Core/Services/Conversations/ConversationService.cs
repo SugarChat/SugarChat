@@ -66,7 +66,7 @@ namespace SugarChat.Core.Services.Conversations
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
 
-            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId,
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
                     cancellationToken, request.GroupType).ConfigureAwait(false);
@@ -203,7 +203,7 @@ namespace SugarChat.Core.Services.Conversations
             else
                 groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
 
-            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastSentTimeGroupIdsAsync(request.UserId,
+            var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
                     cancellationToken,

@@ -32,8 +32,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default, int? type = null)
         {
-            if (groupIds == null)
-                groupIds = new List<string>();
+            type = type ?? 0;
+            groupIds = groupIds ?? new List<string>();
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
                               where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null)) && (!groupIds.Any() || groupIds.Contains(b.Id))
@@ -43,7 +43,8 @@ namespace SugarChat.Core.Services.GroupUsers
                                   a.UserId,
                                   a.GroupId,
                                   a.Role,
-                                  a.MessageRemindType
+                                  a.MessageRemindType,
+                                  a.UnreadCount
                               }).ToList();
             var result = new List<GroupUser>();
             foreach (var groupUser in groupUsers)

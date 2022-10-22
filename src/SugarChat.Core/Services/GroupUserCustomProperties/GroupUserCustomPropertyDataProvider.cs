@@ -44,7 +44,7 @@ namespace SugarChat.Core.Services.GroupUserCustomProperties
             {
                 return groupUserIds;
             }
-            if (customProperties.Count() == 1 && customProperties.First().Value.Count == 1)
+            if (customProperties.Count() == 1 && customProperties.First().Value.Count == 1 && customProperties.First().Value.First().Split(',').Count() == 1)
             {
                 var key = customProperties.First().Key;
                 var value = customProperties.First().Value.First();
@@ -62,9 +62,18 @@ namespace SugarChat.Core.Services.GroupUserCustomProperties
                 {
                     foreach (var value in dic.Value)
                     {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                        var value1 = value.Replace("\\", "\\\\");
+                        var key1 = dic.Key.Replace("\\", "\\\\");
+                        if (value1.Contains(","))
+                        {
+                            var values = value1.Split(',');
+                            foreach (var value2 in values)
+                            {
+                                sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
+                            }
+                        }
+                        else
+                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
                     }
                 }
                 var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUserCustomProperty>().Where(x => groupUserIds.Contains(x.GroupUserId)), sb.ToString().Substring(4));

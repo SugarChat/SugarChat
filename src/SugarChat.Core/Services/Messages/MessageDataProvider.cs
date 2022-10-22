@@ -79,6 +79,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default, int? type = null)
         {
+            type = type ?? 0;
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
                               where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null))
@@ -87,8 +88,6 @@ namespace SugarChat.Core.Services.Messages
                                   a.Id,
                                   a.UserId,
                                   a.GroupId,
-                                  a.Role,
-                                  a.MessageRemindType,
                                   a.LastReadTime
                               }).ToList();
             var groupIds = groupUsers.Select(x => x.GroupId);
@@ -285,12 +284,13 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastSentTimeGroupIdsAsync(string userId,
+        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
             PageSettings pageSettings,
             CancellationToken cancellationToken = default,
             int? type = null)
         {
+            type = type ?? 0;
             var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, cancellationToken, type).ConfigureAwait(false);
             if (!groupUsers.Any())
             {

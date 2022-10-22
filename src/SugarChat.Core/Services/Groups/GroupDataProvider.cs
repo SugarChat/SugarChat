@@ -84,29 +84,38 @@ namespace SugarChat.Core.Services.Groups
                 {
                     query = query.Where(x => groupIds.Contains(x.GroupId));
                 }
-                var sb = new StringBuilder();
-                foreach (var customProperty in customProperties)
+                if (customProperties.Values.Count() == 1 && customProperties.Values.First().Split(',').Count() == 1)
                 {
-                    var values = customProperty.Value.Split(',');
-                    foreach (var value in values)
-                    {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
-                        sb.Append($" || {_sb}");
-                    }
+                    query = query.Where(x => x.Key == customProperties.Keys.First() && x.Value == customProperties.Values.First());
+                    var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+                    groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
                 }
-                query = query.Where(sb.ToString().Substring(4));
-                var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-                var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
-                var _groupIds = new List<string>();
-                foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
+                else
                 {
-                    if (groupCustomPropertyGroup.Count() == customProperties.Count())
+                    var sb = new StringBuilder();
+                    foreach (var customProperty in customProperties)
                     {
-                        _groupIds.Add(groupCustomPropertyGroup.Key);
+                        var values = customProperty.Value.Split(',');
+                        foreach (var value in values)
+                        {
+                            var _value = value.Replace("\\", "\\\\");
+                            var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
+                            sb.Append($" || ({_sb})");
+                        }
                     }
+                    query = query.Where(sb.ToString().Substring(4));
+                    var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+                    var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
+                    var _groupIds = new List<string>();
+                    foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
+                    {
+                        if (groupCustomPropertyGroup.Count() == customProperties.Count())
+                        {
+                            _groupIds.Add(groupCustomPropertyGroup.Key);
+                        }
+                    }
+                    groupIds = _groupIds;
                 }
-                groupIds = _groupIds;
             }
             if (pageSettings != null)
             {
@@ -124,7 +133,7 @@ namespace SugarChat.Core.Services.Groups
             {
                 return groupIds;
             }
-            if (includeCustomProperties.Count() == 1 && includeCustomProperties.First().Value.Count == 1)
+            if (includeCustomProperties.Count() == 1 && includeCustomProperties.First().Value.Count == 1 && includeCustomProperties.First().Value.First().Split(',').Count() == 1)
             {
                 var key = includeCustomProperties.First().Key;
                 var value = includeCustomProperties.First().Value.First();
@@ -142,9 +151,18 @@ namespace SugarChat.Core.Services.Groups
                 {
                     foreach (var value in dic.Value)
                     {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key==\"{_key}\" && Value==\"{_value}\")");
+                        var value1 = value.Replace("\\", "\\\\");
+                        var key1 = dic.Key.Replace("\\", "\\\\");
+                        if (value1.Contains(","))
+                        {
+                            var values = value1.Split(',');
+                            foreach (var value2 in values)
+                            {
+                                sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
+                            }
+                        }
+                        else
+                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
                     }
                 }
                 var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
@@ -159,7 +177,7 @@ namespace SugarChat.Core.Services.Groups
             {
                 return new List<string>();
             }
-            if (excludeCustomProperties.Count() == 1 && excludeCustomProperties.First().Value.Count == 1)
+            if (excludeCustomProperties.Count() == 1 && excludeCustomProperties.First().Value.Count == 1 && excludeCustomProperties.First().Value.First().Split(',').Count() == 1)
             {
                 var key = excludeCustomProperties.First().Key;
                 var value = excludeCustomProperties.First().Value.First();
@@ -177,9 +195,18 @@ namespace SugarChat.Core.Services.Groups
                 {
                     foreach (var value in dic.Value)
                     {
-                        var _value = value.Replace("\\", "\\\\");
-                        var _key = dic.Key.Replace("\\", "\\\\");
-                        sb.Append($" || (Key!=\"{_key}\" && Value!=\"{_value}\")");
+                        var value1 = value.Replace("\\", "\\\\");
+                        var key1 = dic.Key.Replace("\\", "\\\\");
+                        if (value1.Contains(","))
+                        {
+                            var values = value1.Split(',');
+                            foreach (var value2 in values)
+                            {
+                                sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
+                            }
+                        }
+                        else
+                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
                     }
                 }
                 var where = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>().Where(x => groupIds.Contains(x.GroupId)), sb.ToString().Substring(4));
@@ -190,6 +217,7 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null)
         {
+            type = type ?? 0;
             groupIds = groupIds ?? new List<string>();
             if (searchParms != null && searchParms.Any())
             {

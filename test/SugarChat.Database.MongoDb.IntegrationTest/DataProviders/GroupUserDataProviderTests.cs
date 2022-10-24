@@ -77,7 +77,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_GroupUsers_By_User_Id()
         {
-            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id, null, type: 11);
+            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id, null, 11);
             tomGroupUsers.Count().ShouldBe(2);
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryGroup.Id).ShouldNotBeNull();
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryAndTykeGroup.Id).ShouldNotBeNull();
@@ -87,7 +87,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Not_Get_GroupUsers_By_None_Exist_User_Id()
         {
-            IEnumerable<GroupUser> noneExistGroupUsers = await _groupUserDataProvider.GetByUserIdAsync("0", null);
+            IEnumerable<GroupUser> noneExistGroupUsers = await _groupUserDataProvider.GetByUserIdAsync("0", null, 10);
             noneExistGroupUsers.Count().ShouldBe(0);
         }
 

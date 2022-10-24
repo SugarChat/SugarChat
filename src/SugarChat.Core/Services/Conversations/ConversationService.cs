@@ -55,7 +55,7 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
@@ -69,7 +69,8 @@ namespace SugarChat.Core.Services.Conversations
             var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
-                    cancellationToken, request.GroupType).ConfigureAwait(false);
+                    request.GroupType,
+                    cancellationToken).ConfigureAwait(false);
 
             var conversations = new List<ConversationDto>();
             if (!unreadCountAndLastSentTimeByGroupIds.Any())
@@ -182,7 +183,7 @@ namespace SugarChat.Core.Services.Conversations
                     ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
                 });
             }
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
@@ -195,7 +196,7 @@ namespace SugarChat.Core.Services.Conversations
 
             var filterGroupIds = new List<string>();
             var conversations = new List<ConversationDto>();
-            var _groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, cancellationToken, request.GroupType);
+            var _groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, request.GroupType, cancellationToken);
             filterGroupIds.AddRange(_groupIds);
 
             if (!filterGroupIds.Any())
@@ -206,8 +207,8 @@ namespace SugarChat.Core.Services.Conversations
             var unreadCountAndLastSentTimeByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
-                    cancellationToken,
-                    request.GroupType).ConfigureAwait(false);
+                    request.GroupType,
+                    cancellationToken).ConfigureAwait(false);
             if (!unreadCountAndLastSentTimeByGroupIds.Any())
                 return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
 

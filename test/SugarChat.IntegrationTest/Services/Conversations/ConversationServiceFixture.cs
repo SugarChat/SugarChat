@@ -307,18 +307,18 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IGroupDataProvider>(async (mediator, repository, groupDataProvider) =>
             {
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "11" } }, true, default, 10);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "11" } }, true, 10, default);
                     result.Count().ShouldBe(1);
                     result.FirstOrDefault().ShouldBe(conversationId);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "2" } }, false, default, 10);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "2" } }, false, 10, default);
                     result.Count().ShouldBe(2);
                     result.ShouldContain(conversationId);
                     result.ShouldContain(groupId4);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false, default, 10);
+                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false, 10, default);
                     result.Count().ShouldBe(2);
                 }
             });
@@ -330,7 +330,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
             {
                 {
-                    var result = await messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), type: 10);
+                    var result = await messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), 10);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);
@@ -353,7 +353,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     });
                 }
                 {
-                    var result = await messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), type: 10);
+                    var result = await messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(userId, new string[] { conversationId, groupId4, groupId5 }, new PageSettings(), 10);
                     result.Count().ShouldBe(3);
                     result.FirstOrDefault(x => x.GroupId == conversationId).UnreadCount.ShouldBe(2);
                     result.FirstOrDefault(x => x.GroupId == groupId4).UnreadCount.ShouldBe(3);

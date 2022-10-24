@@ -215,9 +215,8 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, CancellationToken cancellationToken = default, int? type = null)
+        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, int groupType, CancellationToken cancellationToken = default)
         {
-            type = type ?? 0;
             groupIds = groupIds ?? new List<string>();
             if (searchParms != null && searchParms.Any())
             {
@@ -280,7 +279,7 @@ namespace SugarChat.Core.Services.Groups
                     groupIds = groupIds.Intersect(_groupIds).ToList();
                 else
                     groupIds = _groupIds;
-                return (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && (x.Type == type || (type == 0 && x.Type == null)))).Select(x => x.Id);
+                return (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && x.Type == groupType)).Select(x => x.Id);
             }
             else
             {

@@ -209,7 +209,8 @@ namespace SugarChat.IntegrationTest.Services
                     await repository.AddAsync(new Group
                     {
                         Id = groupIds[i].ToString(),
-                        Name = "group" + i
+                        Name = "group" + i,
+                        Type = 10
                     });
                     for (int j = 0; j < 3; j++)
                     {
@@ -241,7 +242,7 @@ namespace SugarChat.IntegrationTest.Services
                         { "AAA", @"\^$.*?+|{1}[a]" + 0 + 0 },
                         { "BBB", 0 + @"\^$.*?+|{1}[a]" + 0 + 0 },
                         { "Content", @"a \^$.*?+| b{1}[a]" + 2 + 2 }
-                        }, true);
+                        }, true, 10);
                     result.Result.Count().ShouldBe(2);
                 }
                 {
@@ -250,7 +251,7 @@ namespace SugarChat.IntegrationTest.Services
                         { "AAA", @"\^$.*?+|{1}[a]" + 1 + 0 },
                         { "BBB", 1 + @"\^$.*?+|{1}[a]" + 0 + 0 },
                         { "Content", @"a \^$.*?+| b{1}[a]0"}
-                        }, false);
+                        }, false, 10);
                     result.Result.Count().ShouldBe(2);
                 }
                 {
@@ -258,7 +259,7 @@ namespace SugarChat.IntegrationTest.Services
                         new Dictionary<string, string> {
                         { "AAA", @"\^$.*?+|{1}[a]" + 0 },
                         { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 }
-                        }, true);
+                        }, true, 10);
                     result.Result.Count().ShouldBe(0);
                 }
                 {
@@ -267,7 +268,7 @@ namespace SugarChat.IntegrationTest.Services
                         { "AAA", @"\^$.*?+|{1}[a]" + 0 },
                         { "BBB", 1 + @"\^$.*?+|{1}[a]" + 1 },
                         { "Content", @"a \^$.*?+| b{1}[a]" }
-                        }, false);
+                        }, false, 10);
                     result.Result.Count().ShouldBe(5);
                 }
             });

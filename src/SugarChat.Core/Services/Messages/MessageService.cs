@@ -72,7 +72,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken, request.GroupType);
+            var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, request.GroupType, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
             await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllUnreadToUserResponse
@@ -373,7 +373,7 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, cancellationToken, request.GroupType)).Select(x => x.GroupId).ToList();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();

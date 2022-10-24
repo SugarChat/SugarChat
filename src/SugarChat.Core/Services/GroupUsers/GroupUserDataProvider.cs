@@ -30,13 +30,12 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default, int? type = null)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default)
         {
-            type = type ?? 0;
             groupIds = groupIds ?? new List<string>();
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null)) && (!groupIds.Any() || groupIds.Contains(b.Id))
+                              where a.UserId == userId && b.Type == groupType && (!groupIds.Any() || groupIds.Contains(b.Id))
                               select new
                               {
                                   a.Id,

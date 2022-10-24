@@ -77,12 +77,11 @@ namespace SugarChat.Core.Services.Messages
             return await Task.FromResult(messages);
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, CancellationToken cancellationToken = default, int? type = null)
+        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, int groupType, CancellationToken cancellationToken = default)
         {
-            type = type ?? 0;
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == userId && (b.Type == type || (type == 0 && b.Type == null))
+                              where a.UserId == userId && b.Type == groupType
                               select new
                               {
                                   a.Id,
@@ -287,11 +286,10 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId,
             IEnumerable<string> groupIds,
             PageSettings pageSettings,
-            CancellationToken cancellationToken = default,
-            int? type = null)
+            int groupType,
+            CancellationToken cancellationToken = default)
         {
-            type = type ?? 0;
-            var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, cancellationToken, type).ConfigureAwait(false);
+            var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, groupType, cancellationToken).ConfigureAwait(false);
             if (!groupUsers.Any())
             {
                 return new List<UnreadCountAndLastMessageByGroupId>();

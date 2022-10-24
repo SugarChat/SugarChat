@@ -120,14 +120,14 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Get_All_Unread_To_User()
         {
-            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllUnreadToUserAsync(Tom.Id, type: 11);
+            IEnumerable<Core.Domain.Message> messages = await _messageDataProvider.GetAllUnreadToUserAsync(Tom.Id, 11);
             messages.Count().ShouldBe(2);
             messages.Where(o => o.GroupId == TomAndJerryGroup.Id).OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);
             messages.Where(o => o.GroupId == TomAndJerryAndTykeGroup.Id).OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerryAndTyke2);
 
-            messages = await _messageDataProvider.GetAllUnreadToUserAsync(Tom.Id, type: 11);
+            messages = await _messageDataProvider.GetAllUnreadToUserAsync(Tom.Id, 11);
             messages.Count().ShouldBe(2);
             messages.Where(o => o.GroupId == TomAndJerryGroup.Id).OrderByDescending(o => o.SentTime).Last()
                 .ShouldBeEquivalentTo(MessageOfGroupTomAndJerry2);

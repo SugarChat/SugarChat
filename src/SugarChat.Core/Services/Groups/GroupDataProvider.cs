@@ -133,32 +133,7 @@ namespace SugarChat.Core.Services.Groups
             {
                 return groupIds;
             }
-            var sb = new StringBuilder();
-            foreach (var dic in includeCustomProperties)
-            {
-                foreach (var value in dic.Value)
-                {
-                    var value1 = value.Replace("\\", "\\\\");
-                    var key1 = dic.Key.Replace("\\", "\\\\");
-                    if (value1.Contains(","))
-                    {
-                        var values = value1.Split(',');
-                        foreach (var value2 in values)
-                        {
-                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
-                        }
-                    }
-                    else
-                        sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
-                }
-            }
-            var query = _repository.Query<GroupCustomProperty>();
-            if (groupIds != null && groupIds.Any())
-            {
-                query = query.Where(x => groupIds.Contains(x.GroupId));
-            }
-            var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-            return groupCustomProperties.Select(x => x.GroupId).ToList();
+            return await GetGroupIdByCustomPropertiesAsync(groupIds, includeCustomProperties, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> excludeCustomProperties, CancellationToken cancellationToken = default)
@@ -167,9 +142,14 @@ namespace SugarChat.Core.Services.Groups
             {
                 return new List<string>();
             }
-            var sb = new StringBuilder();
-            foreach (var dic in excludeCustomProperties)
+            return await GetGroupIdByCustomPropertiesAsync(groupIds, excludeCustomProperties, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<IEnumerable<string>> GetGroupIdByCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> includeCustomProperties, CancellationToken cancellationToken = default)
+        {
+            foreach (var dic in includeCustomProperties)
             {
+                var sb = new StringBuilder();
                 foreach (var value in dic.Value)
                 {
                     var value1 = value.Replace("\\", "\\\\");
@@ -185,14 +165,15 @@ namespace SugarChat.Core.Services.Groups
                     else
                         sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
                 }
+                var query = _repository.Query<GroupCustomProperty>();
+                if (groupIds != null && groupIds.Any())
+                {
+                    query = query.Where(x => groupIds.Contains(x.GroupId));
+                }
+                var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
             }
-            var query = _repository.Query<GroupCustomProperty>();
-            if (groupIds != null && groupIds.Any())
-            {
-                query = query.Where(x => groupIds.Contains(x.GroupId));
-            }
-            var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-            return groupCustomProperties.Select(x => x.GroupId).ToList();
+            return groupIds;
         }
 
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, int groupType, CancellationToken cancellationToken = default)

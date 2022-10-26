@@ -1,6 +1,4 @@
-﻿using SugarChat.Message.Dtos.Conversations;
-using SugarChat.Message.Paging;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 

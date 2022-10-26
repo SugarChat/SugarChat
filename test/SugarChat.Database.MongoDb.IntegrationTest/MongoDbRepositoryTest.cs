@@ -22,6 +22,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 AvatarUrl = "https://Avatar.jpg",
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTime.UtcNow,
+                CustomProperties = new Dictionary<string, string>(),
                 Description = "A Test Group!",
                 Id = Guid.NewGuid().ToString(),
                 LastModifyDate = DateTime.UtcNow,
@@ -39,6 +40,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 AvatarUrl = "https://Avatar.jpg",
                 CreatedBy = Guid.NewGuid().ToString(),
                 CreatedDate = DateTime.Now,
+                CustomProperties = new Dictionary<string, string>(),
                 Description = "A Test Group!",
                 Id = Guid.NewGuid().ToString(),
                 LastModifyDate = DateTime.Now,
@@ -63,6 +65,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "A Test Group!",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,
@@ -74,6 +77,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "A Test Group!",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,
@@ -187,7 +191,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             Assert.Equal(updatedGroup.AvatarUrl, firstGroup.AvatarUrl);
             Assert.Equal(updatedGroup.CreatedBy, firstGroup.CreatedBy);
             Assert.Equal(updatedGroup.CreatedDate, firstGroup.CreatedDate);
-            Assert.Equal(updatedGroup.CustomPropertyList, firstGroup.CustomPropertyList);
+            Assert.Equal(updatedGroup.CustomProperties, firstGroup.CustomProperties);
             Assert.Equal(updatedGroup.Description, firstGroup.Description);
             Assert.Equal(updatedGroup.LastModifyBy, firstGroup.LastModifyBy);
             Assert.Equal(updatedGroup.LastModifyDate, firstGroup.LastModifyDate);
@@ -203,6 +207,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "A Test Group!",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,
@@ -214,6 +219,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "A Test Group!",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,
@@ -235,7 +241,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                 Assert.Equal(updatedGroup.AvatarUrl, group.AvatarUrl);
                 Assert.Equal(updatedGroup.CreatedBy, group.CreatedBy);
                 Assert.Equal(updatedGroup.CreatedDate, group.CreatedDate);
-                Assert.Equal(updatedGroup.CustomPropertyList, group.CustomPropertyList);
+                Assert.Equal(updatedGroup.CustomProperties, group.CustomProperties);
                 Assert.Equal(updatedGroup.Description, group.Description);
                 Assert.Equal(updatedGroup.LastModifyBy, group.LastModifyBy);
                 Assert.Equal(updatedGroup.LastModifyDate, group.LastModifyDate);
@@ -256,6 +262,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "Test Paging",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,
@@ -285,6 +292,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     AvatarUrl = "https://Avatar.jpg",
                     CreatedBy = Guid.NewGuid().ToString(),
                     CreatedDate = DateTime.Now,
+                    CustomProperties = new Dictionary<string, string>(),
                     Description = "Test Paging",
                     Id = Guid.NewGuid().ToString(),
                     LastModifyDate = DateTime.Now,

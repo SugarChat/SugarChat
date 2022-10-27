@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using System.Text;
 using AutoMapper;
 using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Core.Services.MessageCustomProperties;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -22,12 +23,14 @@ namespace SugarChat.Core.Services.Messages
         private readonly IRepository _repository;
         private readonly IMapper _mapper;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
 
-        public MessageDataProvider(IRepository repository, IMapper mapper, IGroupUserDataProvider groupUserDataProvider)
+        public MessageDataProvider(IRepository repository, IMapper mapper, IGroupUserDataProvider groupUserDataProvider, IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider)
         {
             _repository = repository;
             _mapper = mapper;
             _groupUserDataProvider = groupUserDataProvider;
+            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
         }
 
         public async Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default)
@@ -298,6 +301,7 @@ namespace SugarChat.Core.Services.Messages
             var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
             var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
             var lastMessages = await GetLastMessageForGroupsAsync(groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(lastMessages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
 
             var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
             foreach (var groupUnreadCount in groupUnreadCounts)
@@ -312,6 +316,8 @@ namespace SugarChat.Core.Services.Messages
                 {
                     unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                     unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
+                    var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == lastMessage.Id).ToList();
+                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 }
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }

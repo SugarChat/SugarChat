@@ -335,50 +335,33 @@ namespace SugarChat.Core.Services.Messages
             }
             message.CustomProperties = null;
 
-            using (var mutex = new Mutex(false, command.GroupId))
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
+            if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
+            {
+                var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
+                var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
+                        command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+            }
+            foreach (var groupUser in groupUsers)
+            {
+                groupUser.UnreadCount++;
+            }
+
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
-                    if (mutex.WaitOne(-1, false))
-                    {
-                        var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                        groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
-                        if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
-                        {
-                            var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
-                            var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
-                                    command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                            groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
-                        }
-                        foreach (var groupUser in groupUsers)
-                        {
-                            groupUser.UnreadCount++;
-                        }
-
-                        using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-                        {
-                            try
-                            {
-                                await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-                                await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
-                                await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
-                                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                            }
-                            catch (Exception)
-                            {
-                                await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                                throw;
-                            }
-                        }
-                    }
+                    await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+                    await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
-                }
-                finally
-                {
-                    mutex.ReleaseMutex();
                 }
             }
             return _mapper.Map<MessageSavedEvent>(command);

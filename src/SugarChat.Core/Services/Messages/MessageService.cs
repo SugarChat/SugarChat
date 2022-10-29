@@ -335,35 +335,44 @@ namespace SugarChat.Core.Services.Messages
             }
             message.CustomProperties = null;
 
-            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-            groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
-            if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
+            int time = 1;
+            do
             {
-                var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
-                var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
-                        command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
-            }
-            foreach (var groupUser in groupUsers)
-            {
-                groupUser.UnreadCount++;
-            }
-
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-            {
-                try
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-                    await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                        groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
+                        if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
+                        {
+                            var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
+                            var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
+                                    command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                            groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                        }
+                        foreach (var groupUser in groupUsers)
+                        {
+                            groupUser.UnreadCount++;
+                        }
+                        await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                        await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        Thread.Sleep(200);
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        if (time > 3)
+                        {
+                            throw;
+                        }
+                    }
+                    time++;
                 }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                    throw;
-                }
-            }
+            } while (time < 4);
             return _mapper.Map<MessageSavedEvent>(command);
         }
 

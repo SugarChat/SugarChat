@@ -126,14 +126,7 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task UpdateRangeAsync(IEnumerable<GroupUser> groupUsers,
             CancellationToken cancellationToken = default)
         {
-            int affectedLineNum =
-                await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-            if (affectedLineNum != groupUsers.Count())
-            {
-                throw new BusinessWarningException(Prompt.UpdateGroupUsersFailed.WithParams(
-                    groupUsers.Count().ToString(),
-                    affectedLineNum.ToString()));
-            }
+            await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers,

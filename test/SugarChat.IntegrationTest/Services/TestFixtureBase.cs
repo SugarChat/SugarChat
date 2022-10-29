@@ -123,13 +123,13 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = groupDic.ElementAt(i).Key,
                     Key = "A",
-                    Value = i.ToString()
+                    Value = i.ToString()+"AB"
                 }, default(CancellationToken)).Wait();
                 repository.AddAsync(new GroupCustomProperty
                 {
                     GroupId = groupDic.ElementAt(i).Key,
                     Key = "B",
-                    Value = (i % 2).ToString()
+                    Value = (i % 2).ToString() + "BC"
                 }, default(CancellationToken)).Wait();
             }
         }

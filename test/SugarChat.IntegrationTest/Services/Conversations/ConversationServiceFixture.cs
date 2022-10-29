@@ -263,7 +263,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -277,7 +280,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "B", new List<string> { "0" } } }
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "B", new List<string> { "0BC" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -292,7 +298,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         IsExactSearch = false,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "2", "3" } } }
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "2AB", "3AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(2);

@@ -10,6 +10,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message.Paging;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using SugarChat.Message.Dtos;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -127,27 +128,29 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<string>> GetGroupIdByIncludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> includeCustomProperties, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<string>> GetGroupIdByIncludeCustomPropertiesAsync(IEnumerable<string> groupIds, SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
         {
-            if (includeCustomProperties == null || !includeCustomProperties.Any())
+            if (includeGroupByGroupCustomProperties == null || includeGroupByGroupCustomProperties.GroupCustomProperties == null || !includeGroupByGroupCustomProperties.GroupCustomProperties.Any())
             {
                 return groupIds;
             }
-            return await GetGroupIdByCustomPropertiesAsync(groupIds, includeCustomProperties, cancellationToken).ConfigureAwait(false);
+            return await GetGroupIdByCustomPropertiesAsync(groupIds, includeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> excludeCustomProperties, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> groupIds, SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
         {
-            if (excludeCustomProperties == null || !excludeCustomProperties.Any())
+            if (excludeGroupByGroupCustomProperties == null || excludeGroupByGroupCustomProperties.GroupCustomProperties == null || !excludeGroupByGroupCustomProperties.GroupCustomProperties.Any())
             {
                 return new List<string>();
             }
-            return await GetGroupIdByCustomPropertiesAsync(groupIds, excludeCustomProperties, cancellationToken).ConfigureAwait(false);
+            return await GetGroupIdByCustomPropertiesAsync(groupIds, excludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
         }
 
-        private async Task<IEnumerable<string>> GetGroupIdByCustomPropertiesAsync(IEnumerable<string> groupIds, Dictionary<string, List<string>> includeCustomProperties, CancellationToken cancellationToken = default)
+        private async Task<IEnumerable<string>> GetGroupIdByCustomPropertiesAsync(IEnumerable<string> groupIds, SearchGroupByGroupCustomPropertiesDto searchGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
         {
-            foreach (var dic in includeCustomProperties)
+            var isExactSearch = searchGroupByGroupCustomProperties.IsExactSearch;
+            var searchCustomProperties = searchGroupByGroupCustomProperties.GroupCustomProperties;
+            foreach (var dic in searchCustomProperties)
             {
                 var sb = new StringBuilder();
                 foreach (var value in dic.Value)
@@ -159,11 +162,19 @@ namespace SugarChat.Core.Services.Groups
                         var values = value1.Split(',');
                         foreach (var value2 in values)
                         {
-                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
+                            if (isExactSearch)
+                                sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
+                            else
+                                sb.Append($" || (Key==\"{key1}\" && Value.Contains(\"{value2}\"))");
                         }
                     }
                     else
-                        sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
+                    {
+                        if (isExactSearch)
+                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
+                        else
+                            sb.Append($" || (Key==\"{key1}\" && Value.Contains(\"{value1}\"))");
+                    }
                 }
                 var query = _repository.Query<GroupCustomProperty>();
                 if (groupIds != null && groupIds.Any())

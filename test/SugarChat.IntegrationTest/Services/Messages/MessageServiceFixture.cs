@@ -35,7 +35,10 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     {
                         UserId = userId,
                         GroupType = 10,
-                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(3);
@@ -45,7 +48,10 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     {
                         UserId = userId,
                         GroupType = 10,
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(3);
@@ -55,8 +61,28 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     {
                         UserId = userId,
                         GroupType = 10,
-                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } },
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } }
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "AB" } } },
+                            IsExactSearch = false
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(6);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        },
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(0);
@@ -66,8 +92,14 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     {
                         UserId = userId,
                         GroupType = 10,
-                        ExcludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3" } } },
-                        IncludeGroupByGroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "4" } } }
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        },
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "4AB" } } }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(1);

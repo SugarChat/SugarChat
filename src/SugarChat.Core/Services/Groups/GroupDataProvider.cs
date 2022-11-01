@@ -85,38 +85,29 @@ namespace SugarChat.Core.Services.Groups
                 {
                     query = query.Where(x => groupIds.Contains(x.GroupId));
                 }
-                if (customProperties.Values.Count() == 1 && customProperties.Values.First().Split(',').Count() == 1)
+                var sb = new StringBuilder();
+                foreach (var customProperty in customProperties)
                 {
-                    query = query.Where(x => x.Key == customProperties.Keys.First() && x.Value == customProperties.Values.First());
-                    var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-                    groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
+                    var values = customProperty.Value.Split(',');
+                    foreach (var value in values)
+                    {
+                        var _value = value.Replace("\\", "\\\\");
+                        var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
+                        sb.Append($" || ({_sb})");
+                    }
                 }
-                else
+                query = query.Where(sb.ToString().Substring(4));
+                var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+                var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
+                var _groupIds = new List<string>();
+                foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
                 {
-                    var sb = new StringBuilder();
-                    foreach (var customProperty in customProperties)
+                    if (groupCustomPropertyGroup.Count() == customProperties.Count())
                     {
-                        var values = customProperty.Value.Split(',');
-                        foreach (var value in values)
-                        {
-                            var _value = value.Replace("\\", "\\\\");
-                            var _sb = $"{nameof(GroupCustomProperty.Key)}==\"{customProperty.Key}\" && {nameof(GroupCustomProperty.Value)} == \"{_value}\"";
-                            sb.Append($" || ({_sb})");
-                        }
+                        _groupIds.Add(groupCustomPropertyGroup.Key);
                     }
-                    query = query.Where(sb.ToString().Substring(4));
-                    var groupCustomProperties = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
-                    var groupCustomPropertyGroups = groupCustomProperties.GroupBy(x => x.GroupId);
-                    var _groupIds = new List<string>();
-                    foreach (var groupCustomPropertyGroup in groupCustomPropertyGroups)
-                    {
-                        if (groupCustomPropertyGroup.Count() == customProperties.Count())
-                        {
-                            _groupIds.Add(groupCustomPropertyGroup.Key);
-                        }
-                    }
-                    groupIds = _groupIds;
                 }
+                groupIds = _groupIds;
             }
             if (pageSettings != null)
             {

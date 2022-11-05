@@ -77,11 +77,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellationToken);
-            if (affectedLineNum != 1)
-            {
-                throw new BusinessWarningException(Prompt.RemoveGroupUserFailed.WithParams(groupUser.Id));
-            }
+            await _repository.RemoveAsync(groupUser, cancellationToken);
         }
 
         public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellationToken = default)

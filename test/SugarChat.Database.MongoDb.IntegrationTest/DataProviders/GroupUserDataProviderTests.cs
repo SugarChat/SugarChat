@@ -68,13 +68,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
 
         [Fact]
-        public async Task Should_Throw_Exception_When_Removing_None_Exist_Group()
-        {
-            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _groupUserDataProvider.RemoveAsync(new() { Id = "0" }));
-        }
-
-        [Fact]
         public async Task Should_Get_GroupUsers_By_User_Id()
         {
             IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id, null, 11);

@@ -49,7 +49,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task UpdateGroupUserDataAsync(UpdateGroupUserDataCommand command, CancellationToken cancellationToken = default);
 
-        Task MigrateCustomPropertyAsnc(CancellationToken cancellation = default);
+        Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
 
         Task<bool> JudgeUserInGroupAsync(JudgeUserInGroupCommand command, CancellationToken cancellation = default);
     }

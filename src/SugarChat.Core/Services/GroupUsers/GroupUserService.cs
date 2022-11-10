@@ -485,11 +485,16 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task MigrateCustomPropertyAsnc(CancellationToken cancellation = default)
+        /// <summary>
+        /// 迁移数据使用，一次性代码
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
         {
-            var filterGroupIds = _groupDataProvider.GetGroupIds(x => x.Type != 0 && x.Type != null);
+            var groupIds = _groupDataProvider.GetGroupIds(x => x.Type == 0);
 
-            var total = await _groupUserDataProvider.GetCountAsync(x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+            var total = await _groupUserDataProvider.GetCountAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
             var pageSize = 5000;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
@@ -498,7 +503,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 {
                     try
                     {
-                        var groupUsers = await _groupUserDataProvider.GetListAsync(new PageSettings { PageNum = i, PageSize = pageSize }, x => !filterGroupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+                        var groupUsers = await _groupUserDataProvider.GetListAsync(new PageSettings { PageNum = i, PageSize = pageSize }, x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
                         var groupUserCustomProperties = new List<GroupUserCustomProperty>();
                         foreach (var groupUser in groupUsers)
                         {

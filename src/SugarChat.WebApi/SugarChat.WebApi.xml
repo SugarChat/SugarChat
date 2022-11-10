@@ -4,5 +4,12 @@
         <name>SugarChat.WebApi</name>
     </assembly>
     <members>
+        <member name="M:SugarChat.WebApi.Controllers.GroupUserController.MigrateCustomPropertyWhenRoleEqual0(SugarChat.Message.Commands.GroupUsers.MigrateGroupUserCustomPropertyCommand)">
+            <summary>
+            迁移数据使用，一次性代码
+            </summary>
+            <param name="command"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

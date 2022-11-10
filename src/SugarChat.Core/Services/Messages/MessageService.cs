@@ -488,6 +488,11 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
+        /// <summary>
+        /// 迁移数据使用，一次性代码
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
         {
             var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);

@@ -15,6 +15,10 @@ namespace SugarChat.WebApi.Controllers
             _adminDataProvider = adminDataProvider;
         }
 
+        /// <summary>
+        /// 修复数据，临时使用，不提供HttpClient
+        /// </summary>
+        /// <returns></returns>
         [Route("RepairData"), HttpPost]
         public IActionResult RepairData()
         {

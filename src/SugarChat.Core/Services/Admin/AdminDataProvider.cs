@@ -17,6 +17,9 @@ namespace SugarChat.Core.Services.Admin
             _repository = repository;
         }
 
+        /// <summary>
+        /// 修复数据，临时使用
+        /// </summary>
         public async void RepairData()
         {
             {

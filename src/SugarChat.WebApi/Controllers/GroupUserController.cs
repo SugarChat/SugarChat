@@ -155,11 +155,11 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        [Route("JudgeUserInGroup"), HttpPost]
+        [Route("CheckUserIsInGroup"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]
-        public async Task<IActionResult> JudgeUserInGroup(JudgeUserInGroupCommand command)
+        public async Task<IActionResult> CheckUserIsInGroup(CheckUserIsInGroupCommand command)
         {
-            var response = await _mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(command);
+            var response = await _mediator.SendAsync<CheckUserIsInGroupCommand, SugarChatResponse<bool>>(command);
             return Ok(response);
         }
     }

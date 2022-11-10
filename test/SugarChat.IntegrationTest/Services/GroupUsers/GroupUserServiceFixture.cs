@@ -107,20 +107,20 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         }
 
         [Fact]
-        public async Task ShouldJudgeUserInGroup()
+        public async Task ShouldCheckUserIsInGroup()
         {
             await Run<IMediator>(async (mediator) =>
             {
                 {
-                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = Guid.NewGuid().ToString(), UserId = Guid.NewGuid().ToString() });
+                    var response = await mediator.SendAsync<CheckUserIsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIsInGroupCommand { GroupId = Guid.NewGuid().ToString(), UserIds = new List<string> { Guid.NewGuid().ToString() } });
                     response.Data.ShouldBe(false);
                 }
                 {
-                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = conversationId, UserId = userId2 });
+                    var response = await mediator.SendAsync<CheckUserIsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIsInGroupCommand { GroupId = conversationId, UserIds = new List<string> { userId2 } });
                     response.Data.ShouldBe(false);
                 }
                 {
-                    var response = await mediator.SendAsync<JudgeUserInGroupCommand, SugarChatResponse<bool>>(new JudgeUserInGroupCommand { GroupId = conversationId, UserId = userId });
+                    var response = await mediator.SendAsync<CheckUserIsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIsInGroupCommand { GroupId = conversationId, UserIds = new List<string> { userId } });
                     response.Data.ShouldBe(true);
                 }
             });

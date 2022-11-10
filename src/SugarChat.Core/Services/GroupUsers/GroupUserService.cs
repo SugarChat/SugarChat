@@ -521,9 +521,9 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<bool> JudgeUserInGroupAsync(JudgeUserInGroupCommand command, CancellationToken cancellation = default)
+        public async Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default)
         {
-            return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, new List<string> { command.UserId }, cancellation).ConfigureAwait(false)).Any();
+            return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellation).ConfigureAwait(false)).Any();
         }
     }
 }

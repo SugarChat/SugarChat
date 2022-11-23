@@ -68,16 +68,9 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         }
 
         [Fact]
-        public async Task Should_Throw_Exception_When_Removing_None_Exist_Group()
-        {
-            await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _groupUserDataProvider.RemoveAsync(new() {Id = "0"}));
-        }
-
-        [Fact]
         public async Task Should_Get_GroupUsers_By_User_Id()
         {
-            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id);
+            IEnumerable<GroupUser> tomGroupUsers = await _groupUserDataProvider.GetByUserIdAsync(Tom.Id, null, 11);
             tomGroupUsers.Count().ShouldBe(2);
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryGroup.Id).ShouldNotBeNull();
             tomGroupUsers.SingleOrDefault(o => o.GroupId == TomAndJerryAndTykeGroup.Id).ShouldNotBeNull();
@@ -87,7 +80,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         [Fact]
         public async Task Should_Not_Get_GroupUsers_By_None_Exist_User_Id()
         {
-            IEnumerable<GroupUser> noneExistGroupUsers = await _groupUserDataProvider.GetByUserIdAsync("0");
+            IEnumerable<GroupUser> noneExistGroupUsers = await _groupUserDataProvider.GetByUserIdAsync("0", null, 10);
             noneExistGroupUsers.Count().ShouldBe(0);
         }
 
@@ -116,29 +109,13 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
             tomInTomAndJerryGroupUser.UserId.ShouldBe(Tom.Id);
             tomInTomAndJerryGroupUser.GroupId.ShouldBe(TomAndJerryGroup.Id);
         }
-        
+
         [Fact]
         public async Task Should_Not_Get_GroupUsers_By_Incorrect_User_And_Group_Id()
         {
             GroupUser tomInTomAndJerryGroupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(Spike.Id, TomAndJerryGroup.Id);
             tomInTomAndJerryGroupUser.ShouldBeNull();
-        }
-        
-        [Fact]
-        public async Task Should_Set_Message_Read_To_Proper_Time()
-        {
-            await _groupUserDataProvider.SetMessageReadAsync(Tom.Id, TomAndJerryGroup.Id, BaseTime);
-            GroupUser tomInTomAndJerryGroupUser =
-                await _groupUserDataProvider.GetByUserAndGroupIdAsync(Tom.Id, TomAndJerryGroup.Id);
-            tomInTomAndJerryGroupUser.LastReadTime.ShouldBe(BaseTime);
-        }
-        
-        [Fact]
-        public async Task Should_Not_Set_Incorrect_Message_Read()
-        {
-            await Assert.ThrowsAnyAsync<ArgumentException>(async () =>
-                await _groupUserDataProvider.SetMessageReadAsync(Spike.Id, TomAndJerryGroup.Id, BaseTime));
         }
     }
 }

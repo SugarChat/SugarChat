@@ -60,7 +60,6 @@ namespace SugarChat.IntegrationTest.Services.Users
                 }, default(CancellationToken));
 
                 var user = await repository.SingleOrDefaultAsync<User>(x => x.Id == userId);
-                user.CustomProperties["selfSignature"].ShouldBe("我的个性签名");
                 user.DisplayName.ShouldBe("UpdateUserProfileTest");
             });
         }

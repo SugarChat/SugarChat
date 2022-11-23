@@ -4,16 +4,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SugarChat.Message.Dtos.Conversations;
+using SugarChat.Message.Paging;
+using SugarChat.Core.Domain;
+using System.Text;
+using SugarChat.Core.Services.Groups;
 
 namespace SugarChat.Core.Services.Conversations
 {
     public class ConversationDataProvider : IConversationDataProvider
     {
         private readonly IRepository _repository;
+        private readonly IGroupDataProvider _groupDataProvider;
 
-        public ConversationDataProvider(IRepository repository)
+        public ConversationDataProvider(IRepository repository, IGroupDataProvider groupDataProvider)
         {
             _repository = repository;
+            _groupDataProvider = groupDataProvider;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(

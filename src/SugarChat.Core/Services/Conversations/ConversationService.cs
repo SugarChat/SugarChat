@@ -18,6 +18,8 @@ using SugarChat.Message.Paging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using SugarChat.Core.Services.GroupCustomProperties;
+using SugarChat.Core.Services.MessageCustomProperties;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -29,6 +31,8 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
+        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
+        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
 
         public ConversationService(
             IMapper mapper,
@@ -36,7 +40,9 @@ namespace SugarChat.Core.Services.Conversations
             IGroupUserDataProvider groupUserDataProvider,
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
-            IMessageDataProvider messageDataProvider)
+            IMessageDataProvider messageDataProvider,
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider,
+            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -44,6 +50,8 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
+            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
+            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
@@ -51,40 +59,49 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
-            if (request.GroupIds.Any())
-            {
-                groupIds = groupIds.Intersect(request.GroupIds).ToArray();
-            }
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
+
+            var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            if (!groupIds.Any())
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+
+            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
+                    groupIds,
+                    request.PageSettings,
+                    request.GroupType,
+                    cancellationToken).ConfigureAwait(false);
 
             var conversations = new List<ConversationDto>();
-            if (groupIds.Length == 0)
-                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
+            if (!unreadCountAndLastMessageByGroupIds.Any())
+                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
 
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(groupIds, user.Id, request.PageSettings, cancellationToken);
-
-            var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
+            var groupIdResults = unreadCountAndLastMessageByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
-            foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
+
+            foreach (var unreadCountAndLastMessageByGroupId in unreadCountAndLastMessageByGroupIds)
             {
-                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
-                var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == unreadCountAndLastMessageByGroupId.GroupId).ToList();
+                var group = groups.SingleOrDefault(x => x.Id == unreadCountAndLastMessageByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
-                    ConversationID = messageCountGroupByGroupId.GroupId,
-                    GroupProfile = _mapper.Map<GroupDto>(group),
-                    UnreadCount = messageCountGroupByGroupId.Count
+                    ConversationID = unreadCountAndLastMessageByGroupId.GroupId,
+                    GroupProfile = groupDto,
+                    UnreadCount = unreadCountAndLastMessageByGroupId.UnreadCount,
+                    LastMessageSentTime = unreadCountAndLastMessageByGroupId.LastSentTime,
+                    LastMessage = unreadCountAndLastMessageByGroupId.LastMessage
                 };
-                if (lastMessage is not null)
-                {
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
-                }
                 conversations.Add(conversationDto);
             }
 
-            return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
+            return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
         }
 
         public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(
@@ -95,7 +112,10 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, new List<string> { request.ConversationId }, cancellationToken).ConfigureAwait(false);
+
             var conversationDto = await GetConversationDto(groupUser, cancellationToken);
+            conversationDto.UnreadCount = count;
 
             return new GetConversationProfileResponse
             {
@@ -114,10 +134,18 @@ namespace SugarChat.Core.Services.Conversations
             var messages = await _conversationDataProvider
                 .GetPagedMessagesByConversationIdAsync(request.ConversationId, request.NextReqMessageId, request.Index, request.Count,
                     cancellationToken).ConfigureAwait(false);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            var messageIds = messages.Select(x => x.Id);
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
+            foreach (var messageDto in messageDtos)
+            {
+                var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == messageDto.Id).ToList();
+                messageDto.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+            }
 
             return new GetMessageListResponse
             {
-                Messages = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList(),
+                Messages = messageDtos,
                 NextReqMessageID = messages.LastOrDefault()?.Id
             };
         }
@@ -134,7 +162,6 @@ namespace SugarChat.Core.Services.Conversations
 
             return _mapper.Map<ConversationRemovedEvent>(command);
         }
-
 
         private async Task<ConversationDto> GetConversationDto(GroupUser groupUser,
             CancellationToken cancellationToken = default)
@@ -156,41 +183,68 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken = default)
         {
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken)).Select(x => x.GroupId).ToArray();
-            if (request.GroupIds.Any())
+            if (request.SearchParms == null || !request.SearchParms.Any())
             {
-                groupIds = groupIds.Intersect(request.GroupIds).ToArray();
+                return await GetConversationListByUserIdAsync(new GetConversationListRequest
+                {
+                    UserId = request.UserId,
+                    PageSettings = request.PageSettings,
+                    GroupIds = request.GroupIds,
+                    GroupType = request.GroupType,
+                    IncludeGroupByGroupCustomProperties = request.IncludeGroupByGroupCustomProperties,
+                    ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
+                });
             }
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
+            var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            if (!groupIds.Any())
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+
+            var filterGroupIds = new List<string>();
             var conversations = new List<ConversationDto>();
-            if (groupIds.Length == 0)
-                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Length };
+            var _groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, request.GroupType, cancellationToken);
+            filterGroupIds.AddRange(_groupIds);
 
-            var filterGroupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, cancellationToken);
-            var messageCountGroupByGroupIds = await _messageDataProvider.GetMessageUnreadCountGroupByGroupIdsAsync(filterGroupIds, request.UserId, request.PageSettings, cancellationToken);
+            if (!filterGroupIds.Any())
+                return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
+            else
+                groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
 
-            var groupIdResults = messageCountGroupByGroupIds.Select(x => x.GroupId);
+            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
+                    groupIds,
+                    request.PageSettings,
+                    request.GroupType,
+                    cancellationToken).ConfigureAwait(false);
+            if (!unreadCountAndLastMessageByGroupIds.Any())
+                return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
+
+            var groupIdResults = unreadCountAndLastMessageByGroupIds.Select(x => x.GroupId);
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var lastMessageForGroups = await _messageDataProvider.GetLastMessageForGroupsAsync(messageCountGroupByGroupIds.Select(x => x.GroupId), cancellationToken).ConfigureAwait(false);
-            foreach (var messageCountGroupByGroupId in messageCountGroupByGroupIds)
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
+            foreach (var unreadCountAndLastMessageByGroupId in unreadCountAndLastMessageByGroupIds)
             {
-                var lastMessage = lastMessageForGroups.FirstOrDefault(x => x.GroupId == messageCountGroupByGroupId.GroupId);
-                var group = groups.SingleOrDefault(x => x.Id == messageCountGroupByGroupId.GroupId);
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == unreadCountAndLastMessageByGroupId.GroupId).ToList();
+                var group = groups.SingleOrDefault(x => x.Id == unreadCountAndLastMessageByGroupId.GroupId);
                 var groupDto = _mapper.Map<GroupDto>(group);
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
                 var conversationDto = new ConversationDto
                 {
-                    ConversationID = messageCountGroupByGroupId.GroupId,
-                    GroupProfile = _mapper.Map<GroupDto>(group),
-                    UnreadCount = messageCountGroupByGroupId.Count
+                    ConversationID = unreadCountAndLastMessageByGroupId.GroupId,
+                    GroupProfile = groupDto,
+                    UnreadCount = unreadCountAndLastMessageByGroupId.UnreadCount,
+                    LastMessageSentTime = unreadCountAndLastMessageByGroupId.LastSentTime,
+                    LastMessage = unreadCountAndLastMessageByGroupId.LastMessage
                 };
-                if (lastMessage is not null)
-                {
-                    conversationDto.LastMessage = _mapper.Map<MessageDto>(lastMessage);
-                }
                 conversations.Add(conversationDto);
             }
 
-            return new PagedResult<ConversationDto> { Result = conversations, Total = filterGroupIds.Count() };
+            return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
         }
     }
 }

@@ -7,6 +7,8 @@ using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
+using System.Linq.Expressions;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -28,11 +30,34 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default)
         {
-            return await _repository.ToListAsync<GroupUser>(o => o.UserId == id, cancellationToken)
-                .ConfigureAwait(false);
+            groupIds = groupIds ?? new List<string>();
+            var groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == userId && b.Type == groupType && (!groupIds.Any() || groupIds.Contains(b.Id))
+                              select new
+                              {
+                                  a.Id,
+                                  a.UserId,
+                                  a.GroupId,
+                                  a.Role,
+                                  a.MessageRemindType,
+                                  a.UnreadCount
+                              }).ToList();
+            var result = new List<GroupUser>();
+            foreach (var groupUser in groupUsers)
+            {
+                result.Add(new GroupUser
+                {
+                    Id = groupUser.Id,
+                    UserId = groupUser.UserId,
+                    GroupId = groupUser.GroupId,
+                    Role = groupUser.Role,
+                    MessageRemindType = groupUser.MessageRemindType
+                });
+            }
+            return result;
         }
 
         public async Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id,
@@ -50,36 +75,9 @@ namespace SugarChat.Core.Services.GroupUsers
                 .ConfigureAwait(false);
         }
 
-        public async Task SetMessageReadAsync(string userId, string groupId, DateTimeOffset messageSentTime,
-            CancellationToken cancellationToken = default)
-        {
-            GroupUser groupUser =
-                await _repository.SingleOrDefaultAsync<GroupUser>(o => o.UserId == userId && o.GroupId == groupId,
-                    cancellationToken);
-            if (groupUser is null)
-            {
-                throw new ArgumentException();
-            }
-            if (groupUser.LastReadTime == messageSentTime)
-            {
-                return;
-            }
-            groupUser.LastReadTime = messageSentTime;
-
-            int affectedLineNum = await _repository.UpdateAsync(groupUser, cancellationToken);
-            if (affectedLineNum != 1)
-            {
-                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUser.Id));
-            }
-        }
-
         public async Task RemoveAsync(GroupUser groupUser, CancellationToken cancellationToken = default)
         {
-            int affectedLineNum = await _repository.RemoveAsync(groupUser, cancellationToken);
-            if (affectedLineNum != 1)
-            {
-                throw new BusinessWarningException(Prompt.RemoveGroupUserFailed.WithParams(groupUser.Id));
-            }
+            await _repository.RemoveAsync(groupUser, cancellationToken);
         }
 
         public async Task UpdateAsync(GroupUser groupUser, CancellationToken cancellationToken = default)
@@ -124,14 +122,7 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task UpdateRangeAsync(IEnumerable<GroupUser> groupUsers,
             CancellationToken cancellationToken = default)
         {
-            int affectedLineNum =
-                await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-            if (affectedLineNum != groupUsers.Count())
-            {
-                throw new BusinessWarningException(Prompt.UpdateGroupUsersFailed.WithParams(
-                    groupUsers.Count().ToString(),
-                    affectedLineNum.ToString()));
-            }
+            await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers,
@@ -162,27 +153,14 @@ namespace SugarChat.Core.Services.GroupUsers
             return await _repository.ToListAsync<GroupUser>(x => ids.Contains(x.Id), cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task SetMessageReadByIdsAsync(IEnumerable<string> userIds, string groupId, DateTimeOffset lastMessageSentTime,
-            CancellationToken cancellationToken)
+        public async Task<int> GetCountAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            IEnumerable<GroupUser> groupUsers =
-                await _repository.ToListAsync<GroupUser>(o =>o.GroupId == groupId && userIds.Contains(o.UserId) , cancellationToken).ConfigureAwait(false);
+            return await _repository.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
 
-            if (!groupUsers.Any())
-            {
-                return;
-            }
-            
-            foreach (GroupUser groupUser in groupUsers)
-            {
-                groupUser.LastReadTime = lastMessageSentTime;
-            }
-
-            int affectedLineNum = await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-            if (affectedLineNum < 1)
-            {
-                throw new BusinessWarningException(Prompt.UpdateGroupUserFailed.WithParams(groupUsers.First().Id));
-            }
+        public async Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
         }
     }
 }

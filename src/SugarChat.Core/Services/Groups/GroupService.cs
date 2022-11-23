@@ -18,6 +18,8 @@ using SugarChat.Core.Services.Messages;
 using SugarChat.Message;
 using System;
 using SugarChat.Core.IRepositories;
+using SugarChat.Core.Services.GroupCustomProperties;
+using Serilog;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -29,9 +31,14 @@ namespace SugarChat.Core.Services.Groups
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
         private readonly ITransactionManager _transactionManagement;
-
-        public GroupService(IMapper mapper, IGroupDataProvider groupDataProvider, IUserDataProvider userDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IMessageDataProvider messageDataProvider, ITransactionManager transactionManagement)
+        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
+        public GroupService(IMapper mapper,
+            IGroupDataProvider groupDataProvider,
+            IUserDataProvider userDataProvider,
+            IGroupUserDataProvider groupUserDataProvider,
+            IMessageDataProvider messageDataProvider,
+            ITransactionManager transactionManagement,
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -39,6 +46,7 @@ namespace SugarChat.Core.Services.Groups
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
             _transactionManagement = transactionManagement;
+            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -50,19 +58,39 @@ namespace SugarChat.Core.Services.Groups
             group.CheckNotExist();
 
             group = _mapper.Map<Group>(command);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellation).ConfigureAwait(false);
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
             {
                 try
                 {
+                    group.CustomProperties = null;
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
+                    if (command.CustomProperties != null)
+                    {
+                        var _groupCustomProperties = new List<GroupCustomProperty>();
+                        foreach (var customProperty in command.CustomProperties)
+                        {
+                            if (!groupCustomProperties.Any(x => x.Key == customProperty.Key && x.Value == customProperty.Value))
+                            {
+                                _groupCustomProperties.Add(new GroupCustomProperty
+                                {
+                                    GroupId = group.Id,
+                                    Key = customProperty.Key,
+                                    Value = customProperty.Value,
+                                    CreatedBy = command.CreatedBy
+                                });
+                            }
+                        }
+                        await _groupCustomPropertyDataProvider.AddRangeAsync(_groupCustomProperties, cancellation).ConfigureAwait(false);
+                    }
                 }
                 catch (MongoDB.Driver.MongoWriteException ex)
                 {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     if (ex.WriteError.Code == 11000)
                     {
                         group.CheckNotExist();
                     }
-                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     throw;
                 }
                 catch (Exception)
@@ -95,13 +123,32 @@ namespace SugarChat.Core.Services.Groups
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {
-            User user = await GetUserAsync(request.UserId, cancellation).ConfigureAwait(false);
+            User user = await _userDataProvider.GetByIdAsync(request.UserId, cancellation).ConfigureAwait(false);
             user.CheckExist(request.UserId);
 
-            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellation).ConfigureAwait(false);
-            PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
+            IEnumerable<GroupUser> groupUsers = await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, request.GroupType, cancellation).ConfigureAwait(false);
+            if (!groupUsers.Any())
+                return new()
+                {
+                    Groups = new()
+                    {
+                        Result = new List<GroupDto>(),
+                        Total = 0
+                    }
+                };
 
+            PagedResult<Group> groups = await _groupDataProvider.GetByIdsAsync(groupUsers.Select(o => o.GroupId), request.PageSettings, cancellation).ConfigureAwait(false);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Result.Select(x => x.Id)).ConfigureAwait(false);
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups.Result);
+            foreach (var groupDto in groupDtos)
+            {
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+
+                if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
+                    Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
+            }
+
             PagedResult<GroupDto> groupsDto = new()
             {
                 Result = groupDtos,
@@ -118,13 +165,23 @@ namespace SugarChat.Core.Services.Groups
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
             group.CheckExist(command.Id);
-            await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
-            return _mapper.Map<GroupRemovedEvent>(command);
-        }
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
 
-        private async Task<User> GetUserAsync(string id, CancellationToken cancellation = default)
-        {
-            return await _userDataProvider.GetByIdAsync(id, cancellation).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _groupDataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+                    await _groupCustomPropertyDataProvider.RemoveRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    throw;
+                }
+            }
+            return _mapper.Map<GroupRemovedEvent>(command);
         }
 
         public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
@@ -143,8 +200,13 @@ namespace SugarChat.Core.Services.Groups
             }
 
             var groupDto = _mapper.Map<GroupDto>(group);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
+            groupDto.CustomProperties = groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+
+            if (groupDto.CustomProperties.Count < groupCustomProperties.Count())
+                Log.Warning("GetGroupProfileAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
 
             return new GetGroupProfileResponse
             {
@@ -199,22 +261,64 @@ namespace SugarChat.Core.Services.Groups
             List<string> groupIds = new List<string>();
             if (!request.SearchAllGroup)
             {
-                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
+                groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, null, request.GroupType, cancellationToken).ConfigureAwait(false)).Select(x => x.GroupId).ToList();
                 if (!groupIds.Any())
                 {
                     return new GroupDto[] { };
                 }
             }
-            var groups = await _groupDataProvider.GetByCustomProperties(request.CustomProperties, groupIds, cancellationToken).ConfigureAwait(false);
-            var groupUsers = await _groupUserDataProvider.GetGroupMemberCountByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            var groups = await _groupDataProvider.GetByCustomPropertiesAsync(groupIds, request.CustomProperties, null, cancellationToken).ConfigureAwait(false);
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groups.Select(x => x.Id));
 
             var groupDtos = _mapper.Map<IEnumerable<GroupDto>>(groups);
             foreach (var groupDto in groupDtos)
             {
-                groupDto.MemberCount = groupUsers.Where(x => x.GroupId == groupDto.Id).Count();
+                var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
+                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                if (groupDto.CustomProperties.Count < _groupCustomProperties.Count())
+                    Log.Warning("GetGroupProfileAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
             }
 
             return groupDtos;
+        }
+
+        /// <summary>
+        /// 迁移数据使用，一次性代码
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
+        {
+            var total = await _groupDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
+            var pageSize = 500;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var groups = await _groupDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
+                        var groupCustomProperties = new List<GroupCustomProperty>();
+                        foreach (var group in groups)
+                        {
+                            foreach (var customProperty in group.CustomProperties)
+                            {
+                                groupCustomProperties.Add(new GroupCustomProperty { GroupId = group.Id, Key = customProperty.Key, Value = customProperty.Value });
+                            }
+                            group.CustomProperties = new Dictionary<string, string>();
+                        }
+                        await _groupDataProvider.UpdateRangeAsync(groups, cancellation).ConfigureAwait(false);
+                        await _groupCustomPropertyDataProvider.AddRangeAsync(groupCustomProperties, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate Group CustomProperty Error");
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    }
+                }
+            }
         }
     }
 }

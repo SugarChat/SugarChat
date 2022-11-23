@@ -37,23 +37,23 @@ namespace SugarChat.WebApi.Controllers
         }
 
         [Route("getConversationList"), HttpGet]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
         public async Task<IActionResult> GetConversationListByUserIdForGet([FromQuery] GetConversationListRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+                      .RequestAsync<GetConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
 
             return Ok(response);
         }
 
         [Route("getConversationList"), HttpPost]
-        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<IEnumerable<ConversationDto>>))]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
         public async Task<IActionResult> GetConversationListByUserIdForPost(GetConversationListRequest request)
         {
             var response =
                   await _mediator
-                      .RequestAsync<GetConversationListRequest, SugarChatResponse<IEnumerable<ConversationDto>>>(request);
+                      .RequestAsync<GetConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
 
             return Ok(response);
         }

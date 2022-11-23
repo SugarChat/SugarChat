@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Driver;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
-using MongoDB.Driver.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using System.Text;
+using AutoMapper;
+using SugarChat.Core.Services.GroupUsers;
+using SugarChat.Core.Services.MessageCustomProperties;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -19,10 +21,16 @@ namespace SugarChat.Core.Services.Messages
     {
 
         private readonly IRepository _repository;
+        private readonly IMapper _mapper;
+        private readonly IGroupUserDataProvider _groupUserDataProvider;
+        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
 
-        public MessageDataProvider(IRepository repository)
+        public MessageDataProvider(IRepository repository, IMapper mapper, IGroupUserDataProvider groupUserDataProvider, IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider)
         {
             _repository = repository;
+            _mapper = mapper;
+            _groupUserDataProvider = groupUserDataProvider;
+            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
         }
 
         public async Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default)
@@ -72,15 +80,23 @@ namespace SugarChat.Core.Services.Messages
             return await Task.FromResult(messages);
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Domain.Message>> GetAllUnreadToUserAsync(string userId, int groupType, CancellationToken cancellationToken = default)
         {
-            var groups = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            var groupIds = groups.Select(x => x.GroupId);
+            var groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == userId && b.Type == groupType
+                              select new
+                              {
+                                  a.Id,
+                                  a.UserId,
+                                  a.GroupId,
+                                  a.LastReadTime
+                              }).ToList();
+            var groupIds = groupUsers.Select(x => x.GroupId);
             var messages =
                 await _repository.ToListAsync<Domain.Message>(o => groupIds.Contains(o.GroupId), cancellationToken);
             var unreadMessages = messages.Where(o => o.SentBy != userId &&
-                    o.SentTime > (groups.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
+                    o.SentTime > (groupUsers.Single(x => x.GroupId == o.GroupId).LastReadTime ?? DateTimeOffset.MinValue) && !o.IsRevoked)
                 .ToList();
 
             return await Task.FromResult(unreadMessages);
@@ -239,44 +255,21 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        class MessageCount
+        public async Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            public int Count { get; set; }
-        }
-
-        public async Task<int> GetUnreadMessageCountAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
-        {
-            var groupUsers = await _repository.ToListAsync<GroupUser>(o => o.UserId == userId, cancellationToken);
-            if (groupIds.Any())
+            var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
+            if (groupIds != null && groupIds.Any())
             {
-                groupUsers = groupUsers.Where(x => groupIds.Contains(x.GroupId)).ToList();
+                query = query.Where(x => groupIds.Contains(x.GroupId));
             }
-            var _groupIds = groupUsers.Select(x => x.GroupId);
-            if (_groupIds.Count() == 0) return 0;
+            var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+            var groupUnreadCounts = new List<GroupUnreadCount>();
+            foreach (var groupUser in groupUsers)
+            {
+                groupUnreadCounts.Add(new GroupUnreadCount { GroupId = groupUser.GroupId, UnreadCount = groupUser.UnreadCount });
+            }
 
-            List<string> stages = new List<string>();
-            var lookup = GetLookup(userId);
-            var match = GetMatch(userId, _groupIds);
-            string project1 = "{$project:{Count:{$size:'$stockdata'}}}";
-            string group = "{$group:{_id:null,Count:{$sum:'$Count'}}}";
-            string project2 = "{$project:{_id:0}}";
-            stages.Add(match);
-            stages.Add(lookup);
-            stages.Add(project1);
-            stages.Add(group);
-            stages.Add(project2);
-
-            var bsonDocuments = await (await _repository.GetAggregate<GroupUser>(stages, cancellationToken)).ToListAsync(cancellationToken);
-            if (bsonDocuments.Count() == 0)
-                return 0;
-
-            var MessageCount = BsonSerializer.Deserialize<MessageCount>(bsonDocuments.FirstOrDefault());
-            return MessageCount.Count;
-        }
-
-        public async Task<IEnumerable<Domain.Message>> GetByGroupIdsAsync(string[] groupIds, CancellationToken cancellationToken)
-        {
-            return await _repository.ToListAsync<Domain.Message>(x => groupIds.Contains(x.GroupId) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
+            return (groupUnreadCounts, groupUsers.Sum(x => x.UnreadCount));
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
@@ -293,137 +286,81 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<MessageCountGroupByGroupId>> GetMessageUnreadCountGroupByGroupIdsAsync(IEnumerable<string> groupIds, string userId, PageSettings pageSettings, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId,
+            IEnumerable<string> groupIds,
+            PageSettings pageSettings,
+            int groupType,
+            CancellationToken cancellationToken = default)
         {
-            List<string> stages = new List<string>();
-            var lookup1 = GetLookup(userId);
-            var lookup2 = @"
-{
-    $lookup:{
-        from:'Message',
-        let:{groupUser_GroupId:'$GroupId'},
-        pipeline:[
-            {$match:
-                {$expr:
-                    {$eq:['$GroupId','$$groupUser_GroupId']}
-                }
-            },
-            {$sort:{SentTime:-1}},
-            {$limit:1}
-        ],
-        as:'stockdata2'
-    }
-}
-";
-            var set = "{$set:{stockdata2:{$arrayElemAt:['$stockdata2',0]}}}";
-            var match = GetMatch(userId, groupIds);
-            string project = "{$project:{_id:0,GroupId:1,LastSentTime:'$stockdata2.SentTime',Count:{$size:'$stockdata'}}}";
-            string sort = "{$sort:{Count:-1,LastSentTime:-1}}";
-            string skip = ""; string limit = "";
-            if (pageSettings is not null)
+            var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, groupType, cancellationToken).ConfigureAwait(false);
+            if (!groupUsers.Any())
             {
-                skip = $"{{$skip:{(pageSettings.PageNum - 1) * pageSettings.PageSize}}}";
-                limit = $"{{$limit:{pageSettings.PageSize}}}";
-            }
-            stages.Add(match);
-            stages.Add(lookup1);
-            stages.Add(lookup2);
-            stages.Add(set);
-            stages.Add(project);
-            stages.Add(sort);
-            if (pageSettings is not null)
-            {
-                stages.Add(skip);
-                stages.Add(limit);
+                return new List<UnreadCountAndLastMessageByGroupId>();
             }
 
-            var result = await _repository.GetList<GroupUser, MessageCountGroupByGroupId>(stages, cancellationToken).ConfigureAwait(false);
-            return result;
+            var groupIdsByGroupUser = groupUsers.Select(x => x.GroupId).ToList();
+            var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
+            var lastMessages = await GetLastMessageForGroupsAsync(groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(lastMessages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
+
+            var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
+            foreach (var groupUnreadCount in groupUnreadCounts)
+            {
+                var lastMessage = lastMessages.FirstOrDefault(x => x.GroupId == groupUnreadCount.GroupId);
+                var unreadCountAndLastMessageByGroupId = new UnreadCountAndLastMessageByGroupId
+                {
+                    GroupId = groupUnreadCount.GroupId,
+                    UnreadCount = groupUnreadCount.UnreadCount
+                };
+                if (lastMessage != null)
+                {
+                    unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
+                    unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
+                    var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == lastMessage.Id).ToList();
+                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                }
+                unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
+            }
+            if (pageSettings == null)
+            {
+                return unreadCountAndLastMessageByGroupIds
+                        .OrderByDescending(x => x.UnreadCount)
+                        .ThenByDescending(x => x.LastSentTime)
+                        .ToList();
+            }
+            else
+            {
+                return unreadCountAndLastMessageByGroupIds
+                        .OrderByDescending(x => x.UnreadCount)
+                        .ThenByDescending(x => x.LastSentTime)
+                        .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
+                        .Take(pageSettings.PageSize).ToList();
+            }
         }
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)
         {
-            return await _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefaultAsync(cancellationToken);
-        }
-
-        private string GetLookup(string userId)
-        {
-            string lookup = $@"
-{{
-    $lookup:{{
-        from:'Message',
-        let:{{groupUser_GroupId:'$GroupId',groupUser_LastReadTime:'$LastReadTime'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$and:
-                        [
-                            {{$eq:['$GroupId','$$groupUser_GroupId']}},
-                            {{$gt:['$SentTime','$$groupUser_LastReadTime']}},
-                            {{$ne:['$SentBy','{userId}']}}
-                        ]
-                    }}
-                }}
-            }},
-        ],
-        as:'stockdata'
-    }}
-}}
-";
-            return lookup;
-        }
-
-        private string GetMatch(string userId, IEnumerable<string> groupIds)
-        {
-            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            string match = $@"
-{{$match:{{
-    $and:[
-        {{GroupId:{{$in:[{groupIdsStr}]}}}},
-        {{UserId:'{userId}'}}
-    ]
-}}}}
-";
-            return match;
+            return _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefault();
         }
 
         public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
-            List<string> stages = new List<string>();
-            var groupIdsStr = string.Join(",", groupIds.Select(x => $"'{x}'"));
-            string match = $@"
-{{$match:{{
-    _id:{{$in:[{groupIdsStr}]}}
-}}}}
-";
-            var lookup = $@"
-{{
-    $lookup:{{
-        from:'Message',
-        let:{{group_GroupId:'$_id'}},
-        pipeline:[
-            {{$match:
-                {{$expr:
-                    {{$eq:['$GroupId','$$group_GroupId']}}
-                }}
-            }},
-            {{$sort:{{SentTime:-1}}}},
-            {{$limit:1}}
+            var messageIds = (from a in _repository.Query<Domain.Message>()
+                              where groupIds.Contains(a.GroupId)
+                              orderby a.SentTime descending
+                              group a by a.GroupId into b
+                              select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
 
-        ],
-        as:'stockdata'
-    }}
-}}
-";
-            string set = "{$set:{stockdata:{$arrayElemAt:['$stockdata',0]}}}";
-            string project = "{$project:{_id:0,stockdata:'$stockdata'}}";
-            string replaceRoot = "{$replaceRoot:{newRoot:{$mergeObjects:'$stockdata'}}}";
-            stages.Add(match);
-            stages.Add(lookup);
-            stages.Add(set);
-            stages.Add(project);
-            stages.Add(replaceRoot);
-            var result = await _repository.GetList<Group, Domain.Message>(stages, cancellationToken).ConfigureAwait(false);
+            var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+            var result = new List<Domain.Message>();
+            foreach (var groupId in groupIds)
+            {
+                var message = messages.Where(x => x.GroupId == groupId).FirstOrDefault();
+                if (message != null)
+                {
+                    result.Add(message);
+                }
+            }
             return result;
         }
 
@@ -436,5 +373,21 @@ namespace SugarChat.Core.Services.Messages
         {
             return await _repository.ToListAsync<Domain.Message>(x => ids.Contains(x.Id) && !x.IsRevoked, cancellationToken).ConfigureAwait(false);
         }
+
+        public async Task<int> GetCountAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
+        }
+    }
+
+    public class GroupUnreadCount
+    {
+        public string GroupId { get; set; }
+        public int UnreadCount { get; set; }
     }
 }

@@ -49,12 +49,17 @@ namespace SugarChat.Data.MongoDb
             return await FilteredQuery(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity
+        {
+            return await ((IMongoQueryable<T>)source).ToListAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<PagedResult<T>> ToPagedListAsync<T>(PageSettings pageSettings,
             Expression<Func<T, bool>> predicate = null,
             CancellationToken cancellationToken = default) where T : class, IEntity
         {
             var query = FilteredQuery(predicate);
-            var result = await query.Paging(pageSettings).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var result = await ToListAsync(FilteredQuery(predicate).Paging(pageSettings), cancellationToken).ConfigureAwait(false);
             var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
             return new PagedResult<T> { Result = result, Total = total };
         }
@@ -84,6 +89,11 @@ namespace SugarChat.Data.MongoDb
             return await FilteredQuery(predicate).CountAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<int> CountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IEntity
+        {
+            return await ((IMongoQueryable<T>)source).CountAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<T> SingleOrDefaultAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             return await FilteredQuery(predicate).SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -106,7 +116,7 @@ namespace SugarChat.Data.MongoDb
                     .ConfigureAwait(false);
         }
 
-        public IMongoQueryable<T> Query<T>() where T : class, IEntity
+        public IQueryable<T> Query<T>() where T : class, IEntity
         {
             return GetCollection<T>()
                 .AsQueryable();

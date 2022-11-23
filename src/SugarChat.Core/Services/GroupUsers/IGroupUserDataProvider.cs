@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Dtos.GroupUsers;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -11,13 +13,10 @@ namespace SugarChat.Core.Services.GroupUsers
     {
         Task AddAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
         Task RemoveAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
-        Task<IEnumerable<GroupUser>> GetByUserIdAsync(string id, CancellationToken cancellationToken = default);
+        Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default);
         Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
 
         Task<GroupUser> GetByUserAndGroupIdAsync(string userId, string groupId,
-            CancellationToken cancellationToken = default);
-
-        Task SetMessageReadAsync(string userId, string groupId, DateTimeOffset messageSentTime,
             CancellationToken cancellationToken = default);
 
         Task UpdateAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
@@ -39,6 +38,7 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<GroupUser>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
-        Task SetMessageReadByIdsAsync(IEnumerable<string> userIds, string groupId, DateTimeOffset lastMessageSentTime, CancellationToken cancellationToken);
+        Task<int> GetCountAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
+        Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

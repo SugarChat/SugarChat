@@ -19,6 +19,10 @@ using SugarChat.Message.Responses.Messages;
 using System.Linq;
 using SugarChat.Core.Services.Configurations;
 using SugarChat.Message.Paging;
+using SugarChat.Core.Services.MessageCustomProperties;
+using SugarChat.Core.IRepositories;
+using Serilog;
+using SugarChat.Core.Services.GroupUserCustomProperties;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -31,11 +35,17 @@ namespace SugarChat.Core.Services.Messages
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IConfigurationDataProvider _configurationDataProvider;
+        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
+        private readonly ITransactionManager _transactionManagement;
+        private readonly IGroupUserCustomPropertyDataProvider _groupUserCustomPropertyDataProvider;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
-            IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider)
+            IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider,
+            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider,
+            ITransactionManager transactionManagement,
+            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -44,6 +54,9 @@ namespace SugarChat.Core.Services.Messages
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _configurationDataProvider = configurationDataProvider;
+            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
+            _transactionManagement = transactionManagement;
+            _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
         }
 
 
@@ -59,10 +72,12 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
+            var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, request.GroupType, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllUnreadToUserResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllUnreadToUserAsync(userId, cancellationToken))
+                Messages = messageDtos
             };
         }
 
@@ -80,11 +95,12 @@ namespace SugarChat.Core.Services.Messages
                 await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
 
+            var messages = await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadToUserFromFriendResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId,
-                        cancellationToken))
+                Messages = messageDtos
             };
         }
 
@@ -102,11 +118,12 @@ namespace SugarChat.Core.Services.Messages
                 await _friendDataProvider.GetByBothIdsAsync(request.UserId, request.FriendId, cancellationToken);
             friend.CheckExist(request.UserId, request.FriendId);
 
+            var messages = await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserFromFriendResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId,
-                        cancellationToken))
+                Messages = messageDtos
             };
         }
 
@@ -117,10 +134,12 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
+            var messages = await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserResponse
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(
-                    await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken))
+                Messages = messageDtos
             };
         }
 
@@ -139,11 +158,12 @@ namespace SugarChat.Core.Services.Messages
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
+            var messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessagesFromGroupResponse
             {
-                Messages =
-                    (await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count,
-                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
+                Messages = messageDtos
             };
         }
 
@@ -162,11 +182,12 @@ namespace SugarChat.Core.Services.Messages
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.GroupId);
 
+            var messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllMessagesFromGroupResponse
             {
-                Messages =
-                    (await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count,
-                        cancellationToken)).Select(x => _mapper.Map<MessageDto>(x))
+                Messages = messageDtos
             };
         }
 
@@ -177,11 +198,13 @@ namespace SugarChat.Core.Services.Messages
             group.CheckExist(request.GroupId);
 
             var messages = await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages.Result);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
                 Messages = new PagedResult<MessageDto>
                 {
-                    Result = _mapper.Map<IEnumerable<MessageDto>>(messages.Result),
+                    Result = messageDtos,
                     Total = messages.Total
                 }
             };
@@ -197,9 +220,11 @@ namespace SugarChat.Core.Services.Messages
             var messages =
                 await _messageDataProvider.GetMessagesOfGroupBeforeAsync(request.MessageId, request.Count,
                     cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
-                Messages = _mapper.Map<IEnumerable<MessageDto>>(messages)
+                Messages = messageDtos
             };
         }
 
@@ -215,10 +240,11 @@ namespace SugarChat.Core.Services.Messages
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, message.GroupId,
                     cancellationToken);
             groupUser.CheckExist(command.UserId, message.GroupId);
-            groupUser.CheckLastReadTimeEarlierThan(message.SentTime);
 
-            await _groupUserDataProvider.SetMessageReadAsync(command.UserId, message.GroupId, message.SentTime,
-                cancellationToken);
+            groupUser.UnreadCount = 0;
+            groupUser.LastReadTime = DateTime.Now;
+            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
+
             return _mapper.Map<MessageReadSetByUserBasedOnMessageIdEvent>(command);
         }
 
@@ -235,46 +261,26 @@ namespace SugarChat.Core.Services.Messages
             GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
             groupUser.CheckExist(command.UserId, command.GroupId);
 
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken);
-            if (lastMessageOfGroup is null)
-            {
-                return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
-            }
-            else
-            {
-                DateTimeOffset lastMessageSentTime = lastMessageOfGroup.SentTime;
-                groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
-                await _groupUserDataProvider.SetMessageReadAsync(command.UserId, command.GroupId, lastMessageSentTime, cancellationToken);
-                return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
-            }
+            groupUser.UnreadCount = 0;
+            groupUser.LastReadTime = DateTime.Now;
+            await _groupUserDataProvider.UpdateAsync(groupUser, cancellationToken).ConfigureAwait(false);
+            return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
         }
-        
+
         public async Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(
             SetMessageReadByUserIdsBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default)
         {
-            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);;
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.GroupId);
 
-            IEnumerable<GroupUser> groupUsers = (await _groupUserDataProvider.GetMembersByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false)).ToList();
-            var groupUserIds = groupUsers.Select(o => o.UserId);
-            if (command.UserIds.Except(groupUserIds).Any())
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellationToken).ConfigureAwait(false);
+            foreach (var groupUser in groupUsers)
             {
-                throw new BusinessWarningException(Prompt.NotAllGroupUsersExist);
+                groupUser.UnreadCount = 0;
+                groupUser.LastReadTime = DateTime.Now;
             }
-
-            Domain.Message lastMessageOfGroup = await _messageDataProvider.GetLatestMessageOfGroupAsync(command.GroupId, cancellationToken).ConfigureAwait(false);;
-            if (lastMessageOfGroup is not null)
-            {
-                DateTimeOffset lastMessageSentTime = lastMessageOfGroup.SentTime;
-                foreach (GroupUser groupUser in groupUsers)
-                {
-                    groupUser.CheckLastReadTimeEarlierThan(lastMessageSentTime);
-                }
-
-                await _groupUserDataProvider.SetMessageReadByIdsAsync(command.UserIds, command.GroupId, lastMessageSentTime,
-                    cancellationToken).ConfigureAwait(false);;
-            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
         }
@@ -305,10 +311,68 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command, CancellationToken cancellationToken = default)
         {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+
+            GroupUser sendBy = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.SentBy, command.GroupId, cancellationToken);
+            sendBy.CheckExist(command.SentBy, command.GroupId);
+
             Domain.Message message = _mapper.Map<Domain.Message>(command);
             message.SentTime = DateTime.Now;
-            await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
 
+            var messageCustomProperties = new List<MessageCustomProperty>();
+            if (command.CustomProperties != null && command.CustomProperties.Any())
+            {
+                foreach (var customProperty in command.CustomProperties)
+                {
+                    messageCustomProperties.Add(new MessageCustomProperty
+                    {
+                        MessageId = command.Id,
+                        Key = customProperty.Key,
+                        Value = customProperty.Value
+                    });
+                }
+            }
+            message.CustomProperties = null;
+
+            int time = 1;
+            do
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                        groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
+                        if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
+                        {
+                            var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
+                            var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
+                                    command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                            groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                        }
+                        foreach (var groupUser in groupUsers)
+                        {
+                            groupUser.UnreadCount++;
+                        }
+                        await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
+                        await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        Thread.Sleep(200);
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        if (time > 3)
+                        {
+                            throw;
+                        }
+                    }
+                    time++;
+                }
+            } while (time < 4);
             return _mapper.Map<MessageSavedEvent>(command);
         }
 
@@ -318,9 +382,24 @@ namespace SugarChat.Core.Services.Messages
             User user = await GetUserAsync(userId, cancellationToken);
             user.CheckExist(userId);
 
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
+
+            var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+            groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+
+            if (!groupIds.Any())
+                return new GetUnreadMessageCountResponse
+                {
+                    Count = 0
+                };
+
+            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessageCountResponse
             {
-                Count = await _messageDataProvider.GetUnreadMessageCountAsync(request.UserId, request.GroupIds, cancellationToken)
+                Count = count
             };
         }
 
@@ -330,8 +409,9 @@ namespace SugarChat.Core.Services.Messages
             user.CheckExist(request.UserId);
 
             var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
-
-            return messages.Select(x => _mapper.Map<MessageDto>(x)).ToArray();
+            var messageDtos = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList();
+            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
+            return messageDtos;
         }
 
         public async Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default)
@@ -354,15 +434,97 @@ namespace SugarChat.Core.Services.Messages
                 var _user = users.SingleOrDefault(x => x.Id == message.SentBy);
                 _user.CheckExist(message.SentBy);
             }
-            foreach (var updateMessageDto in command.Messages)
+
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(command.Messages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
+            var oldMessageCustomProperties = new List<MessageCustomProperty>();
+            var newMessageCustomProperties = new List<MessageCustomProperty>();
+            foreach (var messageDto in command.Messages)
             {
-                var message = messages.FirstOrDefault(x => x.Id == updateMessageDto.Id);
+                var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
                 if (message != null)
                 {
-                    _mapper.Map(updateMessageDto, message);
+                    _mapper.Map(messageDto, message);
+                    if (messageDto.CustomProperties != null && messageDto.CustomProperties.Any())
+                    {
+                        oldMessageCustomProperties.AddRange(messageCustomProperties.Where(x => x.MessageId == message.Id).ToList());
+                        foreach (var customProperty in messageDto.CustomProperties)
+                        {
+                            newMessageCustomProperties.Add(new MessageCustomProperty
+                            {
+                                MessageId = messageDto.Id,
+                                Key = customProperty.Key,
+                                Value = customProperty.Value
+                            });
+                        }
+                    }
                 }
             }
-            await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _messageCustomPropertyDataProvider.RemoveRangeAsync(oldMessageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageCustomPropertyDataProvider.AddRangeAsync(newMessageCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
+            }
+        }
+
+        private async Task GetPropertiesForMessages(IEnumerable<MessageDto> messages, CancellationToken cancellationToken)
+        {
+            var messageIds = messages.Select(x => x.Id);
+            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
+            foreach (var message in messages)
+            {
+                var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == message.Id).ToList();
+                message.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+            }
+        }
+
+        /// <summary>
+        /// 迁移数据使用，一次性代码
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
+        {
+            var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
+            var pageSize = 5000;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        var messages = await _messageDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
+                        var messageCustomProperties = new List<MessageCustomProperty>();
+                        foreach (var message in messages)
+                        {
+                            foreach (var customProperty in message.CustomProperties)
+                            {
+                                messageCustomProperties.Add(new MessageCustomProperty { MessageId = message.Id, Key = customProperty.Key, Value = customProperty.Value });
+                            }
+                            message.CustomProperties = new Dictionary<string, string>();
+                        }
+                        await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
+                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate Message CustomProperty Error");
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                    }
+                }
+            }
         }
     }
 }

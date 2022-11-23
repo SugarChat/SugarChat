@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 using SugarChat.Message.Paging;
 using Xunit;
 using SugarChat.Message.Basic;
+using SugarChat.Core.Domain;
+using SugarChat.Core.IRepositories;
+using System;
 
 namespace SugarChat.IntegrationTest.Services.Groups
 {
@@ -24,15 +27,15 @@ namespace SugarChat.IntegrationTest.Services.Groups
             await Run<IMediator>(async (mediator) =>
             {
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1 } });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1 }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(5);
                 }
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize =2} });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 2 }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(2);
                 }
                 {
-                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = null });
+                    var reponse = await mediator.RequestAsync<GetGroupsOfUserRequest, SugarChatResponse<PagedResult<GroupDto>>>(new GetGroupsOfUserRequest { UserId = userId, PageSettings = null, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(5);
                 }
             });
@@ -58,21 +61,64 @@ namespace SugarChat.IntegrationTest.Services.Groups
                 {
                     Id = conversationId,
                     Name = "内部沟通群",
-                    Description = "进行及时有效的沟通"
+                    Description = "进行及时有效的沟通",
+                    Type = 10
 
                 }, default(CancellationToken));
 
                 var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
                 reponse.Data.Name.ShouldBe("内部沟通群");
+                reponse.Data.Type.ShouldBe(10);
             });
         }
 
         [Fact]
         public async Task ShouldRemoveGroup()
         {
-            await Run<IMediator>(async (mediator) =>
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand());
+                repository.Query<Group>().Count(x=>x.Id== groupId1).ShouldBe(1);
+                repository.Query<GroupCustomProperty>().Count(x => x.GroupId == groupId1).ShouldBe(2);
+                var response = await mediator.SendAsync<RemoveGroupCommand, SugarChatResponse>(new RemoveGroupCommand { Id = groupId1 });
+                repository.Query<Group>().Count(x => x.Id == groupId1).ShouldBe(0);
+                repository.Query<GroupCustomProperty>().Count(x => x.GroupId == groupId1).ShouldBe(0);
+            });
+        }
+
+        [Fact]
+        public async Task ShouldMigrateCustomProperty()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var groups = new List<Group>();
+                for (int i = 0; i < 35; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "key1" + i, "value1" + i }, { "key2" + i, "value2" + i } }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    groups.Add(new Group
+                    {
+                        Id = Guid.NewGuid().ToString()
+                    });
+                }
+                await repository.AddRangeAsync(groups);
+                var response = await mediator.SendAsync<MigrateGroupCustomPropertyCommand, SugarChatResponse>(new MigrateGroupCustomPropertyCommand());
+                (await repository.CountAsync<Group>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
+                var groupIds = groups.Select(x => x.Id).ToList();
+                (await repository.CountAsync<GroupCustomProperty>(x => groupIds.Contains(x.GroupId))).ShouldBe(70);
             });
         }
     }

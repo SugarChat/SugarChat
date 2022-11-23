@@ -1,0 +1,26 @@
+﻿db.Group.createIndex({"CustomProperties":1});
+
+db.GroupUser.createIndex({"UserId":1});
+db.GroupUser.createIndex({"GroupId":1});
+db.GroupUser.createIndex({"LastReadTime":-1});
+
+db.Message.createIndex({"CustomProperties":1});
+db.Message.createIndex({"GroupId":1});
+db.Message.createIndex({"SendTime":-1});
+
+db.GroupCustomProperty.createIndex({"GroupId":1});
+db.GroupCustomProperty.createIndex({"Key":1});
+db.GroupCustomProperty.createIndex({"Value":1});
+
+db.MessageCustomProperty.createIndex({"MessageId":1});
+db.MessageCustomProperty.createIndex({"Key":1});
+db.MessageCustomProperty.createIndex({"Value":1});
+
+db.GroupUserCustomProperty.createIndex({"GroupUserId":1});
+db.GroupUserCustomProperty.createIndex({"Key":1});
+db.GroupUserCustomProperty.createIndex({"Value":1});
+
+db.GroupUser.ensureIndex({GroupId:1,UserId:1},{unique:true});
+
+db.GroupUser.update({UnreadCount:{$exists: false}},{$set:{UnreadCount:0}})
+db.Group.updateMany({Type:null},{$set:{Type:0}})

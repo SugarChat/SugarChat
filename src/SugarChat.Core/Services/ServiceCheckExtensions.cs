@@ -88,15 +88,6 @@ namespace SugarChat.Core.Services
             }
         }
 
-        public static void CheckLastReadTimeEarlierThan(this GroupUser groupUser, DateTimeOffset sentTime)
-        {
-            if (groupUser.LastReadTime > sentTime)
-            {
-                throw new BusinessWarningException(Prompt.LastReadTimeLaterThan.WithParams(groupUser.UserId,
-                    groupUser.GroupId, sentTime.ToString()));
-            }
-        }
-
         public static void CheckIsOwner(this GroupUser groupUser, string userId, string groupId)
         {
             CheckExist(groupUser, userId, groupId);

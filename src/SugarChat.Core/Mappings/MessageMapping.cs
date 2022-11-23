@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SugarChat.Core.Domain;
 using SugarChat.Message.Commands;
 using SugarChat.Message.Commands.Conversations;
 using SugarChat.Message.Commands.Messages;
@@ -18,6 +19,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<RevokeMessageCommand, MessageRevokedEvent>();
             CreateMap<SetMessageReadByUserBasedOnGroupIdCommand, MessageReadSetByUserBasedOnGroupIdEvent>();
             CreateMap<SetMessageReadByUserIdsBasedOnGroupIdCommand, MessageReadSetByUserIdsBasedOnGroupIdEvent>();
+            CreateMap<MessageCustomProperty, MessageCustomPropertyDto>();
         }
     }
 }

@@ -15,16 +15,24 @@ using SugarChat.Message.Basic;
 using AutoMapper;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Requests;
+using SugarChat.Message.Commands.Users;
+using SugarChat.Message.Commands.Groups;
+using SugarChat.Message.Commands.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services
 {
     public class MessageFixture : TestBase
     {
+        string adminId = Guid.NewGuid().ToString();
+        List<string> userIds = new List<string>();
+        string groupId = Guid.NewGuid().ToString();
+
         [Fact]
         public async Task ShouldSendMessage()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
+                await InitGroup();
                 object payload = new
                 {
                     uuid = Guid.NewGuid(),
@@ -32,26 +40,46 @@ namespace SugarChat.IntegrationTest.Services
                     size = 100,
                     second = 50
                 };
-                SendMessageCommand command = new SendMessageCommand
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    GroupId = Guid.NewGuid().ToString(),
-                    Content = "Test",
-                    Type = 0,
-                    SentBy = Guid.NewGuid().ToString(),
-                    Payload = JsonConvert.SerializeObject(payload),
-                    CreatedBy = Guid.NewGuid().ToString(),
-                    CustomProperties = new Dictionary<string, string> { { "Number", "1" } }
-                };
-                await mediator.SendAsync(command);
-                var message = await repository.SingleAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
-                     && x.Content == command.Content
-                     && x.Type == command.Type
-                     && x.SentBy == command.SentBy
-                     && x.Payload == command.Payload
-                     && x.CreatedBy == command.CreatedBy
-                     && x.CustomProperties == command.CustomProperties);
-                message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
+                    SendMessageCommand command = new SendMessageCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        GroupId = groupId,
+                        Content = "Test",
+                        Type = 5,
+                        SentBy = adminId,
+                        Payload = JsonConvert.SerializeObject(payload),
+                        CreatedBy = adminId,
+                        CustomProperties = new Dictionary<string, string> { { "Number", "1" } }
+                    };
+                    await mediator.SendAsync(command);
+                    (await repository.AnyAsync<Core.Domain.Message>(x => x.GroupId == command.GroupId
+                         && x.Content == command.Content
+                         && x.Type == command.Type
+                         && x.SentBy == command.SentBy
+                         && x.Payload == command.Payload
+                         && x.CreatedBy == command.CreatedBy)).ShouldBeTrue();
+                    (await repository.AnyAsync<MessageCustomProperty>(x => x.MessageId == command.Id && x.Key == "Number" && x.Value == "1")).ShouldBeTrue();
+                }
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        SendMessageCommand command = new SendMessageCommand
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            GroupId = groupId,
+                            Content = "Test",
+                            Type = 5,
+                            SentBy = userIds.First(),
+                            Payload = JsonConvert.SerializeObject(payload),
+                            CreatedBy = userIds.First(),
+                            IgnoreUnreadCountByGroupUserCustomProperties = new Dictionary<string, List<string>> { { "UserType", new List<string> { "Customer" } } }
+                        };
+                        await mediator.SendAsync(command);
+                    }
+                    repository.Query<GroupUser>().First(x => x.UserId == adminId).UnreadCount.ShouldBe(5);
+                    repository.Query<GroupUser>().Where(x => userIds.Contains(x.UserId) && x.UnreadCount == 1).Count().ShouldBe(5);
+                }
             });
         }
 
@@ -130,7 +158,7 @@ namespace SugarChat.IntegrationTest.Services
                 await repository.AddAsync(group);
 
                 var messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
-                    { GroupId = groupId });
+                { GroupId = groupId });
                 messages.Messages.Result.Count().ShouldBe(2);
 
                 RevokeMessageCommand command = new RevokeMessageCommand
@@ -141,11 +169,11 @@ namespace SugarChat.IntegrationTest.Services
 
                 await mediator.SendAsync(command);
                 messages = await messageService.GetMessagesOfGroupAsync(new GetMessagesOfGroupRequest()
-                    { GroupId = groupId });
+                { GroupId = groupId });
                 messages.Messages.Result.Count().ShouldBe(1);
             });
         }
-        
+
         [Fact]
         public async Task ShouldGetLastMessageForGroups()
         {
@@ -199,22 +227,9 @@ namespace SugarChat.IntegrationTest.Services
             {
                 var userId1 = Guid.NewGuid().ToString();
                 var userId2 = Guid.NewGuid().ToString();
-                var groupId1= Guid.NewGuid().ToString();
+                var groupId1 = Guid.NewGuid().ToString();
                 var groupId2 = Guid.NewGuid().ToString();
-                await repository.AddAsync(new Group
-                {
-                    Id = groupId1,
-                    Name = "testGroup1",
-                    AvatarUrl = "testAvatarUrl1",
-                    Description = "testDescription1"
-                });
-                await repository.AddAsync(new Group
-                {
-                    Id = groupId2,
-                    Name = "testGroup2",
-                    AvatarUrl = "testAvatarUrl2",
-                    Description = "testDescription2"
-                });
+
                 await repository.AddAsync(new User
                 {
                     Id = userId1
@@ -223,6 +238,23 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     Id = userId2
                 });
+                foreach (var groupId in new string[] { groupId1, groupId2 })
+                {
+                    await repository.AddAsync(new Group
+                    {
+                        Id = groupId
+                    });
+                    foreach (var userId in new string[] { userId1, userId2 })
+                    {
+                        await repository.AddAsync(new GroupUser
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = userId,
+                            GroupId = groupId
+                        });
+                    }
+                }
+
                 List<SendMessageCommand> sendMessageCommands = new List<SendMessageCommand>();
                 for (int i = 0; i < 3; i++)
                 {
@@ -240,6 +272,7 @@ namespace SugarChat.IntegrationTest.Services
                     sendMessageCommands.Add(sendMessageCommand);
                     await mediator.SendAsync(sendMessageCommand);
                 }
+                repository.Query<MessageCustomProperty>().Count().ShouldBe(3);
                 var messages = await repository.ToListAsync<Core.Domain.Message>();
                 var messageDtos = mapper.Map<IEnumerable<MessageDto>>(messages);
                 foreach (var messageDto in messageDtos)
@@ -252,13 +285,13 @@ namespace SugarChat.IntegrationTest.Services
                     messageDto.SentTime = Convert.ToDateTime("2020-1-1");
                     messageDto.IsSystem = true;
                     messageDto.IsRevoked = true;
-                    messageDto.CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } };
+                    messageDto.CustomProperties = new Dictionary<string, string> { { "Number", "123456" }, { "A", "A" } };
                 }
                 var updateMessageDataCommand = new UpdateMessageDataCommand { Messages = messageDtos, UserId = Guid.NewGuid().ToString() };
-                {
-                    var response = await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
-                    response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageDataCommand.UserId).Message);
-                }
+
+                var response = await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
+                response.Message.ShouldBe(Prompt.UserNoExists.WithParams(updateMessageDataCommand.UserId).Message);
+
                 updateMessageDataCommand.UserId = userId1;
                 await mediator.SendAsync<UpdateMessageDataCommand, SugarChatResponse>(updateMessageDataCommand);
                 var messagesUpdateAfter = await repository.ToListAsync<Core.Domain.Message>();
@@ -274,10 +307,11 @@ namespace SugarChat.IntegrationTest.Services
                     messageUpdateAfter.IsSystem.ShouldBe(messageDto.IsSystem);
                     messageUpdateAfter.Payload.ShouldBe(messageDto.Payload);
                     messageUpdateAfter.IsRevoked.ShouldBe(messageDto.IsRevoked);
-                    messageUpdateAfter.CustomProperties.ShouldBe(messageDto.CustomProperties);
                     messageUpdateAfter.CreatedBy.ShouldBe(message.CreatedBy);
                     messageUpdateAfter.CreatedDate.ShouldBe(message.CreatedDate);
+                    (await repository.AnyAsync<MessageCustomProperty>(x => x.MessageId == messageUpdateAfter.Id && x.Key == "Number" && x.Value == "123456")).ShouldBeTrue();
                 }
+                repository.Query<MessageCustomProperty>().Count().ShouldBe(6);
             });
         }
 
@@ -286,17 +320,18 @@ namespace SugarChat.IntegrationTest.Services
         {
             await Run<IMediator, IRepository, IMessageDataProvider>(async (mediator, repository, messageDataProvider) =>
             {
+                await InitGroup();
                 for (int i = 0; i < 5; i++)
                 {
                     var sendMessageCommand = new SendMessageCommand
                     {
                         Id = Guid.NewGuid().ToString(),
-                        GroupId = Guid.NewGuid().ToString(),
+                        GroupId = groupId,
                         Content = i.ToString(),
                         Type = 0,
-                        SentBy = Guid.NewGuid().ToString(),
+                        SentBy = adminId,
                         Payload = Guid.NewGuid().ToString(),
-                        CreatedBy = Guid.NewGuid().ToString(),
+                        CreatedBy = adminId,
                         CustomProperties = new Dictionary<string, string> { { "Number", Guid.NewGuid().ToString() } }
                     };
                     await mediator.SendAsync(sendMessageCommand);
@@ -308,6 +343,47 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     new string[] { "1", "2" }.Contains(message.Content).ShouldBeTrue();
                 }
+                repository.Query<MessageCustomProperty>().Count(x => messageIds.Contains(x.MessageId)).ShouldBe(2);
+            });
+        }
+
+        private async Task InitGroup()
+        {
+            await Run<IMediator>(async mediator =>
+            {
+                await mediator.SendAsync(new AddUserCommand
+                {
+                    Id = adminId,
+                });
+                for (int i = 0; i < 5; i++)
+                {
+                    var userId = Guid.NewGuid().ToString();
+                    await mediator.SendAsync(new AddUserCommand
+                    {
+                        Id = userId
+                    });
+                    userIds.Add(userId);
+                }
+                await mediator.SendAsync(new AddGroupCommand
+                {
+                    Id = groupId,
+                    UserId = adminId
+                });
+                await mediator.SendAsync(new SetGroupMemberCustomFieldCommand
+                {
+                    GroupId = groupId,
+                    UserId = adminId,
+                    CustomProperties = new Dictionary<string, string> { { "UserType", "Merchant" } }
+                });
+                await mediator.SendAsync(new AddGroupMemberCommand
+                {
+                    GroupId = groupId,
+                    AdminId = adminId,
+                    CreatedBy = adminId,
+                    CustomProperties = new Dictionary<string, string> { { "UserType", "Customer" } },
+                    GroupUserIds = userIds,
+                    Role = Message.UserRole.Member
+                });
             });
         }
     }

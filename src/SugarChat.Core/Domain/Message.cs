@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using SugarChat.Message;
 using System;
+using System.Collections.Generic;
 
 namespace SugarChat.Core.Domain
 {

@@ -24,16 +24,101 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 {
                     var request = new GetUnreadMessageCountRequest()
                     {
-                        UserId = userId
+                        UserId = userId,
+                        GroupType = 10
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
-                    response.Data.ShouldBe(5);
+                    response.Data.ShouldBe(6);
                 }
                 {
                     var request = new GetUnreadMessageCountRequest()
                     {
                         UserId = userId,
-                        GroupIds = new string[] { groups[3].Id }
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "AB" } } },
+                            IsExactSearch = false
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(6);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        },
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(0);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupType = 10,
+                        ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
+                        },
+                        IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
+                        {
+                            GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "4AB" } } }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(1);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId2,
+                        GroupType = 10
+                    };
+                    var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
+                    response.Data.ShouldBe(3);
+                }
+                {
+                    var request = new GetUnreadMessageCountRequest()
+                    {
+                        UserId = userId,
+                        GroupIds = new string[] { groups[3].Id },
+                        GroupType = 10
                     };
                     var response = await mediator.RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
                     response.Data.ShouldBe(3);
@@ -56,7 +141,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     var response = await mediator.SendAsync<SetMessageReadByUserBasedOnGroupIdCommand, SugarChatResponse>(command);
                     var groupUser = await repository.FirstOrDefaultAsync<GroupUser>(x => x.UserId == userId && x.GroupId == groups[2].Id);
                     var lastMessage = await repository.FirstOrDefaultAsync<Core.Domain.Message>(x => x.GroupId == groups[2].Id);
-                    groupUser.LastReadTime.ToString().ShouldBe(lastMessage.SentTime.ToString());
+                    groupUser.UnreadCount.ShouldBe(0);
                 }
             });
         }
@@ -72,40 +157,44 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
                 var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(8);
+                response.Data.Count().ShouldBe(9);
             });
         }
 
         [Fact]
-        public async Task ShouldSetMessageReadByUserIdsBasedOnGroupId()
+        public async Task ShouldMigrateCustomProperty()
         {
-            var groupId = groups.SingleOrDefault(o=>o.Id == groupId4)?.Id;
-            var userIds = groupUsers.Where(o => o.GroupId == groupId).Select(o => o.UserId).ToList();
-            userIds.Count().ShouldBeGreaterThan(1);
-            
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
-                var lastMessage =
-                    await repository.FirstOrDefaultAsync<Core.Domain.Message>(x => x.GroupId == groupId);
-                var lastReadTime =
-                    (await repository.ToListAsync<GroupUser>(
-                        x => x.GroupId == groupId)).Select(o => o.LastReadTime).Distinct().ToList();
-                lastReadTime.FirstOrDefault().ToString().ShouldNotBe(lastMessage.SentTime.ToString());
-                
-                var command = new SetMessageReadByUserIdsBasedOnGroupIdCommand()
+                var messages = new List<Core.Domain.Message>();
+                for (int i = 0; i < 35; i++)
                 {
-                    UserIds = userIds,
-                    GroupId = groupId
-                };
-                await mediator.SendAsync<SetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
-
-                lastReadTime =
-                    (await repository.ToListAsync<GroupUser>(
-                        x => x.GroupId == groupId)).Select(o => o.LastReadTime).Distinct().ToList();
-
-                lastReadTime.Count().ShouldBe(1);
-                lastReadTime.FirstOrDefault().ShouldNotBeNull();
-                lastReadTime.FirstOrDefault().ToString().ShouldBe(lastMessage.SentTime.ToString());
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { { "key1" + i, "value1" + i }, { "key2" + i, "value2" + i } }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomProperties = new Dictionary<string, string> { }
+                    });
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    messages.Add(new Core.Domain.Message
+                    {
+                        Id = Guid.NewGuid().ToString()
+                    });
+                }
+                await repository.AddRangeAsync(messages);
+                var response = await mediator.SendAsync<MigrateMessageCustomPropertyCommand, SugarChatResponse>(new MigrateMessageCustomPropertyCommand());
+                (await repository.CountAsync<Core.Domain.Message>(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>())).ShouldBe(0);
+                var messageIds = messages.Select(x => x.Id).ToList();
+                (await repository.CountAsync<MessageCustomProperty>(x => messageIds.Contains(x.MessageId))).ShouldBe(70);
             });
         }
     }

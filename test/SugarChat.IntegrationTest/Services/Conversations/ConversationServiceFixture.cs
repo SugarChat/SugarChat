@@ -37,6 +37,11 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     reponse.Data.Result.Count().ShouldBe(5);
                 }
                 {
+                    var reponse = await mediator.RequestAsync<GetUnreadConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>
+                    (new GetUnreadConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupType = 10 });
+                    reponse.Data.Result.Count().ShouldBe(3);
+                }
+                {
                     var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>
                     (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupIds = new string[] { conversationId, Guid.NewGuid().ToString() }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(1);
@@ -45,6 +50,16 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>
                     (new GetConversationListRequest { UserId = userId, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupIds = new string[] { Guid.NewGuid().ToString() }, GroupType = 10 });
                     reponse.Data.Result.Count().ShouldBe(0);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>
+                    (new GetConversationListRequest { UserId = userId9, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupType = 10 });
+                    reponse.Data.Result.Count().ShouldBe(2);
+                }
+                {
+                    var reponse = await mediator.RequestAsync<GetUnreadConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>
+                    (new GetUnreadConversationListRequest { UserId = userId9, PageSettings = new PageSettings { PageNum = 1, PageSize = 10 }, GroupType = 10 });
+                    reponse.Data.Result.Count().ShouldBe(1);
                 }
             });
         }

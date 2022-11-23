@@ -58,6 +58,17 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("getUnreadConversationList"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
+        public async Task<IActionResult> GetUnreadConversationListByUserId(GetUnreadConversationListRequest request)
+        {
+            var response =
+                  await _mediator
+                      .RequestAsync<GetUnreadConversationListRequest, SugarChatResponse<PagedResult<ConversationDto>>>(request);
+
+            return Ok(response);
+        }
+
         [Route("getConversationProfile"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<ConversationDto>))]
         public async Task<IActionResult> GetConversationProfileById([FromQuery] GetConversationProfileRequest request)

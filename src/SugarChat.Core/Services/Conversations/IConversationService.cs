@@ -26,5 +26,7 @@ namespace SugarChat.Core.Services.Conversations
             CancellationToken cancellationToken = default);
 
         Task<PagedResult<ConversationDto>> GetConversationByKeyword(GetConversationByKeywordRequest request, CancellationToken cancellationToken);
+
+        Task<PagedResult<ConversationDto>> GetUnreadConversationListByUserIdAsync(GetUnreadConversationListRequest request, CancellationToken cancellationToken = default);
     }
 }

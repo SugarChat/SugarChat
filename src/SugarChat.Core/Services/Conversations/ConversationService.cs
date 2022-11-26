@@ -20,6 +20,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using SugarChat.Core.Services.GroupCustomProperties;
 using SugarChat.Core.Services.MessageCustomProperties;
+using System.Diagnostics;
+using Serilog;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -59,24 +61,40 @@ namespace SugarChat.Core.Services.Conversations
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationListByUserIdAsync.GetByUserIdAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
+            stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationListByUserIdAsync.GetGroupIdByIncludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
+            stopwatch.Restart();
             var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationListByUserIdAsync.GetGroupIdByExcludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
 
+            stopwatch.Restart();
             var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
                     request.GroupType,
                     cancellationToken).ConfigureAwait(false);
+            stopwatch.Stop();
+            Log.Information("GetConversationListByUserIdAsync.GetUnreadCountAndLastMessageByGroupIdsAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
+            stopwatch.Restart();
             var conversations = await GetConversationDtosAsync(unreadCountAndLastMessageByGroupIds, cancellationToken).ConfigureAwait(false);
+            stopwatch.Stop();
+            Log.Information("GetConversationListByUserIdAsync.GetConversationDtosAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
         }
@@ -172,20 +190,36 @@ namespace SugarChat.Core.Services.Conversations
                     ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
                 });
             }
-            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetByUserIdAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+
+            stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetGroupIdByIncludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
+            stopwatch.Restart();
             var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetGroupIdByExcludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
 
             var filterGroupIds = new List<string>();
             var conversations = new List<ConversationDto>();
+
+            stopwatch.Restart();
             var _groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, request.GroupType, cancellationToken);
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetGroupIdsByMessageKeywordAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+
             filterGroupIds.AddRange(_groupIds);
 
             if (!filterGroupIds.Any())
@@ -193,13 +227,19 @@ namespace SugarChat.Core.Services.Conversations
             else
                 groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
 
+            stopwatch.Restart();
             var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     request.PageSettings,
                     request.GroupType,
                     cancellationToken).ConfigureAwait(false);
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetUnreadCountAndLastMessageByGroupIdsAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
+            stopwatch.Restart();
             conversations = (await GetConversationDtosAsync(unreadCountAndLastMessageByGroupIds, cancellationToken).ConfigureAwait(false)).ToList();
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeyword.GetConversationDtosAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = groupIds.Count };
         }
@@ -240,9 +280,19 @@ namespace SugarChat.Core.Services.Conversations
                 return conversations;
 
             var groupIdResults = unreadCountAndLastMessageByGroupIds.Select(x => x.GroupId);
-            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
-            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIdResults, null, cancellationToken)).Result;
+            stopwatch.Stop();
+            Log.Information("ConversationService.GetConversationDtosAsync1 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
+            stopwatch.Restart();
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIdResults, cancellationToken).ConfigureAwait(false);
+            stopwatch.Stop();
+            Log.Information("ConversationService.GetConversationDtosAsync2 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
+            stopwatch.Restart();
             foreach (var unreadCountAndLastMessageByGroupId in unreadCountAndLastMessageByGroupIds)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == unreadCountAndLastMessageByGroupId.GroupId).ToList();
@@ -259,6 +309,8 @@ namespace SugarChat.Core.Services.Conversations
                 };
                 conversations.Add(conversationDto);
             }
+            stopwatch.Stop();
+            Log.Information("ConversationService.GetConversationDtosAsync3 run{@Ms}", stopwatch.ElapsedMilliseconds);
             return conversations;
         }
     }

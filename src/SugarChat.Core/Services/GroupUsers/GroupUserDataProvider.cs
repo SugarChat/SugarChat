@@ -9,6 +9,8 @@ using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
 using System.Linq.Expressions;
 using SugarChat.Message.Paging;
+using System.Diagnostics;
+using Serilog;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -33,6 +35,9 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default)
         {
             groupIds = groupIds ?? new List<string>();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
                               where a.UserId == userId && b.Type == groupType && (!groupIds.Any() || groupIds.Contains(b.Id))
@@ -45,7 +50,12 @@ namespace SugarChat.Core.Services.GroupUsers
                                   a.MessageRemindType,
                                   a.UnreadCount
                               }).ToList();
+            stopwatch.Stop();
+            Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
             var result = new List<GroupUser>();
+
+            stopwatch.Restart();
             foreach (var groupUser in groupUsers)
             {
                 result.Add(new GroupUser
@@ -57,6 +67,9 @@ namespace SugarChat.Core.Services.GroupUsers
                     MessageRemindType = groupUser.MessageRemindType
                 });
             }
+            stopwatch.Stop();
+            Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
             return result;
         }
 

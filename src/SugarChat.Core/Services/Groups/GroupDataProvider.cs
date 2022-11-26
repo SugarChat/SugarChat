@@ -11,6 +11,8 @@ using SugarChat.Message.Paging;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using SugarChat.Message.Dtos;
+using System.Diagnostics;
+using Serilog;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -141,8 +143,13 @@ namespace SugarChat.Core.Services.Groups
         {
             var isExactSearch = searchGroupByGroupCustomProperties.IsExactSearch;
             var searchCustomProperties = searchGroupByGroupCustomProperties.GroupCustomProperties;
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            stopwatch.Stop();
             foreach (var dic in searchCustomProperties)
             {
+                stopwatch.Restart();
                 var sb = new StringBuilder();
                 foreach (var value in dic.Value)
                 {
@@ -174,6 +181,8 @@ namespace SugarChat.Core.Services.Groups
                 }
                 var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
                 groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
+                stopwatch.Stop();
+                Log.Information("GroupDataProvider.GetGroupIdByCustomPropertiesAsync run{@Ms}{@Where}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4));
             }
             return groupIds;
         }
@@ -181,6 +190,10 @@ namespace SugarChat.Core.Services.Groups
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> groupIds, Dictionary<string, string> searchParms, bool isExactSearch, int groupType, CancellationToken cancellationToken = default)
         {
             groupIds = groupIds ?? new List<string>();
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            stopwatch.Stop();
             if (searchParms != null && searchParms.Any())
             {
                 var messageIds = new List<string>();
@@ -201,7 +214,11 @@ namespace SugarChat.Core.Services.Groups
                             sb.Append($" || {Message.Constant.Content}.Contains(\"{value}\")");
                         }
                     }
+                    stopwatch.Restart();
                     var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                    stopwatch.Stop();
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run{@Ms}{@Where}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4));
+
                     messageIds = messages.Select(x => x.Id).ToList();
                 }
                 if (customPropertySearchParms.Any())
@@ -225,9 +242,15 @@ namespace SugarChat.Core.Services.Groups
                             }
                         }
                     }
+                    stopwatch.Restart();
                     var messageCustomProperties = await _repository.ToListAsync(_repository.Query<MessageCustomProperty>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                    stopwatch.Stop();
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync2 run{@Ms}{@Where}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4));
+
                     var messageCustomPropertyGroups = messageCustomProperties.GroupBy(x => x.MessageId);
                     var _messageIds = new List<string>();
+
+                    stopwatch.Restart();
                     foreach (var messageCustomPropertyGroup in messageCustomPropertyGroups)
                     {
                         if (messageCustomPropertyGroup.Count() == customPropertySearchParms.Count())
@@ -235,10 +258,18 @@ namespace SugarChat.Core.Services.Groups
                             _messageIds.Add(messageCustomPropertyGroup.Key);
                         }
                     }
+                    stopwatch.Stop();
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync3 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
                     messageIds.AddRange(_messageIds);
                 }
+
+                stopwatch.Restart();
                 var _groupIds = (await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id))).Select(x => x.GroupId);
                 groupIds = groupIds.Intersect(_groupIds).ToList();
+                stopwatch.Stop();
+                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync4 run{@Ms}", stopwatch.ElapsedMilliseconds);
+
                 return (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && x.Type == groupType)).Select(x => x.Id);
             }
             else

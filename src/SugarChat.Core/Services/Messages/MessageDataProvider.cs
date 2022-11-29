@@ -269,7 +269,7 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Start();
             var groupUsers = await _repository.ToListAsync(query, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountByGroupIdsAsync run{@Ms}{@GroupIdTotal}{@GroupUserTotal}", stopwatch.ElapsedMilliseconds, groupIds.Count(), groupUsers.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountByGroupIdsAsync run {@Ms}£¬{@GroupIdTotal}£¬{@GroupUserTotal}", stopwatch.ElapsedMilliseconds, groupIds.Count(), groupUsers.Count());
 
             var groupUnreadCounts = new List<GroupUnreadCount>();
             foreach (var groupUser in groupUsers)
@@ -304,7 +304,7 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Start();
             var groupUsers = await _groupUserDataProvider.GetByUserIdAsync(userId, groupIds, groupType, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync1 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync1 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
 
             if (!groupUsers.Any())
             {
@@ -316,17 +316,17 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Restart();
             var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
             stopwatch.Restart();
             var lastMessages = await GetLastMessageForGroupsAsync(groupIdsByGroupUser, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
 
             stopwatch.Restart();
             var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(lastMessages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync4 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, messageCustomProperties.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync4 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, messageCustomProperties.Count());
 
             var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
 
@@ -349,7 +349,7 @@ namespace SugarChat.Core.Services.Messages
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync5 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync5 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
             if (pageSettings == null)
             {
@@ -383,12 +383,12 @@ namespace SugarChat.Core.Services.Messages
                               group a by a.GroupId into b
                               select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetLastMessageForGroupsAsync1 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, messageIds.Count());
+            Log.Information("MessageDataProvider.GetLastMessageForGroupsAsync1 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, messageIds.Count());
 
             stopwatch.Restart();
             var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetLastMessageForGroupsAsync2 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, messages.Count());
+            Log.Information("MessageDataProvider.GetLastMessageForGroupsAsync2 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, messages.Count());
 
             var result = new List<Domain.Message>();
             foreach (var groupId in groupIds)

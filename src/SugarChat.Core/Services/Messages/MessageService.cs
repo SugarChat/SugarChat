@@ -387,19 +387,19 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Start();
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
             stopwatch.Stop();
-            Log.Information("GetUnreadMessageCountAsync.GetByUserIdAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetUnreadMessageCountAsync.GetByUserIdAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
             stopwatch.Stop();
-            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByIncludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByIncludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             stopwatch.Restart();
             var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
             stopwatch.Stop();
-            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByExcludeCustomPropertiesAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByExcludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             if (!groupIds.Any())
                 return new GetUnreadMessageCountResponse
@@ -410,7 +410,7 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Restart();
             var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, groupIds, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("GetUnreadMessageCountAsync.GetUnreadCountByGroupIdsAsync run{@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetUnreadMessageCountAsync.GetUnreadCountByGroupIdsAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             return new GetUnreadMessageCountResponse
             {

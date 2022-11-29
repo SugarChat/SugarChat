@@ -183,7 +183,7 @@ namespace SugarChat.Core.Services.Groups
                 var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
                 groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
                 stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdByCustomPropertiesAsync run {@Ms}£¬{@Where}£¬{@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), groupIds.Count());
+                Log.Information("GroupDataProvider.GetGroupIdByCustomPropertiesAsync run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), groupIds.Count());
             }
             return groupIds;
         }
@@ -218,7 +218,7 @@ namespace SugarChat.Core.Services.Groups
                     stopwatch.Restart();
                     var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run {@Ms}£¬{@Where}£¬{@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messages.Count());
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messages.Count());
 
                     messageIds = messages.Select(x => x.Id).ToList();
                 }
@@ -246,7 +246,7 @@ namespace SugarChat.Core.Services.Groups
                     stopwatch.Restart();
                     var messageCustomProperties = await _repository.ToListAsync(_repository.Query<MessageCustomProperty>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync2 run {@Ms}£¬{@Where}£¬{@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messageCustomProperties.Count());
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync2 run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messageCustomProperties.Count());
 
                     var messageCustomPropertyGroups = messageCustomProperties.GroupBy(x => x.MessageId);
                     var _messageIds = new List<string>();
@@ -260,7 +260,7 @@ namespace SugarChat.Core.Services.Groups
                         }
                     }
                     stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync3 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, messageCustomPropertyGroups.Count());
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, messageCustomPropertyGroups.Count());
 
                     messageIds.AddRange(_messageIds);
                 }
@@ -268,7 +268,7 @@ namespace SugarChat.Core.Services.Groups
                 stopwatch.Restart();
                 var groupIds = (await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id))).Select(x => x.GroupId);
                 stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync4 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, groupIds.Count());
+                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync4 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupIds.Count());
 
                 if (filterGroupIds != null && filterGroupIds.Any())
                 {
@@ -278,7 +278,7 @@ namespace SugarChat.Core.Services.Groups
                 stopwatch.Restart();
                 var result = (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && x.Type == groupType)).Select(x => x.Id);
                 stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync5 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, result.Count());
+                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync5 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, result.Count());
 
                 return result;
             }

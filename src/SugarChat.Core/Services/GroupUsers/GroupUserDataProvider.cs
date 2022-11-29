@@ -52,7 +52,7 @@ namespace SugarChat.Core.Services.GroupUsers
                                   UnreadCount = a.UnreadCount
                               }).ToList();
                 stopwatch.Stop();
-                Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run {@Ms}£¬{@GroupIdTotal}£¬{@GroupUserTotal}", stopwatch.ElapsedMilliseconds, filterGroupIds.Count(), groupUsers.Count());
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run {@Ms}, {@GroupIdTotal}, {@GroupUserTotal}", stopwatch.ElapsedMilliseconds, filterGroupIds.Count(), groupUsers.Count());
             }
             else
             {
@@ -69,7 +69,7 @@ namespace SugarChat.Core.Services.GroupUsers
                                   UnreadCount = a.UnreadCount
                               }).ToList();
                 stopwatch.Stop();
-                Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run {@Ms}£¬{@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
             }
 
             var result = new List<GroupUser>();

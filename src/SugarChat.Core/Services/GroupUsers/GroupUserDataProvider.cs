@@ -32,26 +32,45 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> filterGroupIds, int groupType, CancellationToken cancellationToken = default)
         {
-            groupIds = groupIds ?? new List<string>();
-
+            var groupUsers = new List<GroupUser>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            var groupUsers = (from a in _repository.Query<GroupUser>()
+            if (filterGroupIds != null && filterGroupIds.Any())
+            {
+                groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == userId && b.Type == groupType && (!groupIds.Any() || groupIds.Contains(b.Id))
-                              select new
+                              where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(b.Id)
+                              select new GroupUser
                               {
-                                  a.Id,
-                                  a.UserId,
-                                  a.GroupId,
-                                  a.Role,
-                                  a.MessageRemindType,
-                                  a.UnreadCount
+                                  Id = a.Id,
+                                  UserId = a.UserId,
+                                  GroupId = a.GroupId,
+                                  Role = a.Role,
+                                  MessageRemindType = a.MessageRemindType,
+                                  UnreadCount = a.UnreadCount
                               }).ToList();
-            stopwatch.Stop();
-            Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run{@Ms}", stopwatch.ElapsedMilliseconds);
+                stopwatch.Stop();
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run{@Ms}{@GroupIdTotal}{@GroupUserTotal}", stopwatch.ElapsedMilliseconds, filterGroupIds.Count(), groupUsers.Count());
+            }
+            else
+            {
+                groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == userId && b.Type == groupType
+                              select new GroupUser
+                              {
+                                  Id = a.Id,
+                                  UserId = a.UserId,
+                                  GroupId = a.GroupId,
+                                  Role = a.Role,
+                                  MessageRemindType = a.MessageRemindType,
+                                  UnreadCount = a.UnreadCount
+                              }).ToList();
+                stopwatch.Stop();
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run{@Ms}{@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
+            }
 
             var result = new List<GroupUser>();
 
@@ -68,7 +87,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 });
             }
             stopwatch.Stop();
-            Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run{@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GroupUserDataProvider.GetByUserIdAsync3 run{@Ms}", stopwatch.ElapsedMilliseconds);
 
             return result;
         }

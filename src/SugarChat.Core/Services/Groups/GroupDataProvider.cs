@@ -190,8 +190,6 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> filterGroupIds, Dictionary<string, string> searchParms, bool isExactSearch, int groupType, CancellationToken cancellationToken = default)
         {
-            filterGroupIds = filterGroupIds ?? new List<string>();
-
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             stopwatch.Stop();
@@ -215,10 +213,14 @@ namespace SugarChat.Core.Services.Groups
                             sb.Append($" || {Message.Constant.Content}.Contains(\"{value}\")");
                         }
                     }
+                    var query = _repository.Query<Domain.Message>();
+                    if (filterGroupIds != null && filterGroupIds.Any())
+                        query = query.Where(x => filterGroupIds.Contains(x.GroupId));
+
                     stopwatch.Restart();
-                    var messages = await _repository.ToListAsync(_repository.Query<Domain.Message>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                    var messages = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
                     stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messages.Count());
+                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run {@Ms}, {@Where}, {@ResultTotal}, {@GroupIdTotal}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messages.Count(), filterGroupIds.Count());
 
                     messageIds = messages.Select(x => x.Id).ToList();
                 }
@@ -271,9 +273,7 @@ namespace SugarChat.Core.Services.Groups
                 Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync4 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupIds.Count());
 
                 if (filterGroupIds != null && filterGroupIds.Any())
-                {
                     groupIds = groupIds.Intersect(filterGroupIds).ToList();
-                }
 
                 stopwatch.Restart();
                 var result = (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && x.Type == groupType)).Select(x => x.Id);

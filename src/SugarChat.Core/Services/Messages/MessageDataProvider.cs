@@ -377,6 +377,7 @@ namespace SugarChat.Core.Services.Messages
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
+            Log.Information("MessageDataProvider.GetLastMessageForGroupsAsync0 run {@GroupIdTotal}", groupIds.Count());
             var messageIds = (from a in _repository.Query<Domain.Message>()
                               where groupIds.Contains(a.GroupId)
                               orderby a.SentTime descending

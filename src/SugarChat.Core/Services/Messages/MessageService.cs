@@ -391,9 +391,12 @@ namespace SugarChat.Core.Services.Messages
 
             stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
             stopwatch.Stop();
-            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByIncludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByIncludeCustomPropertiesAsync1 run {@Ms}", stopwatch.ElapsedMilliseconds);
+
+            stopwatch.Restart();
+            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList(); stopwatch.Stop();
+            Log.Information("GetUnreadMessageCountAsync.GetGroupIdByIncludeCustomPropertiesAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, includeGroupIdsByCustomProperties.Count());
 
             stopwatch.Restart();
             var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);

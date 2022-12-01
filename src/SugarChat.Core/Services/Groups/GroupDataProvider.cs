@@ -233,16 +233,16 @@ namespace SugarChat.Core.Services.Groups
                         foreach (var value in values)
                         {
                             var _value = customPropertySearchParm.Value.Replace("\\", "\\\\");
-                            if (isExactSearch)
-                            {
+                            //if (isExactSearch)
+                            //{
                                 var _sb = $"{nameof(MessageCustomProperty.Key)}==\"{customPropertySearchParm.Key}\" && {nameof(MessageCustomProperty.Value)} == \"{_value}\"";
                                 sb.Append($" || ({_sb})");
-                            }
-                            else
-                            {
-                                var _sb = $"{nameof(MessageCustomProperty.Key)}.Contains(\"{customPropertySearchParm.Key}\") && {nameof(MessageCustomProperty.Value)}.Contains(\"{_value}\")";
-                                sb.Append($" || ({_sb})");
-                            }
+                            //}
+                            //else
+                            //{
+                            //    var _sb = $"{nameof(MessageCustomProperty.Key)}.Contains(\"{customPropertySearchParm.Key}\") && {nameof(MessageCustomProperty.Value)}.Contains(\"{_value}\")";
+                            //    sb.Append($" || ({_sb})");
+                            //}
                         }
                     }
                     stopwatch.Restart();

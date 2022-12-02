@@ -69,7 +69,7 @@ namespace SugarChat.Core.Services.Conversations
 
             stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+            groupIds = includeGroupIdsByCustomProperties.ToList();
             stopwatch.Stop();
             Log.Information("GetConversationListByUserIdAsync.GetGroupIdByIncludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
@@ -199,7 +199,7 @@ namespace SugarChat.Core.Services.Conversations
 
             stopwatch.Restart();
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+            groupIds = includeGroupIdsByCustomProperties.ToList();
             stopwatch.Stop();
             Log.Information("GetConversationByKeyword.GetGroupIdByIncludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
@@ -252,7 +252,7 @@ namespace SugarChat.Core.Services.Conversations
             var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
 
             var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            groupIds = groupIds.Where(x => includeGroupIdsByCustomProperties.Contains(x)).ToList();
+            groupIds = includeGroupIdsByCustomProperties.ToList();
 
             var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
             groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();

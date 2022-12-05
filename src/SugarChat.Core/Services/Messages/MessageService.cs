@@ -343,6 +343,7 @@ namespace SugarChat.Core.Services.Messages
                 {
                     try
                     {
+                        group.LastSentTime = DateTime.Now;
                         var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
                         groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
                         if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())

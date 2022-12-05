@@ -35,5 +35,20 @@ namespace SugarChat.Core.Services.Groups
         Task UpdateRangeAsync(IEnumerable<Group> groups, CancellationToken cancellationToken = default);
 
         IEnumerable<string> GetGroupIds(Expression<Func<Group, bool>> predicate = null);
+
+        (IEnumerable<string>, int) GetGroupIds(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            PageSettings pageSettings,
+            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
+            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties);
+
+        (IEnumerable<string>, int) GetGroupIds(string userId,
+           IEnumerable<string> filterGroupIds,
+           int groupType,
+           PageSettings pageSettings,
+           Dictionary<string, string> searchParms, bool isExactSearch,
+           SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
+           SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties);
     }
 }

@@ -242,8 +242,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         GroupType = 10
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(0);
-                    response.Data.Total.ShouldBe(0);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
                 }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest

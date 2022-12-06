@@ -308,7 +308,7 @@ namespace SugarChat.Core.Services.Groups
             return _repository.Query<Group>().Where(predicate).Select(x => x.Id).ToList();
         }
 
-        public (IEnumerable<string>, int) GetGroupIds(string userId,
+        public (IEnumerable<string>, int, int) GetGroupIds(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
             PageSettings pageSettings,
@@ -412,22 +412,26 @@ namespace SugarChat.Core.Services.Groups
             if (sb2.Length > 0)
                 query = query.Where(sb2.ToString().Substring(4));
 
-            var results = query.OrderByDescending(x => x.UnreadCount)
+            var groupIds = query.OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .GroupBy(x => x.GroupId)
                     .Skip((pageSettings.PageNum - 1) * pageSettings.PageSize)
                     .Take(pageSettings.PageSize)
+                    .Select(x => x.Key)
                     .ToList();
-            return (results.Select(x => x.Key).ToList(), query.GroupBy(x => x.GroupId).Count());
+            var total = query.GroupBy(x => x.GroupId).Count();
+            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
+
+            return (groupIds, total, unreadCount);
         }
 
-        public (IEnumerable<string>, int) GetGroupIds(string userId,
-                    IEnumerable<string> filterGroupIds,
-                    int groupType,
-                    PageSettings pageSettings,
-                    Dictionary<string, string> searchParms, bool isExactSearch,
-                    SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-                    SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties)
+        public (IEnumerable<string>, int, int) GetGroupIds(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            PageSettings pageSettings,
+            Dictionary<string, string> searchParms, bool isExactSearch,
+            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
+            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties)
         {
             IQueryable<Temp> query = null;
             if (filterGroupIds != null && filterGroupIds.Any())
@@ -583,13 +587,17 @@ namespace SugarChat.Core.Services.Groups
             if (sb3.Length > 0)
                 query = query.Where(sb3.ToString().Substring(4));
 
-            var results = query.OrderByDescending(x => x.UnreadCount)
+            var groupIds = query.OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .GroupBy(x => x.GroupId)
                     .Skip((pageSettings.PageNum - 1) * pageSettings.PageSize)
                     .Take(pageSettings.PageSize)
+                    .Select(x => x.Key)
                     .ToList();
-            return (results.Select(x => x.Key).ToList(), query.GroupBy(x => x.GroupId).Count());
+            var total = query.GroupBy(x => x.GroupId).Count();
+            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
+
+            return (groupIds, total, unreadCount);
         }
 
         public class Temp

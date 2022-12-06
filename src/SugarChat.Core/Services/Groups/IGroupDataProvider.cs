@@ -36,14 +36,14 @@ namespace SugarChat.Core.Services.Groups
 
         IEnumerable<string> GetGroupIds(Expression<Func<Group, bool>> predicate = null);
 
-        (IEnumerable<string>, int) GetGroupIds(string userId,
+        (IEnumerable<string>, int, int) GetGroupIds(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
             PageSettings pageSettings,
             SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
             SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties);
 
-        (IEnumerable<string>, int) GetGroupIds(string userId,
+        (IEnumerable<string>, int, int) GetGroupIds(string userId,
            IEnumerable<string> filterGroupIds,
            int groupType,
            PageSettings pageSettings,

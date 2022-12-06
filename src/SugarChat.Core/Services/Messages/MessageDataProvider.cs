@@ -294,11 +294,7 @@ namespace SugarChat.Core.Services.Messages
             return messages;
         }
 
-        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId,
-            IEnumerable<string> groupIds,
-            PageSettings pageSettings,
-            int groupType,
-            CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             if (groupIds == null || !groupIds.Any())
             {
@@ -344,21 +340,10 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Stop();
             Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync5 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
-            if (pageSettings == null)
-            {
-                return unreadCountAndLastMessageByGroupIds
-                        .OrderByDescending(x => x.UnreadCount)
-                        .ThenByDescending(x => x.LastSentTime)
-                        .ToList();
-            }
-            else
-            {
-                return unreadCountAndLastMessageByGroupIds
-                        .OrderByDescending(x => x.UnreadCount)
-                        .ThenByDescending(x => x.LastSentTime)
-                        .Skip(pageSettings.PageSize * (pageSettings.PageNum - 1))
-                        .Take(pageSettings.PageSize).ToList();
-            }
+            return unreadCountAndLastMessageByGroupIds
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .ToList();
         }
 
         public async Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default)

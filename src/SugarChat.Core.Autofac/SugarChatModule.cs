@@ -17,6 +17,7 @@ using SugarChat.Core.Services.Users;
 using Mediator.Net.Pipeline;
 using Mediator.Net.Middlewares.Serilog;
 using Serilog;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Autofac
 {
@@ -38,6 +39,7 @@ namespace SugarChat.Core.Autofac
             RegisterServices(builder);
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
+            builder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
         }
 
         private void RegisterMediator(ContainerBuilder builder)

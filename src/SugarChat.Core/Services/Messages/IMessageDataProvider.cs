@@ -51,5 +51,12 @@ namespace SugarChat.Core.Services.Messages
         Task<int> GetCountAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
+
+        Task<int> GetUnreadCountAsync(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
+            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            CancellationToken cancellationToken = default);
     }
 }

@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using SugarChat.Core;
 using SugarChat.Core.Autofac;
 using SugarChat.Core.IRepositories;
+using SugarChat.Core.Utils;
 using SugarChat.Data.MongoDb.Autofac;
 using SugarChat.Message;
 
@@ -33,6 +34,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
                     typeof(SugarChat.Core.Services.IService).Assembly
                 }, new RunTimeProvider(RunTimeType.Test)));
             containerBuilder.RegisterInstance(Configuration).As<IConfiguration>();
+            containerBuilder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
             Container = containerBuilder.Build().BeginLifetimeScope();
             Repository = Container.Resolve<IRepository>();
             Client = new MongoClient(Configuration["MongoDb:ConnectionString"]);

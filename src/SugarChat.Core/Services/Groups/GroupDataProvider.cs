@@ -13,16 +13,19 @@ using System.Linq.Expressions;
 using SugarChat.Message.Dtos;
 using System.Diagnostics;
 using Serilog;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.Groups
 {
     public class GroupDataProvider : IGroupDataProvider
     {
         private readonly IRepository _repository;
+        private readonly ITableUtil _tableUtil;
 
-        public GroupDataProvider(IRepository repository)
+        public GroupDataProvider(IRepository repository, ITableUtil tableUtil)
         {
             _repository = repository;
+            _tableUtil = tableUtil;
         }
 
         public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken = default)
@@ -308,284 +311,33 @@ namespace SugarChat.Core.Services.Groups
             return _repository.Query<Group>().Where(predicate).Select(x => x.Id).ToList();
         }
 
-        public (IEnumerable<string>, int, int) GetGroupIds(string userId,
-            IEnumerable<string> filterGroupIds,
-            int groupType,
-            PageSettings pageSettings,
-            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties)
-        {
-            IQueryable<Temp> query = null;
-            if (filterGroupIds != null && filterGroupIds.Any())
-            {
-                query = from a in _repository.Query<GroupUser>()
-                        join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                        join c in _repository.Query<GroupCustomProperty>() on b.Id equals c.GroupId
-                        where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(a.GroupId)
-                        select new Temp
-                        {
-                            GroupId = a.GroupId,
-                            UnreadCount = a.UnreadCount,
-                            LastSentTime = b.LastSentTime,
-                            GroupKey = c.Key,
-                            GroupValue = c.Value
-                        };
-            }
-            else
-            {
-                query = from a in _repository.Query<GroupUser>()
-                        join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                        join c in _repository.Query<GroupCustomProperty>() on b.Id equals c.GroupId
-                        where a.UserId == userId && b.Type == groupType
-                        select new Temp
-                        {
-                            GroupId = a.GroupId,
-                            UnreadCount = a.UnreadCount,
-                            LastSentTime = b.LastSentTime,
-                            GroupKey = c.Key,
-                            GroupValue = c.Value
-                        };
-            }
-
-            var sb1 = new StringBuilder();
-            if (includeGroupByGroupCustomProperties != null && includeGroupByGroupCustomProperties.GroupCustomProperties != null)
-            {
-                foreach (var dic in includeGroupByGroupCustomProperties.GroupCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var value1 = value.Replace("\\", "\\\\");
-                        var key1 = dic.Key.Replace("\\", "\\\\");
-                        if (value1.Contains(","))
-                        {
-                            var values = value1.Split(',');
-                            foreach (var value2 in values)
-                            {
-                                if (includeGroupByGroupCustomProperties.IsExactSearch)
-                                    sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue==\"{value2}\")");
-                                else
-                                    sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue.Contains(\"{value2}\"))");
-                            }
-                        }
-                        else
-                        {
-                            if (includeGroupByGroupCustomProperties.IsExactSearch)
-                                sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue==\"{value1}\")");
-                            else
-                                sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue.Contains(\"{value1}\"))");
-                        }
-                    }
-                }
-            }
-            var sb2 = new StringBuilder();
-            if (excludeGroupByGroupCustomProperties != null && excludeGroupByGroupCustomProperties.GroupCustomProperties != null)
-            {
-                foreach (var dic in excludeGroupByGroupCustomProperties.GroupCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var value1 = value.Replace("\\", "\\\\");
-                        var key1 = dic.Key.Replace("\\", "\\\\");
-                        if (value1.Contains(","))
-                        {
-                            var values = value1.Split(',');
-                            foreach (var value2 in values)
-                            {
-                                if (excludeGroupByGroupCustomProperties.IsExactSearch)
-                                    sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue==\"{value2}\"))");
-                                else
-                                    sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue.Contains(\"{value2}\")))");
-                            }
-                        }
-                        else
-                        {
-                            if (excludeGroupByGroupCustomProperties.IsExactSearch)
-                                sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue==\"{value1}\"))");
-                            else
-                                sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue.Contains(\"{value1}\")))");
-                        }
-                    }
-                }
-            }
-            if (sb1.Length > 0)
-                query = query.Where(sb1.ToString().Substring(4));
-            if (sb2.Length > 0)
-                query = query.Where(sb2.ToString().Substring(4));
-
-            var groupIds = query.OrderByDescending(x => x.UnreadCount)
-                    .ThenByDescending(x => x.LastSentTime)
-                    .GroupBy(x => x.GroupId)
-                    .Skip((pageSettings.PageNum - 1) * pageSettings.PageSize)
-                    .Take(pageSettings.PageSize)
-                    .Select(x => x.Key)
-                    .ToList();
-            var total = query.GroupBy(x => x.GroupId).Count();
-            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
-
-            return (groupIds, total, unreadCount);
-        }
-
-        public (IEnumerable<string>, int, int) GetGroupIds(string userId,
+        public async Task<(IEnumerable<string>, int)> GetGroupIdsAsync(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
             PageSettings pageSettings,
             Dictionary<string, string> searchParms, bool isExactSearch,
             SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties)
+            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            CancellationToken cancellationToken = default)
         {
-            IQueryable<Temp> query = null;
-            if (filterGroupIds != null && filterGroupIds.Any())
-            {
-                query = from a in _repository.Query<GroupUser>()
-                        join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                        join c in _repository.Query<GroupCustomProperty>() on b.Id equals c.GroupId
-                        join d in _repository.Query<Domain.Message>() on b.Id equals d.GroupId
-                        join e in _repository.Query<MessageCustomProperty>() on d.Id equals e.MessageId
-                        where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(a.GroupId)
-                        select new Temp
-                        {
-                            GroupId = a.GroupId,
-                            UnreadCount = a.UnreadCount,
-                            LastSentTime = b.LastSentTime,
-                            GroupKey = c.Key,
-                            GroupValue = c.Value,
-                            Content = d.Content,
-                            MessageKey = e.Key,
-                            MessageValue = e.Value
-                        };
-            }
-            else
-            {
-                query = from a in _repository.Query<GroupUser>()
-                        join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                        join c in _repository.Query<GroupCustomProperty>() on b.Id equals c.GroupId
-                        join d in _repository.Query<Domain.Message>() on b.Id equals d.GroupId
-                        join e in _repository.Query<MessageCustomProperty>() on d.Id equals e.MessageId
-                        where a.UserId == userId && b.Type == groupType
-                        select new Temp
-                        {
-                            GroupId = a.GroupId,
-                            UnreadCount = a.UnreadCount,
-                            LastSentTime = b.LastSentTime,
-                            GroupKey = c.Key,
-                            GroupValue = c.Value,
-                            Content = d.Content,
-                            MessageKey = e.Key,
-                            MessageValue = e.Value
-                        };
-            }
+            var query = _tableUtil.GetQuery(userId, filterGroupIds, groupType, searchParms != null && searchParms.Any());
 
-            string json = Newtonsoft.Json.JsonConvert.SerializeObject(query.ToList());
+            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
+            var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");
 
-            var sb1 = new StringBuilder();
-            if (includeGroupByGroupCustomProperties != null && includeGroupByGroupCustomProperties.GroupCustomProperties != null)
-            {
-                foreach (var dic in includeGroupByGroupCustomProperties.GroupCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var value1 = value.Replace("\\", "\\\\");
-                        var key1 = dic.Key.Replace("\\", "\\\\");
-                        if (value1.Contains(","))
-                        {
-                            var values = value1.Split(',');
-                            foreach (var value2 in values)
-                            {
-                                if (includeGroupByGroupCustomProperties.IsExactSearch)
-                                    sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue==\"{value2}\")");
-                                else
-                                    sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue.Contains(\"{value2}\"))");
-                            }
-                        }
-                        else
-                        {
-                            if (includeGroupByGroupCustomProperties.IsExactSearch)
-                                sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue==\"{value1}\")");
-                            else
-                                sb1.Append($" || (GroupKey==\"{key1}\" && GroupValue.Contains(\"{value1}\"))");
-                        }
-                    }
-                }
-            }
-            var sb2 = new StringBuilder();
-            if (excludeGroupByGroupCustomProperties != null && excludeGroupByGroupCustomProperties.GroupCustomProperties != null)
-            {
-                foreach (var dic in excludeGroupByGroupCustomProperties.GroupCustomProperties)
-                {
-                    foreach (var value in dic.Value)
-                    {
-                        var value1 = value.Replace("\\", "\\\\");
-                        var key1 = dic.Key.Replace("\\", "\\\\");
-                        if (value1.Contains(","))
-                        {
-                            var values = value1.Split(',');
-                            foreach (var value2 in values)
-                            {
-                                if (excludeGroupByGroupCustomProperties.IsExactSearch)
-                                    sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue==\"{value2}\"))");
-                                else
-                                    sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue.Contains(\"{value2}\")))");
-                            }
-                        }
-                        else
-                        {
-                            if (excludeGroupByGroupCustomProperties.IsExactSearch)
-                                sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue==\"{value1}\"))");
-                            else
-                                sb2.Append($" && !((GroupKey==\"{key1}\" && GroupValue.Contains(\"{value1}\")))");
-                        }
-                    }
-                }
-            }
-            if (sb1.Length > 0)
-                query = query.Where(sb1.ToString().Substring(4));
-            if (sb2.Length > 0)
-                query = query.Where(sb2.ToString().Substring(4));
+            if (includeSb.Length > 0)
+                query = query.Where(includeSb.ToString().Substring(4));
 
-            var sb3 = new StringBuilder();
-            if (searchParms != null && searchParms.Any())
+            if (searchSb.Length > 0)
+                query = query.Where(searchSb.ToString().Substring(4));
+
+            var excludeSb = _tableUtil.GetWhereByGroupCustomPropery(excludeGroupByGroupCustomProperties);
+            if (excludeSb.Length > 0)
             {
-                var contentSearchParms = searchParms.Where(x => x.Key == Message.Constant.Content);
-                var customPropertySearchParms = searchParms.Where(x => x.Key != Message.Constant.Content);
-                if (contentSearchParms.Any())
-                {
-                    foreach (var contentSearchParm in contentSearchParms)
-                    {
-                        var value = contentSearchParm.Value.Replace("\\", "\\\\");
-                        if (isExactSearch)
-                        {
-                            sb3.Append($" || {Message.Constant.Content}==\"{value}\"");
-                        }
-                        else
-                        {
-                            sb3.Append($" || {Message.Constant.Content}.Contains(\"{value}\")");
-                        }
-                    }
-                }
-                if (customPropertySearchParms.Any())
-                {
-                    foreach (var customPropertySearchParm in customPropertySearchParms)
-                    {
-                        var values = customPropertySearchParm.Value.Split(',');
-                        foreach (var value in values)
-                        {
-                            var _value = customPropertySearchParm.Value.Replace("\\", "\\\\");
-                            if (isExactSearch)
-                            {
-                                var _sb = $"MessageKey==\"{customPropertySearchParm.Key}\" && MessageValue == \"{_value}\"";
-                                sb3.Append($" || ({_sb})");
-                            }
-                            else
-                            {
-                                var _sb = $"MessageKey.Contains(\"{customPropertySearchParm.Key}\") && MessageValue.Contains(\"{_value}\")";
-                                sb3.Append($" || ({_sb})");
-                            }
-                        }
-                    }
-                }
+                var groupCustomProperties = await _repository.ToListAsync(_repository.Query<GroupCustomProperty>().Where(excludeSb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+                var excludeGroupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
+                query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
             }
-            if (sb3.Length > 0)
-                query = query.Where(sb3.ToString().Substring(4));
 
             var groupIds = query.OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
@@ -595,21 +347,8 @@ namespace SugarChat.Core.Services.Groups
                     .Select(x => x.Key)
                     .ToList();
             var total = query.GroupBy(x => x.GroupId).Count();
-            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
 
-            return (groupIds, total, unreadCount);
-        }
-
-        public class Temp
-        {
-            public string GroupId { get; set; }
-            public int UnreadCount { get; set; }
-            public DateTimeOffset LastSentTime { get; set; }
-            public string GroupKey { get; set; }
-            public string GroupValue { get; set; }
-            public string Content { get; set; }
-            public string MessageKey { get; set; }
-            public string MessageValue { get; set; }
+            return (groupIds, total);
         }
     }
 }

@@ -62,17 +62,19 @@ namespace SugarChat.Core.Services.Conversations
             user.CheckExist(request.UserId);
 
             Stopwatch stopwatch = new Stopwatch();
-            var (groupIds, total, _) = _groupDataProvider.GetGroupIds(request.UserId,
+            var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
                     request.GroupIds,
                     request.GroupType,
                     request.PageSettings,
+                    null, false,
                     request.IncludeGroupByGroupCustomProperties,
-                    request.ExcludeGroupByGroupCustomProperties);
+                    request.ExcludeGroupByGroupCustomProperties,
+                    cancellationToken);
             stopwatch.Stop();
             Log.Information("GetConversationListByUserIdAsync.GetGroupIds run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
 
             if (!groupIds.Any())
-                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
 
             stopwatch.Restart();
             var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(
@@ -178,55 +180,23 @@ namespace SugarChat.Core.Services.Conversations
                     GroupIds = request.GroupIds,
                     GroupType = request.GroupType,
                     IncludeGroupByGroupCustomProperties = request.IncludeGroupByGroupCustomProperties,
-                    ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
+                    ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties,
                 });
             }
 
-            var (groupIds, total, _) = _groupDataProvider.GetGroupIds(request.UserId,
+            var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
                     request.GroupIds,
                     request.GroupType,
                     request.PageSettings,
-                    request.SearchParms,
-                    request.IsExactSearch,
+                    request.SearchParms, request.IsExactSearch,
                     request.IncludeGroupByGroupCustomProperties,
-                    request.ExcludeGroupByGroupCustomProperties);
-
-            Stopwatch stopwatch = new Stopwatch();
-            //stopwatch.Start();
-            //var groupIds = (await _groupUserDataProvider.GetByUserIdAsync(request.UserId, request.GroupIds, request.GroupType, cancellationToken)).Select(x => x.GroupId).ToList();
-            //stopwatch.Stop();
-            //Log.Information("GetConversationByKeyword.GetByUserIdAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
-
-            //stopwatch.Restart();
-            //var includeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByIncludeCustomPropertiesAsync(groupIds, request.IncludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            //groupIds = includeGroupIdsByCustomProperties.ToList();
-            //stopwatch.Stop();
-            //Log.Information("GetConversationByKeyword.GetGroupIdByIncludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
-
-            //stopwatch.Restart();
-            //var excludeGroupIdsByCustomProperties = await _groupDataProvider.GetGroupIdByExcludeCustomPropertiesAsync(groupIds, request.ExcludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-            //groupIds = groupIds.Where(x => !excludeGroupIdsByCustomProperties.Contains(x)).ToList();
-            //stopwatch.Stop();
-            //Log.Information("GetConversationByKeyword.GetGroupIdByExcludeCustomPropertiesAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
+                    request.ExcludeGroupByGroupCustomProperties,
+                    cancellationToken);
 
             if (!groupIds.Any())
-                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = 0 };
+                return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
 
-            //var filterGroupIds = new List<string>();
-            var conversations = new List<ConversationDto>();
-
-            //stopwatch.Restart();
-            //var _groupIds = await _groupDataProvider.GetGroupIdsByMessageKeywordAsync(groupIds, request.SearchParms, request.IsExactSearch, request.GroupType, cancellationToken);
-            //stopwatch.Stop();
-            //Log.Information("GetConversationByKeyword.GetGroupIdsByMessageKeywordAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
-
-            //filterGroupIds.AddRange(_groupIds);
-
-            //if (!filterGroupIds.Any())
-            //    return new PagedResult<ConversationDto> { Result = conversations, Total = 0 };
-            //else
-            //    groupIds = groupIds.Where(x => filterGroupIds.Contains(x)).ToList();
-
+            Stopwatch stopwatch = new Stopwatch();
             stopwatch.Restart();
             var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(
                     request.UserId,
@@ -236,7 +206,7 @@ namespace SugarChat.Core.Services.Conversations
             Log.Information("GetConversationByKeyword.GetUnreadCountAndLastMessageByGroupIdsAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             stopwatch.Restart();
-            conversations = (await GetConversationDtosAsync(unreadCountAndLastMessageByGroupIds, cancellationToken).ConfigureAwait(false)).ToList();
+            var conversations = (await GetConversationDtosAsync(unreadCountAndLastMessageByGroupIds, cancellationToken).ConfigureAwait(false)).ToList();
             stopwatch.Stop();
             Log.Information("GetConversationByKeyword.GetConversationDtosAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 

@@ -22,5 +22,6 @@ db.GroupUserCustomProperty.createIndex({"Value":1});
 
 db.GroupUser.ensureIndex({GroupId:1,UserId:1},{unique:true});
 
-db.GroupUser.update({UnreadCount:{$exists: false}},{$set:{UnreadCount:0}})
-db.Group.updateMany({Type:null},{$set:{Type:0}})
+db.GroupUser.updateMany({UnreadCount:{$exists: false}},{$set:{UnreadCount:0}})
+db.Group.updateMany({Type:{$exists:false}},{$set:{Type:0}})
+db.Group.updateMany({LastSentTime:{$exists:false}},{$set:{LastSentTime:[637764498575527169,0]}})

@@ -16,23 +16,29 @@ using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Core.Services.MessageCustomProperties;
 using System.Diagnostics;
 using Serilog;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.Messages
 {
     public class MessageDataProvider : IMessageDataProvider
     {
-
         private readonly IRepository _repository;
         private readonly IMapper _mapper;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
+        private readonly ITableUtil _tableUtil;
 
-        public MessageDataProvider(IRepository repository, IMapper mapper, IGroupUserDataProvider groupUserDataProvider, IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider)
+        public MessageDataProvider(IRepository repository,
+            IMapper mapper,
+            IGroupUserDataProvider groupUserDataProvider,
+            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider,
+            ITableUtil tableUtil)
         {
             _repository = repository;
             _mapper = mapper;
             _groupUserDataProvider = groupUserDataProvider;
             _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
+            _tableUtil = tableUtil;
         }
 
         public async Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default)
@@ -399,6 +405,33 @@ namespace SugarChat.Core.Services.Messages
         public async Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
+        }
+
+        public async Task<int> GetUnreadCountAsync(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
+            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _tableUtil.GetQuery(userId, filterGroupIds, groupType, false);
+
+            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
+            if (includeSb.Length > 0)
+                query = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, includeSb.ToString().Substring(4));
+
+            var excludeSb = _tableUtil.GetWhereByGroupCustomPropery(excludeGroupByGroupCustomProperties);
+            if (excludeSb.Length > 0)
+            {
+                var groupCustomProperties = await _repository.ToListAsync(
+                        System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>(), excludeSb.ToString().Substring(4)),
+                        cancellationToken).ConfigureAwait(false);
+                var excludeGroupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
+                query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
+            }
+
+            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
+            return unreadCount;
         }
     }
 

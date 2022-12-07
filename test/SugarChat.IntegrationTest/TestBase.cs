@@ -14,6 +14,7 @@ using SugarChat.Core.Services;
 using Microsoft.Extensions.Caching.Memory;
 using SugarChat.Core;
 using SugarChat.Message;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.IntegrationTest
 {
@@ -42,6 +43,7 @@ namespace SugarChat.IntegrationTest
                 iSecurityManager.IsSupperAdmin().Returns(false);
                 containerBuilder.RegisterInstance(iSecurityManager);
             });
+            containerBuilder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
         }
 
         private void LoadThisConfiguration()

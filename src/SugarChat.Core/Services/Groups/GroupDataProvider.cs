@@ -124,173 +124,6 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
-        public async Task<IEnumerable<string>> GetGroupIdByIncludeCustomPropertiesAsync(IEnumerable<string> filterGroupIds, SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
-        {
-            if (includeGroupByGroupCustomProperties == null || includeGroupByGroupCustomProperties.GroupCustomProperties == null || !includeGroupByGroupCustomProperties.GroupCustomProperties.Any())
-            {
-                return filterGroupIds;
-            }
-            return await GetGroupIdByCustomPropertiesAsync(filterGroupIds, includeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<IEnumerable<string>> GetGroupIdByExcludeCustomPropertiesAsync(IEnumerable<string> filterGroupIds, SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
-        {
-            if (excludeGroupByGroupCustomProperties == null || excludeGroupByGroupCustomProperties.GroupCustomProperties == null || !excludeGroupByGroupCustomProperties.GroupCustomProperties.Any())
-            {
-                return new List<string>();
-            }
-            return await GetGroupIdByCustomPropertiesAsync(filterGroupIds, excludeGroupByGroupCustomProperties, cancellationToken).ConfigureAwait(false);
-        }
-
-        private async Task<IEnumerable<string>> GetGroupIdByCustomPropertiesAsync(IEnumerable<string> filterGroupIds, SearchGroupByGroupCustomPropertiesDto searchGroupByGroupCustomProperties, CancellationToken cancellationToken = default)
-        {
-            var isExactSearch = searchGroupByGroupCustomProperties.IsExactSearch;
-            var searchCustomProperties = searchGroupByGroupCustomProperties.GroupCustomProperties;
-            var groupIds = new List<string>();
-
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            stopwatch.Stop();
-            foreach (var dic in searchCustomProperties)
-            {
-                stopwatch.Restart();
-                var sb = new StringBuilder();
-                foreach (var value in dic.Value)
-                {
-                    var value1 = value.Replace("\\", "\\\\");
-                    var key1 = dic.Key.Replace("\\", "\\\\");
-                    if (value1.Contains(","))
-                    {
-                        var values = value1.Split(',');
-                        foreach (var value2 in values)
-                        {
-                            if (isExactSearch)
-                                sb.Append($" || (Key==\"{key1}\" && Value==\"{value2}\")");
-                            else
-                                sb.Append($" || (Key==\"{key1}\" && Value.Contains(\"{value2}\"))");
-                        }
-                    }
-                    else
-                    {
-                        if (isExactSearch)
-                            sb.Append($" || (Key==\"{key1}\" && Value==\"{value1}\")");
-                        else
-                            sb.Append($" || (Key==\"{key1}\" && Value.Contains(\"{value1}\"))");
-                    }
-                }
-                var query = _repository.Query<GroupCustomProperty>();
-                if (filterGroupIds != null && filterGroupIds.Any())
-                {
-                    query = query.Where(x => filterGroupIds.Contains(x.GroupId));
-                }
-                var groupCustomProperties = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-                groupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
-                stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdByCustomPropertiesAsync run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), groupIds.Count());
-            }
-            return groupIds;
-        }
-
-        public async Task<IEnumerable<string>> GetGroupIdsByMessageKeywordAsync(IEnumerable<string> filterGroupIds, Dictionary<string, string> searchParms, bool isExactSearch, int groupType, CancellationToken cancellationToken = default)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            stopwatch.Stop();
-            if (searchParms != null && searchParms.Any())
-            {
-                var messageIds = new List<string>();
-                var contentSearchParms = searchParms.Where(x => x.Key == Message.Constant.Content);
-                var customPropertySearchParms = searchParms.Where(x => x.Key != Message.Constant.Content);
-                if (contentSearchParms.Any())
-                {
-                    var sb = new StringBuilder();
-                    foreach (var contentSearchParm in contentSearchParms)
-                    {
-                        var value = contentSearchParm.Value.Replace("\\", "\\\\");
-                        if (isExactSearch)
-                        {
-                            sb.Append($" || {Message.Constant.Content}==\"{value}\"");
-                        }
-                        else
-                        {
-                            sb.Append($" || {Message.Constant.Content}.Contains(\"{value}\")");
-                        }
-                    }
-                    var query = _repository.Query<Domain.Message>();
-                    if (filterGroupIds != null && filterGroupIds.Any())
-                        query = query.Where(x => filterGroupIds.Contains(x.GroupId));
-
-                    stopwatch.Restart();
-                    var messages = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-                    stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync1 run {@Ms}, {@Where}, {@ResultTotal}, {@GroupIdTotal}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messages.Count(), filterGroupIds.Count());
-
-                    messageIds = messages.Select(x => x.Id).ToList();
-                }
-                if (customPropertySearchParms.Any())
-                {
-                    var sb = new StringBuilder();
-                    foreach (var customPropertySearchParm in customPropertySearchParms)
-                    {
-                        var values = customPropertySearchParm.Value.Split(',');
-                        foreach (var value in values)
-                        {
-                            var _value = customPropertySearchParm.Value.Replace("\\", "\\\\");
-                            if (isExactSearch)
-                            {
-                                var _sb = $"{nameof(MessageCustomProperty.Key)}==\"{customPropertySearchParm.Key}\" && {nameof(MessageCustomProperty.Value)} == \"{_value}\"";
-                                sb.Append($" || ({_sb})");
-                            }
-                            else
-                            {
-                                var _sb = $"{nameof(MessageCustomProperty.Key)}.Contains(\"{customPropertySearchParm.Key}\") && {nameof(MessageCustomProperty.Value)}.Contains(\"{_value}\")";
-                                sb.Append($" || ({_sb})");
-                            }
-                        }
-                    }
-                    stopwatch.Restart();
-                    var messageCustomProperties = await _repository.ToListAsync(_repository.Query<MessageCustomProperty>().Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-                    stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync2 run {@Ms}, {@Where}, {@Total}", stopwatch.ElapsedMilliseconds, sb.ToString().Substring(4), messageCustomProperties.Count());
-
-                    var messageCustomPropertyGroups = messageCustomProperties.GroupBy(x => x.MessageId);
-                    var _messageIds = new List<string>();
-
-                    stopwatch.Restart();
-                    foreach (var messageCustomPropertyGroup in messageCustomPropertyGroups)
-                    {
-                        if (messageCustomPropertyGroup.Count() == customPropertySearchParms.Count())
-                        {
-                            _messageIds.Add(messageCustomPropertyGroup.Key);
-                        }
-                    }
-                    stopwatch.Stop();
-                    Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, messageCustomPropertyGroups.Count());
-
-                    messageIds.AddRange(_messageIds);
-                }
-
-                stopwatch.Restart();
-                var groupIds = (await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id))).Select(x => x.GroupId);
-                stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync4 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupIds.Count());
-
-                if (filterGroupIds != null && filterGroupIds.Any())
-                    groupIds = groupIds.Intersect(filterGroupIds).ToList();
-
-                stopwatch.Restart();
-                var result = (await _repository.ToListAsync<Group>(x => groupIds.Contains(x.Id) && x.Type == groupType)).Select(x => x.Id);
-                stopwatch.Stop();
-                Log.Information("GroupDataProvider.GetGroupIdsByMessageKeywordAsync5 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, result.Count());
-
-                return result;
-            }
-            else
-            {
-                return new List<string>();
-            }
-        }
-
         public async Task<int> GetCountAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return await _repository.CountAsync(predicate, cancellationToken).ConfigureAwait(false);
@@ -318,9 +151,14 @@ namespace SugarChat.Core.Services.Groups
             Dictionary<string, string> searchParms, bool isExactSearch,
             SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
             SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            bool onlyUnread,
             CancellationToken cancellationToken = default)
         {
             var query = _tableUtil.GetQuery(userId, filterGroupIds, groupType, searchParms != null && searchParms.Any());
+            if (onlyUnread)
+            {
+                query = query.Where(x => x.UnreadCount > 0);
+            }
 
             var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
             var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");

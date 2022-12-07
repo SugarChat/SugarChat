@@ -331,19 +331,40 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             await Run<IMediator, IRepository, IGroupDataProvider>(async (mediator, repository, groupDataProvider) =>
             {
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "11" } }, true, 10, default);
-                    result.Count().ShouldBe(1);
-                    result.FirstOrDefault().ShouldBe(conversationId);
+                    var (groupIds, total) = await groupDataProvider.GetGroupIdsAsync(userId,
+                            new string[] { conversationId, groupId4, groupId5 },
+                            10,
+                            new PageSettings { PageNum = 1, PageSize = 10 },
+                            new Dictionary<string, string> { { "order", "11" } },
+                            true,
+                            null, null, false,
+                            default);
+                    total.ShouldBe(1);
+                    groupIds.FirstOrDefault().ShouldBe(conversationId);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4, groupId5 }, new Dictionary<string, string> { { "order", "2" } }, false, 10, default);
-                    result.Count().ShouldBe(2);
-                    result.ShouldContain(conversationId);
-                    result.ShouldContain(groupId4);
+                    var (groupIds, total) = await groupDataProvider.GetGroupIdsAsync(userId,
+                            new string[] { conversationId, groupId4, groupId5 },
+                            10,
+                            new PageSettings { PageNum = 1, PageSize = 10 },
+                            new Dictionary<string, string> { { "order", "2" } },
+                            false,
+                            null, null, false,
+                            default);
+                    total.ShouldBe(2);
+                    groupIds.ShouldContain(conversationId);
+                    groupIds.ShouldContain(groupId4);
                 }
                 {
-                    var result = await groupDataProvider.GetGroupIdsByMessageKeywordAsync(new string[] { conversationId, groupId4 }, new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } }, false, 10, default);
-                    result.Count().ShouldBe(2);
+                    var (groupIds, total) = await groupDataProvider.GetGroupIdsAsync(userId,
+                            new string[] { conversationId, groupId4 },
+                            10,
+                            new PageSettings { PageNum = 1, PageSize = 10 },
+                            new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } },
+                            false,
+                            null, null, false,
+                            default);
+                    total.ShouldBe(2);
                 }
             });
         }

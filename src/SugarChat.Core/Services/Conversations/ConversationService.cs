@@ -100,10 +100,7 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken);
             groupUser.CheckExist(request.UserId, request.ConversationId);
 
-            var (_, count) = await _messageDataProvider.GetUnreadCountByGroupIdsAsync(request.UserId, new List<string> { request.ConversationId }, cancellationToken).ConfigureAwait(false);
-
             var conversationDto = await GetConversationDto(groupUser, cancellationToken);
-            conversationDto.UnreadCount = count;
 
             return new GetConversationProfileResponse
             {
@@ -180,7 +177,7 @@ namespace SugarChat.Core.Services.Conversations
                     GroupIds = request.GroupIds,
                     GroupType = request.GroupType,
                     IncludeGroupByGroupCustomProperties = request.IncludeGroupByGroupCustomProperties,
-                    ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties,
+                    ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
                 });
             }
 
@@ -198,8 +195,7 @@ namespace SugarChat.Core.Services.Conversations
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Restart();
-            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(
-                    request.UserId,
+            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
@@ -230,8 +226,7 @@ namespace SugarChat.Core.Services.Conversations
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
 
-            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(
-                    request.UserId,
+            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     cancellationToken).ConfigureAwait(false);
 

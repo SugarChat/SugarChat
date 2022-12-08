@@ -263,7 +263,7 @@ namespace SugarChat.Core.Services.Messages
             await _repository.RemoveRangeAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        public async Task<List<GroupUnreadCount>> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             var query = _repository.Query<GroupUser>().Where(x => x.UserId == userId);
             if (groupIds != null && groupIds.Any())
@@ -283,7 +283,7 @@ namespace SugarChat.Core.Services.Messages
                 groupUnreadCounts.Add(new GroupUnreadCount { GroupId = groupUser.GroupId, UnreadCount = groupUser.UnreadCount });
             }
 
-            return (groupUnreadCounts, groupUsers.Sum(x => x.UnreadCount));
+            return groupUnreadCounts;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
@@ -309,12 +309,12 @@ namespace SugarChat.Core.Services.Messages
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            var (groupUnreadCounts, count) = await GetUnreadCountByGroupIdsAsync(userId, groupIds, cancellationToken).ConfigureAwait(false);
+            var groupUnreadCounts = await GetUnreadCountByGroupIdsAsync(userId, groupIds, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
             Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
             stopwatch.Restart();
-            var lastMessages = await GetLastMessageForGroupsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            var lastMessages = await GetLastMessageByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
             Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
 
@@ -357,7 +357,7 @@ namespace SugarChat.Core.Services.Messages
             return _repository.Query<Domain.Message>().Where(x => x.GroupId == groupId && !x.IsRevoked).OrderByDescending(x => x.SentTime).FirstOrDefault();
         }
 
-        public async Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Domain.Message>> GetLastMessageByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();

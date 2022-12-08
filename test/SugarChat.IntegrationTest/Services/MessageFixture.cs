@@ -210,7 +210,7 @@ namespace SugarChat.IntegrationTest.Services
                         });
                     }
                 }
-                var messages = await messageDataProvider.GetLastMessageForGroupsAsync(groupIds.Select(x => x.ToString()));
+                var messages = await messageDataProvider.GetLastMessageByGroupIdsAsync(groupIds.Select(x => x.ToString()));
                 messages.Count().ShouldBe(5);
                 for (int i = 0; i < groupIds.Length; i++)
                 {

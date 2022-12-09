@@ -177,9 +177,9 @@ namespace SugarChat.Core.Services.Groups
                 query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
             }
 
-            var groupIds = query.OrderByDescending(x => x.UnreadCount)
-                    .ThenByDescending(x => x.LastSentTime)
-                    .GroupBy(x => x.GroupId)
+            var groupIds = query.GroupBy(x => x.GroupId)
+                    .OrderByDescending(x => x.Max(y => y.UnreadCount))
+                    .ThenByDescending(x => x.Max(y => y.LastSentTime))
                     .Skip((pageSettings.PageNum - 1) * pageSettings.PageSize)
                     .Take(pageSettings.PageSize)
                     .Select(x => x.Key)

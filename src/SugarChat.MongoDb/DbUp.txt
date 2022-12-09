@@ -24,4 +24,4 @@ db.GroupUser.ensureIndex({GroupId:1,UserId:1},{unique:true});
 
 db.GroupUser.updateMany({UnreadCount:{$exists: false}},{$set:{UnreadCount:0}})
 db.Group.updateMany({Type:{$exists:false}},{$set:{Type:0}})
-db.Group.updateMany({LastSentTime:{$exists:false}},{$set:{LastSentTime:[637764498575527169,0]}})
+db.Group.updateMany({LastSentTime:{$exists:false}},{$set:{LastSentTime:[NumberLong("637764498575527169"),NumberInt(0)]}})

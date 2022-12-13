@@ -10,7 +10,7 @@ namespace SugarChat.Core.Utils
 {
     public interface ITableUtil
     {
-        IQueryable<TableJoinDto> GetQuery(string userId, IEnumerable<string> filterGroupIds, int groupType, bool IsJoinMessage);
+        IQueryable<TableJoinDto> GetQuery(string userId, IEnumerable<string> filterGroupIds, int groupType, bool IsJoinGroupCustomProperty, bool IsJoinMessage);
         string GetWhereByGroupCustomPropery(SearchGroupByGroupCustomPropertiesDto groupByGroupCustomProperties, string keyName = "Key", string valueName = "Value");
         string GetWhereByMessage(Dictionary<string, string> searchParms, bool isExactSearch, string keyName = "Key", string valueName = "Value");
     }
@@ -27,12 +27,25 @@ namespace SugarChat.Core.Utils
         public IQueryable<TableJoinDto> GetQuery(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
+            bool IsJoinGroupCustomProperty,
             bool IsJoinMessage)
         {
             IQueryable<TableJoinDto> query = null;
             if (filterGroupIds != null && filterGroupIds.Any())
             {
-                if (IsJoinMessage)
+                if (!IsJoinGroupCustomProperty && !IsJoinMessage)
+                {
+                    query = from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                            where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(a.GroupId)
+                            select new TableJoinDto
+                            {
+                                GroupId = a.GroupId,
+                                UnreadCount = a.UnreadCount,
+                                LastSentTime = b.LastSentTime
+                            };
+                }
+                if (IsJoinGroupCustomProperty && IsJoinMessage)
                 {
                     query = from a in _repository.Query<GroupUser>()
                             join b in _repository.Query<Group>() on a.GroupId equals b.Id
@@ -52,7 +65,7 @@ namespace SugarChat.Core.Utils
                                 MessageValue = e.Value
                             };
                 }
-                else
+                if (IsJoinGroupCustomProperty && !IsJoinMessage)
                 {
                     query = from a in _repository.Query<GroupUser>()
                             join b in _repository.Query<Group>() on a.GroupId equals b.Id
@@ -65,12 +78,41 @@ namespace SugarChat.Core.Utils
                                 LastSentTime = b.LastSentTime,
                                 GroupKey = c.Key,
                                 GroupValue = c.Value
+                            };
+                }
+                if (!IsJoinGroupCustomProperty && IsJoinMessage)
+                {
+                    query = from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                            join d in _repository.Query<Domain.Message>() on b.Id equals d.GroupId
+                            join e in _repository.Query<MessageCustomProperty>() on d.Id equals e.MessageId
+                            where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(a.GroupId)
+                            select new TableJoinDto
+                            {
+                                GroupId = a.GroupId,
+                                UnreadCount = a.UnreadCount,
+                                LastSentTime = b.LastSentTime,
+                                Content = d.Content,
+                                MessageKey = e.Key,
+                                MessageValue = e.Value
                             };
                 }
             }
             else
             {
-                if (IsJoinMessage)
+                if (!IsJoinGroupCustomProperty && !IsJoinMessage)
+                {
+                    query = from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                            where a.UserId == userId && b.Type == groupType
+                            select new TableJoinDto
+                            {
+                                GroupId = a.GroupId,
+                                UnreadCount = a.UnreadCount,
+                                LastSentTime = b.LastSentTime
+                            };
+                }
+                if (IsJoinGroupCustomProperty && IsJoinMessage)
                 {
                     query = from a in _repository.Query<GroupUser>()
                             join b in _repository.Query<Group>() on a.GroupId equals b.Id
@@ -90,7 +132,7 @@ namespace SugarChat.Core.Utils
                                 MessageValue = e.Value
                             };
                 }
-                else
+                if (IsJoinGroupCustomProperty && !IsJoinMessage)
                 {
                     query = from a in _repository.Query<GroupUser>()
                             join b in _repository.Query<Group>() on a.GroupId equals b.Id
@@ -103,6 +145,23 @@ namespace SugarChat.Core.Utils
                                 LastSentTime = b.LastSentTime,
                                 GroupKey = c.Key,
                                 GroupValue = c.Value
+                            };
+                }
+                if (!IsJoinGroupCustomProperty && IsJoinMessage)
+                {
+                    query = from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                            join d in _repository.Query<Domain.Message>() on b.Id equals d.GroupId
+                            join e in _repository.Query<MessageCustomProperty>() on d.Id equals e.MessageId
+                            where a.UserId == userId && b.Type == groupType
+                            select new TableJoinDto
+                            {
+                                GroupId = a.GroupId,
+                                UnreadCount = a.UnreadCount,
+                                LastSentTime = b.LastSentTime,
+                                Content = d.Content,
+                                MessageKey = e.Key,
+                                MessageValue = e.Value
                             };
                 }
             }

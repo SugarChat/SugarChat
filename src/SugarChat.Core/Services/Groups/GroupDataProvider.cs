@@ -182,6 +182,8 @@ namespace SugarChat.Core.Services.Groups
                 query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
             }
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var groupIds = query.GroupBy(x => x.GroupId)
                     .OrderByDescending(x => x.Max(y => y.UnreadCount))
                     .ThenByDescending(x => x.Max(y => y.LastSentTime))
@@ -189,7 +191,13 @@ namespace SugarChat.Core.Services.Groups
                     .Take(pageSettings.PageSize)
                     .Select(x => x.Key)
                     .ToList();
+            stopwatch.Stop();
+            Log.Information("GroupDataProvider.GetGroupIdsAsync1 run {@Ms}", stopwatch.ElapsedMilliseconds);
+
+            stopwatch.Restart();
             var total = query.GroupBy(x => x.GroupId).Count();
+            stopwatch.Stop();
+            Log.Information("GroupDataProvider.GetGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
 
             return (groupIds, total);
         }

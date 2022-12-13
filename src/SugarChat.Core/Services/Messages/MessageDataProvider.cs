@@ -311,17 +311,17 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Start();
             var groupUnreadCounts = await GetUnreadCountByGroupIdsAsync(userId, groupIds, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync1 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
             stopwatch.Restart();
             var lastMessages = await GetLastMessageByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
 
             stopwatch.Restart();
             var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(lastMessages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync4 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, messageCustomProperties.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, messageCustomProperties.Count());
 
             var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
 
@@ -344,7 +344,7 @@ namespace SugarChat.Core.Services.Messages
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }
             stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync5 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
+            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync4 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUnreadCounts.Count());
 
             return unreadCountAndLastMessageByGroupIds
                     .OrderByDescending(x => x.UnreadCount)
@@ -435,7 +435,12 @@ namespace SugarChat.Core.Services.Messages
                 query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
             }
 
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
+            stopwatch.Stop();
+            Log.Information("MessageDataProvider.GetUnreadCountAsync run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, unreadCount);
+
             return unreadCount;
         }
     }

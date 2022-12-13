@@ -414,9 +414,14 @@ namespace SugarChat.Core.Services.Messages
             SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
             CancellationToken cancellationToken = default)
         {
-            var query = _tableUtil.GetQuery(userId, filterGroupIds, groupType, false);
-
             var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
+
+            var query = _tableUtil.GetQuery(userId,
+                filterGroupIds,
+                groupType,
+                includeSb.Length > 0,
+                false);
+
             if (includeSb.Length > 0)
                 query = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, includeSb.ToString().Substring(4));
 

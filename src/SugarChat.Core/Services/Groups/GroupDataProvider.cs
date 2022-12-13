@@ -154,14 +154,19 @@ namespace SugarChat.Core.Services.Groups
             bool onlyUnread,
             CancellationToken cancellationToken = default)
         {
-            var query = _tableUtil.GetQuery(userId, filterGroupIds, groupType, searchParms != null && searchParms.Any());
+            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
+            var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");
+
+            var query = _tableUtil.GetQuery(userId,
+                    filterGroupIds,
+                    groupType,
+                    includeSb.Length > 0,
+                    searchSb.Length > 0);
+
             if (onlyUnread)
             {
                 query = query.Where(x => x.UnreadCount > 0);
             }
-
-            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
-            var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");
 
             if (includeSb.Length > 0)
                 query = query.Where(includeSb.ToString().Substring(4));

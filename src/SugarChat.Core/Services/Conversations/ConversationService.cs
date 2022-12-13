@@ -71,7 +71,7 @@ namespace SugarChat.Core.Services.Conversations
                     request.ExcludeGroupByGroupCustomProperties,
                     false, cancellationToken);
             stopwatch.Stop();
-            Log.Information("GetConversationListByUserIdAsync.GetGroupIds run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
+            Log.Information("GetConversationListByUserIdAsync.GetGroupIdsAsync run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
 
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
@@ -179,7 +179,7 @@ namespace SugarChat.Core.Services.Conversations
                     ExcludeGroupByGroupCustomProperties = request.ExcludeGroupByGroupCustomProperties
                 });
             }
-
+            Stopwatch stopwatch = new Stopwatch();
             var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
                     request.GroupIds,
                     request.GroupType,
@@ -188,22 +188,23 @@ namespace SugarChat.Core.Services.Conversations
                     request.IncludeGroupByGroupCustomProperties,
                     request.ExcludeGroupByGroupCustomProperties,
                     false, cancellationToken);
+            stopwatch.Stop();
+            Log.Information("GetConversationByKeywordAsync.GetGroupIdsAsync run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
 
             if (!groupIds.Any())
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
 
-            Stopwatch stopwatch = new Stopwatch();
             stopwatch.Restart();
             var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();
-            Log.Information("GetConversationByKeyword.GetUnreadCountAndLastMessageByGroupIdsAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetConversationByKeywordAsync.GetUnreadCountAndLastMessageByGroupIdsAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             stopwatch.Restart();
             var conversations = (await GetConversationDtosAsync(unreadCountAndLastMessageByGroupIds, cancellationToken).ConfigureAwait(false)).ToList();
             stopwatch.Stop();
-            Log.Information("GetConversationByKeyword.GetConversationDtosAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
+            Log.Information("GetConversationByKeywordAsync.GetConversationDtosAsync run {@Ms}", stopwatch.ElapsedMilliseconds);
 
             return new PagedResult<ConversationDto> { Result = conversations, Total = total };
         }

@@ -77,8 +77,7 @@ namespace SugarChat.Core.Services.Conversations
                 return new PagedResult<ConversationDto> { Result = new List<ConversationDto>(), Total = total };
 
             stopwatch.Restart();
-            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(
-                    request.UserId,
+            var unreadCountAndLastMessageByGroupIds = await _messageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync(request.UserId,
                     groupIds,
                     cancellationToken).ConfigureAwait(false);
             stopwatch.Stop();

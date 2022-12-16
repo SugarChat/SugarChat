@@ -62,7 +62,7 @@ namespace SugarChat.Core.Services.Conversations
             user.CheckExist(request.UserId);
 
             Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Stop();
+            stopwatch.Start();
             var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
                     request.GroupIds,
                     request.GroupType,

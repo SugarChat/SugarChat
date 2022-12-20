@@ -156,6 +156,7 @@ namespace SugarChat.Core.Services.Groups
         {
             var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
             var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");
+            var sb = includeSb + searchSb;
 
             var query = _tableUtil.GetQuery(userId,
                     filterGroupIds,
@@ -168,11 +169,8 @@ namespace SugarChat.Core.Services.Groups
                 query = query.Where(x => x.UnreadCount > 0);
             }
 
-            if (includeSb.Length > 0)
-                query = query.Where(includeSb.ToString().Substring(4));
-
-            if (searchSb.Length > 0)
-                query = query.Where(searchSb.ToString().Substring(4));
+            if (sb.Length > 0)
+                query = query.Where(sb.ToString().Substring(4));
 
             var excludeSb = _tableUtil.GetWhereByGroupCustomPropery(excludeGroupByGroupCustomProperties);
             if (excludeSb.Length > 0)

@@ -421,6 +421,7 @@ namespace SugarChat.Core.Services.Messages
                 groupType,
                 includeSb.Length > 0,
                 false);
+            query = query.Where(x => x.UnreadCount > 0);
 
             if (includeSb.Length > 0)
                 query = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, includeSb.ToString().Substring(4));

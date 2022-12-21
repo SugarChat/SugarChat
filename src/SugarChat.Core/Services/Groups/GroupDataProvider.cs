@@ -179,6 +179,7 @@ namespace SugarChat.Core.Services.Groups
                 var excludeGroupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
                 query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
             }
+            query = query.Take(500);
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();

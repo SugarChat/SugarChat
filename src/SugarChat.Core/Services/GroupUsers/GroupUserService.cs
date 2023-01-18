@@ -22,6 +22,7 @@ using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using Serilog;
 using SugarChat.Core.Services.Messages;
+using SugarChat.Core.Services.GroupCustomProperties;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -34,13 +35,15 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly ISecurityManager _securityManager;
         private readonly ITransactionManager _transactionManagement;
         private readonly IGroupUserCustomPropertyDataProvider _groupUserCustomPropertyDataProvider;
+        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
 
         public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider,
             ISecurityManager securityManager,
             ITransactionManager transactionManagement,
-            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider)
+            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider,
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -49,6 +52,7 @@ namespace SugarChat.Core.Services.GroupUsers
             _securityManager = securityManager;
             _transactionManagement = transactionManagement;
             _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
+            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
         }
 
         public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
@@ -517,6 +521,51 @@ namespace SugarChat.Core.Services.GroupUsers
                         Log.Error(ex, "Migrate GroupUser CustomProperty Error");
                         await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
                     }
+                }
+            }
+        }
+
+        public async Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default)
+        {
+            var groups = await _groupDataProvider.GetListAsync(x => x.Type == 0);
+            var total = groups.Count();
+            var pageSize = 500;
+            var pageIndex = total / pageSize + 1;
+            for (int i = 1; i <= pageIndex; i++)
+            {
+                var groups1 = groups.OrderBy(x => x.CreatedDate).Skip((i - 1) * pageSize).Take(pageSize).ToList();
+                var groupUser2s = new List<GroupUser2>();
+                for (int j = 1; j <= 10; j++)
+                {
+                    var groups2 = groups1.OrderBy(x => x.CreatedDate).Skip((j - 1) * 50).Take(50).ToList();
+                    var groupIds = groups2.Select(x => x.Id).ToList();
+                    var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+                    var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellation).ConfigureAwait(false);
+
+                    foreach (var groupId in groupIds)
+                    {
+                        var _groupUsers = groupUsers.Where(x => x.GroupId == groupId).ToList();
+                        var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupId).ToList();
+                        Dictionary<string, string> customProperties = new Dictionary<string, string>();
+                        foreach (var groupCustomProperty in _groupCustomProperties)
+                        {
+                            customProperties.Add(groupCustomProperty.Key, groupCustomProperty.Value);
+                        }
+                        foreach (var groupUser in _groupUsers)
+                        {
+                            var groupUser2 = _mapper.Map<GroupUser2>(groupUser);
+                            groupUser2.CustomProperties = customProperties;
+                            groupUser2s.Add(groupUser2);
+                        }
+                    }
+                }
+                try
+                {
+                    await _groupUserDataProvider.AddRangeAsync(groupUser2s, cancellation).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Migrate Group CustomProperty To GroupUser Error");
                 }
             }
         }

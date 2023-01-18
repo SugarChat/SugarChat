@@ -23,6 +23,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<SetGroupMemberRoleCommand, GroupMemberRoleSetEvent>();
             CreateMap<GroupUser, GroupUserDto>().ReverseMap();
             CreateMap<GroupUserCustomProperty, GroupUserCustomPropertyDto>();
+            CreateMap<GroupUser, GroupUser2>();
         }
     }
 }

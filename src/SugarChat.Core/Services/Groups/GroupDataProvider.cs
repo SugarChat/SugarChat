@@ -200,5 +200,10 @@ namespace SugarChat.Core.Services.Groups
 
             return (groupIds, total);
         }
+
+        public async Task<IEnumerable<Group>> GetListAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

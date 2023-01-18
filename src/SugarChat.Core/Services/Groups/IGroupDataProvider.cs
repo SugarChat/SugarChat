@@ -39,5 +39,7 @@ namespace SugarChat.Core.Services.Groups
             SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
             bool onlyUnread,
             CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Group>> GetListAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

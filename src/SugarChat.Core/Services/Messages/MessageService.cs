@@ -260,7 +260,9 @@ namespace SugarChat.Core.Services.Messages
             group.CheckExist(command.GroupId);
 
             GroupUser groupUser = await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.GroupId, cancellationToken);
-            groupUser.CheckExist(command.UserId, command.GroupId);
+            //groupUser.CheckExist(command.UserId, command.GroupId);
+            if (groupUser is null)
+                return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
 
             groupUser.UnreadCount = 0;
             groupUser.LastReadTime = DateTime.Now;

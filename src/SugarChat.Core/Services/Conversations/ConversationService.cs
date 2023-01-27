@@ -151,7 +151,9 @@ namespace SugarChat.Core.Services.Conversations
             var groupUser =
                 await _groupUserDataProvider.GetByUserAndGroupIdAsync(command.UserId, command.ConversationId,
                     cancellationToken);
-            groupUser.CheckExist(command.UserId, command.ConversationId);
+            //groupUser.CheckExist(command.UserId, command.ConversationId);
+            if (groupUser is null)
+                return _mapper.Map<ConversationRemovedEvent>(command);
 
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 

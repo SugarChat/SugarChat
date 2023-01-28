@@ -10,6 +10,12 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:SugarChat.WebApi.Controllers.AdminController.LinqTest">
+            <summary>
+            修复数据，临时使用，不提供HttpClient
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:SugarChat.WebApi.Controllers.GroupUserController.MigrateCustomPropertyWhenRoleEqual0(SugarChat.Message.Commands.GroupUsers.MigrateGroupUserCustomPropertyCommand)">
             <summary>
             迁移数据使用，一次性代码

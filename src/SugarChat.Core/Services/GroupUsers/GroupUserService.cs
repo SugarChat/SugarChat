@@ -525,11 +525,11 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default)
+        public async Task MigrateGroupCustomPropertyAsyncToGroupUser2(CancellationToken cancellation = default)
         {
             var groups = await _groupDataProvider.GetListAsync(x => x.Type == 0);
             var total = groups.Count();
-            var pageSize = 500;
+            var pageSize = 5000;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {
@@ -537,7 +537,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 var groupUser2s = new List<GroupUser2>();
                 for (int j = 1; j <= 10; j++)
                 {
-                    var groups2 = groups1.OrderBy(x => x.CreatedDate).Skip((j - 1) * 50).Take(50).ToList();
+                    var groups2 = groups1.OrderBy(x => x.CreatedDate).Skip((j - 1) * 500).Take(500).ToList();
                     var groupIds = groups2.Select(x => x.Id).ToList();
                     var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
                     var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellation).ConfigureAwait(false);

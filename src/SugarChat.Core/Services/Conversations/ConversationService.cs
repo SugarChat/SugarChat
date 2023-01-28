@@ -92,19 +92,19 @@ namespace SugarChat.Core.Services.Conversations
             return new PagedResult<ConversationDto> { Result = conversations, Total = total };
         }
 
-        public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync2(GetConversationListRequest request, CancellationToken cancellationToken = default)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
-                    request.GroupIds,
-                    request.GroupType,
-                    request.PageSettings,
-                    null, false,
-                    request.IncludeGroupByGroupCustomProperties,
-                    request.ExcludeGroupByGroupCustomProperties,
-                    false, cancellationToken);
-        }
+        //public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync2(GetConversationListRequest request, CancellationToken cancellationToken = default)
+        //{
+        //    Stopwatch stopwatch = new Stopwatch();
+        //    stopwatch.Start();
+        //    var (groupIds, total) = await _groupDataProvider.GetGroupIdsAsync(request.UserId,
+        //            request.GroupIds,
+        //            request.GroupType,
+        //            request.PageSettings,
+        //            null, false,
+        //            request.IncludeGroupByGroupCustomProperties,
+        //            request.ExcludeGroupByGroupCustomProperties,
+        //            false, cancellationToken);
+        //}
 
         public async Task<GetConversationProfileResponse> GetConversationProfileByIdAsync(
             GetConversationProfileRequest request, CancellationToken cancellationToken = default)

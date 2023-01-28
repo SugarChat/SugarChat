@@ -98,22 +98,22 @@ namespace SugarChat.Core.Services.Admin
             }
         }
 
-        public async void LinqTest()
+        public void LinqTest()
         {
             var query = from a in _repository.Query<GroupUser2>()
                         join b in _repository.Query<Group>() on a.GroupId equals b.Id
                         where a.UserId == "90e88aaf-d2d5-409b-969d-8b6f83a7f212"
-                        && ((a.Role == Message.UserRole.Admin && a.MessageRemindType == Message.MessageRemindType.ACPT_AND_NOTE)
-                        || (a.Role == Message.UserRole.Admin && a.MessageRemindType == Message.MessageRemindType.ACPT_NOT_NOTE))
-                        && (a.Role != Message.UserRole.Member || (a.Role == Message.UserRole.Owner && a.MessageRemindType != Message.MessageRemindType.DISCARD))
+                        && (a.CreatedBy == "MerchId2" || a.CreatedBy == "MerchId2")
+                        && a.LastModifyBy != "UserId1"
                         && b.Type == 0
+                        orderby a.UnreadCount, b.LastSentTime
                         select new TableJoinDto
                         {
                             GroupId = a.GroupId,
                             UnreadCount = a.UnreadCount,
                             LastSentTime = b.LastSentTime
                         };
-            var list = query.ToList();
+            var list = query.Skip(100).Take(100).ToList();
         }
     }
 

@@ -67,6 +67,7 @@ namespace SugarChat.Core.Services.GroupUsers
             groupUser.CheckNotExist();
 
             groupUser = _mapper.Map<GroupUser>(command);
+            groupUser.GroupType = group.Type;
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<UserAddedToGroupEvent>(command);
@@ -203,6 +204,7 @@ namespace SugarChat.Core.Services.GroupUsers
             groupUser.CheckNotExist();
 
             groupUser = _mapper.Map<GroupUser>(command);
+            groupUser.GroupType = group.Type;
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
@@ -294,7 +296,8 @@ namespace SugarChat.Core.Services.GroupUsers
                                 UserId = groupUserId,
                                 GroupId = command.GroupId,
                                 Role = command.Role,
-                                CreatedBy = command.CreatedBy
+                                CreatedBy = command.CreatedBy,
+                                GroupType = group.Type
                             };
                             needAddGroupUsers.Add(groupUser);
                             if (command.CustomProperties != null)
@@ -527,7 +530,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task MigrateGroupCustomPropertyAsyncToGroupUser2(CancellationToken cancellation = default)
         {
-            var groups = await _groupDataProvider.GetListAsync(x => x.Type == 0);
+            var groups = await _groupDataProvider.GetListAsync();
             var total = groups.Count();
             var pageSize = 5000;
             var pageIndex = total / pageSize + 1;
@@ -544,6 +547,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
                     foreach (var groupId in groupIds)
                     {
+                        var group = groups2.Single(x => x.Id == groupId);
                         var _groupUsers = groupUsers.Where(x => x.GroupId == groupId).ToList();
                         var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupId).ToList();
                         Dictionary<string, string> customProperties = new Dictionary<string, string>();
@@ -554,6 +558,8 @@ namespace SugarChat.Core.Services.GroupUsers
                         foreach (var groupUser in _groupUsers)
                         {
                             var groupUser2 = _mapper.Map<GroupUser2>(groupUser);
+                            groupUser2.GroupType = group.Type;
+                            groupUser2.LastSentTime = group.LastSentTime;
                             groupUser2.CustomProperties = customProperties;
                             groupUser2s.Add(groupUser2);
                         }

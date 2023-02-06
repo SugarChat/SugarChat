@@ -356,6 +356,7 @@ namespace SugarChat.Core.Services.Messages
                         foreach (var groupUser in groupUsers)
                         {
                             groupUser.UnreadCount++;
+                            groupUser.LastSentTime = group.LastSentTime;
                         }
                         await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
                         await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);

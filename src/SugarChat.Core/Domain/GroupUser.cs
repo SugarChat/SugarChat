@@ -13,5 +13,7 @@ namespace SugarChat.Core.Domain
         public UserRole Role { get; set; }
         public MessageRemindType MessageRemindType { get; set; }
         public int UnreadCount { get; set; }
+        public int GroupType { get; set; }
+        public DateTimeOffset LastSentTime { get; set; }
     }
 }

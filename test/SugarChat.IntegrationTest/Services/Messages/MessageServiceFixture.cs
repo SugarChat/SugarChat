@@ -72,7 +72,7 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 }
                 {
                     var request = new GetUnreadMessageCountRequest()
-                    {
+                    { 
                         UserId = userId,
                         GroupType = 10,
                         ExcludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto

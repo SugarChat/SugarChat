@@ -40,4 +40,10 @@
     <ProjectReference Include="..\..\src\SugarChat.Database.MongoDb.Autofac\SugarChat.Data.MongoDb.Autofac.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="SugarChat.Message">
+      <HintPath>..\..\src\SugarChat.Message.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

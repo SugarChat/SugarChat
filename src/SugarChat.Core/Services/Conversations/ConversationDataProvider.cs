@@ -1,5 +1,4 @@
-﻿using System;
-using SugarChat.Core.IRepositories;
+﻿using SugarChat.Core.IRepositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -7,8 +6,11 @@ using System.Threading.Tasks;
 using SugarChat.Message.Dtos.Conversations;
 using SugarChat.Message.Paging;
 using SugarChat.Core.Domain;
-using System.Text;
 using SugarChat.Core.Services.Groups;
+using SugarChat.Message.Dtos;
+using SugarChat.Core.Utils;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -16,11 +18,15 @@ namespace SugarChat.Core.Services.Conversations
     {
         private readonly IRepository _repository;
         private readonly IGroupDataProvider _groupDataProvider;
+        private readonly ITableUtil _tableUtil;
+        private readonly IMapper _mapper;
 
-        public ConversationDataProvider(IRepository repository, IGroupDataProvider groupDataProvider)
+        public ConversationDataProvider(IRepository repository, IGroupDataProvider groupDataProvider, ITableUtil tableUtil, IMapper mapper)
         {
             _repository = repository;
             _groupDataProvider = groupDataProvider;
+            _tableUtil = tableUtil;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<Domain.Message>> GetPagedMessagesByConversationIdAsync(
@@ -43,6 +49,87 @@ namespace SugarChat.Core.Services.Conversations
                 return query.Skip((pageIndex - 1) * count).Take(count);
             }
             return query.Take(count).AsEnumerable();
+        }
+
+        public async Task<PagedResult<ConversationDto>> GetConversationListAsync(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams,
+            int pageNum,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
+            var total = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).SumAsync(x => x.UnreadCount);
+
+            var groupUsers = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
+
+            var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+
+            return new PagedResult<ConversationDto>
+            {
+                Result = conversationDtos,
+                Total = total
+            };
+        }
+
+        private async Task<List<ConversationDto>> GetConversationListByGroupUsersAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken)
+        {
+            var groupIds = groupUsers.Select(x => x.GroupId).ToList();
+            var messageIds = (from a in _repository.Query<Domain.Message>()
+                              where groupIds.Contains(a.GroupId)
+                              orderby a.SentTime descending
+                              group a by a.GroupId into b
+                              select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
+            var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+
+            var groups = await _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToListAsync(cancellationToken);
+            var groupDtos = _mapper.Map<List<GroupDto>>(groups);
+            var conversationDtos = new List<ConversationDto>();
+            foreach (var groupUser in groupUsers)
+            {
+                var message = messages.SingleOrDefault(x => x.GroupId == groupUser.GroupId);
+                var group = groups.Single(x => x.Id == groupUser.GroupId);
+                ConversationDto conversationDto = new ConversationDto
+                {
+                    ConversationID = groupUser.GroupId,
+                    UnreadCount = groupUser.UnreadCount,
+                    LastMessageSentTime = groupUser.LastSentTime,
+                    LastMessage = _mapper.Map<MessageDto>(message),
+                    GroupProfile = _mapper.Map<GroupDto>(group),
+
+                };
+            }
+            return conversationDtos;
+        }
+
+        public async Task<PagedResult<ConversationDto>> GetUnreadConversationListAsync(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams,
+            int pageNum,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+        {
+            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
+            where = @"""UnreadCount"">0 and " + where;
+            var total = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).SumAsync(x => x.UnreadCount);
+
+            var groupUsers = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
+
+            var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+
+            return new PagedResult<ConversationDto>
+            {
+                Result = conversationDtos,
+                Total = total
+            };
         }
     }
 }

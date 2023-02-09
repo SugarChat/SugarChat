@@ -144,63 +144,6 @@ namespace SugarChat.Core.Services.Groups
             return _repository.Query<Group>().Where(predicate).Select(x => x.Id).ToList();
         }
 
-        public async Task<(IEnumerable<string>, int)> GetGroupIdsAsync(string userId,
-            IEnumerable<string> filterGroupIds,
-            int groupType,
-            PageSettings pageSettings,
-            Dictionary<string, string> searchParms, bool isExactSearch,
-            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
-            bool onlyUnread,
-            CancellationToken cancellationToken = default)
-        {
-            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
-            var searchSb = _tableUtil.GetWhereByMessage(searchParms, isExactSearch, "MessageKey", "MessageValue");
-            var sb = includeSb + searchSb;
-
-            var query = _tableUtil.GetQuery(userId,
-                    filterGroupIds,
-                    groupType,
-                    includeSb.Length > 0,
-                    searchSb.Length > 0);
-
-            if (onlyUnread)
-            {
-                query = query.Where(x => x.UnreadCount > 0);
-            }
-
-            if (sb.Length > 0)
-                query = query.Where(sb.ToString().Substring(4));
-
-            var excludeSb = _tableUtil.GetWhereByGroupCustomPropery(excludeGroupByGroupCustomProperties);
-            if (excludeSb.Length > 0)
-            {
-                var groupCustomProperties = await _repository.ToListAsync(_repository.Query<GroupCustomProperty>().Where(excludeSb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
-                var excludeGroupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
-                query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
-            }
-            query = query.Take(500);
-
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var groupIds = query.GroupBy(x => x.GroupId)
-                    .OrderByDescending(x => x.Max(y => y.UnreadCount))
-                    .ThenByDescending(x => x.Max(y => y.LastSentTime))
-                    .Skip((pageSettings.PageNum - 1) * pageSettings.PageSize)
-                    .Take(pageSettings.PageSize)
-                    .Select(x => x.Key)
-                    .ToList();
-            stopwatch.Stop();
-            Log.Information("GroupDataProvider.GetGroupIdsAsync1 run {@Ms}", stopwatch.ElapsedMilliseconds);
-
-            stopwatch.Restart();
-            var total = query.GroupBy(x => x.GroupId).Count();
-            stopwatch.Stop();
-            Log.Information("GroupDataProvider.GetGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, total);
-
-            return (groupIds, total);
-        }
-
         public async Task<IEnumerable<Group>> GetListAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);

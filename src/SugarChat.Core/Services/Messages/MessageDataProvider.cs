@@ -410,39 +410,11 @@ namespace SugarChat.Core.Services.Messages
         public async Task<int> GetUnreadCountAsync(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
-            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            IEnumerable<SearchParamDto> searchParams,
             CancellationToken cancellationToken = default)
         {
-            var includeSb = _tableUtil.GetWhereByGroupCustomPropery(includeGroupByGroupCustomProperties, "GroupKey", "GroupValue");
-
-            var query = _tableUtil.GetQuery(userId,
-                filterGroupIds,
-                groupType,
-                includeSb.Length > 0,
-                false);
-            query = query.Where(x => x.UnreadCount > 0);
-
-            if (includeSb.Length > 0)
-                query = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, includeSb.ToString().Substring(4));
-
-            var excludeSb = _tableUtil.GetWhereByGroupCustomPropery(excludeGroupByGroupCustomProperties);
-            if (excludeSb.Length > 0)
-            {
-                var groupCustomProperties = await _repository.ToListAsync(
-                        System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupCustomProperty>(), excludeSb.ToString().Substring(4)),
-                        cancellationToken).ConfigureAwait(false);
-                var excludeGroupIds = groupCustomProperties.Select(x => x.GroupId).ToList();
-                query = query.Where(x => !excludeGroupIds.Contains(x.GroupId));
-            }
-
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            var unreadCount = query.GroupBy(x => x.GroupId).Sum(x => x.First().UnreadCount);
-            stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAsync run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, unreadCount);
-
-            return unreadCount;
+            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType,searchParams);
+            return await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).SumAsync(x => x.UnreadCount);
         }
     }
 

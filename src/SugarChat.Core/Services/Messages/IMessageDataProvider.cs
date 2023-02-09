@@ -55,8 +55,7 @@ namespace SugarChat.Core.Services.Messages
         Task<int> GetUnreadCountAsync(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
-            SearchGroupByGroupCustomPropertiesDto includeGroupByGroupCustomProperties,
-            SearchGroupByGroupCustomPropertiesDto excludeGroupByGroupCustomProperties,
+            IEnumerable<SearchParamDto> searchParams,
             CancellationToken cancellationToken = default);
     }
 }

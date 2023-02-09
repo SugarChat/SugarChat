@@ -11,8 +11,12 @@ namespace SugarChat.Core.Utils
     public interface ITableUtil
     {
         IQueryable<TableJoinDto> GetQuery(string userId, IEnumerable<string> filterGroupIds, int groupType, bool IsJoinGroupCustomProperty, bool IsJoinMessage);
-        string GetWhereByGroupCustomPropery(SearchGroupByGroupCustomPropertiesDto groupByGroupCustomProperties, string keyName = "Key", string valueName = "Value");
+        //string GetWhereByGroupCustomPropery(SearchGroupByGroupCustomPropertiesDto groupByGroupCustomProperties, string keyName = "Key", string valueName = "Value");
         string GetWhereByMessage(Dictionary<string, string> searchParms, bool isExactSearch, string keyName = "Key", string valueName = "Value");
+        string GetWhere(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams);
     }
 
     public class TableUtil : ITableUtil
@@ -168,39 +172,105 @@ namespace SugarChat.Core.Utils
             return query;
         }
 
-        public string GetWhereByGroupCustomPropery(SearchGroupByGroupCustomPropertiesDto groupByGroupCustomProperties, string keyName = "Key", string valueName = "Value")
+        //public string GetWhereByGroupCustomPropery(SearchGroupByGroupCustomPropertiesDto groupByGroupCustomProperties, string keyName = "Key", string valueName = "Value")
+        //{
+        //    var sb = new StringBuilder();
+        //    if (groupByGroupCustomProperties != null && groupByGroupCustomProperties.GroupCustomProperties != null)
+        //    {
+        //        foreach (var dic in groupByGroupCustomProperties.GroupCustomProperties)
+        //        {
+        //            foreach (var value in dic.Value)
+        //            {
+        //                var value1 = value.Replace("\\", "\\\\");
+        //                var key1 = dic.Key.Replace("\\", "\\\\");
+        //                if (value1.Contains(","))
+        //                {
+        //                    var values = value1.Split(',');
+        //                    foreach (var value2 in values)
+        //                    {
+        //                        if (groupByGroupCustomProperties.IsExactSearch)
+        //                            sb.Append($" || ({keyName}==\"{key1}\" && {valueName}==\"{value2}\")");
+        //                        else
+        //                            sb.Append($" || ({keyName}==\"{key1}\" && {valueName}.Contains(\"{value2}\"))");
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    if (groupByGroupCustomProperties.IsExactSearch)
+        //                        sb.Append($" || ({keyName}==\"{key1}\" && {valueName}==\"{value1}\")");
+        //                    else
+        //                        sb.Append($" || ({keyName}==\"{key1}\" && {valueName}.Contains(\"{value1}\"))");
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return sb.ToString();
+        //}
+
+        public string GetWhere(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams)
         {
-            var sb = new StringBuilder();
-            if (groupByGroupCustomProperties != null && groupByGroupCustomProperties.GroupCustomProperties != null)
+            if (searchParams == null || !searchParams.Any())
             {
-                foreach (var dic in groupByGroupCustomProperties.GroupCustomProperties)
+                return "";
+            }
+            var search = new StringBuilder();
+            foreach (var searchParam in searchParams)
+            {
+                List<string> searchs = new List<string>();
+                foreach (var param in searchParam.Params)
                 {
-                    foreach (var value in dic.Value)
+                    var values = param.Value;
+                    foreach (var value in values)
                     {
-                        var value1 = value.Replace("\\", "\\\\");
-                        var key1 = dic.Key.Replace("\\", "\\\\");
-                        if (value1.Contains(","))
-                        {
-                            var values = value1.Split(',');
-                            foreach (var value2 in values)
-                            {
-                                if (groupByGroupCustomProperties.IsExactSearch)
-                                    sb.Append($" || ({keyName}==\"{key1}\" && {valueName}==\"{value2}\")");
-                                else
-                                    sb.Append($" || ({keyName}==\"{key1}\" && {valueName}.Contains(\"{value2}\"))");
-                            }
-                        }
-                        else
-                        {
-                            if (groupByGroupCustomProperties.IsExactSearch)
-                                sb.Append($" || ({keyName}==\"{key1}\" && {valueName}==\"{value1}\")");
-                            else
-                                sb.Append($" || ({keyName}==\"{key1}\" && {valueName}.Contains(\"{value1}\"))");
-                        }
+                        searchs.Add($@"""{param.Key}""==""{value}""");
                     }
                 }
+
+                var internalSearch = "";
+                if (searchs.Count > 1)
+                {
+                    switch (searchParam.InternalJoin)
+                    {
+                        case Message.JoinType.None:
+                            break;
+                        case Message.JoinType.And:
+                            internalSearch = string.Join(" and ", searchs);
+                            break;
+                        case Message.JoinType.Or:
+                            internalSearch = string.Join(" or ", searchs);
+                            break;
+                    }
+                }
+                else
+                    internalSearch = searchs[0];
+
+                switch (searchParam.ExternalJoin)
+                {
+                    case Message.JoinType.None:
+                        break;
+                    case Message.JoinType.And:
+                        search.Append($" and ({internalSearch})");
+                        break;
+                    case Message.JoinType.Or:
+                        search.Append($" or ({internalSearch})");
+                        break;
+                }
             }
-            return sb.ToString();
+
+            var searchParams_where = search.ToString();
+            var groupIds_where = new List<string>();
+            foreach (var groupId in filterGroupIds)
+            {
+                groupIds_where.Add($@"""GroupId""==""{groupId}""");
+            }
+            var where = $@"""UserId""==""{userId}""" +
+                    $@"""GroupType""=={groupType}" +
+                    (groupIds_where.Count > 0 ? " and " + string.Join(" or ", groupIds_where) : "") +
+                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + searchParams_where);
+            return where;
         }
 
         public string GetWhereByMessage(Dictionary<string, string> searchParms, bool isExactSearch, string keyName = "Key", string valueName = "Value")

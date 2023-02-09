@@ -389,8 +389,7 @@ namespace SugarChat.Core.Services.Messages
             var unreadCout = await _messageDataProvider.GetUnreadCountAsync(request.UserId,
                     request.GroupIds,
                     request.GroupType,
-                    request.IncludeGroupByGroupCustomProperties,
-                    request.ExcludeGroupByGroupCustomProperties,
+                    request.SearchParams,
                     cancellationToken);
             stopwatch.Stop();
             Log.Information("GetUnreadMessageCountAsync.GetUnreadCountAsync run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, unreadCout);

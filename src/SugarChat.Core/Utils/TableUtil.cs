@@ -213,19 +213,40 @@ namespace SugarChat.Core.Utils
             IEnumerable<SearchParamDto> searchParams)
         {
             if (searchParams == null || !searchParams.Any())
-            {
-                return "";
-            }
+                searchParams = new List<SearchParamDto>();
+
             var search = new StringBuilder();
             foreach (var searchParam in searchParams)
             {
                 List<string> searchs = new List<string>();
-                foreach (var param in searchParam.Params)
+                foreach (var searchParamDetail in searchParam.SearchParamDetails)
                 {
-                    var values = param.Value;
-                    foreach (var value in values)
+                    if (searchParamDetail.ValueType == Message.Dtos.ValueType.String)
+                        searchParamDetail.Value = $@"""{searchParamDetail.Value}""";
+
+                    switch (searchParamDetail.ConditionCondition)
                     {
-                        searchs.Add($@"""{param.Key}""==""{value}""");
+                        case Condition.Equal:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}=={searchParamDetail.Value}");
+                            break;
+                        case Condition.Unequal:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}!={searchParamDetail.Value}");
+                            break;
+                        case Condition.GreaterThan:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}>{searchParamDetail.Value}");
+                            break;
+                        case Condition.LessThan:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}<{searchParamDetail.Value}");
+                            break;
+                        case Condition.GreaterThanOrEqual:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}>={searchParamDetail.Value}");
+                            break;
+                        case Condition.LessThanThanOrEqual:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}<={searchParamDetail.Value}");
+                            break;
+                        case Condition.Contain:
+                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}.Contains({searchParamDetail.Value})");
+                            break;
                     }
                 }
 
@@ -247,9 +268,13 @@ namespace SugarChat.Core.Utils
                 else
                     internalSearch = searchs[0];
 
+                if (search.Length > 0 && searchParam.ExternalJoin == Message.JoinType.None)
+                    searchParam.ExternalJoin = Message.JoinType.And;
+
                 switch (searchParam.ExternalJoin)
                 {
                     case Message.JoinType.None:
+                        search.Append($"({internalSearch})");
                         break;
                     case Message.JoinType.And:
                         search.Append($" and ({internalSearch})");
@@ -264,10 +289,9 @@ namespace SugarChat.Core.Utils
             var groupIds_where = new List<string>();
             foreach (var groupId in filterGroupIds)
             {
-                groupIds_where.Add($@"""GroupId""==""{groupId}""");
+                groupIds_where.Add($@"GroupId==""{groupId}""");
             }
-            var where = $@"""UserId""==""{userId}""" +
-                    $@"""GroupType""=={groupType}" +
+            var where = $@"UserId==""{userId}"" and GroupType=={groupType}" +
                     (groupIds_where.Count > 0 ? " and " + string.Join(" or ", groupIds_where) : "") +
                     (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + searchParams_where);
             return where;

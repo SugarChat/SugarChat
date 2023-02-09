@@ -60,12 +60,12 @@ namespace SugarChat.Core.Services.Conversations
             CancellationToken cancellationToken = default)
         {
             var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
-            var total = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).SumAsync(x => x.UnreadCount);
+            var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
 
-            var groupUsers = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+            var groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
                     .Skip((pageNum - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(cancellationToken);
+                    .ToList();
 
             var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
 
@@ -86,7 +86,7 @@ namespace SugarChat.Core.Services.Conversations
                               select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
             var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
 
-            var groups = await _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToListAsync(cancellationToken);
+            var groups = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToList();
             var groupDtos = _mapper.Map<List<GroupDto>>(groups);
             var conversationDtos = new List<ConversationDto>();
             foreach (var groupUser in groupUsers)
@@ -102,6 +102,7 @@ namespace SugarChat.Core.Services.Conversations
                     GroupProfile = _mapper.Map<GroupDto>(group),
 
                 };
+                conversationDtos.Add(conversationDto);
             }
             return conversationDtos;
         }
@@ -115,13 +116,13 @@ namespace SugarChat.Core.Services.Conversations
             CancellationToken cancellationToken = default)
         {
             var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
-            where = @"""UnreadCount"">0 and " + where;
-            var total = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).SumAsync(x => x.UnreadCount);
+            where = @"UnreadCount>0 and " + where;
+            var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
 
-            var groupUsers = await System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+            var groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
                     .Skip((pageNum - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync(cancellationToken);
+                    .ToList();
 
             var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
 

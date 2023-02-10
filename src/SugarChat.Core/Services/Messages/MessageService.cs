@@ -334,7 +334,6 @@ namespace SugarChat.Core.Services.Messages
                     });
                 }
             }
-            message.CustomProperties = null;
 
             int time = 1;
             do

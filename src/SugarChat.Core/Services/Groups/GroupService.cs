@@ -63,7 +63,6 @@ namespace SugarChat.Core.Services.Groups
             {
                 try
                 {
-                    group.CustomProperties = null;
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                     if (command.CustomProperties != null)
                     {

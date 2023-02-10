@@ -580,17 +580,17 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             var groups = await _groupDataProvider.GetListAsync();
             var total = groups.Count();
-            var pageSize = 5000;
+            var pageSize = 500;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {
-                var groupUsers = new List<GroupUser>();
-                var groups1 = groups.OrderBy(x => x.CreatedDate).Skip((i - 1) * pageSize).Take(pageSize).ToList();
+                var updateGroupUsers = new List<GroupUser>();
+                var groups1 = groups.OrderBy(x => x.Id).Skip((i - 1) * pageSize).Take(pageSize).ToList();
                 for (int j = 1; j <= 10; j++)
                 {
-                    var groups2 = groups1.OrderBy(x => x.CreatedDate).Skip((j - 1) * 500).Take(500).ToList();
+                    var groups2 = groups1.OrderBy(x => x.Id).Skip((j - 1) * 50).Take(50).ToList();
                     var groupIds = groups2.Select(x => x.Id).ToList();
-                    groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
+                    var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
                     var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellation).ConfigureAwait(false);
 
                     foreach (var groupId in groupIds)
@@ -608,12 +608,15 @@ namespace SugarChat.Core.Services.GroupUsers
                             groupUser.GroupType = group.Type;
                             groupUser.LastSentTime = group.LastSentTime;
                             groupUser.CustomProperties = customProperties;
+                            updateGroupUsers.Add(groupUser);
                         }
+                        group.CustomProperties = customProperties;
                     }
                 }
                 try
                 {
-                    await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellation).ConfigureAwait(false);
+                    await _groupUserDataProvider.UpdateRangeAsync(updateGroupUsers, cancellation).ConfigureAwait(false);
+                    await _groupDataProvider.UpdateRangeAsync(groups1, cancellation).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

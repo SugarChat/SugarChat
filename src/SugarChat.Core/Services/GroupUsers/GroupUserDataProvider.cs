@@ -200,7 +200,7 @@ namespace SugarChat.Core.Services.GroupUsers
             return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
         }
 
-        public async Task<IEnumerable<GroupUser>> GetListAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public async Task<List<GroupUser>> GetListAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }

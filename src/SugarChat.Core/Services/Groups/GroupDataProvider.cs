@@ -20,12 +20,10 @@ namespace SugarChat.Core.Services.Groups
     public class GroupDataProvider : IGroupDataProvider
     {
         private readonly IRepository _repository;
-        private readonly ITableUtil _tableUtil;
 
-        public GroupDataProvider(IRepository repository, ITableUtil tableUtil)
+        public GroupDataProvider(IRepository repository)
         {
             _repository = repository;
-            _tableUtil = tableUtil;
         }
 
         public async Task<Group> GetByIdAsync(string id, CancellationToken cancellationToken = default)

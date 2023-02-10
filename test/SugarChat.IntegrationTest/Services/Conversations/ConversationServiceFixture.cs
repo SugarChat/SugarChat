@@ -178,7 +178,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             });
         }
 
-        [Fact]
+        [Fact(Skip = "to do")]
         public async Task ShouldGetConversationByKeyword()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>

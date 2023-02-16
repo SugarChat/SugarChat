@@ -221,32 +221,37 @@ namespace SugarChat.Core.Utils
                 List<string> searchs = new List<string>();
                 foreach (var searchParamDetail in searchParam.SearchParamDetails)
                 {
-                    if (searchParamDetail.ValueType == Message.Dtos.ValueType.String)
-                        searchParamDetail.Value = $@"""{searchParamDetail.Value}""";
-
-                    switch (searchParamDetail.ConditionCondition)
+                    var values = searchParamDetail.Value.Split(",");
+                    foreach (var value in values)
                     {
-                        case Condition.Equal:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}=={searchParamDetail.Value}");
-                            break;
-                        case Condition.Unequal:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}!={searchParamDetail.Value}");
-                            break;
-                        case Condition.GreaterThan:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}>{searchParamDetail.Value}");
-                            break;
-                        case Condition.LessThan:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}<{searchParamDetail.Value}");
-                            break;
-                        case Condition.GreaterThanOrEqual:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}>={searchParamDetail.Value}");
-                            break;
-                        case Condition.LessThanThanOrEqual:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}<={searchParamDetail.Value}");
-                            break;
-                        case Condition.Contain:
-                            searchs.Add($@"CustomProperties.{searchParamDetail.Key}.Contains({searchParamDetail.Value})");
-                            break;
+                        var _value = value.Trim();
+                        if (searchParamDetail.ValueType == Message.Dtos.ValueType.String)
+                            _value = $@"""{_value}""";
+
+                        switch (searchParamDetail.ConditionCondition)
+                        {
+                            case Condition.Equal:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}=={_value}");
+                                break;
+                            case Condition.Unequal:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}!={_value}");
+                                break;
+                            case Condition.GreaterThan:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}>{_value}");
+                                break;
+                            case Condition.LessThan:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}<{_value}");
+                                break;
+                            case Condition.GreaterThanOrEqual:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}>={_value}");
+                                break;
+                            case Condition.LessThanThanOrEqual:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}<={_value}");
+                                break;
+                            case Condition.Contain:
+                                searchs.Add($@"CustomProperties.{searchParamDetail.Key}.Contains({_value})");
+                                break;
+                        }
                     }
                 }
 

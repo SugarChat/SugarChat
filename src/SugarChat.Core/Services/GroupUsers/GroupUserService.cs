@@ -571,7 +571,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Migrate Group CustomProperty To GroupUser Error");
+                    Log.Error(ex, "Migrate Group CustomProperty To GroupUser2 Error");
                 }
             }
         }
@@ -623,6 +623,8 @@ namespace SugarChat.Core.Services.GroupUsers
                     Log.Error(ex, "Migrate Group CustomProperty To GroupUser Error");
                 }
             }
+
+            Log.Warning("Migrate Group CustomProperty To GroupUser End");
         }
 
         public async Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default)

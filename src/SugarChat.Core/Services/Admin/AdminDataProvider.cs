@@ -3,7 +3,6 @@ using SugarChat.Core.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -98,59 +97,5 @@ namespace SugarChat.Core.Services.Admin
                 await _repository.RemoveRangeAsync(needDeleteGroupUsers);
             }
         }
-
-        public void LinqTest()
-        {
-            //var query1 = from a in _repository.Query<GroupUser2>()
-            //             join b in _repository.Query<Group>() on a.GroupId equals b.Id
-            //             where a.UserId == "90e88aaf-d2d5-409b-969d-8b6f83a7f212"
-            //             && (a.CreatedBy == "MerchId2" || a.CreatedBy == "MerchId2")
-            //             && a.LastModifyBy != "UserId1"
-            //             && b.Type == 0
-            //             orderby a.UnreadCount, b.LastSentTime
-            //             select new TableJoinDto
-            //             {
-            //                 GroupId = a.GroupId,
-            //                 UnreadCount = a.UnreadCount,
-            //                 LastSentTime = b.LastSentTime
-            //             };
-            //var list1 = query1.Skip(100).Take(100).ToList();
-
-            //var query2 = from a in _repository.Query<GroupUser2>()
-            //             join b in _repository.Query<Group>() on a.GroupId equals b.Id
-            //             where a.UserId == "90e88aaf-d2d5-409b-969d-8b6f83a7f212"
-            //             && (a.CreatedBy == "MerchId2" || a.CreatedBy == "MerchId2")
-            //             && a.LastModifyBy != "UserId1"
-            //             && b.Type == 0
-            //             select a.UnreadCount;
-            //var count1 = query2.Sum();
-
-            //var query3 = from a in _repository.Query<GroupUser2>()
-            //             where a.UserId == "90e88aaf-d2d5-409b-969d-8b6f83a7f212"
-            //             && (a.CreatedBy == "MerchId2" || a.CreatedBy == "MerchId2")
-            //             && a.LastModifyBy != "UserId1"
-            //             select new TableJoinDto
-            //             {
-            //                 GroupId = a.GroupId,
-            //                 UnreadCount = a.UnreadCount
-            //             };
-            //var list3 = query3.Skip(100).Take(100).ToList();
-
-            var where = $@"GroupType=0 and UserId=""90e88aaf-d2d5-409b-969d-8b6f83a7f212"" and (CustomProperties.MerchId==""55b93d46-1ca2-47b8-bb74-59d6f39ac4b7"" or CustomProperties.MerchId==""d771c8e9-ccd5-474a-8a90-725d781910dd"") 
-and CustomProperties.UserId!=""90e88aaf-d2d5-409b-969d-8b6f83a7f212""
-";
-            //var count2 = _repository.Query<GroupUser2>()
-            //        .Where(where)
-            //        .Sum(x => x.UnreadCount);
-
-            var list4 = _repository.Query<GroupUser2>().Where(where).Skip(100).Take(100).ToList();
-        }
-    }
-
-    public class TableJoinDto
-    {
-        public string GroupId { get; set; }
-        public int UnreadCount { get; set; }
-        public DateTimeOffset LastSentTime { get; set; }
     }
 }

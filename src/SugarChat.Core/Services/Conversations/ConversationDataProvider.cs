@@ -63,8 +63,8 @@ namespace SugarChat.Core.Services.Conversations
             var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
 
             var groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
-                .OrderByDescending(x=>x.UnreadCount)
-                .ThenByDescending(x=>x.LastSentTime)
+                .OrderByDescending(x => x.UnreadCount)
+                .ThenByDescending(x => x.LastSentTime)
                 .Skip((pageNum - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -102,7 +102,6 @@ namespace SugarChat.Core.Services.Conversations
                     LastMessageSentTime = groupUser.LastSentTime,
                     LastMessage = _mapper.Map<MessageDto>(message),
                     GroupProfile = _mapper.Map<GroupDto>(group),
-
                 };
                 conversationDtos.Add(conversationDto);
             }

@@ -530,6 +530,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task MigrateGroupCustomPropertyAsyncToGroupUser2(CancellationToken cancellation = default)
         {
+            Log.Warning("Migrate Group CustomProperty To GroupUser2 Start");
             var groups = await _groupDataProvider.GetListAsync();
             var total = groups.Count();
             var pageSize = 5000;
@@ -578,6 +579,7 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default)
         {
+            Log.Warning("Migrate Group CustomProperty To GroupUser Start");
             var groups = await _groupDataProvider.GetListAsync();
             var total = groups.Count();
             var pageSize = 500;

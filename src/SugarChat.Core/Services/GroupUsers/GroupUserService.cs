@@ -546,55 +546,6 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task MigrateGroupCustomPropertyAsyncToGroupUser2(CancellationToken cancellation = default)
-        {
-            Log.Warning("Migrate Group CustomProperty To GroupUser2 Start");
-            var groups = await _groupDataProvider.GetListAsync();
-            var total = groups.Count();
-            var pageSize = 5000;
-            var pageIndex = total / pageSize + 1;
-            for (int i = 1; i <= pageIndex; i++)
-            {
-                var groups1 = groups.OrderBy(x => x.CreatedDate).Skip((i - 1) * pageSize).Take(pageSize).ToList();
-                var groupUser2s = new List<GroupUser2>();
-                for (int j = 1; j <= 10; j++)
-                {
-                    var groups2 = groups1.OrderBy(x => x.CreatedDate).Skip((j - 1) * 500).Take(500).ToList();
-                    var groupIds = groups2.Select(x => x.Id).ToList();
-                    var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
-                    var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellation).ConfigureAwait(false);
-
-                    foreach (var groupId in groupIds)
-                    {
-                        var group = groups2.Single(x => x.Id == groupId);
-                        var _groupUsers = groupUsers.Where(x => x.GroupId == groupId).ToList();
-                        var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupId).ToList();
-                        Dictionary<string, string> customProperties = new Dictionary<string, string>();
-                        foreach (var groupCustomProperty in _groupCustomProperties)
-                        {
-                            customProperties.Add(groupCustomProperty.Key, groupCustomProperty.Value);
-                        }
-                        foreach (var groupUser in _groupUsers)
-                        {
-                            var groupUser2 = _mapper.Map<GroupUser2>(groupUser);
-                            groupUser2.GroupType = group.Type;
-                            groupUser2.LastSentTime = group.LastSentTime;
-                            groupUser2.CustomProperties = customProperties;
-                            groupUser2s.Add(groupUser2);
-                        }
-                    }
-                }
-                try
-                {
-                    await _groupUserDataProvider.AddRangeAsync(groupUser2s, cancellation).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Migrate Group CustomProperty To GroupUser2 Error");
-                }
-            }
-        }
-
         public async Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default)
         {
             Log.Warning("Migrate Group CustomProperty To GroupUser Start");

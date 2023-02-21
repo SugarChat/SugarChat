@@ -53,8 +53,6 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default);
 
-        Task MigrateGroupCustomPropertyAsyncToGroupUser2(CancellationToken cancellation = default);
-
         Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default);
     }
 }

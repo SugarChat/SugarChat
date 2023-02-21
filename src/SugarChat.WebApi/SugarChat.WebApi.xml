@@ -10,12 +10,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SugarChat.WebApi.Controllers.AdminController.MigrateGroupCustomPropertyAsyncToGroupUser2">
-            <summary>
-            测试用，不提供HttpClient
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:SugarChat.WebApi.Controllers.AdminController.MigrateGroupCustomPropertyAsyncToGroupUser">
             <summary>
             修复数据，临时使用，不提供HttpClient

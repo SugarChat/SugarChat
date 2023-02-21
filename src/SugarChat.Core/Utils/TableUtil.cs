@@ -115,7 +115,7 @@ namespace SugarChat.Core.Utils
                 groupIds_where.Add($@"GroupId==""{groupId}""");
             }
             var where = $@"UserId==""{userId}"" and GroupType=={groupType}" +
-                    (groupIds_where.Count > 0 ? " and " + string.Join(" or ", groupIds_where) : "") +
+                    (groupIds_where.Count > 0 ? " and (" + string.Join(" or ", groupIds_where) + ")" : "") +
                     (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + searchParams_where);
             return where;
         }

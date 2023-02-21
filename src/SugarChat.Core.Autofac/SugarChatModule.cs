@@ -39,7 +39,7 @@ namespace SugarChat.Core.Autofac
             RegisterServices(builder);
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
-            builder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
+            RegisterTableUtil(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -96,6 +96,11 @@ namespace SugarChat.Core.Autofac
             {
                 builder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
             }
+        }
+
+        private void RegisterTableUtil(ContainerBuilder builder)
+        {
+            builder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
         }
     }
 }

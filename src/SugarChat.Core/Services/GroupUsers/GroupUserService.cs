@@ -546,20 +546,21 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task MigrateGroupCustomPropertyAsyncToGroupUser(CancellationToken cancellation = default)
+        public async Task MigrateGroupCustomPropertyAsyncToGroupUser(int pageSize, CancellationToken cancellation = default)
         {
             Log.Warning("Migrate Group CustomProperty To GroupUser Start");
             var groups = await _groupDataProvider.GetListAsync();
             var total = groups.Count();
-            var pageSize = 500;
             var pageIndex = total / pageSize + 1;
             for (int i = 1; i <= pageIndex; i++)
             {
+                Log.Warning("Migrate Group CustomProperty To GroupUser " + i);
                 var updateGroupUsers = new List<GroupUser>();
                 var groups1 = groups.OrderBy(x => x.Id).Skip((i - 1) * pageSize).Take(pageSize).ToList();
                 for (int j = 1; j <= 10; j++)
                 {
-                    var groups2 = groups1.OrderBy(x => x.Id).Skip((j - 1) * 50).Take(50).ToList();
+                    int pageSize2 = pageSize / 10;
+                    var groups2 = groups1.OrderBy(x => x.Id).Skip((j - 1) * pageSize2).Take(pageSize2).ToList();
                     var groupIds = groups2.Select(x => x.Id).ToList();
                     var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
                     var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellation).ConfigureAwait(false);

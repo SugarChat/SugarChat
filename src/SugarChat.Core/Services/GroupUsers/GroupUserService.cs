@@ -68,6 +68,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
             groupUser = _mapper.Map<GroupUser>(command);
             groupUser.GroupType = group.Type;
+            groupUser.LastSentTime = group.LastSentTime;
+            groupUser.CustomProperties = group.CustomProperties;
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<UserAddedToGroupEvent>(command);
@@ -205,6 +207,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
             groupUser = _mapper.Map<GroupUser>(command);
             groupUser.GroupType = group.Type;
+            groupUser.LastSentTime = group.LastSentTime;
+            groupUser.CustomProperties = group.CustomProperties;
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
@@ -290,6 +294,14 @@ namespace SugarChat.Core.Services.GroupUsers
                     {
                         foreach (var groupUserId in needAddGroupUserIds)
                         {
+                            var groupUser_CustomProperties = new Dictionary<string, string>();
+                            if (group.CustomProperties != null)
+                            {
+                                foreach (var customProperty in group.CustomProperties)
+                                {
+                                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                                }
+                            }
                             var groupUser = new GroupUser
                             {
                                 Id = Guid.NewGuid().ToString(),
@@ -297,9 +309,10 @@ namespace SugarChat.Core.Services.GroupUsers
                                 GroupId = command.GroupId,
                                 Role = command.Role,
                                 CreatedBy = command.CreatedBy,
-                                GroupType = group.Type
+                                GroupType = group.Type,
+                                LastSentTime = group.LastSentTime,
+                                CustomProperties = groupUser_CustomProperties,
                             };
-                            needAddGroupUsers.Add(groupUser);
                             if (command.CustomProperties != null)
                             {
                                 foreach (var customProperty in command.CustomProperties)
@@ -311,8 +324,10 @@ namespace SugarChat.Core.Services.GroupUsers
                                         Value = customProperty.Value,
                                         CreatedBy = command.CreatedBy
                                     });
+                                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                                 }
                             }
+                            needAddGroupUsers.Add(groupUser);
                         }
                         await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellationToken);
                         await _groupUserCustomPropertyDataProvider.AddRangeAsync(groupUserCustomProperties, cancellationToken).ConfigureAwait(false);
@@ -455,6 +470,7 @@ namespace SugarChat.Core.Services.GroupUsers
             foreach (var groupUserDto in command.GroupUsers)
             {
                 var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
+                var groupUser_CustomProperties = new Dictionary<string, string>();
                 if (groupUser != null)
                 {
                     _mapper.Map(groupUserDto, groupUser);
@@ -470,8 +486,10 @@ namespace SugarChat.Core.Services.GroupUsers
                                 Value = customProperty.Value,
                                 CreatedBy = command.UserId
                             });
+                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                         }
                     }
+                    groupUser.CustomProperties = groupUser_CustomProperties;
                 }
             }
 

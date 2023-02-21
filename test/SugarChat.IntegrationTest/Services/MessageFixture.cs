@@ -367,7 +367,8 @@ namespace SugarChat.IntegrationTest.Services
                 await mediator.SendAsync(new AddGroupCommand
                 {
                     Id = groupId,
-                    UserId = adminId
+                    UserId = adminId,
+                    CustomProperties = new Dictionary<string, string> { { "A", "1" }, { "B", "2" } }
                 });
                 await mediator.SendAsync(new SetGroupMemberCustomFieldCommand
                 {

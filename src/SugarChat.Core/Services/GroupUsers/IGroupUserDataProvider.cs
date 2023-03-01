@@ -13,7 +13,7 @@ namespace SugarChat.Core.Services.GroupUsers
     {
         Task AddAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
         Task RemoveAsync(GroupUser groupUser, CancellationToken cancellationToken = default);
-        Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default);
+        Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> filterGroupIds, int groupType, CancellationToken cancellationToken = default);
         Task<IEnumerable<GroupUser>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
 
         Task<GroupUser> GetByUserAndGroupIdAsync(string userId, string groupId,
@@ -40,5 +40,6 @@ namespace SugarChat.Core.Services.GroupUsers
         Task<IEnumerable<GroupUser>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<int> GetCountAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
         Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
+        Task<List<GroupUser>> GetListAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

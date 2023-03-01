@@ -9,6 +9,8 @@ using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
 using System.Linq.Expressions;
 using SugarChat.Message.Paging;
+using System.Diagnostics;
+using Serilog;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -30,22 +32,49 @@ namespace SugarChat.Core.Services.GroupUsers
             }
         }
 
-        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> groupIds, int groupType, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<GroupUser>> GetByUserIdAsync(string userId, IEnumerable<string> filterGroupIds, int groupType, CancellationToken cancellationToken = default)
         {
-            groupIds = groupIds ?? new List<string>();
-            var groupUsers = (from a in _repository.Query<GroupUser>()
+            var groupUsers = new List<GroupUser>();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            if (filterGroupIds != null && filterGroupIds.Any())
+            {
+                groupUsers = (from a in _repository.Query<GroupUser>()
                               join b in _repository.Query<Group>() on a.GroupId equals b.Id
-                              where a.UserId == userId && b.Type == groupType && (!groupIds.Any() || groupIds.Contains(b.Id))
-                              select new
+                              where a.UserId == userId && b.Type == groupType && filterGroupIds.Contains(b.Id)
+                              select new GroupUser
                               {
-                                  a.Id,
-                                  a.UserId,
-                                  a.GroupId,
-                                  a.Role,
-                                  a.MessageRemindType,
-                                  a.UnreadCount
+                                  Id = a.Id,
+                                  UserId = a.UserId,
+                                  GroupId = a.GroupId,
+                                  Role = a.Role,
+                                  MessageRemindType = a.MessageRemindType,
+                                  UnreadCount = a.UnreadCount
                               }).ToList();
+                stopwatch.Stop();
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync1 run {@Ms}, {@GroupIdTotal}, {@GroupUserTotal}", stopwatch.ElapsedMilliseconds, filterGroupIds.Count(), groupUsers.Count());
+            }
+            else
+            {
+                groupUsers = (from a in _repository.Query<GroupUser>()
+                              join b in _repository.Query<Group>() on a.GroupId equals b.Id
+                              where a.UserId == userId && b.Type == groupType
+                              select new GroupUser
+                              {
+                                  Id = a.Id,
+                                  UserId = a.UserId,
+                                  GroupId = a.GroupId,
+                                  Role = a.Role,
+                                  MessageRemindType = a.MessageRemindType,
+                                  UnreadCount = a.UnreadCount
+                              }).ToList();
+                stopwatch.Stop();
+                Log.Information("GroupUserDataProvider.GetByUserIdAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, groupUsers.Count());
+            }
+
             var result = new List<GroupUser>();
+
+            stopwatch.Restart();
             foreach (var groupUser in groupUsers)
             {
                 result.Add(new GroupUser
@@ -57,6 +86,9 @@ namespace SugarChat.Core.Services.GroupUsers
                     MessageRemindType = groupUser.MessageRemindType
                 });
             }
+            stopwatch.Stop();
+            Log.Information("GroupUserDataProvider.GetByUserIdAsync3 run {@Ms}", stopwatch.ElapsedMilliseconds);
+
             return result;
         }
 
@@ -161,6 +193,11 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return (await _repository.ToPagedListAsync(pageSettings, predicate, cancellationToken).ConfigureAwait(false)).Result;
+        }
+
+        public async Task<List<GroupUser>> GetListAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -210,7 +210,7 @@ namespace SugarChat.IntegrationTest.Services
                         });
                     }
                 }
-                var messages = await messageDataProvider.GetLastMessageForGroupsAsync(groupIds.Select(x => x.ToString()));
+                var messages = await messageDataProvider.GetLastMessageByGroupIdsAsync(groupIds.Select(x => x.ToString()));
                 messages.Count().ShouldBe(5);
                 for (int i = 0; i < groupIds.Length; i++)
                 {
@@ -367,7 +367,8 @@ namespace SugarChat.IntegrationTest.Services
                 await mediator.SendAsync(new AddGroupCommand
                 {
                     Id = groupId,
-                    UserId = adminId
+                    UserId = adminId,
+                    CustomProperties = new Dictionary<string, string> { { "A", "1" }, { "B", "2" } }
                 });
                 await mediator.SendAsync(new SetGroupMemberCustomFieldCommand
                 {

@@ -63,7 +63,6 @@ namespace SugarChat.Core.Services.Groups
             {
                 try
                 {
-                    group.CustomProperties = null;
                     await _groupDataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
                     if (command.CustomProperties != null)
                     {
@@ -106,7 +105,10 @@ namespace SugarChat.Core.Services.Groups
                         UserId = command.UserId,
                         GroupId = command.Id,
                         Role = UserRole.Owner,
-                        CreatedBy = command.CreatedBy
+                        CreatedBy = command.CreatedBy,
+                        GroupType = group.Type,
+                        LastSentTime = group.LastSentTime,
+                        CustomProperties = group.CustomProperties
                     };
                     await _groupUserDataProvider.AddAsync(groupUser, cancellation).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellation).ConfigureAwait(false);

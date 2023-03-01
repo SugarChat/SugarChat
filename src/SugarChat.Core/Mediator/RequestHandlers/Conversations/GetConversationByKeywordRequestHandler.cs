@@ -25,7 +25,7 @@ namespace SugarChat.Core.Mediator.RequestHandlers.Conversations
 
         public async Task<SugarChatResponse<PagedResult<ConversationDto>>> Handle(IReceiveContext<GetConversationByKeywordRequest> context, CancellationToken cancellationToken)
         {
-            var response = await _conversationService.GetConversationByKeyword(context.Message, cancellationToken).ConfigureAwait(false);
+            var response = await _conversationService.GetConversationByKeywordAsync(context.Message, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse<PagedResult<ConversationDto>>() { Data = response };
         }
     }

@@ -123,7 +123,7 @@ namespace SugarChat.IntegrationTest.Services
                 {
                     GroupId = groupDic.ElementAt(i).Key,
                     Key = "A",
-                    Value = i.ToString()+"AB"
+                    Value = i.ToString() + "AB"
                 }, default(CancellationToken)).Wait();
                 repository.AddAsync(new GroupCustomProperty
                 {
@@ -184,6 +184,18 @@ namespace SugarChat.IntegrationTest.Services
                     repository.AddAsync(new GroupUserCustomProperty { GroupUserId = groupUser.Id, Key = customProperty.Key, Value = customProperty.Value }, default(CancellationToken)).Wait();
                 }
             }
+
+            var group = repository.Query<Group>().Where(x => x.Id == groupId).SingleOrDefault();
+            var groupCustomProperties = repository.Query<GroupCustomProperty>().Where(x => x.GroupId == groupId).ToList();
+            if (group != null)
+                groupUser.GroupType = group.Type;
+            if (customProperties == null)
+                customProperties = new Dictionary<string, string>();
+            foreach (var groupCustomProperty in groupCustomProperties)
+            {
+                customProperties.Add(groupCustomProperty.Key, groupCustomProperty.Value);
+            }
+            groupUser.CustomProperties = customProperties;
 
             return groupUser;
         }

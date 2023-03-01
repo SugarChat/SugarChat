@@ -34,26 +34,28 @@ namespace SugarChat.Core.Services.Messages
         Task<IEnumerable<Domain.Message>> GetByGroupIdAsync(string id, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default);
 
-        Task<(List<GroupUnreadCount>, int)> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+        Task<List<GroupUnreadCount>> GetUnreadCountByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetUserUnreadMessagesByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetMessagesByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId,
-            IEnumerable<string> groupIds,
-            PageSettings pageSettings,
-            int groupType,
-            CancellationToken cancellationToken = default);
+        Task<IEnumerable<UnreadCountAndLastMessageByGroupId>> GetUnreadCountAndLastMessageByGroupIdsAsync(string userId, IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<Domain.Message> GetLastMessageBygGroupIdAsync(string groupId, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<Domain.Message>> GetLastMessageForGroupsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Domain.Message>> GetLastMessageByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
 
         Task<int> GetCountAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Domain.Message>> GetListAsync(PageSettings pageSettings, Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
+
+        Task<int> GetUnreadCountAsync(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams,
+            CancellationToken cancellationToken = default);
     }
 }

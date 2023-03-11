@@ -416,6 +416,11 @@ namespace SugarChat.Core.Services.Messages
             var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
             return System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
         }
+
+        public async Task<IEnumerable<Domain.Message>> GetListAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.Query<Domain.Message>().Where(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public class GroupUnreadCount

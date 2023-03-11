@@ -31,5 +31,7 @@ namespace SugarChat.Core.Services.Groups
         IEnumerable<string> GetGroupIds(Expression<Func<Group, bool>> predicate = null);
 
         Task<IEnumerable<Group>> GetListAsync(Expression<Func<Group, bool>> predicate = null, CancellationToken cancellationToken = default);
+
+        Task AddGroup2sAsync(IEnumerable<Group2> group2s, CancellationToken cancellationToken = default);
     }
 }

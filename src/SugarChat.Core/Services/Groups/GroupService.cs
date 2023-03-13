@@ -332,10 +332,11 @@ namespace SugarChat.Core.Services.Groups
             for (int i = 1; i <= pageIndex; i++)
             {
                 Log.Warning("Migrate Data To Group2 " + i);
-                var group2s = new List<Group2>();
                 var groups1 = groups.OrderBy(x => x.Id).Skip((i - 1) * pageSize).Take(pageSize).ToList();
                 for (int j = 1; j <= 10; j++)
                 {
+                    Log.Warning($"Migrate Data To Group2 {i}.{j} Start");
+                    var group2s = new List<Group2>();
                     int pageSize2 = pageSize / 10;
                     var groups2 = groups1.OrderBy(x => x.Id).Skip((j - 1) * pageSize2).Take(pageSize2).ToList();
                     var groupIds = groups2.Select(x => x.Id).ToList();
@@ -349,17 +350,19 @@ namespace SugarChat.Core.Services.Groups
                         group2.Messages = messages;
                         group2s.Add(group2);
                     }
-                }
-                try
-                {
-                    await _groupDataProvider.AddGroup2sAsync(group2s, cancellation).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Migrate Data To Group2 Error");
-                    throw;
+                    try
+                    {
+                        await _groupDataProvider.AddGroup2sAsync(group2s, cancellation).ConfigureAwait(false);
+                        Log.Warning($"Migrate Data To Group2 {i}.{j} End");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Migrate Data To Group2 Error");
+                        throw;
+                    }
                 }
             }
+            Log.Warning("Migrate Data To Group2 End");
         }
     }
 }

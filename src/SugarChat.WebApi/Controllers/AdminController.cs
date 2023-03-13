@@ -2,7 +2,7 @@
 using SugarChat.Core.Services.Admin;
 using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.GroupUsers;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -47,10 +47,10 @@ namespace SugarChat.WebApi.Controllers
         /// 修复数据，临时使用，不提供HttpClient
         /// </summary>
         /// <returns></returns>
-        [Route("MigrateDataToGroups2"), HttpPost]
+        [Route("MigrateDataToGroup2"), HttpPost]
         public IActionResult MigrateDataToGroups2(int pageSize)
         {
-            _groupService.MigrateDataToGroups2(pageSize);
+            _groupService.MigrateDataToGroups2(pageSize, CancellationToken.None);
             return Ok();
         }
     }

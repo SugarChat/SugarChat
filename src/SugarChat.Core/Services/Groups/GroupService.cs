@@ -358,9 +358,9 @@ namespace SugarChat.Core.Services.Groups
                 }
                 Log.Warning("Migrate Data To Group2 End");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Log.Error("Migrate Data To Group2 Error");
+                Log.Error(ex, "Migrate Data To Group2 Error");
                 Log.Warning("Migrate Data To Group2 End");
                 return;
             }

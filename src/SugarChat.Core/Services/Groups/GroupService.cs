@@ -346,8 +346,8 @@ namespace SugarChat.Core.Services.Groups
                     {
                         var group = groups2.Single(x => x.Id == groupId);
                         var group2 = _mapper.Map<Group2>(group);
-                        group2.GroupUsers = groupUsers;
-                        group2.Messages = messages;
+                        group2.GroupUsers = groupUsers.Where(x => x.GroupId == groupId).ToList();
+                        group2.Messages = messages.Where(x => x.GroupId == groupId).ToList();
                         group2s.Add(group2);
                     }
                     try

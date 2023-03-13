@@ -419,7 +419,7 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task<IEnumerable<Domain.Message>> GetListAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            return await _repository.Query<Domain.Message>().Where(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
     }
 

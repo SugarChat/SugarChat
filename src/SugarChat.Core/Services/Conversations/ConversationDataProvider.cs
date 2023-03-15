@@ -55,11 +55,12 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<string> filterGroupIds,
             int groupType,
             IEnumerable<SearchParamDto> searchParams,
+            IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
+            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams, searchByKeywordParams);
             var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
 
             var groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
@@ -112,11 +113,12 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<string> filterGroupIds,
             int groupType,
             IEnumerable<SearchParamDto> searchParams,
+            IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams);
+            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams, searchByKeywordParams);
             where = @"UnreadCount>0 and " + where;
             var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
 

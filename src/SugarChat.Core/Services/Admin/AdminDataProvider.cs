@@ -3,6 +3,7 @@ using SugarChat.Core.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -96,6 +97,32 @@ namespace SugarChat.Core.Services.Admin
                 }
                 await _repository.RemoveRangeAsync(needDeleteGroupUsers);
             }
+        }
+
+        public async Task LinqTest()
+        {
+            var query = from a in _repository.Query<GroupUser>()
+                        join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                        select new
+                        {
+                            a.UserId,
+                            a.GroupType,
+                            a.CustomProperties,
+                            a.LastSentTime,
+                            a.UnreadCount,
+                            MessageCustomProperties = b.CustomProperties,
+                            b.Content
+                        };
+            var where = $"UserId==\"90e88aaf-d2d5-409b-969d-8b6f83a7f212\" and GroupType==0 and" +
+                $"(CustomProperties.MerchId==\"22849101-919f-466c-8265-a262e8f4e775\" or CustomProperties.MerchId==\"67389e7f-8f1f-400f-bbc2-02c81cf8d2b4\")" +
+                $" and CustomProperties.UserId!=\"90e88aaf-d2d5-409b-969d-8b6f83a7f212\""+
+                $" and (MessageCustomProperties.SerialNumber==\"319709\" or MessageCustomProperties.Seed==\"319709\")"+
+                $" and Content.Contains(\"Dear customer\")";
+            var list = query.Where(where)
+                .OrderByDescending(x=>x.UnreadCount)
+                .ThenByDescending(x=>x.LastSentTime)
+                .GroupBy(x=>x.GroupType)
+                .ToList();
         }
     }
 }

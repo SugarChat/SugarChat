@@ -53,5 +53,16 @@ namespace SugarChat.WebApi.Controllers
             _groupService.MigrateDataToGroups2(pageSize, CancellationToken.None);
             return Ok();
         }
+
+        /// <summary>
+        /// 修复数据，临时使用，不提供HttpClient
+        /// </summary>
+        /// <returns></returns>
+        [Route("LinqTest"), HttpPost]
+        public IActionResult LinqTest()
+        {
+            _adminDataProvider.LinqTest();
+            return Ok();
+        }
     }
 }

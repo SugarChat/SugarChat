@@ -65,6 +65,7 @@ namespace SugarChat.Core.Services.Conversations
                 request.GroupIds,
                 request.GroupType,
                 request.SearchParams,
+                null,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
                 cancellationToken).ConfigureAwait(false);
@@ -155,6 +156,7 @@ namespace SugarChat.Core.Services.Conversations
                 request.GroupIds,
                 request.GroupType,
                 request.SearchParams,
+                request.SearchMessageParams,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
                 cancellationToken).ConfigureAwait(false);
@@ -171,6 +173,7 @@ namespace SugarChat.Core.Services.Conversations
                 request.GroupIds,
                 request.GroupType,
                 request.SearchParams,
+                null,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
                 cancellationToken).ConfigureAwait(false);

@@ -20,6 +20,7 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<string> filterGroupIds,
             int groupType,
             IEnumerable<SearchParamDto> searchParams,
+            IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
             CancellationToken cancellationToken = default);
@@ -28,6 +29,7 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<string> filterGroupIds,
             int groupType,
             IEnumerable<SearchParamDto> searchParams,
+            IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
             CancellationToken cancellationToken = default);

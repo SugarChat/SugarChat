@@ -61,14 +61,45 @@ namespace SugarChat.Core.Services.Conversations
             CancellationToken cancellationToken = default)
         {
             var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams, searchByKeywordParams);
-            var total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
+            var total = 0;
 
-            var groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
-                .OrderByDescending(x => x.UnreadCount)
-                .ThenByDescending(x => x.LastSentTime)
-                .Skip((pageNum - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var groupUsers = new List<GroupUser>();
+            if (searchByKeywordParams != null && searchByKeywordParams.Any())
+            {
+                var query = from a in _repository.Query<GroupUser>()
+                            join b in _repository.Query<Domain.Message>() on a.GroupId equals b.GroupId
+                            select new
+                            {
+                                a.UserId,
+                                a.GroupId,
+                                a.GroupType,
+                                a.CustomProperties,
+                                a.LastSentTime,
+                                a.UnreadCount,
+                                MessageCustomProperties = b.CustomProperties,
+                                b.Content
+                            };
+                var groupIds = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, where)
+                    .GroupBy(x => x.GroupId)
+                    .OrderByDescending(x => x.Max(y => y.UnreadCount))
+                    .ThenByDescending(x => x.Max(y => y.LastSentTime))
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(x => x.Key)
+                    .ToList();
+                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId)).ToList();
+                total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(query, where).GroupBy(x => x.GroupId).Count();
+            }
+            else
+            {
+                groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+                   .OrderByDescending(x => x.UnreadCount)
+                   .ThenByDescending(x => x.LastSentTime)
+                   .Skip((pageNum - 1) * pageSize)
+                   .Take(pageSize)
+                   .ToList();
+                total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
+            }
 
             var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
 

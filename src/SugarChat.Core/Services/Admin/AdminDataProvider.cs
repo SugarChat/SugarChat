@@ -106,6 +106,7 @@ namespace SugarChat.Core.Services.Admin
                         select new
                         {
                             a.UserId,
+                            a.GroupId,
                             a.GroupType,
                             a.CustomProperties,
                             a.LastSentTime,
@@ -115,13 +116,13 @@ namespace SugarChat.Core.Services.Admin
                         };
             var where = $"UserId==\"90e88aaf-d2d5-409b-969d-8b6f83a7f212\" and GroupType==0 and" +
                 $"(CustomProperties.MerchId==\"22849101-919f-466c-8265-a262e8f4e775\" or CustomProperties.MerchId==\"67389e7f-8f1f-400f-bbc2-02c81cf8d2b4\")" +
-                $" and CustomProperties.UserId!=\"90e88aaf-d2d5-409b-969d-8b6f83a7f212\""+
-                $" and (MessageCustomProperties.SerialNumber==\"319709\" or MessageCustomProperties.Seed==\"319709\")"+
+                $" and CustomProperties.UserId!=\"90e88aaf-d2d5-409b-969d-8b6f83a7f212\"" +
+                $" and (MessageCustomProperties.SerialNumber==\"319709\" or MessageCustomProperties.Seed==\"319709\")" +
                 $" and Content.Contains(\"Dear customer\")";
             var list = query.Where(where)
-                .OrderByDescending(x=>x.UnreadCount)
-                .ThenByDescending(x=>x.LastSentTime)
-                .GroupBy(x=>x.GroupType)
+                .GroupBy(x => x.GroupId)
+                .OrderByDescending(x => x.Max(y => y.UnreadCount))
+                .ThenByDescending(x => x.Max(y => y.LastSentTime))
                 .ToList();
         }
     }

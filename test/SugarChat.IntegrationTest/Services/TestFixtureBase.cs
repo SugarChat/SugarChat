@@ -215,7 +215,8 @@ namespace SugarChat.IntegrationTest.Services
                 SentBy = sentBy, //用户3
                 SentTime = DateTimeOffset.Now,
                 IsSystem = true,
-                Payload = payload
+                Payload = payload,
+                CustomProperties = customProperties
             }, default(CancellationToken)).Wait();
             var messageCustomProperties = new List<MessageCustomProperty>();
             foreach (var customProperty in customProperties)

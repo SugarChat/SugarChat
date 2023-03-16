@@ -82,7 +82,6 @@ namespace SugarChat.Core.Utils
                     switch (searchParam.InternalJoin)
                     {
                         case Message.JoinType.None:
-                            break;
                         case Message.JoinType.And:
                             internalSearch = string.Join(" and ", searchs);
                             break;
@@ -110,7 +109,6 @@ namespace SugarChat.Core.Utils
                         break;
                 }
             }
-            var searchParams_where = search.ToString();
 
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
@@ -120,9 +118,13 @@ namespace SugarChat.Core.Utils
                     foreach (var searchParamDetail in searchParam.SearchParamDetails)
                     {
                         var key = $"MessageCustomProperties.{searchParamDetail.Key}";
-                        if (key == "Content")
-                            key = "Content";
                         var values = searchParamDetail.Value.Split(",");
+
+                        if (searchParamDetail.Key == "Content")
+                        {
+                            key = searchParamDetail.Key;
+                            values = new string[] { searchParamDetail.Value };
+                        }
                         foreach (var value in values)
                         {
                             var _value = value.Trim();
@@ -162,7 +164,6 @@ namespace SugarChat.Core.Utils
                         switch (searchParam.InternalJoin)
                         {
                             case Message.JoinType.None:
-                                break;
                             case Message.JoinType.And:
                                 internalSearch = string.Join(" and ", searchs);
                                 break;
@@ -191,6 +192,7 @@ namespace SugarChat.Core.Utils
                     }
                 }
             }
+            var searchParams_where = search.ToString();
 
             var groupIds_where = new List<string>();
             foreach (var groupId in filterGroupIds)
@@ -200,7 +202,7 @@ namespace SugarChat.Core.Utils
 
             var where = $@"UserId==""{userId}"" and GroupType=={groupType}" +
                     (groupIds_where.Count > 0 ? " and (" + string.Join(" or ", groupIds_where) + ")" : "") +
-                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + searchParams_where);
+                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + $"({searchParams_where})");
             return where;
         }
     }

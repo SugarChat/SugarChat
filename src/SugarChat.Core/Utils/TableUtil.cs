@@ -77,7 +77,9 @@ namespace SugarChat.Core.Utils
                 }
 
                 var internalSearch = "";
-                if (searchs.Count > 1)
+                if (searchs.Count == 1)
+                    internalSearch = searchs[0];
+                else
                 {
                     switch (searchParam.InternalJoin)
                     {
@@ -90,23 +92,24 @@ namespace SugarChat.Core.Utils
                             break;
                     }
                 }
-                else
-                    internalSearch = searchs[0];
 
                 if (search.Length > 0 && searchParam.ExternalJoin == Message.JoinType.None)
                     searchParam.ExternalJoin = Message.JoinType.And;
 
-                switch (searchParam.ExternalJoin)
+                if (!string.IsNullOrWhiteSpace(internalSearch))
                 {
-                    case Message.JoinType.None:
-                        search.Append($"({internalSearch})");
-                        break;
-                    case Message.JoinType.And:
-                        search.Append($" and ({internalSearch})");
-                        break;
-                    case Message.JoinType.Or:
-                        search.Append($" or ({internalSearch})");
-                        break;
+                    switch (searchParam.ExternalJoin)
+                    {
+                        case Message.JoinType.None:
+                            search.Append($"({internalSearch})");
+                            break;
+                        case Message.JoinType.And:
+                            search.Append($" and ({internalSearch})");
+                            break;
+                        case Message.JoinType.Or:
+                            search.Append($" or ({internalSearch})");
+                            break;
+                    }
                 }
             }
 

@@ -322,48 +322,5 @@ namespace SugarChat.Core.Services.Groups
                 }
             }
         }
-
-        public async Task MigrateDataToGroups2(int pageSize, CancellationToken cancellation = default)
-        {
-            Log.Warning("Migrate Data To Group2 Start");
-            try
-            {
-                var groups = await _groupDataProvider.GetListAsync();
-                var total = groups.Count();
-                var pageIndex = total / pageSize + 1;
-                for (int i = 1; i <= pageIndex; i++)
-                {
-                    Log.Warning("Migrate Data To Group2 " + i);
-                    var groups1 = groups.OrderBy(x => x.Id).Skip((i - 1) * pageSize).Take(pageSize).ToList();
-                    for (int j = 1; j <= 10; j++)
-                    {
-                        Log.Warning($"Migrate Data To Group2 {i}.{j} Start");
-                        var group2s = new List<Group2>();
-                        int pageSize2 = pageSize / 10;
-                        var groups2 = groups1.OrderBy(x => x.Id).Skip((j - 1) * pageSize2).Take(pageSize2).ToList();
-                        var groupIds = groups2.Select(x => x.Id).ToList();
-                        var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
-                        var messages = await _messageDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellation).ConfigureAwait(false);
-                        foreach (var groupId in groupIds)
-                        {
-                            var group = groups2.Single(x => x.Id == groupId);
-                            var group2 = _mapper.Map<Group2>(group);
-                            group2.GroupUsers = groupUsers.Where(x => x.GroupId == groupId).ToList();
-                            group2.Messages = messages.Where(x => x.GroupId == groupId).ToList();
-                            group2s.Add(group2);
-                        }
-                        await _groupDataProvider.AddGroup2sAsync(group2s, cancellation).ConfigureAwait(false);
-                        Log.Warning($"Migrate Data To Group2 {i}.{j} End");
-                    }
-                }
-                Log.Warning("Migrate Data To Group2 End");
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Migrate Data To Group2 Error");
-                Log.Warning("Migrate Data To Group2 End");
-                return;
-            }
-        }
     }
 }

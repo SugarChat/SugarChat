@@ -23,10 +23,6 @@ namespace SugarChat.Core.Mappings
             CreateMap<AddUserToGroupCommand, UserAddedToGroupEvent>();
             CreateMap<RemoveUserFromGroupCommand, UserRemovedFromGroupEvent>();
             CreateMap<GroupCustomProperty, GroupCustomPropertyDto>();
-
-            CreateMap<Group, Group2>()
-                .ForMember(dest=>dest.GroupUsers,opt=>opt.Ignore())
-                .ForMember(dest => dest.Messages, opt => opt.Ignore());
         }
     }
 }

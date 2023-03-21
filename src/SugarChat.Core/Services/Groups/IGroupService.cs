@@ -32,7 +32,5 @@ namespace SugarChat.Core.Services.Groups
         Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken);
 
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
-
-        Task MigrateDataToGroups2(int pageSize, CancellationToken cancellation = default);
     }
 }

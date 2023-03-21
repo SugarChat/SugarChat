@@ -9,7 +9,5 @@ namespace SugarChat.Core.Services.Admin
     public interface IAdminDataProvider : IDataProvider
     {
         void RepairData();
-
-        Task LinqTest();
     }
 }

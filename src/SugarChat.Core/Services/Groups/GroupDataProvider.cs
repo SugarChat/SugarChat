@@ -146,10 +146,5 @@ namespace SugarChat.Core.Services.Groups
         {
             return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
-
-        public async Task AddGroup2sAsync(IEnumerable<Group2> group2s, CancellationToken cancellationToken = default)
-        {
-            await _repository.AddRangeAsync(group2s, cancellationToken).ConfigureAwait(false);
-        }
     }
 }

@@ -338,6 +338,7 @@ namespace SugarChat.Core.Services.GroupUsers
                     {
                         await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                         time++;
+                        Log.Warning(ex, "AddGroupMembersAsync retry by " + time);
                         if (time > 2)
                         {
                             throw;

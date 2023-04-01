@@ -32,7 +32,7 @@ namespace SugarChat.WebApi.Controllers
         /// 修复数据，临时使用，不提供HttpClient
         /// </summary>
         /// <returns></returns>
-        [Route("MigrateGroupCustomPropertyAsyncToGroupUser"), HttpGet]
+        [Route("MigrateGroupCustomPropertyAsyncToGroupUser"), HttpPost]
         public IActionResult MigrateGroupCustomPropertyAsyncToGroupUser(int pageSize)
         {
             _groupUserService.MigrateGroupCustomPropertyAsyncToGroupUser(pageSize);

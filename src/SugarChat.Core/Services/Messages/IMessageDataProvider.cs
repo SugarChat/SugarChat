@@ -57,7 +57,5 @@ namespace SugarChat.Core.Services.Messages
             int groupType,
             IEnumerable<SearchParamDto> searchParams,
             CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<Domain.Message>> GetListAsync(Expression<Func<Domain.Message, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

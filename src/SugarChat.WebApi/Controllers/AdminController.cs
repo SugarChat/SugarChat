@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SugarChat.Core.Services.Admin;
 using SugarChat.Core.Services.GroupUsers;
-using System.Threading.Tasks;
 
 namespace SugarChat.WebApi.Controllers
 {

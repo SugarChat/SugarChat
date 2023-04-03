@@ -178,7 +178,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
             });
         }
 
-        [Fact(Skip = "to do")]
+        [Fact]
         public async Task ShouldGetConversationByKeyword()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>
@@ -187,8 +187,14 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "1" } },
-                        UserId = userId
+                        UserId = userId,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "1" }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(0);
@@ -197,9 +203,15 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "1" } },
                         UserId = userId,
-                        GroupType = 10
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "1", ConditionCondition = Condition.Contain }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -209,10 +221,15 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "25" } },
                         UserId = userId,
-                        //IsExactSearch = true,
-                        GroupType = 10
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "25" }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -222,10 +239,18 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } },
                         UserId = userId,
-                        //IsExactSearch = false,
-                        GroupType = 10
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "11" },
+                                    new SearchParamDetail { Key = "test", Value = "test1" },
+                                    new SearchParamDetail { Key = "Content", Value = "是" , ConditionCondition = Condition.Contain }
+                                },
+                                InternalJoin = JoinType.Or
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(2);
@@ -235,11 +260,19 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test8" }, { "Content", "是" } },
                         UserId = userId,
-                        //IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
-                        GroupType = 10
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "11" },
+                                    new SearchParamDetail { Key = "test", Value = "test8" },
+                                    new SearchParamDetail { Key = "Content", Value = "是"}
+                                },
+                                InternalJoin = JoinType.Or
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -260,11 +293,16 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "Content", "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!" } },
                         UserId = userId,
-                        //IsExactSearch = false,
                         GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 },
-                        GroupType = 10
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "Content", Value = "Congratulations! Your friend 六角恐龙～+. had completed an order, you are awarded 100 points from QC Test Store!" }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -275,13 +313,15 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         UserId = userId,
-                        //IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        //IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
-                        //{
-                        //    GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "3AB" } } }
-                        //}
+                        SearchParams = new List<SearchParamDto> {
+                            new SearchParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "A", Value = "3AB" }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -292,13 +332,15 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         UserId = userId,
-                        //IsExactSearch = true,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        //IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
-                        //{
-                        //    GroupCustomProperties = new Dictionary<string, List<string>> { { "B", new List<string> { "0BC" } } }
-                        //}
+                        SearchParams = new List<SearchParamDto> {
+                            new SearchParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "B", Value = "0BC" }
+                                }
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(1);
@@ -308,15 +350,28 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        //SearchParms = new Dictionary<string, string> { { "order", "11" }, { "text", "test1" }, { "Content", "是" } },
                         UserId = userId,
-                        //IsExactSearch = false,
                         GroupIds = new string[] { conversationId, groupId2, groupId4 },
                         GroupType = 10,
-                        //IncludeGroupByGroupCustomProperties = new SearchGroupByGroupCustomPropertiesDto
-                        //{
-                        //    GroupCustomProperties = new Dictionary<string, List<string>> { { "A", new List<string> { "2AB", "3AB" } } }
-                        //}
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "order", Value = "11" },
+                                    new SearchParamDetail { Key = "test", Value = "test1" },
+                                    new SearchParamDetail { Key = "Content", Value = "是"}
+                                },
+                                InternalJoin = JoinType.Or,
+                                ExternalJoin = JoinType.Or
+                            }
+                        },
+                        SearchParams = new List<SearchParamDto> {
+                            new SearchParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "A", Value = "2AB,3AB" }
+                                },
+                                InternalJoin = JoinType.Or
+                            }
+                        }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
                     response.Data.Result.Count().ShouldBe(2);

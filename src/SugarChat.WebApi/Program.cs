@@ -25,8 +25,8 @@ namespace SugarChat.WebApi
             {
                 Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
-                    .Enrich.WithCorrelationIdHeader()
                     .Enrich.WithProperty("ReleaseVersion", configuration.GetValue<string>("ReleaseVersion"))
+                    .Enrich.WithCorrelationIdHeader()
                     .CreateLogger();
             }
             else

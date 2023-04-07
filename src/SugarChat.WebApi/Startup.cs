@@ -78,6 +78,7 @@ namespace SugarChat.WebApi
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlName);
                 c.IncludeXmlComments(xmlPath, true);
             });
+            services.AddHttpContextAccessor();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)

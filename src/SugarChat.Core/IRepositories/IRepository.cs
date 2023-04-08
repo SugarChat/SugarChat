@@ -29,5 +29,6 @@ namespace SugarChat.Core.IRepositories
         Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> RemoveRangeAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
     }
 }

@@ -281,5 +281,11 @@ namespace SugarChat.Data.MongoDb
             }
             return list;
         }
+
+        public async Task<int> RemoveRangeAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            await GetCollection<T>().DeleteManyAsync(predicate, cancellationToken).ConfigureAwait(false);
+            return 1;
+        }
     }
 }

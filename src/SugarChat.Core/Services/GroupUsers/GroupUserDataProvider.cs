@@ -199,5 +199,10 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
+
+        public async Task RemoveRangeAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            await _repository.RemoveRangeAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

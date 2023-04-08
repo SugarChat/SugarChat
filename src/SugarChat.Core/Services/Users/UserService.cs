@@ -13,6 +13,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
+using SugarChat.Core.Services.GroupUsers;
 
 namespace SugarChat.Core.Services.Users
 {
@@ -22,13 +23,19 @@ namespace SugarChat.Core.Services.Users
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly ITransactionManager _transactionManagement;
+        private readonly IGroupUserDataProvider _groupUserDataProvider;
 
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManager transactionManagement)
+        public UserService(IMapper mapper,
+            IUserDataProvider userDataProvider,
+            IFriendDataProvider friendDataProvider,
+            ITransactionManager transactionManagement,
+            IGroupUserDataProvider groupUserDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
             _transactionManagement = transactionManagement;
+            _groupUserDataProvider = groupUserDataProvider;
         }
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
@@ -61,7 +68,20 @@ namespace SugarChat.Core.Services.Users
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.Id);
 
-            await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
+                    await _groupUserDataProvider.RemoveRangeAsync(x => x.UserId == user.Id, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
+            }
 
             return _mapper.Map<UserRemovedEvent>(command);
         }

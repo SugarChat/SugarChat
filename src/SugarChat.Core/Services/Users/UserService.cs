@@ -68,20 +68,8 @@ namespace SugarChat.Core.Services.Users
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.Id);
 
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
-            {
-                try
-                {
-                    await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
-                    await _groupUserDataProvider.RemoveRangeAsync(x => x.UserId == user.Id, cancellationToken).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                    throw;
-                }
-            }
+            user.IsDel = true;
+            await _userDataProvider.UpdateAsync(user, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<UserRemovedEvent>(command);
         }

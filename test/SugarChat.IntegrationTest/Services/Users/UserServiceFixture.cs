@@ -106,8 +106,8 @@ namespace SugarChat.IntegrationTest.Services.Users
                     Id = Tom.Id
                 };
                 var response = await mediator.SendAsync<RemoveUserCommand, SugarChatResponse>(removeUserCommand);
-                (await repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserCommand.Id)).ShouldBeNull();
-                (await repository.ToListAsync<GroupUser>(x => x.UserId == Tom.Id)).Count().ShouldBe(0);
+                (await repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserCommand.Id)).IsDel.ShouldBeTrue();
+                (await repository.ToListAsync<GroupUser>(x => x.UserId == Tom.Id)).Count().ShouldBe(2);
             });
         }
 

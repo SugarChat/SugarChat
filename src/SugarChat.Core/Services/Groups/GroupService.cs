@@ -222,8 +222,40 @@ namespace SugarChat.Core.Services.Groups
             var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.Id);
 
-            group = _mapper.Map<Group>(command);
-            await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            group.Name = command.Name;
+            group.Description = command.Description;
+            group.AvatarUrl = command.AvatarUrl;
+            group.Type = command.Type;
+            group.CustomProperties = command.CustomProperties;
+
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellationToken).ConfigureAwait(false);
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+                    await _groupCustomPropertyDataProvider.RemoveRangeAsync(groupCustomProperties, cancellationToken).ConfigureAwait(false);
+                    var newGroupCustomProperties = new List<GroupCustomProperty>();
+                    foreach (var customProperty in command.CustomProperties)
+                    {
+                        newGroupCustomProperties.Add(new GroupCustomProperty
+                        {
+                            GroupId = group.Id,
+                            Key = customProperty.Key,
+                            Value = customProperty.Value,
+                            CreatedBy = group.CreatedBy,
+                            CreatedDate = DateTime.UtcNow
+                        });
+                    }
+                    await _groupCustomPropertyDataProvider.AddRangeAsync(newGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
+            }
 
             return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }

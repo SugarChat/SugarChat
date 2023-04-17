@@ -62,13 +62,16 @@ namespace SugarChat.IntegrationTest.Services.Groups
                     Id = conversationId,
                     Name = "内部沟通群",
                     Description = "进行及时有效的沟通",
-                    Type = 10
-
-                }, default(CancellationToken));
+                    Type = 10,
+                    CustomProperties = new Dictionary<string, string> { { "AAA", "aaa" } }
+                }, default);
 
                 var reponse = await mediator.RequestAsync<GetGroupProfileRequest, SugarChatResponse<GroupDto>>(new GetGroupProfileRequest { UserId = userId, GroupId = conversationId });
                 reponse.Data.Name.ShouldBe("内部沟通群");
                 reponse.Data.Type.ShouldBe(10);
+                reponse.Data.CustomProperties.Count.ShouldBe(1);
+                reponse.Data.CustomProperties.ElementAt(0).Key.ShouldBe("AAA");
+                reponse.Data.CustomProperties.ElementAt(0).Value.ShouldBe("aaa");
             });
         }
 

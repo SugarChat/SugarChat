@@ -20,6 +20,7 @@ using System;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.GroupCustomProperties;
 using Serilog;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -222,11 +223,7 @@ namespace SugarChat.Core.Services.Groups
             var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.Id);
 
-            group.Name = command.Name;
-            group.Description = command.Description;
-            group.AvatarUrl = command.AvatarUrl;
-            group.Type = command.Type;
-            group.CustomProperties = command.CustomProperties;
+            _mapper.MapIgnoreNull(command, group);
 
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellationToken).ConfigureAwait(false);
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))

@@ -157,6 +157,7 @@ namespace SugarChat.Core.Services.GroupUsers
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(command.UserId, command.GroupId);
 
+            groupUser.CustomProperties = command.CustomProperties;
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserId(groupUser.Id, cancellationToken).ConfigureAwait(false);
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             if (command.CustomProperties != null && command.CustomProperties.Any())

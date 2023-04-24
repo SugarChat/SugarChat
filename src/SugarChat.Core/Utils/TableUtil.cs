@@ -10,11 +10,12 @@ namespace SugarChat.Core.Utils
 {
     public interface ITableUtil
     {
-        string GetWhere(string userId,
+        string GetWhereByMessage(IEnumerable<string> filterGroupIds, IEnumerable<SearchMessageParamDto> searchByKeywordParams);
+
+        string GetWhereByGroupUser(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
-            IEnumerable<SearchParamDto> searchParams,
-            IEnumerable<SearchMessageParamDto> searchByKeywordParams);
+            IEnumerable<SearchParamDto> searchParams);
     }
 
     public class TableUtil : ITableUtil
@@ -26,11 +27,10 @@ namespace SugarChat.Core.Utils
             _repository = repository;
         }
 
-        public string GetWhere(string userId,
+        public string GetWhereByGroupUser(string userId,
             IEnumerable<string> filterGroupIds,
             int groupType,
-            IEnumerable<SearchParamDto> searchParams,
-            IEnumerable<SearchMessageParamDto> searchByKeywordParams)
+            IEnumerable<SearchParamDto> searchParams)
         {
             if (searchParams == null || !searchParams.Any())
                 searchParams = new List<SearchParamDto>();
@@ -99,6 +99,9 @@ namespace SugarChat.Core.Utils
                 if (search.Length > 0 && searchParam.ExternalJoin == Message.JoinType.None)
                     searchParam.ExternalJoin = Message.JoinType.And;
 
+                if (search.Length == 0)
+                    searchParam.ExternalJoin = Message.JoinType.None;
+
                 if (!string.IsNullOrWhiteSpace(internalSearch))
                 {
                     switch (searchParam.ExternalJoin)
@@ -115,7 +118,23 @@ namespace SugarChat.Core.Utils
                     }
                 }
             }
+            var searchParams_where = search.ToString();
 
+            var groupIds_where = new List<string>();
+            foreach (var groupId in filterGroupIds)
+            {
+                groupIds_where.Add($@"GroupId==""{groupId}""");
+            }
+
+            var where = $@"UserId==""{userId}"" and GroupType=={groupType}" +
+                    (groupIds_where.Count > 0 ? " and (" + string.Join(" or ", groupIds_where) + ")" : "") +
+                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + $"({searchParams_where})");
+            return where;
+        }
+
+        public string GetWhereByMessage(IEnumerable<string> filterGroupIds, IEnumerable<SearchMessageParamDto> searchByKeywordParams)
+        {
+            var search = new StringBuilder();
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
                 foreach (var searchParam in searchByKeywordParams)
@@ -123,7 +142,7 @@ namespace SugarChat.Core.Utils
                     List<string> searchs = new List<string>();
                     foreach (var searchParamDetail in searchParam.SearchParamDetails)
                     {
-                        var key = $"MessageCustomProperties.{searchParamDetail.Key}";
+                        var key = $"CustomProperties.{searchParamDetail.Key}";
                         var values = searchParamDetail.Value.Split(",");
 
                         if (searchParamDetail.Key == "Content")
@@ -184,6 +203,9 @@ namespace SugarChat.Core.Utils
                     if (search.Length > 0 && searchParam.ExternalJoin == Message.JoinType.None)
                         searchParam.ExternalJoin = Message.JoinType.And;
 
+                    if (search.Length == 0)
+                        searchParam.ExternalJoin = Message.JoinType.None;
+
                     switch (searchParam.ExternalJoin)
                     {
                         case Message.JoinType.None:
@@ -206,9 +228,8 @@ namespace SugarChat.Core.Utils
                 groupIds_where.Add($@"GroupId==""{groupId}""");
             }
 
-            var where = $@"UserId==""{userId}"" and GroupType=={groupType}" +
-                    (groupIds_where.Count > 0 ? " and (" + string.Join(" or ", groupIds_where) + ")" : "") +
-                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : " and " + $"({searchParams_where})");
+            var where = (groupIds_where.Count > 0 ? "(" + string.Join(" or ", groupIds_where) + ") and " : "") +
+                    (string.IsNullOrWhiteSpace(searchParams_where) ? "" : $"({searchParams_where})");
             return where;
         }
     }

@@ -413,7 +413,7 @@ namespace SugarChat.Core.Services.Messages
             IEnumerable<SearchParamDto> searchParams,
             CancellationToken cancellationToken = default)
         {
-            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams, null);
+            var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
             return System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
         }
     }

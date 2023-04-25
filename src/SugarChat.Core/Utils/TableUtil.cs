@@ -1,4 +1,5 @@
-﻿using SugarChat.Core.Domain;
+﻿using AutoMapper;
+using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using System;
@@ -231,6 +232,27 @@ namespace SugarChat.Core.Utils
             var where = (groupIds_where.Count > 0 ? "(" + string.Join(" or ", groupIds_where) + ") and " : "") +
                     (string.IsNullOrWhiteSpace(searchParams_where) ? "" : $"({searchParams_where})");
             return where;
+        }
+    }
+
+    public static class MapExtension
+    {
+        public static void MapIgnoreNull(this IMapper mapper, object source, object destination)
+        {
+            var srcProperties = source.GetType().GetProperties();
+            foreach (var srcProperty in srcProperties)
+            {
+                var name = srcProperty.Name;
+                if (name == "Id")
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(source.GetType().GetProperty(name).GetValue(source)?.ToString())
+                    && destination.GetType().GetProperty(name) != null)
+                {
+                    var a = source.GetType().GetProperty(name).GetValue(source);
+                    destination.GetType().GetProperty(name).SetValue(destination, source.GetType().GetProperty(name).GetValue(source));
+                }
+            }
         }
     }
 }

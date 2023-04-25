@@ -454,7 +454,8 @@ namespace SugarChat.IntegrationTest.Services
                     AdminId = Guid.NewGuid().ToString(),
                     GroupUserIds = userIds,
                     CreatedBy = userId,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    CustomProperties = new Dictionary<string, string> { { "AAA", Guid.NewGuid().ToString() } }
                 };
                 await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                 var groupUsers = await repository.ToListAsync<GroupUser>();
@@ -482,6 +483,7 @@ namespace SugarChat.IntegrationTest.Services
                     groupUserUpdateAfter.MessageRemindType.ShouldBe(groupUesrDto.MessageRemindType);
                     groupUserUpdateAfter.CreatedBy.ShouldBe(groupUser.CreatedBy);
                     groupUserUpdateAfter.CreatedDate.ShouldBe(groupUser.CreatedDate);
+                    groupUserUpdateAfter.CustomProperties.ShouldBe(groupUesrDto.CustomProperties);
                 }
                 var groupUserIds = groupUsersUpdateAfter.Select(x => x.Id);
                 (await repository.CountAsync<GroupUserCustomProperty>(x => groupUserIds.Contains(x.GroupUserId) && x.Key == "Number")).ShouldBe(3);

@@ -462,18 +462,18 @@ namespace SugarChat.Core.Services.GroupUsers
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             foreach (var groupUserDto in command.GroupUsers)
             {
-                var groupUser1 = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
-                if (groupUser1 != null)
+                var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
+                if (groupUser != null)
                 {
-                    _mapper.MapIgnoreNull(groupUserDto, groupUser1);
+                    _mapper.MapIgnoreNull(groupUserDto, groupUser);
                     if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any())
                     {
-                        oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser1.Id).ToList());
+                        oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
                         foreach (var customProperty in groupUserDto.CustomProperties)
                         {
                             newGroupUserCustomProperties.Add(new GroupUserCustomProperty
                             {
-                                GroupUserId = groupUser1.Id,
+                                GroupUserId = groupUser.Id,
                                 Key = customProperty.Key,
                                 Value = customProperty.Value,
                                 CreatedBy = command.UserId

@@ -74,6 +74,11 @@ namespace SugarChat.Core.Services.Users
             return _mapper.Map<UserRemovedEvent>(command);
         }
 
+        public async Task RemoveAllUserAsync(CancellationToken cancellationToken = default)
+        {
+            await _userDataProvider.RemoveAsync(x => true, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,
             CancellationToken cancellationToken = default)
         {

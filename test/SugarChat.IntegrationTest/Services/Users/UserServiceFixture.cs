@@ -112,6 +112,25 @@ namespace SugarChat.IntegrationTest.Services.Users
         }
 
         [Fact]
+        public async Task ShouldRemoveAllUser()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    AddUserCommand addUserCommand = new AddUserCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                    };
+                    await mediator.SendAsync<AddUserCommand, SugarChatResponse>(addUserCommand);
+                }
+                (await repository.ToListAsync<User>()).Count().ShouldBe(20);
+                await mediator.SendAsync<RemoveAllUserCommand, SugarChatResponse>(new RemoveAllUserCommand());
+                (await repository.ToListAsync<User>()).Count().ShouldBe(0);
+            });
+        }
+
+        [Fact]
         public async Task ShouldGetCurrentUser()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>

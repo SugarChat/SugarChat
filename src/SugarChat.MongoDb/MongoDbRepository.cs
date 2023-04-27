@@ -183,6 +183,20 @@ namespace SugarChat.Data.MongoDb
             return default;
         }
 
+        public async Task<int> RemoveAsync<T>(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            DeleteResult deleteResult;
+            if (_databaseManagement.IsBeginTransaction)
+                deleteResult = await GetCollection<T>().DeleteOneAsync(_databaseManagement.Session, filter, cancellationToken: cancellationToken).ConfigureAwait(false);
+            else
+                deleteResult = await GetCollection<T>().DeleteManyAsync(filter, cancellationToken).ConfigureAwait(false);
+            if (deleteResult.IsAcknowledged)
+            {
+                return (int)deleteResult.DeletedCount;
+            }
+            return default;
+        }
+
         public async Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity
         {
             if (entities?.Any() == true)

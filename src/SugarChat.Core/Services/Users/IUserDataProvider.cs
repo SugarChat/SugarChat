@@ -15,6 +15,7 @@ namespace SugarChat.Core.Services.Users
         Task AddRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default);
         Task UpdateAsync(User user, CancellationToken cancellationToken = default);
         Task RemoveAsync(User user, CancellationToken cancellationToken = default);
+        Task RemoveAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default);
         Task RemoveRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default);
         Task<IEnumerable<User>> GetListAsync(Expression<Func<User, bool>> predicate = null, CancellationToken cancellationToken = default);
     }

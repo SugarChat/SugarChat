@@ -295,6 +295,15 @@ namespace SugarChat.Core.Services.GroupUsers
                     {
                         foreach (var groupUserId in needAddGroupUserIds)
                         {
+                            var groupUser_CustomProperties = new Dictionary<string, string>();
+                            if (group.CustomProperties != null)
+                            {
+                                foreach (var customProperty in group.CustomProperties)
+                                {
+                                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                                }
+                            }
                             var groupUser = new GroupUser
                             {
                                 Id = Guid.NewGuid().ToString(),
@@ -317,6 +326,7 @@ namespace SugarChat.Core.Services.GroupUsers
                                         Value = customProperty.Value,
                                         CreatedBy = command.CreatedBy
                                     });
+                                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                                 }
                             }
                             needAddGroupUsers.Add(groupUser);
@@ -448,7 +458,9 @@ namespace SugarChat.Core.Services.GroupUsers
 
             var ids = command.GroupUsers.Select(x => x.Id).ToList();
             var groupUsers = await _groupUserDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
-            var groups = (await _groupDataProvider.GetByIdsAsync(groupUsers.Select(x => x.GroupId), null, cancellationToken).ConfigureAwait(false)).Result;
+            var groupIds = command.GroupUsers.Select(x => x.GroupId).ToList();
+            groupIds.AddRange(groupUsers.Select(x => x.GroupId));
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIds, null, cancellationToken).ConfigureAwait(false)).Result;
             foreach (var groupUser in groupUsers)
             {
                 var group = groups.SingleOrDefault(x => x.Id == groupUser.GroupId);
@@ -469,6 +481,15 @@ namespace SugarChat.Core.Services.GroupUsers
                     if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any())
                     {
                         oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
+                        var group = groups.Where(x => x.Id == groupUserDto.GroupId).Single();
+                        if (group.CustomProperties != null)
+                        {
+                            foreach (var customProperty in group.CustomProperties)
+                            {
+                                if (!groupUserDto.CustomProperties.ContainsKey(customProperty.Key))
+                                    groupUserDto.CustomProperties.Add(customProperty.Key, customProperty.Value);
+                            }
+                        }
                         foreach (var customProperty in groupUserDto.CustomProperties)
                         {
                             newGroupUserCustomProperties.Add(new GroupUserCustomProperty

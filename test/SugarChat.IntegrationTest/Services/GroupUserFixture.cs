@@ -446,7 +446,8 @@ namespace SugarChat.IntegrationTest.Services
                     Id = groupId2,
                     Name = "testGroup2",
                     AvatarUrl = "testAvatarUrl2",
-                    Description = "testDescription2"
+                    Description = "testDescription2",
+                    CustomProperties = new Dictionary<string, string> { { "GroupId", groupId2 } }
                 });
                 AddGroupMemberCommand command = new AddGroupMemberCommand
                 {

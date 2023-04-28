@@ -313,7 +313,7 @@ namespace SugarChat.Core.Services.GroupUsers
                                 CreatedBy = command.CreatedBy,
                                 GroupType = group.Type,
                                 LastSentTime = group.LastSentTime,
-                                CustomProperties = command.CustomProperties,
+                                CustomProperties = groupUser_CustomProperties,
                             };
                             if (command.CustomProperties != null)
                             {

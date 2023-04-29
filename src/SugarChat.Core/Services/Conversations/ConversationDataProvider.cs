@@ -12,6 +12,8 @@ using SugarChat.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using System;
+using System.Diagnostics;
+using Serilog;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -67,20 +69,28 @@ namespace SugarChat.Core.Services.Conversations
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
                     .Where(x => x.SentTime > DateTime.Now.AddMonths(-6))
                     .GroupBy(x => x.GroupId)
                     .Select(x => x.Key)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByMessage);
 
                 var whereByGroupUser = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+                stopwatch.Restart();
                 var groupIdsByGroupUser = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), whereByGroupUser)
                     .OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .Select(x => x.GroupId)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByGroupUser);
 
                 var temepGroups = new List<TemepGroup>();
+                stopwatch.Restart();
                 for (int i = 0; i < groupIdsByGroupUser.Count(); i++)
                 {
                     temepGroups.Add(new TemepGroup { GroupId = groupIdsByGroupUser[i], Sort = i });
@@ -90,6 +100,8 @@ namespace SugarChat.Core.Services.Conversations
                     .Skip((pageNum - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUserAndMessage run {@Ms}{@GroupUserWhere}{@MessageWhere}", stopwatch.ElapsedMilliseconds, whereByGroupUser, whereByMessage);
 
                 groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId)).ToList();
                 total = temepGroups.Where(x => groupIds.Contains(x.GroupId)).Count();
@@ -97,13 +109,20 @@ namespace SugarChat.Core.Services.Conversations
             else
             {
                 var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
                    .OrderByDescending(x => x.UnreadCount)
                    .ThenByDescending(x => x.LastSentTime)
                    .Skip((pageNum - 1) * pageSize)
                    .Take(pageSize)
                    .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+                stopwatch.Restart();
                 total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
+                stopwatch.Stop();
+                Log.Information("GetTotalByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
             }
 
             var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
@@ -166,21 +185,29 @@ namespace SugarChat.Core.Services.Conversations
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
                     .Where(x => x.SentTime > DateTime.Now.AddMonths(-24))
                     .GroupBy(x => x.GroupId)
                     .Select(x => x.Key)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByMessage);
 
                 var whereByGroupUser = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+                stopwatch.Restart();
                 whereByGroupUser = @"UnreadCount>0 and " + whereByGroupUser;
                 var groupIdsByGroupUser = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), whereByGroupUser)
                     .OrderByDescending(x => x.UnreadCount)
                     .ThenByDescending(x => x.LastSentTime)
                     .Select(x => x.GroupId)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByGroupUser);
 
                 var temepGroups = new List<TemepGroup>();
+                stopwatch.Restart();
                 for (int i = 0; i < groupIdsByGroupUser.Count(); i++)
                 {
                     temepGroups.Add(new TemepGroup { GroupId = groupIdsByGroupUser[i], Sort = i });
@@ -190,6 +217,8 @@ namespace SugarChat.Core.Services.Conversations
                     .Skip((pageNum - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUserAndMessage run {@Ms}{@GroupUserWhere}{@MessageWhere}", stopwatch.ElapsedMilliseconds, whereByGroupUser, whereByMessage);
 
                 groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId)).ToList();
                 total = temepGroups.Where(x => groupIdsByGroupUser.Contains(x.GroupId)).Count();
@@ -197,6 +226,8 @@ namespace SugarChat.Core.Services.Conversations
             else
             {
                 var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 where = @"UnreadCount>0 and " + where;
                 groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
                    .OrderByDescending(x => x.UnreadCount)
@@ -204,7 +235,12 @@ namespace SugarChat.Core.Services.Conversations
                    .Skip((pageNum - 1) * pageSize)
                    .Take(pageSize)
                    .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+                stopwatch.Restart();
                 total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
+                stopwatch.Stop();
+                Log.Information("GetTotalByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
             }
 
             var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);

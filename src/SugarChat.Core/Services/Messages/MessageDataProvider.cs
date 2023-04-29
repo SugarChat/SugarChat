@@ -414,7 +414,12 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default)
         {
             var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
-            return System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var unreadCount = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
+            stopwatch.Stop();
+            Log.Information("GetTotalByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+            return unreadCount;
         }
     }
 

@@ -18,10 +18,8 @@ using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.Services.GroupUserCustomProperties;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using Serilog;
-using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.GroupCustomProperties;
 
 namespace SugarChat.Core.Services.GroupUsers
@@ -455,43 +453,50 @@ namespace SugarChat.Core.Services.GroupUsers
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.UserId);
 
-            var ids = command.GroupUsers.Select(x => x.Id).ToArray();
+            var ids = command.GroupUsers.Select(x => x.Id).ToList();
             var groupUsers = await _groupUserDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
-            var groups = (await _groupDataProvider.GetByIdsAsync(groupUsers.Select(x => x.GroupId), null, cancellationToken).ConfigureAwait(false)).Result;
+            var groupIds = groupUsers.Select(x => x.GroupId).ToList();
+            groupIds.AddRange(command.GroupUsers.Select(x => x.GroupId).ToList());
+            var groups = (await _groupDataProvider.GetByIdsAsync(groupIds, null, cancellationToken).ConfigureAwait(false)).Result;
             foreach (var groupUser in groupUsers)
             {
                 var group = groups.SingleOrDefault(x => x.Id == groupUser.GroupId);
                 group.CheckExist(groupUser.GroupId);
             }
-            var userIds = groupUsers.Select(x => x.UserId);
-            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id));
 
+            var newGroupUsers = _mapper.Map<IEnumerable<GroupUser>>(command.GroupUsers);
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserIds(command.GroupUsers.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
             var oldGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
-            foreach (var groupUserDto in command.GroupUsers)
+
+            foreach (var groupUser in newGroupUsers)
             {
-                var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
-                var groupUser_CustomProperties = new Dictionary<string, string>();
-                if (groupUser != null)
+                if (groupUser.CustomProperties == null)
+                    groupUser.CustomProperties = new Dictionary<string, string>();
+                var group = groups.Single(x => x.Id == groupUser.GroupId);
+                if (group.CustomProperties != null)
                 {
-                    _mapper.Map(groupUserDto, groupUser);
-                    if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any())
+                    foreach (var customProperty in group.CustomProperties)
                     {
-                        oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
-                        foreach (var customProperty in groupUserDto.CustomProperties)
-                        {
-                            newGroupUserCustomProperties.Add(new GroupUserCustomProperty
-                            {
-                                GroupUserId = groupUser.Id,
-                                Key = customProperty.Key,
-                                Value = customProperty.Value,
-                                CreatedBy = command.UserId
-                            });
-                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
-                        }
+                        if (!groupUser.CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser.CustomProperties.Add(customProperty.Key, customProperty.Value);
                     }
-                    groupUser.CustomProperties = groupUser_CustomProperties;
+                }
+
+                oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
+
+                if (groupUser.CustomProperties != null && groupUser.CustomProperties.Any())
+                {
+                    foreach (var customProperty in groupUser.CustomProperties)
+                    {
+                        newGroupUserCustomProperties.Add(new GroupUserCustomProperty
+                        {
+                            GroupUserId = groupUser.Id,
+                            Key = customProperty.Key,
+                            Value = customProperty.Value,
+                            CreatedBy = command.UserId
+                        });
+                    }
                 }
             }
 
@@ -502,7 +507,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 {
                     try
                     {
-                        await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+                        await _groupUserDataProvider.UpdateRangeAsync(newGroupUsers, groupUsers, cancellationToken).ConfigureAwait(false);
                         await _groupUserCustomPropertyDataProvider.RemoveRangeAsync(oldGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
                         await _groupUserCustomPropertyDataProvider.AddRangeAsync(newGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);

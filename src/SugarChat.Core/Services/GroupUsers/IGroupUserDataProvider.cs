@@ -32,6 +32,7 @@ namespace SugarChat.Core.Services.GroupUsers
             CancellationToken cancellationToken = default);
 
         Task UpdateRangeAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken = default);
+        Task UpdateRangeAsync(IEnumerable<GroupUser> source, IEnumerable<GroupUser> destination, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 

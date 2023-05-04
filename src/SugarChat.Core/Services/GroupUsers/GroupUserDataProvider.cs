@@ -157,6 +157,11 @@ namespace SugarChat.Core.Services.GroupUsers
             await _repository.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task UpdateRangeAsync(IEnumerable<GroupUser> source, IEnumerable<GroupUser> destination, CancellationToken cancellationToken = default)
+        {
+            await _repository.UpdateRangeAsync(source, destination, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task RemoveRangeAsync(IEnumerable<GroupUser> groupUsers,
             CancellationToken cancellationToken = default)
         {

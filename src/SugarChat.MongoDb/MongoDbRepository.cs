@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
@@ -10,10 +9,10 @@ using SugarChat.Core.IRepositories;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using SugarChat.Core.Services;
-using SugarChat.Data.MongoDb.Settings;
 using SugarChat.Message.Paging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using Newtonsoft.Json;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -266,6 +265,54 @@ namespace SugarChat.Data.MongoDb
                 {
                     return (int)writeResult.ModifiedCount;
                 }
+            }
+            return default;
+        }
+
+        public async Task<int> UpdateRangeAsync<T>(IEnumerable<T> source, IEnumerable<T> destination, CancellationToken cancellationToken = default) where T : class, IEntity
+        {
+            var modelList = new List<WriteModel<T>>();
+            var properties = typeof(T).GetProperties();
+            var entityNames = typeof(IEntity).GetProperties().Select(x => x.Name).ToList();
+            foreach (var src in source)
+            {
+                var dest = destination.SingleOrDefault(x => x.Id == src.Id);
+                if (dest != null)
+                {
+                    var collection = GetCollection<T>();
+                    var filter = Builders<T>.Filter.Eq(x => x.Id, src.Id);
+                    var update = Builders<T>.Update;
+                    var updateDefinitions = new List<UpdateDefinition<T>>();
+                    foreach (var property in properties)
+                    {
+                        var propertyName = property.Name;
+                        if (new string[] { "CreatedBy", "CreatedDate" }.Contains(propertyName) && propertyName != "CustomProperties")
+                            continue;
+
+                        if (JsonConvert.SerializeObject(property.GetValue(src)) != JsonConvert.SerializeObject(property.GetValue(dest)))
+                        {
+                            var updateBuilder = new UpdateDefinitionBuilder<T>();
+                            var _updateDefinition = updateBuilder.Set(propertyName, property.GetValue(src));
+                            updateDefinitions.Add(_updateDefinition);
+                        }
+                    }
+                    var updateDefinition = update.Combine(updateDefinitions);
+                    var updateOne = new UpdateOneModel<T>(filter, updateDefinition);
+                    modelList.Add(updateOne);
+                }
+            }
+            BulkWriteResult<T> writeResult;
+            if (_databaseManagement.IsBeginTransaction)
+            {
+                writeResult = await GetCollection<T>().BulkWriteAsync(_databaseManagement.Session, modelList, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                writeResult = await GetCollection<T>().BulkWriteAsync(modelList, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            if (writeResult.IsAcknowledged)
+            {
+                return (int)writeResult.ModifiedCount;
             }
             return default;
         }

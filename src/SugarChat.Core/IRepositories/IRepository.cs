@@ -5,7 +5,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Core.Services;
 using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.IRepositories
@@ -26,8 +25,11 @@ namespace SugarChat.Core.IRepositories
         Task<int> AddAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> AddRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> RemoveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> RemoveAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> RemoveRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class, IEntity;
         Task<int> UpdateRangeAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> UpdateRangeAsync<T>(IEnumerable<T> source, IEnumerable<T> destination, CancellationToken cancellationToken = default) where T : class, IEntity;
+        Task<int> RemoveRangeAsync<T>(Expression<Func<T, bool>> predicate = null, CancellationToken cancellationToken = default) where T : class, IEntity;
     }
 }

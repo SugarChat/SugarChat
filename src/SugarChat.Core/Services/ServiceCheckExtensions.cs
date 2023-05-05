@@ -17,7 +17,7 @@ namespace SugarChat.Core.Services
 
         public static void CheckExist(this User user, string id)
         {
-            if (user is null)
+            if (user is null || user.IsDel)
             {
                 throw new BusinessWarningException(Prompt.UserNoExists.WithParams(id));
             }
@@ -115,7 +115,7 @@ namespace SugarChat.Core.Services
                 throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
             }
         }
-        
+
         public static void CheckExist(this Emotion emotion, string id)
         {
             if (emotion is null)

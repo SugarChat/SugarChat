@@ -446,7 +446,8 @@ namespace SugarChat.IntegrationTest.Services
                     Id = groupId2,
                     Name = "testGroup2",
                     AvatarUrl = "testAvatarUrl2",
-                    Description = "testDescription2"
+                    Description = "testDescription2",
+                    CustomProperties = new Dictionary<string, string> { { "GroupId", Guid.NewGuid().ToString() } }
                 });
                 AddGroupMemberCommand command = new AddGroupMemberCommand
                 {
@@ -485,6 +486,7 @@ namespace SugarChat.IntegrationTest.Services
                 }
                 var groupUserIds = groupUsersUpdateAfter.Select(x => x.Id);
                 (await repository.CountAsync<GroupUserCustomProperty>(x => groupUserIds.Contains(x.GroupUserId) && x.Key == "Number")).ShouldBe(3);
+                (await repository.CountAsync<GroupUser>(x => groupUserIds.Contains(x.Id) && x.CustomProperties.ContainsKey("Number"))).ShouldBe(3);
             }, builder =>
             {
                 var iSecurityManager = Container.Resolve<ISecurityManager>();

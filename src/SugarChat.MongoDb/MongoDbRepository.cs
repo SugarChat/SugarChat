@@ -286,7 +286,7 @@ namespace SugarChat.Data.MongoDb
                     foreach (var property in properties)
                     {
                         var propertyName = property.Name;
-                        if (new string[] { "CreatedBy", "CreatedDate" }.Contains(propertyName) && propertyName != "CustomProperties")
+                        if (new string[] { nameof(src.Id), nameof(src.CreatedBy), nameof(src.CreatedDate) }.Contains(propertyName) && propertyName != nameof(src.CustomProperties))
                             continue;
 
                         if (JsonConvert.SerializeObject(property.GetValue(src)) != JsonConvert.SerializeObject(property.GetValue(dest)))

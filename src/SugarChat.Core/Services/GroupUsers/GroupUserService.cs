@@ -471,6 +471,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
             foreach (var groupUser in newGroupUsers)
             {
+                groupUser.LastModifyBy = command.UserId;
+                groupUser.LastModifyDate = DateTime.UtcNow;
                 if (groupUser.CustomProperties == null)
                     groupUser.CustomProperties = new Dictionary<string, string>();
                 var group = groups.Single(x => x.Id == groupUser.GroupId);

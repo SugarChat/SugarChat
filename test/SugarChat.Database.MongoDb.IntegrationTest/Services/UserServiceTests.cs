@@ -94,7 +94,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.Services
             UserRemovedEvent removeUserEvent =
                 await _userService.RemoveUserAsync(removeUserCommand);
             User user = await Repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserEvent.Id);
-            user.ShouldBeNull();
+            user.IsDel.ShouldBeTrue();
             removeUserEvent.Id.ShouldBe(Tom.Id);
             removeUserEvent.Status.ShouldBe(EventStatus.Success);
         }

@@ -117,20 +117,21 @@ namespace SugarChat.IntegrationTest.Services
                     LastModifyDate = DateTimeOffset.Now,
                     LastModifyBy = Guid.NewGuid().ToString(),
                     Name = groupDic.ElementAt(i).Value,
-                    Type = 10
+                    Type = 10,
+                    CustomProperties = new Dictionary<string, string> { { "A", i.ToString() + "AB" } }
                 });
                 repository.AddAsync(new GroupCustomProperty
                 {
                     GroupId = groupDic.ElementAt(i).Key,
                     Key = "A",
                     Value = i.ToString() + "AB"
-                }, default(CancellationToken)).Wait();
+                }, default).Wait();
                 repository.AddAsync(new GroupCustomProperty
                 {
                     GroupId = groupDic.ElementAt(i).Key,
                     Key = "B",
                     Value = (i % 2).ToString() + "BC"
-                }, default(CancellationToken)).Wait();
+                }, default).Wait();
             }
         }
         private void GenerateUserCollection(Dictionary<string, string> userDic)

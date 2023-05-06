@@ -18,10 +18,8 @@ using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.Services.GroupUserCustomProperties;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 using Serilog;
-using SugarChat.Core.Services.Messages;
 using SugarChat.Core.Services.GroupCustomProperties;
 using SugarChat.Core.Utils;
 
@@ -140,7 +138,7 @@ namespace SugarChat.Core.Services.GroupUsers
                 groupUserDto.AvatarUrl = user?.AvatarUrl;
                 groupUserDto.DisplayName = user?.DisplayName;
                 var _groupUserCustomProperties = groupUserCustomProperties.Where(x => x.GroupUserId == groupUserDto.Id).ToList();
-                groupUserDto.CustomProperties = _groupUserCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupUserDto.CustomProperties = _groupUserCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
             }
 
             return new GetMembersOfGroupResponse
@@ -158,6 +156,7 @@ namespace SugarChat.Core.Services.GroupUsers
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(command.UserId, command.GroupId);
 
+            groupUser.CustomProperties = command.CustomProperties;
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserId(groupUser.Id, cancellationToken).ConfigureAwait(false);
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             if (command.CustomProperties != null && command.CustomProperties.Any())
@@ -458,65 +457,76 @@ namespace SugarChat.Core.Services.GroupUsers
 
             var ids = command.GroupUsers.Select(x => x.Id).ToList();
             var groupUsers = await _groupUserDataProvider.GetListByIdsAsync(ids, cancellationToken).ConfigureAwait(false);
-            var groupIds = command.GroupUsers.Select(x => x.GroupId).ToList();
-            groupIds.AddRange(groupUsers.Select(x => x.GroupId));
+            var groupIds = groupUsers.Select(x => x.GroupId).ToList();
+            groupIds.AddRange(command.GroupUsers.Select(x => x.GroupId).ToList());
             var groups = (await _groupDataProvider.GetByIdsAsync(groupIds, null, cancellationToken).ConfigureAwait(false)).Result;
             foreach (var groupUser in groupUsers)
             {
                 var group = groups.SingleOrDefault(x => x.Id == groupUser.GroupId);
                 group.CheckExist(groupUser.GroupId);
             }
-            var userIds = groupUsers.Select(x => x.UserId);
-            var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id));
 
+            var newGroupUsers = _mapper.Map<IEnumerable<GroupUser>>(command.GroupUsers);
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserIds(command.GroupUsers.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
             var oldGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
-            foreach (var groupUserDto in command.GroupUsers)
+
+            foreach (var groupUser in newGroupUsers)
             {
-                var groupUser = groupUsers.FirstOrDefault(x => x.Id == groupUserDto.Id);
-                if (groupUser != null)
+                groupUser.LastModifyBy = command.UserId;
+                groupUser.LastModifyDate = DateTime.UtcNow;
+                if (groupUser.CustomProperties == null)
+                    groupUser.CustomProperties = new Dictionary<string, string>();
+                var group = groups.Single(x => x.Id == groupUser.GroupId);
+                if (group.CustomProperties != null)
                 {
-                    _mapper.MapIgnoreNull(groupUserDto, groupUser);
-                    if (groupUserDto.CustomProperties != null && groupUserDto.CustomProperties.Any())
+                    foreach (var customProperty in group.CustomProperties)
                     {
-                        oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
-                        var group = groups.Where(x => x.Id == groupUserDto.GroupId).Single();
-                        if (group.CustomProperties != null)
+                        if (!groupUser.CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser.CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+
+                oldGroupUserCustomProperties.AddRange(groupUserCustomProperties.Where(x => x.GroupUserId == groupUser.Id).ToList());
+
+                if (groupUser.CustomProperties != null && groupUser.CustomProperties.Any())
+                {
+                    foreach (var customProperty in groupUser.CustomProperties)
+                    {
+                        newGroupUserCustomProperties.Add(new GroupUserCustomProperty
                         {
-                            foreach (var customProperty in group.CustomProperties)
-                            {
-                                if (!groupUserDto.CustomProperties.ContainsKey(customProperty.Key))
-                                    groupUserDto.CustomProperties.Add(customProperty.Key, customProperty.Value);
-                            }
-                        }
-                        foreach (var customProperty in groupUserDto.CustomProperties)
-                        {
-                            newGroupUserCustomProperties.Add(new GroupUserCustomProperty
-                            {
-                                GroupUserId = groupUser.Id,
-                                Key = customProperty.Key,
-                                Value = customProperty.Value,
-                                CreatedBy = command.UserId
-                            });
-                        }
+                            GroupUserId = groupUser.Id,
+                            Key = customProperty.Key,
+                            Value = customProperty.Value,
+                            CreatedBy = command.UserId
+                        });
                     }
                 }
             }
 
-            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            var time = 0;
+            while (time < 3)
             {
-                try
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-                    await _groupUserCustomPropertyDataProvider.RemoveRangeAsync(oldGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await _groupUserCustomPropertyDataProvider.AddRangeAsync(newGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-                    throw;
+                    try
+                    {
+                        await _groupUserDataProvider.UpdateRangeAsync(newGroupUsers, groupUsers, cancellationToken).ConfigureAwait(false);
+                        await _groupUserCustomPropertyDataProvider.RemoveRangeAsync(oldGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                        await _groupUserCustomPropertyDataProvider.AddRangeAsync(newGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        time++;
+                        Log.Warning(ex, "UpdateGroupUserDataAsync retry by " + time);
+                        if (time > 2)
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
         }

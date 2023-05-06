@@ -13,6 +13,7 @@ using SugarChat.Message.Requests;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
+using SugarChat.Core.Services.GroupUsers;
 
 namespace SugarChat.Core.Services.Users
 {
@@ -22,13 +23,19 @@ namespace SugarChat.Core.Services.Users
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly ITransactionManager _transactionManagement;
+        private readonly IGroupUserDataProvider _groupUserDataProvider;
 
-        public UserService(IMapper mapper, IUserDataProvider userDataProvider, IFriendDataProvider friendDataProvider, ITransactionManager transactionManagement)
+        public UserService(IMapper mapper,
+            IUserDataProvider userDataProvider,
+            IFriendDataProvider friendDataProvider,
+            ITransactionManager transactionManagement,
+            IGroupUserDataProvider groupUserDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
             _transactionManagement = transactionManagement;
+            _groupUserDataProvider = groupUserDataProvider;
         }
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
@@ -61,9 +68,15 @@ namespace SugarChat.Core.Services.Users
             User user = await _userDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.Id);
 
-            await _userDataProvider.RemoveAsync(user, cancellationToken).ConfigureAwait(false);
+            user.IsDel = true;
+            await _userDataProvider.UpdateAsync(user, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<UserRemovedEvent>(command);
+        }
+
+        public async Task RemoveAllUserAsync(CancellationToken cancellationToken = default)
+        {
+            await _userDataProvider.RemoveAsync(x => true, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<GetUserResponse> GetUserAsync(GetUserRequest request,

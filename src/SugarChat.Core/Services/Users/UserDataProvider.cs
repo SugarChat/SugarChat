@@ -59,6 +59,11 @@ namespace SugarChat.Core.Services.Users
             }
         }
 
+        public async Task RemoveAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            await _repository.RemoveAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task AddRangeAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
         {
             await _repository.AddRangeAsync(users, cancellationToken).ConfigureAwait(false);

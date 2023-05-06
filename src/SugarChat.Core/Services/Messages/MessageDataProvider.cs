@@ -339,7 +339,7 @@ namespace SugarChat.Core.Services.Messages
                     unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                     unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
                     var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == lastMessage.Id).ToList();
-                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
                 }
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }

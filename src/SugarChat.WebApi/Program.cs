@@ -25,6 +25,7 @@ namespace SugarChat.WebApi
             {
                 Log.Logger = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration)
+                    .Enrich.WithProperty("Application", configuration.GetSection("Application").Value)
                     .Enrich.WithProperty("ReleaseVersion", configuration.GetValue<string>("ReleaseVersion"))
                     .Enrich.WithCorrelationIdHeader()
                     .CreateLogger();
@@ -35,7 +36,7 @@ namespace SugarChat.WebApi
                     .MinimumLevel.Information()
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                     .Enrich.FromLogContext()
-                    .Enrich.WithProperty("Application", "SugarChat.WebApi")
+                    .Enrich.WithProperty("Application", configuration.GetSection("Application").Value)
                     .Enrich.WithProperty("ReleaseVersion", configuration.GetValue<string>("ReleaseVersion"))
                     .Enrich.WithCorrelationIdHeader()
                     .WriteTo.Seq(Environment.GetEnvironmentVariable("Serilog.Seq"), apiKey: Environment.GetEnvironmentVariable("Serilog.Seq.Apikey"))

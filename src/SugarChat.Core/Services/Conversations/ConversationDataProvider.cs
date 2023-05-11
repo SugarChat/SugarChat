@@ -71,8 +71,9 @@ namespace SugarChat.Core.Services.Conversations
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
+                var startTime = DateTime.Now.AddMonths(-6);
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
-                    .Where(x => x.SentTime > DateTime.Now.AddMonths(-6))
+                    .Where(x => x.SentTime > startTime)
                     .GroupBy(x => x.GroupId)
                     .Select(x => x.Key)
                     .ToList();
@@ -187,8 +188,9 @@ namespace SugarChat.Core.Services.Conversations
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
+                var startTime = DateTime.Now.AddMonths(-6);
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
-                    .Where(x => x.SentTime > DateTime.Now.AddMonths(-24))
+                    .Where(x => x.SentTime > startTime)
                     .GroupBy(x => x.GroupId)
                     .Select(x => x.Key)
                     .ToList();

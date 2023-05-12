@@ -21,6 +21,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message.Paging;
 using Serilog;
 using SugarChat.Core.Services.GroupCustomProperties;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -279,7 +280,7 @@ namespace SugarChat.Core.Services.GroupUsers
             while (time < 3)
             {
                 IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.GroupUserIds, cancellationToken)).Select(x => x.UserId);
-                var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct();
+                var needAddGroupUserIds = command.GroupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct().ToList();
                 if (!needAddGroupUserIds.Any())
                 {
                     break;
@@ -298,7 +299,8 @@ namespace SugarChat.Core.Services.GroupUsers
                             {
                                 foreach (var customProperty in group.CustomProperties)
                                 {
-                                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                                 }
                             }
                             var groupUser = new GroupUser
@@ -443,7 +445,7 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             var groupUsers = await _groupUserDataProvider.GetByGroupIdsAsync(request.GroupIds, cancellationToken).ConfigureAwait(false);
 
-            var userIds = groupUsers.Select(x => x.UserId).Distinct();
+            var userIds = groupUsers.Select(x => x.UserId).Distinct().ToList();
 
             return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
         }

@@ -146,7 +146,7 @@ namespace SugarChat.Core.Services.Groups
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
-                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
 
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
                     Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
@@ -204,7 +204,7 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
-            groupDto.CustomProperties = groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+            groupDto.CustomProperties = groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
@@ -305,7 +305,7 @@ namespace SugarChat.Core.Services.Groups
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
-                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count())
                     Log.Warning("GetGroupProfileAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
             }

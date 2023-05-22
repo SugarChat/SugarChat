@@ -89,12 +89,44 @@ namespace SugarChat.IntegrationTest.Services.Users
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {
                 await AddUser(repository);
+                await repository.AddAsync(new GroupUser
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    GroupId = Guid.NewGuid().ToString(),
+                    UserId = Tom.Id,
+                });
+                await repository.AddAsync(new GroupUser
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    GroupId = Guid.NewGuid().ToString(),
+                    UserId = Tom.Id,
+                });
                 RemoveUserCommand removeUserCommand = new()
                 {
                     Id = Tom.Id
                 };
                 var response = await mediator.SendAsync<RemoveUserCommand, SugarChatResponse>(removeUserCommand);
-                (await repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserCommand.Id)).ShouldBeNull();
+                (await repository.SingleOrDefaultAsync<User>(o => o.Id == removeUserCommand.Id)).IsDel.ShouldBeTrue();
+                (await repository.ToListAsync<GroupUser>(x => x.UserId == Tom.Id)).Count().ShouldBe(2);
+            });
+        }
+
+        [Fact]
+        public async Task ShouldRemoveAllUser()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    AddUserCommand addUserCommand = new AddUserCommand
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                    };
+                    await mediator.SendAsync<AddUserCommand, SugarChatResponse>(addUserCommand);
+                }
+                (await repository.ToListAsync<User>()).Count().ShouldBe(20);
+                await mediator.SendAsync<RemoveAllUserCommand, SugarChatResponse>(new RemoveAllUserCommand());
+                (await repository.ToListAsync<User>()).Count().ShouldBe(0);
             });
         }
 

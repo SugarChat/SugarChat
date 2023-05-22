@@ -441,20 +441,23 @@ namespace SugarChat.IntegrationTest.Services
                     Id = userId
                 });
                 await AddGroup(repository);
-                await repository.AddAsync(new Group
+                var group2 = new Group
                 {
                     Id = groupId2,
                     Name = "testGroup2",
                     AvatarUrl = "testAvatarUrl2",
-                    Description = "testDescription2"
-                });
+                    Description = "testDescription2",
+                    CustomProperties = new Dictionary<string, string> { { "GroupId", Guid.NewGuid().ToString() } }
+                };
+                await repository.AddAsync(group2);
                 AddGroupMemberCommand command = new AddGroupMemberCommand
                 {
                     GroupId = groupId,
                     AdminId = Guid.NewGuid().ToString(),
                     GroupUserIds = userIds,
                     CreatedBy = userId,
-                    Role = UserRole.Admin
+                    Role = UserRole.Admin,
+                    CustomProperties = new Dictionary<string, string> { { "AAA", Guid.NewGuid().ToString() } }
                 };
                 await mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
                 var groupUsers = await repository.ToListAsync<GroupUser>();
@@ -482,9 +485,12 @@ namespace SugarChat.IntegrationTest.Services
                     groupUserUpdateAfter.MessageRemindType.ShouldBe(groupUesrDto.MessageRemindType);
                     groupUserUpdateAfter.CreatedBy.ShouldBe(groupUser.CreatedBy);
                     groupUserUpdateAfter.CreatedDate.ShouldBe(groupUser.CreatedDate);
+                    groupUesrDto.CustomProperties.Add(group2.CustomProperties.ElementAt(0).Key, group2.CustomProperties.ElementAt(0).Value);
+                    groupUserUpdateAfter.CustomProperties.ShouldBe(groupUesrDto.CustomProperties);
                 }
                 var groupUserIds = groupUsersUpdateAfter.Select(x => x.Id);
                 (await repository.CountAsync<GroupUserCustomProperty>(x => groupUserIds.Contains(x.GroupUserId) && x.Key == "Number")).ShouldBe(3);
+                (await repository.CountAsync<GroupUser>(x => groupUserIds.Contains(x.Id) && x.CustomProperties.ContainsKey("Number"))).ShouldBe(3);
             }, builder =>
             {
                 var iSecurityManager = Container.Resolve<ISecurityManager>();

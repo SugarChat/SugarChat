@@ -64,6 +64,14 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("removeAll"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> RemoveAllUser(RemoveAllUserCommand command)
+        {
+            var response = await _mediator.SendAsync<RemoveAllUserCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
         [Route("getCurrentUser"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<UserDto>))]
         public async Task<IActionResult> GetCurrentUser([FromQuery] GetCurrentUserRequest request)

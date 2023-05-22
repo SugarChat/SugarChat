@@ -107,7 +107,7 @@ namespace SugarChat.Database.MongoDb.IntegrationTest.DataProviders
         public async Task Should_Throw_Exception_On_Removing_None_Exist_User()
         {
             await Assert.ThrowsAnyAsync<BusinessException>(async () =>
-                await _userDataProvider.RemoveAsync(new() {Id = "0"}));
+                await _userDataProvider.RemoveAsync(new User() {Id = "0"}));
         }
         
         

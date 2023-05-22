@@ -20,6 +20,7 @@ using System;
 using SugarChat.Core.IRepositories;
 using SugarChat.Core.Services.GroupCustomProperties;
 using Serilog;
+using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -145,7 +146,7 @@ namespace SugarChat.Core.Services.Groups
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
-                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
 
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count)
                     Log.Warning("GetGroupsOfUserAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
@@ -203,7 +204,7 @@ namespace SugarChat.Core.Services.Groups
 
             var groupDto = _mapper.Map<GroupDto>(group);
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(group.Id);
-            groupDto.CustomProperties = groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+            groupDto.CustomProperties = groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
             groupDto.MemberCount =
                 await _groupUserDataProvider.GetGroupMemberCountByGroupIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
 
@@ -222,8 +223,36 @@ namespace SugarChat.Core.Services.Groups
             var group = await _groupDataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
             group.CheckExist(command.Id);
 
-            group = _mapper.Map<Group>(command);
-            await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            _mapper.MapIgnoreNull(command, group);
+
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellationToken).ConfigureAwait(false);
+            var newGroupCustomProperties = new List<GroupCustomProperty>();
+            foreach (var customProperty in command.CustomProperties)
+            {
+                newGroupCustomProperties.Add(new GroupCustomProperty
+                {
+                    GroupId = group.Id,
+                    Key = customProperty.Key,
+                    Value = customProperty.Value,
+                    CreatedBy = group.CreatedBy,
+                    CreatedDate = DateTime.UtcNow
+                });
+            }
+            using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                try
+                {
+                    await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+                    await _groupCustomPropertyDataProvider.RemoveRangeAsync(groupCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await _groupCustomPropertyDataProvider.AddRangeAsync(newGroupCustomProperties, cancellationToken).ConfigureAwait(false);
+                    await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                    throw;
+                }
+            }
 
             return _mapper.Map<GroupProfileUpdatedEvent>(command);
         }
@@ -276,7 +305,7 @@ namespace SugarChat.Core.Services.Groups
             foreach (var groupDto in groupDtos)
             {
                 var _groupCustomProperties = groupCustomProperties.Where(x => x.GroupId == groupDto.Id).ToList();
-                groupDto.CustomProperties = _groupCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                groupDto.CustomProperties = _groupCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
                 if (groupDto.CustomProperties.Count < _groupCustomProperties.Count())
                     Log.Warning("GetGroupProfileAsync: An item with the same key has already been added.GroupId: " + groupDto.Id);
             }

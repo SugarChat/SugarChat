@@ -480,7 +480,7 @@ namespace SugarChat.Core.Services.Messages
             foreach (var message in messages)
             {
                 var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == message.Id).ToList();
-                message.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                message.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
             }
         }
 

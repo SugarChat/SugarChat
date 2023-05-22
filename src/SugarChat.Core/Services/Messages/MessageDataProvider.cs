@@ -339,7 +339,7 @@ namespace SugarChat.Core.Services.Messages
                     unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                     unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
                     var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == lastMessage.Id).ToList();
-                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.Select(x => new { x.Key, x.Value }).Distinct().ToDictionary(x => x.Key, x => x.Value);
+                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
                 }
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }
@@ -413,8 +413,13 @@ namespace SugarChat.Core.Services.Messages
             IEnumerable<SearchParamDto> searchParams,
             CancellationToken cancellationToken = default)
         {
-            var where = _tableUtil.GetWhere(userId, filterGroupIds, groupType, searchParams, null);
-            return System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
+            var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var unreadCount = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Sum(x => x.UnreadCount);
+            stopwatch.Stop();
+            Log.Information("GetTotalByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+            return unreadCount;
         }
     }
 

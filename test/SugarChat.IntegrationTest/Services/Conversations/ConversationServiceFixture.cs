@@ -360,8 +360,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                                     new SearchParamDetail { Key = "test", Value = "test1" },
                                     new SearchParamDetail { Key = "Content", Value = "是"}
                                 },
-                                InternalJoin = JoinType.Or,
-                                ExternalJoin = JoinType.Or
+                                InternalJoin = JoinType.Or
                             }
                         },
                         SearchParams = new List<SearchParamDto> {
@@ -374,8 +373,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         }
                     };
                     var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    response.Data.Result.Count().ShouldBe(2);
-                    response.Data.Total.ShouldBe(2);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
                 }
             });
         }

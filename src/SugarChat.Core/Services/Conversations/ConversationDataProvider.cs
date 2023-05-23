@@ -68,10 +68,20 @@ namespace SugarChat.Core.Services.Conversations
 
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
+                var keywordLength = 999;
+                if (searchByKeywordParams.Count() == 1
+                    && searchByKeywordParams.Single().SearchParamDetails.Count() == 1
+                    && searchByKeywordParams.Single().SearchParamDetails.Single().Key == nameof(Domain.Message.Content))
+                {
+                    keywordLength = searchByKeywordParams.Single().SearchParamDetails.Single().Value.Length;
+                }
+                if (keywordLength == 1)
+                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword");
+
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var startTime = DateTime.Now.AddMonths(-6);
+                var startTime = keywordLength == 2 ? DateTime.Now.AddMonths(-3) : DateTime.Now.AddMonths(-6);
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
                     .Where(x => x.SentTime > startTime)
                     .GroupBy(x => x.GroupId)
@@ -185,10 +195,20 @@ namespace SugarChat.Core.Services.Conversations
 
             if (searchByKeywordParams != null && searchByKeywordParams.Any())
             {
+                var keywordLength = 999;
+                if (searchByKeywordParams.Count() == 1
+                    && searchByKeywordParams.Single().SearchParamDetails.Count() == 1
+                    && searchByKeywordParams.Single().SearchParamDetails.Single().Key == nameof(Domain.Message.Content))
+                {
+                    keywordLength = searchByKeywordParams.Single().SearchParamDetails.Single().Value.Length;
+                }
+                if (keywordLength == 1)
+                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword");
+
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var startTime = DateTime.Now.AddMonths(-6);
+                var startTime = keywordLength == 2 ? DateTime.Now.AddMonths(-3) : DateTime.Now.AddMonths(-6);
                 var groupIdsByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Message>(), whereByMessage)
                     .Where(x => x.SentTime > startTime)
                     .GroupBy(x => x.GroupId)

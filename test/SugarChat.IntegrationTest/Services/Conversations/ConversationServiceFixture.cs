@@ -17,10 +17,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using SugarChat.Core.Services.Groups;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Basic;
-using SugarChat.Core.Services.Conversations;
 
 namespace SugarChat.IntegrationTest.Services.Conversations
 {
@@ -369,6 +367,51 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                                     new SearchParamDetail { Key = "A", Value = "2AB,3AB" }
                                 },
                                 InternalJoin = JoinType.Or
+                            }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        UserId = userId,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4 },
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "Content", Value = "是"}
+                                }
+                            }
+                        },
+                        SearchParams = new List<SearchParamDto> {
+                            new SearchParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "A", Value = "2AB,3AB" }
+                                },
+                                InternalJoin = JoinType.Or
+                            }
+                        }
+                    };
+                    Func<Task> func = async () => await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    (await func().ShouldThrowAsync<Exception>()).Message.ShouldBe("There is too much data found. If you use keyword to query, please optimize the keyword");
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        UserId = userId,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 },
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "Content", Value = "QC", ConditionCondition = Condition.Contain }
+                                }
                             }
                         }
                     };

@@ -88,7 +88,7 @@ namespace SugarChat.Core.Services.Conversations
                     .Select(x => x.Key)
                     .ToList();
                 stopwatch.Stop();
-                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByMessage);
+                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByMessage, groupIdsByMessage.Count());
 
                 var whereByGroupUser = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
                 stopwatch.Restart();
@@ -98,7 +98,7 @@ namespace SugarChat.Core.Services.Conversations
                     .Select(x => x.GroupId)
                     .ToList();
                 stopwatch.Stop();
-                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByGroupUser);
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByGroupUser, groupIdsByGroupUser.Count());
 
                 var temepGroups = new List<TemepGroup>();
                 stopwatch.Restart();
@@ -215,7 +215,7 @@ namespace SugarChat.Core.Services.Conversations
                     .Select(x => x.Key)
                     .ToList();
                 stopwatch.Stop();
-                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByMessage);
+                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByMessage, groupIdsByMessage.Count());
 
                 var whereByGroupUser = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
                 stopwatch.Restart();
@@ -226,7 +226,7 @@ namespace SugarChat.Core.Services.Conversations
                     .Select(x => x.GroupId)
                     .ToList();
                 stopwatch.Stop();
-                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, whereByGroupUser);
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByGroupUser, groupIdsByGroupUser.Count());
 
                 var temepGroups = new List<TemepGroup>();
                 stopwatch.Restart();

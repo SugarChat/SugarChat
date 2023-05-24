@@ -114,7 +114,10 @@ namespace SugarChat.Core.Services.Conversations
                 stopwatch.Stop();
                 Log.Information("GetGroupIdsByGroupUserAndMessage run {@Ms}{@GroupUserWhere}{@MessageWhere}", stopwatch.ElapsedMilliseconds, whereByGroupUser, whereByMessage);
 
-                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId)).ToList();
+                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId))
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .ToList();
                 total = temepGroups.Where(x => groupIds.Contains(x.GroupId)).Count();
             }
             else
@@ -242,7 +245,10 @@ namespace SugarChat.Core.Services.Conversations
                 stopwatch.Stop();
                 Log.Information("GetGroupIdsByGroupUserAndMessage run {@Ms}{@GroupUserWhere}{@MessageWhere}", stopwatch.ElapsedMilliseconds, whereByGroupUser, whereByMessage);
 
-                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId)).ToList();
+                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId))
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .ToList();
                 total = temepGroups.Where(x => groupIdsByGroupUser.Contains(x.GroupId)).Count();
             }
             else

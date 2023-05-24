@@ -398,7 +398,7 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                         }
                     };
                     Func<Task> func = async () => await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    (await func().ShouldThrowAsync<Exception>()).Message.ShouldBe("There is too much data found. If you use keyword to query, please optimize the keyword");
+                    (await func().ShouldThrowAsync<Exception>()).Message.ShouldBe("There is too much data found. If you use keyword to query, please optimize the keyword.");
                 }
                 {
                     GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
@@ -411,6 +411,25 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                             new SearchMessageParamDto {
                                 SearchParamDetails = new List<SearchParamDetail> {
                                     new SearchParamDetail { Key = "Content", Value = "QC", ConditionCondition = Condition.Contain }
+                                }
+                            }
+                        }
+                    };
+                    var response = await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
+                    response.Data.Result.Count().ShouldBe(1);
+                    response.Data.Total.ShouldBe(1);
+                }
+                {
+                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
+                    {
+                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
+                        UserId = userId,
+                        GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 },
+                        GroupType = 10,
+                        SearchMessageParams = new List<SearchMessageParamDto> {
+                            new SearchMessageParamDto {
+                                SearchParamDetails = new List<SearchParamDetail> {
+                                    new SearchParamDetail { Key = "Content", Value = "qc", ConditionCondition = Condition.Contain }
                                 }
                             }
                         }

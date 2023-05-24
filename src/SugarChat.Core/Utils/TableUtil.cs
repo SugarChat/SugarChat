@@ -178,7 +178,7 @@ namespace SugarChat.Core.Utils
                                     searchs.Add($@"{key}<={_value}");
                                     break;
                                 case Condition.Contain:
-                                    searchs.Add($@"{key}.Contains({_value})");
+                                    searchs.Add($@"{key}.ToUpper().Contains({_value}.ToUpper())");
                                     break;
                             }
                         }

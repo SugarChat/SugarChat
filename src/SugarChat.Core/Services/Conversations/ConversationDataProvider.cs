@@ -76,7 +76,7 @@ namespace SugarChat.Core.Services.Conversations
                     keywordLength = searchByKeywordParams.Single().SearchParamDetails.Single().Value.Length;
                 }
                 if (keywordLength == 1)
-                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword");
+                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword.");
 
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();
@@ -206,7 +206,7 @@ namespace SugarChat.Core.Services.Conversations
                     keywordLength = searchByKeywordParams.Single().SearchParamDetails.Single().Value.Length;
                 }
                 if (keywordLength == 1)
-                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword");
+                    throw new Exception("There is too much data found. If you use keyword to query, please optimize the keyword.");
 
                 var whereByMessage = _tableUtil.GetWhereByMessage(filterGroupIds, searchByKeywordParams);
                 Stopwatch stopwatch = new Stopwatch();

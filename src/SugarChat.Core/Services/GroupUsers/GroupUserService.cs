@@ -156,7 +156,14 @@ namespace SugarChat.Core.Services.GroupUsers
                     cancellationToken).ConfigureAwait(false);
             groupUser.CheckExist(command.UserId, command.GroupId);
 
-            groupUser.CustomProperties = command.CustomProperties;
+            var groupUser_CustomProperties = new Dictionary<string, string>();
+            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.GroupId, cancellationToken).ConfigureAwait(false);
+            foreach (var customProperty in groupCustomProperties)
+            {
+                if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+            }
+
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserId(groupUser.Id, cancellationToken).ConfigureAwait(false);
             var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             if (command.CustomProperties != null && command.CustomProperties.Any())
@@ -170,8 +177,11 @@ namespace SugarChat.Core.Services.GroupUsers
                         Value = customProperty.Value,
                         CreatedBy = command.UserId
                     });
+                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                 }
             }
+            groupUser.CustomProperties = groupUser_CustomProperties;
 
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -325,7 +335,8 @@ namespace SugarChat.Core.Services.GroupUsers
                                         Value = customProperty.Value,
                                         CreatedBy = command.CreatedBy
                                     });
-                                    groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                                 }
                             }
                             needAddGroupUsers.Add(groupUser);

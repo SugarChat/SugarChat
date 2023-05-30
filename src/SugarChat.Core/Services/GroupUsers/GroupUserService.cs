@@ -157,15 +157,22 @@ namespace SugarChat.Core.Services.GroupUsers
             groupUser.CheckExist(command.UserId, command.GroupId);
 
             var groupUser_CustomProperties = new Dictionary<string, string>();
+            var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.GroupId, cancellationToken).ConfigureAwait(false);
             foreach (var customProperty in groupCustomProperties)
             {
+                newGroupUserCustomProperties.Add(new GroupUserCustomProperty
+                {
+                    GroupUserId = groupUser.Id,
+                    Key = customProperty.Key,
+                    Value = customProperty.Value,
+                    CreatedBy = command.UserId
+                });
                 if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
                     groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
             }
 
             var groupUserCustomProperties = await _groupUserCustomPropertyDataProvider.GetPropertiesByGroupUserId(groupUser.Id, cancellationToken).ConfigureAwait(false);
-            var newGroupUserCustomProperties = new List<GroupUserCustomProperty>();
             if (command.CustomProperties != null && command.CustomProperties.Any())
             {
                 foreach (var customProperty in command.CustomProperties)

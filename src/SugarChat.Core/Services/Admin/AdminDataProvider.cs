@@ -60,26 +60,6 @@ namespace SugarChat.Core.Services.Admin
                 await _repository.RemoveRangeAsync(needDeleteGroupUserCustomProperties);
             }
             {
-                var messageIds = _repository.Query<MessageCustomProperty>().GroupBy(x => new { x.MessageId, x.Key, x.Value }).Where(x => x.Count() > 1).Select(x => x.Key.MessageId).ToList();
-                messageIds = messageIds.Distinct().ToList();
-                var messageCustomProperties = _repository.Query<MessageCustomProperty>().Where(x => messageIds.Contains(x.MessageId)).ToList();
-
-                var needDeleteMessageCustomProperties = new List<MessageCustomProperty>();
-                foreach (var messageId in messageIds)
-                {
-                    var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == messageId).ToList();
-                    var groupBys = _messageCustomProperties.GroupBy(x => new { x.Key, x.Value }).ToList();
-                    foreach (var groupBy in groupBys)
-                    {
-                        if (groupBy.Count() > 1)
-                        {
-                            needDeleteMessageCustomProperties.AddRange(groupBy.OrderBy(x => x.CreatedDate).Skip(1).ToList());
-                        }
-                    }
-                }
-                await _repository.RemoveRangeAsync(needDeleteMessageCustomProperties);
-            }
-            {
                 var groupUserGroups = _repository.Query<GroupUser>().GroupBy(x => new { x.GroupId, x.UserId }).Where(x => x.Count() > 1).ToList();
                 var groupIds = groupUserGroups.Select(x => x.Key.GroupId).ToList();
                 var userIds = groupUserGroups.Select(x => x.Key.UserId).ToList();

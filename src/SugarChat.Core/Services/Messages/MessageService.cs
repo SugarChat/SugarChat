@@ -19,7 +19,6 @@ using SugarChat.Message.Responses.Messages;
 using System.Linq;
 using SugarChat.Core.Services.Configurations;
 using SugarChat.Message.Paging;
-using SugarChat.Core.Services.MessageCustomProperties;
 using SugarChat.Core.IRepositories;
 using Serilog;
 using SugarChat.Core.Services.GroupUserCustomProperties;
@@ -36,7 +35,6 @@ namespace SugarChat.Core.Services.Messages
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IConfigurationDataProvider _configurationDataProvider;
-        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
         private readonly ITransactionManager _transactionManagement;
         private readonly IGroupUserCustomPropertyDataProvider _groupUserCustomPropertyDataProvider;
 
@@ -44,7 +42,6 @@ namespace SugarChat.Core.Services.Messages
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
             IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider,
-            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider,
             ITransactionManager transactionManagement,
             IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider)
         {
@@ -55,7 +52,6 @@ namespace SugarChat.Core.Services.Messages
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _configurationDataProvider = configurationDataProvider;
-            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
             _transactionManagement = transactionManagement;
             _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
         }
@@ -75,7 +71,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetAllUnreadToUserAsync(userId, request.GroupType, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllUnreadToUserResponse
             {
                 Messages = messageDtos
@@ -98,7 +93,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetUnreadToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadToUserFromFriendResponse
             {
                 Messages = messageDtos
@@ -121,7 +115,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetAllHistoryToUserWithFriendAsync(request.UserId, request.FriendId, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserFromFriendResponse
             {
                 Messages = messageDtos
@@ -137,7 +130,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetAllHistoryToUserAsync(userId, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllHistoryToUserResponse
             {
                 Messages = messageDtos
@@ -161,7 +153,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetUnreadMessagesFromGroupAsync(request.UserId, request.GroupId, request.MessageId, request.Count, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetUnreadMessagesFromGroupResponse
             {
                 Messages = messageDtos
@@ -185,7 +176,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetAllMessagesFromGroupAsync(request.GroupId, request.Index, request.MessageId, request.Count, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new GetAllMessagesFromGroupResponse
             {
                 Messages = messageDtos
@@ -200,7 +190,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetMessagesOfGroupAsync(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages.Result);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
                 Messages = new PagedResult<MessageDto>
@@ -222,7 +211,6 @@ namespace SugarChat.Core.Services.Messages
                 await _messageDataProvider.GetMessagesOfGroupBeforeAsync(request.MessageId, request.Count,
                     cancellationToken);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return new()
             {
                 Messages = messageDtos
@@ -321,20 +309,6 @@ namespace SugarChat.Core.Services.Messages
             Domain.Message message = _mapper.Map<Domain.Message>(command);
             message.SentTime = DateTime.Now;
 
-            var messageCustomProperties = new List<MessageCustomProperty>();
-            if (command.CustomProperties != null && command.CustomProperties.Any())
-            {
-                foreach (var customProperty in command.CustomProperties)
-                {
-                    messageCustomProperties.Add(new MessageCustomProperty
-                    {
-                        MessageId = command.Id,
-                        Key = customProperty.Key,
-                        Value = customProperty.Value
-                    });
-                }
-            }
-
             int time = 1;
             do
             {
@@ -358,7 +332,6 @@ namespace SugarChat.Core.Services.Messages
                             groupUser.LastSentTime = group.LastSentTime;
                         }
                         await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
-                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
                         await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);
                         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                         break;
@@ -406,7 +379,6 @@ namespace SugarChat.Core.Services.Messages
 
             var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
             var messageDtos = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList();
-            await GetPropertiesForMessages(messageDtos, cancellationToken).ConfigureAwait(false);
             return messageDtos;
         }
 
@@ -431,37 +403,17 @@ namespace SugarChat.Core.Services.Messages
                 _user.CheckExist(message.SentBy);
             }
 
-            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(command.Messages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
-            var oldMessageCustomProperties = new List<MessageCustomProperty>();
-            var newMessageCustomProperties = new List<MessageCustomProperty>();
             foreach (var messageDto in command.Messages)
             {
                 var message = messages.FirstOrDefault(x => x.Id == messageDto.Id);
                 if (message != null)
-                {
                     _mapper.Map(messageDto, message);
-                    if (messageDto.CustomProperties != null && messageDto.CustomProperties.Any())
-                    {
-                        oldMessageCustomProperties.AddRange(messageCustomProperties.Where(x => x.MessageId == message.Id).ToList());
-                        foreach (var customProperty in messageDto.CustomProperties)
-                        {
-                            newMessageCustomProperties.Add(new MessageCustomProperty
-                            {
-                                MessageId = messageDto.Id,
-                                Key = customProperty.Key,
-                                Value = customProperty.Value
-                            });
-                        }
-                    }
-                }
             }
 
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {
                 try
                 {
-                    await _messageCustomPropertyDataProvider.RemoveRangeAsync(oldMessageCustomProperties, cancellationToken).ConfigureAwait(false);
-                    await _messageCustomPropertyDataProvider.AddRangeAsync(newMessageCustomProperties, cancellationToken).ConfigureAwait(false);
                     await _messageDataProvider.UpdateRangeAsync(messages, cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -469,56 +421,6 @@ namespace SugarChat.Core.Services.Messages
                 {
                     await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
                     throw;
-                }
-            }
-        }
-
-        private async Task GetPropertiesForMessages(IEnumerable<MessageDto> messages, CancellationToken cancellationToken)
-        {
-            var messageIds = messages.Select(x => x.Id);
-            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
-            foreach (var message in messages)
-            {
-                var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == message.Id).ToList();
-                message.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
-            }
-        }
-
-        /// <summary>
-        /// 迁移数据使用，一次性代码
-        /// </summary>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public async Task MigrateCustomPropertyAsync(CancellationToken cancellation = default)
-        {
-            var total = await _messageDataProvider.GetCountAsync(x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
-            var pageSize = 5000;
-            var pageIndex = total / pageSize + 1;
-            for (int i = 1; i <= pageIndex; i++)
-            {
-                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
-                {
-                    try
-                    {
-                        var messages = await _messageDataProvider.GetListAsync(new PageSettings { PageNum = 1, PageSize = pageSize }, x => x.CustomProperties != null && x.CustomProperties != new Dictionary<string, string>(), cancellation).ConfigureAwait(false);
-                        var messageCustomProperties = new List<MessageCustomProperty>();
-                        foreach (var message in messages)
-                        {
-                            foreach (var customProperty in message.CustomProperties)
-                            {
-                                messageCustomProperties.Add(new MessageCustomProperty { MessageId = message.Id, Key = customProperty.Key, Value = customProperty.Value });
-                            }
-                            message.CustomProperties = new Dictionary<string, string>();
-                        }
-                        await _messageDataProvider.UpdateRangeAsync(messages, cancellation).ConfigureAwait(false);
-                        await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellation).ConfigureAwait(false);
-                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Migrate Message CustomProperty Error");
-                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
-                    }
                 }
             }
         }

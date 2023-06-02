@@ -15,13 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Paging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
 using SugarChat.Core.Services.GroupCustomProperties;
-using SugarChat.Core.Services.MessageCustomProperties;
-using System.Diagnostics;
-using Serilog;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -34,7 +28,6 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
         private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
-        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
 
         public ConversationService(
             IMapper mapper,
@@ -43,8 +36,7 @@ namespace SugarChat.Core.Services.Conversations
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
             IMessageDataProvider messageDataProvider,
-            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider,
-            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider)
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -53,7 +45,6 @@ namespace SugarChat.Core.Services.Conversations
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
             _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
-            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
@@ -102,12 +93,6 @@ namespace SugarChat.Core.Services.Conversations
                     cancellationToken).ConfigureAwait(false);
             var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages);
             var messageIds = messages.Select(x => x.Id);
-            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(messageIds, cancellationToken).ConfigureAwait(false);
-            foreach (var messageDto in messageDtos)
-            {
-                var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == messageDto.Id).ToList();
-                messageDto.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
-            }
 
             return new GetMessageListResponse
             {

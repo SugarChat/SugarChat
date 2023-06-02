@@ -219,17 +219,6 @@ namespace SugarChat.IntegrationTest.Services
                 Payload = payload,
                 CustomProperties = customProperties
             }, default(CancellationToken)).Wait();
-            var messageCustomProperties = new List<MessageCustomProperty>();
-            foreach (var customProperty in customProperties)
-            {
-                messageCustomProperties.Add(new MessageCustomProperty
-                {
-                    MessageId = messageId,
-                    Key = customProperty.Key,
-                    Value = customProperty.Value
-                });
-            }
-            repository.AddRangeAsync(messageCustomProperties, default(CancellationToken)).Wait();
         }
     }
 }

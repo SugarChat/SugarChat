@@ -68,6 +68,7 @@ namespace SugarChat.Core.Services.Conversations
                 null,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
+                0,
                 cancellationToken).ConfigureAwait(false);
 
             return result;
@@ -161,6 +162,7 @@ namespace SugarChat.Core.Services.Conversations
                 request.SearchMessageParams,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
+                request.MonthsAgo,
                 cancellationToken).ConfigureAwait(false);
 
             return result;
@@ -178,6 +180,7 @@ namespace SugarChat.Core.Services.Conversations
                 null,
                 request.PageSettings.PageNum,
                 request.PageSettings.PageSize,
+                0,
                 cancellationToken).ConfigureAwait(false);
 
             return result;

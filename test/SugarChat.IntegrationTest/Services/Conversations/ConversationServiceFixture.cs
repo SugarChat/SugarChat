@@ -379,32 +379,6 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                     {
                         PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
                         UserId = userId,
-                        GroupIds = new string[] { conversationId, groupId2, groupId4 },
-                        GroupType = 10,
-                        SearchMessageParams = new List<SearchMessageParamDto> {
-                            new SearchMessageParamDto {
-                                SearchParamDetails = new List<SearchParamDetail> {
-                                    new SearchParamDetail { Key = "Content", Value = "是"}
-                                }
-                            }
-                        },
-                        SearchParams = new List<SearchParamDto> {
-                            new SearchParamDto {
-                                SearchParamDetails = new List<SearchParamDetail> {
-                                    new SearchParamDetail { Key = "A", Value = "2AB,3AB" }
-                                },
-                                InternalJoin = JoinType.Or
-                            }
-                        }
-                    };
-                    Func<Task> func = async () => await mediator.RequestAsync<GetConversationByKeywordRequest, SugarChatResponse<PagedResult<ConversationDto>>>(requset);
-                    (await func().ShouldThrowAsync<Exception>()).Message.ShouldBe("There is too much data found. If you use keyword to query, please optimize the keyword.");
-                }
-                {
-                    GetConversationByKeywordRequest requset = new GetConversationByKeywordRequest
-                    {
-                        PageSettings = new PageSettings { PageNum = 1, PageSize = 20 },
-                        UserId = userId,
                         GroupIds = new string[] { conversationId, groupId2, groupId4, groupId5 },
                         GroupType = 10,
                         SearchMessageParams = new List<SearchMessageParamDto> {

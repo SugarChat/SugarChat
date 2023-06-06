@@ -316,10 +316,10 @@ namespace SugarChat.Core.Services.Messages
                         var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
                         if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
                         {
-                            //var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
-                            //var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
-                            //        command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                            //groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                            var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
+                            var filterGroupUserIds = await _groupUserDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
+                                    command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                            groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
                         }
                         foreach (var groupUser in groupUsers)
                         {

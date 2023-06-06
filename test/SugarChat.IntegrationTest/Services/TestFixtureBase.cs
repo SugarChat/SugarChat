@@ -178,14 +178,6 @@ namespace SugarChat.IntegrationTest.Services
                 UnreadCount = unreadCount
             };
 
-            if (customProperties != null)
-            {
-                foreach (var customProperty in customProperties)
-                {
-                    repository.AddAsync(new GroupUserCustomProperty { GroupUserId = groupUser.Id, Key = customProperty.Key, Value = customProperty.Value }, default(CancellationToken)).Wait();
-                }
-            }
-
             var group = repository.Query<Group>().Where(x => x.Id == groupId).SingleOrDefault();
             var groupCustomProperties = repository.Query<GroupCustomProperty>().Where(x => x.GroupId == groupId).ToList();
             if (group != null)

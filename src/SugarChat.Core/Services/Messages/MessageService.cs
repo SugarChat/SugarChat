@@ -21,7 +21,6 @@ using SugarChat.Core.Services.Configurations;
 using SugarChat.Message.Paging;
 using SugarChat.Core.IRepositories;
 using Serilog;
-using SugarChat.Core.Services.GroupUserCustomProperties;
 using System.Diagnostics;
 
 namespace SugarChat.Core.Services.Messages
@@ -36,14 +35,12 @@ namespace SugarChat.Core.Services.Messages
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IConfigurationDataProvider _configurationDataProvider;
         private readonly ITransactionManager _transactionManagement;
-        private readonly IGroupUserCustomPropertyDataProvider _groupUserCustomPropertyDataProvider;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
             IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider,
-            ITransactionManager transactionManagement,
-            IGroupUserCustomPropertyDataProvider groupUserCustomPropertyDataProvider)
+            ITransactionManager transactionManagement)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -53,7 +50,6 @@ namespace SugarChat.Core.Services.Messages
             _groupUserDataProvider = groupUserDataProvider;
             _configurationDataProvider = configurationDataProvider;
             _transactionManagement = transactionManagement;
-            _groupUserCustomPropertyDataProvider = groupUserCustomPropertyDataProvider;
         }
 
 
@@ -321,10 +317,10 @@ namespace SugarChat.Core.Services.Messages
                         groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
                         if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
                         {
-                            var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
-                            var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
-                                    command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
-                            groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                            //var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
+                            //var filterGroupUserIds = await _groupUserCustomPropertyDataProvider.FilterGroupUserByCustomProperties(groupUsers.Select(x => x.Id),
+                            //        command.IgnoreUnreadCountByGroupUserCustomProperties, cancellationToken).ConfigureAwait(false);
+                            //groupUsers = groupUsers.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
                         }
                         foreach (var groupUser in groupUsers)
                         {

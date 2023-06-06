@@ -23,6 +23,7 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
+            int monthsAgo,
             CancellationToken cancellationToken = default);
 
         Task<PagedResult<ConversationDto>> GetUnreadConversationListAsync(string userId,
@@ -32,6 +33,7 @@ namespace SugarChat.Core.Services.Conversations
             IEnumerable<SearchMessageParamDto> searchByKeywordParams,
             int pageNum,
             int pageSize,
+            int monthsAgo,
             CancellationToken cancellationToken = default);
     }
 }

@@ -13,7 +13,6 @@ using System.Linq.Expressions;
 using System.Text;
 using AutoMapper;
 using SugarChat.Core.Services.GroupUsers;
-using SugarChat.Core.Services.MessageCustomProperties;
 using System.Diagnostics;
 using Serilog;
 using SugarChat.Core.Utils;
@@ -25,19 +24,16 @@ namespace SugarChat.Core.Services.Messages
         private readonly IRepository _repository;
         private readonly IMapper _mapper;
         private readonly IGroupUserDataProvider _groupUserDataProvider;
-        private readonly IMessageCustomPropertyDataProvider _messageCustomPropertyDataProvider;
         private readonly ITableUtil _tableUtil;
 
         public MessageDataProvider(IRepository repository,
             IMapper mapper,
             IGroupUserDataProvider groupUserDataProvider,
-            IMessageCustomPropertyDataProvider messageCustomPropertyDataProvider,
             ITableUtil tableUtil)
         {
             _repository = repository;
             _mapper = mapper;
             _groupUserDataProvider = groupUserDataProvider;
-            _messageCustomPropertyDataProvider = messageCustomPropertyDataProvider;
             _tableUtil = tableUtil;
         }
 
@@ -318,11 +314,6 @@ namespace SugarChat.Core.Services.Messages
             stopwatch.Stop();
             Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync2 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, lastMessages.Count());
 
-            stopwatch.Restart();
-            var messageCustomProperties = await _messageCustomPropertyDataProvider.GetPropertiesByMessageIds(lastMessages.Select(x => x.Id), cancellationToken).ConfigureAwait(false);
-            stopwatch.Stop();
-            Log.Information("MessageDataProvider.GetUnreadCountAndLastMessageByGroupIdsAsync3 run {@Ms}, {@Total}", stopwatch.ElapsedMilliseconds, messageCustomProperties.Count());
-
             var unreadCountAndLastMessageByGroupIds = new List<UnreadCountAndLastMessageByGroupId>();
 
             stopwatch.Restart();
@@ -338,8 +329,6 @@ namespace SugarChat.Core.Services.Messages
                 {
                     unreadCountAndLastMessageByGroupId.LastMessage = _mapper.Map<MessageDto>(lastMessage);
                     unreadCountAndLastMessageByGroupId.LastSentTime = lastMessage.SentTime;
-                    var _messageCustomProperties = messageCustomProperties.Where(x => x.MessageId == lastMessage.Id).ToList();
-                    unreadCountAndLastMessageByGroupId.LastMessage.CustomProperties = _messageCustomProperties.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.CreatedBy).First()).ToDictionary(x => x.Key, x => x.Value);
                 }
                 unreadCountAndLastMessageByGroupIds.Add(unreadCountAndLastMessageByGroupId);
             }

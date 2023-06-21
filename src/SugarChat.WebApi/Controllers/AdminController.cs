@@ -29,6 +29,7 @@ namespace SugarChat.WebApi.Controllers
         }
 
         /// <summary>
+        /// 合并GroupCustomProperty到GroupUser
         /// 修复数据，临时使用，不提供HttpClient
         /// </summary>
         /// <returns></returns>

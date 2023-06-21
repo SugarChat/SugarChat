@@ -344,7 +344,6 @@ namespace SugarChat.Core.Services.Messages
                     {
                         group.LastSentTime = DateTime.Now;
                         var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                        groupUsers = groupUsers.Where(x => x.UserId != command.SentBy).ToList();
                         if (command.IgnoreUnreadCountByGroupUserCustomProperties != null && command.IgnoreUnreadCountByGroupUserCustomProperties.Any())
                         {
                             var _groupUserIds = groupUsers.Select(x => x.Id).ToList();
@@ -354,9 +353,12 @@ namespace SugarChat.Core.Services.Messages
                         }
                         foreach (var groupUser in groupUsers)
                         {
-                            groupUser.UnreadCount++;
+                            if (groupUser.UserId != command.SentBy)
+                                groupUser.UnreadCount++;
+
                             groupUser.LastSentTime = group.LastSentTime;
                         }
+                        await _groupDataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
                         await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
                         await _messageCustomPropertyDataProvider.AddRangeAsync(messageCustomProperties, cancellationToken).ConfigureAwait(false);
                         await _messageDataProvider.AddAsync(message, cancellationToken).ConfigureAwait(false);

@@ -112,7 +112,15 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<SetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
             return Ok(response);
         }
-        
+
+        [Route("setMessageUnreadByUserIdsBasedOnGroupId"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> SetMessageUnreadByUserIdsBasedOnGroupId(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command)
+        {
+            var response = await _mediator.SendAsync<SetMessageUnreadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
         [Route("getConversationByKeyword"), HttpGet]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<PagedResult<ConversationDto>>))]
         public async Task<IActionResult> GetConversationByKeywordForGet([FromQuery] GetConversationByKeywordRequest request)

@@ -54,5 +54,7 @@ namespace SugarChat.Core.Services.Messages
         Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
 
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
+
+        Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
     }
 }

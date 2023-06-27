@@ -422,5 +422,18 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
         }
+
+        public async Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellationToken).ConfigureAwait(false);
+            foreach (var groupUser in groupUsers)
+            {
+                if (groupUser.UnreadCount == 0)
+                    groupUser.UnreadCount = 1;
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

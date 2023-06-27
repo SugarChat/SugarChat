@@ -247,5 +247,24 @@ namespace SugarChat.IntegrationTest.Services.Messages
                 (await repository.CountAsync<MessageCustomProperty>(x => messageIds.Contains(x.MessageId))).ShouldBe(70);
             });
         }
+
+        [Fact]
+        public async Task ShouldSetMessageUnreadByUserIdsBasedOnGroupIdCommand()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var query = repository.Query<GroupUser>().Where(x => x.GroupId == groupId1 && new string[] { userId, userId9, userId8 }.Contains(x.UserId));
+                query.Count().ShouldBe(3);
+                query.Any(x => x.UnreadCount > 0).ShouldBeFalse();
+
+                await mediator.SendAsync<SetMessageUnreadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(new SetMessageUnreadByUserIdsBasedOnGroupIdCommand
+                {
+                    GroupId = groupId1,
+                    UserIds = new string[] { userId, userId9, userId8 }
+                });
+                query.Count().ShouldBe(3);
+                query.Count(x => x.UnreadCount == 1).ShouldBe(3);
+            });
+        }
     }
 }

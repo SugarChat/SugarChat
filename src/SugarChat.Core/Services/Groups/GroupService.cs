@@ -227,16 +227,19 @@ namespace SugarChat.Core.Services.Groups
 
             var groupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupId(command.Id, cancellationToken).ConfigureAwait(false);
             var newGroupCustomProperties = new List<GroupCustomProperty>();
-            foreach (var customProperty in command.CustomProperties)
+            if (command.CustomProperties != null)
             {
-                newGroupCustomProperties.Add(new GroupCustomProperty
+                foreach (var customProperty in command.CustomProperties)
                 {
-                    GroupId = group.Id,
-                    Key = customProperty.Key,
-                    Value = customProperty.Value,
-                    CreatedBy = group.CreatedBy,
-                    CreatedDate = DateTime.UtcNow
-                });
+                    newGroupCustomProperties.Add(new GroupCustomProperty
+                    {
+                        GroupId = group.Id,
+                        Key = customProperty.Key,
+                        Value = customProperty.Value,
+                        CreatedBy = group.CreatedBy,
+                        CreatedDate = DateTime.UtcNow
+                    });
+                }
             }
             using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
             {

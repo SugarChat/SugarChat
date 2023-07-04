@@ -39,7 +39,7 @@ namespace SugarChat.Core.Utils
             var search = new StringBuilder();
             foreach (var searchParam in searchParams)
             {
-                if (!searchParam.SearchParamDetails.Any())
+                if (searchParam.SearchParamDetails == null || !searchParam.SearchParamDetails.Any())
                     continue;
 
                 List<string> searchs = new List<string>();
@@ -140,6 +140,9 @@ namespace SugarChat.Core.Utils
             {
                 foreach (var searchParam in searchByKeywordParams)
                 {
+                    if (searchParam.SearchParamDetails == null || !searchParam.SearchParamDetails.Any())
+                        continue;
+
                     List<string> searchs = new List<string>();
                     foreach (var searchParamDetail in searchParam.SearchParamDetails)
                     {

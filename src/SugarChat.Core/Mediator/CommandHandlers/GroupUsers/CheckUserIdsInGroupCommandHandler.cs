@@ -12,19 +12,18 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 {
-    [Obsolete("user CheckUserIdsInGroupCommandHandler")]
-    public class CheckUserIsInGroupCommandHandler : ICommandHandler<CheckUserIsInGroupCommand, SugarChatResponse<bool>>
+    public class CheckUserIdsInGroupCommandHandler : ICommandHandler<CheckUserIdsInGroupCommand, SugarChatResponse<bool>>
     {
         private readonly IGroupUserService _groupUserService;
-        public CheckUserIsInGroupCommandHandler(IGroupUserService groupUserService)
+        public CheckUserIdsInGroupCommandHandler(IGroupUserService groupUserService)
         {
             _groupUserService = groupUserService;
         }
-        public async Task<SugarChatResponse<bool>> Handle(IReceiveContext<CheckUserIsInGroupCommand> context, CancellationToken cancellationToken)
+        public async Task<SugarChatResponse<bool>> Handle(IReceiveContext<CheckUserIdsInGroupCommand> context, CancellationToken cancellationToken)
         {
             return new SugarChatResponse<bool>()
             {
-                Data = await _groupUserService.CheckUserIsInGroupAsync(context.Message, cancellationToken).ConfigureAwait(false)
+                Data = await _groupUserService.CheckUserIdsInGroupAsync(context.Message, cancellationToken).ConfigureAwait(false)
             };
         }
     }

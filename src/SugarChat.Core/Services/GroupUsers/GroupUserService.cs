@@ -638,7 +638,13 @@ namespace SugarChat.Core.Services.GroupUsers
             Log.Warning("Migrate Group CustomProperty To GroupUser End");
         }
 
+        [Obsolete("user CheckUserIdsInGroupAsync")]
         public async Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default)
+        {
+            return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellation).ConfigureAwait(false)).Any();
+        }
+
+        public async Task<bool> CheckUserIdsInGroupAsync(CheckUserIdsInGroupCommand command, CancellationToken cancellation = default)
         {
             return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellation).ConfigureAwait(false)).Any();
         }

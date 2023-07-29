@@ -17,6 +17,7 @@ using System;
 using System.Linq;
 using SugarChat.Message.Basic;
 using SugarChat.Message.Common;
+using SugarChat.Message.Commands.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services.Users
 {
@@ -174,6 +175,22 @@ namespace SugarChat.IntegrationTest.Services.Users
                 {
                     var response = await mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(new BatchAddUsersCommand { Users = userDtos });
                     (await repository.CountAsync<User>(x => ids.Contains(x.Id))).ShouldBe(50);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldCheckUserExist()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                {
+                    var response = await mediator.SendAsync<CheckUserExistCommand, SugarChatResponse<bool>>(new CheckUserExistCommand { UserId = Guid.NewGuid().ToString() });
+                    response.Data.ShouldBe(false);
+                }
+                {
+                    var response = await mediator.SendAsync<CheckUserExistCommand, SugarChatResponse<bool>>(new CheckUserExistCommand { UserId = userId });
+                    response.Data.ShouldBe(true);
                 }
             });
         }

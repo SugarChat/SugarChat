@@ -126,5 +126,25 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                 }
             });
         }
+
+        [Fact]
+        public async Task ShouldCheckUserIdsInGroup()
+        {
+            await Run<IMediator>(async (mediator) =>
+            {
+                {
+                    var response = await mediator.SendAsync<CheckUserIdsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIdsInGroupCommand { GroupId = Guid.NewGuid().ToString(), UserIds = new List<string> { Guid.NewGuid().ToString() } });
+                    response.Data.ShouldBe(false);
+                }
+                {
+                    var response = await mediator.SendAsync<CheckUserIdsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIdsInGroupCommand { GroupId = conversationId, UserIds = new List<string> { userId2 } });
+                    response.Data.ShouldBe(false);
+                }
+                {
+                    var response = await mediator.SendAsync<CheckUserIdsInGroupCommand, SugarChatResponse<bool>>(new CheckUserIdsInGroupCommand { GroupId = conversationId, UserIds = new List<string> { userId } });
+                    response.Data.ShouldBe(true);
+                }
+            });
+        }
     }
 }

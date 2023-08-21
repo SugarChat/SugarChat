@@ -9,9 +9,7 @@ using SugarChat.Message.Commands.GroupUsers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using SugarChat.Message.Dtos;
 using Xunit;
 using SugarChat.Message.Basic;
 using AutoMapper;
@@ -19,7 +17,6 @@ using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.Services.GroupUsers;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests;
-using SugarChat.Message.Responses;
 using Autofac;
 using NSubstitute;
 
@@ -56,12 +53,6 @@ namespace SugarChat.IntegrationTest.Services
                         Role = UserRole.Admin
                     };
                     await repository.AddAsync(groupUser);
-                    await repository.AddAsync(new GroupUserCustomProperty
-                    {
-                        GroupUserId = groupUser.Id,
-                        Key = "Role",
-                        Value = "Admin"
-                    });
                 });
             }
 
@@ -88,12 +79,6 @@ namespace SugarChat.IntegrationTest.Services
                         GroupId = groupId
                     };
                     await repository.AddAsync(groupUser);
-                    await repository.AddAsync(new GroupUserCustomProperty
-                    {
-                        GroupUserId = groupUser.Id,
-                        Key = "Role",
-                        Value = "Admin"
-                    });
                 });
             }
         }
@@ -281,14 +266,26 @@ namespace SugarChat.IntegrationTest.Services
 
                 command.GroupUserIds = userIds.Take(2).ToList();
                 await mediator.SendAsync(command);
-                (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(2);
-                (await repository.CountAsync<GroupUserCustomProperty>(x => x.CreatedBy == command.CreatedBy)).ShouldBe(4);
+                {
+                    (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(2);
+                    var groupUsers = repository.Query<GroupUser>().Where(x => x.CreatedBy == command.CreatedBy).ToList();
+                    foreach (var groupUser in groupUsers)
+                    {
+                        groupUser.CustomProperties.Count().ShouldBe(2);
+                    }
+                }
 
                 command.AdminId = groupOwnerId;
                 command.GroupUserIds = new string[] { userIds[1] };
                 await mediator.SendAsync(command);
-                (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(1);
-                (await repository.CountAsync<GroupUserCustomProperty>(x => x.CreatedBy == command.CreatedBy)).ShouldBe(4);
+                {
+                    (await repository.CountAsync<GroupUser>(x => x.GroupId == command.GroupId && command.GroupUserIds.Contains(x.UserId) && x.CreatedBy == command.CreatedBy)).ShouldBe(1);
+                    var groupUsers = repository.Query<GroupUser>().Where(x => x.CreatedBy == command.CreatedBy).ToList();
+                    foreach (var groupUser in groupUsers)
+                    {
+                        groupUser.CustomProperties.Count().ShouldBe(2);
+                    }
+                }
             });
         }
 
@@ -306,7 +303,6 @@ namespace SugarChat.IntegrationTest.Services
                     await addGroupMemberFunctions[i].Invoke(i, repository);
                 }
 
-                (await repository.CountAsync<GroupUserCustomProperty>()).ShouldBe(5);
                 RemoveGroupMemberCommand command = new RemoveGroupMemberCommand
                 {
                     GroupId = Guid.NewGuid().ToString(),
@@ -337,7 +333,6 @@ namespace SugarChat.IntegrationTest.Services
                 command.UserIdList = userIds.Take(2).ToList();
                 await mediator.SendAsync(command);
                 (await repository.AnyAsync<GroupUser>(x => x.GroupId == command.GroupId && command.UserIdList.Contains(x.UserId))).ShouldBeFalse();
-                (await repository.CountAsync<GroupUserCustomProperty>()).ShouldBe(3);
             });
         }
 
@@ -489,7 +484,6 @@ namespace SugarChat.IntegrationTest.Services
                     groupUserUpdateAfter.CustomProperties.ShouldBe(groupUesrDto.CustomProperties);
                 }
                 var groupUserIds = groupUsersUpdateAfter.Select(x => x.Id);
-                (await repository.CountAsync<GroupUserCustomProperty>(x => groupUserIds.Contains(x.GroupUserId) && x.Key == "Number")).ShouldBe(3);
                 (await repository.CountAsync<GroupUser>(x => groupUserIds.Contains(x.Id) && x.CustomProperties.ContainsKey("Number"))).ShouldBe(3);
             }, builder =>
             {

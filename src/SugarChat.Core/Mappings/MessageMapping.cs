@@ -19,7 +19,6 @@ namespace SugarChat.Core.Mappings
             CreateMap<RevokeMessageCommand, MessageRevokedEvent>();
             CreateMap<SetMessageReadByUserBasedOnGroupIdCommand, MessageReadSetByUserBasedOnGroupIdEvent>();
             CreateMap<SetMessageReadByUserIdsBasedOnGroupIdCommand, MessageReadSetByUserIdsBasedOnGroupIdEvent>();
-            CreateMap<MessageCustomProperty, MessageCustomPropertyDto>();
         }
     }
 }

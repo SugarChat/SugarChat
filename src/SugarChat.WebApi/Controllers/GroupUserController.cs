@@ -73,6 +73,14 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("batchAddGroupMember"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> BatchAddGroupMember(BatchAddGroupMemberCommand command)
+        {
+            var response = await _mediator.SendAsync<BatchAddGroupMemberCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
         [Route("deleteGroupMember"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> DeleteGroupMember(RemoveGroupMemberCommand command)

@@ -129,45 +129,45 @@ namespace SugarChat.Core.Services.Groups
             user.CheckExist(command.UserId);
 
             var groupIds = command.AddGroupCommands.Select(x => x.Id).ToList();
-            var existGroupIds = (await _groupDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellation).ConfigureAwait(false))
-                .Select(x => x.Id).ToList();
-            var groups = _mapper.Map<List<Group>>(command.AddGroupCommands.Where(x => !existGroupIds.Contains(x.Id)).ToList());
-            var groupCustomProperties = await _groupCustomPropertyDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellation).ConfigureAwait(false);
-            var newGroupCustomProperties = new List<GroupCustomProperty>();
-            var groupUsers = new List<GroupUser>();
-
-            foreach (var group in groups)
-            {
-                foreach (var customProperty in group.CustomProperties)
-                {
-                    if (!groupCustomProperties.Any(x => x.Key == customProperty.Key && x.Value == customProperty.Value))
-                    {
-                        newGroupCustomProperties.Add(new GroupCustomProperty
-                        {
-                            GroupId = group.Id,
-                            Key = customProperty.Key,
-                            Value = customProperty.Value,
-                            CreatedBy = command.UserId
-                        });
-                    }
-                }
-
-                groupUsers.Add(new GroupUser
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = command.UserId,
-                    GroupId = group.Id,
-                    Role = UserRole.Owner,
-                    CreatedBy = command.UserId,
-                    GroupType = group.Type,
-                    LastSentTime = group.LastSentTime,
-                    CustomProperties = group.CustomProperties
-                });
-            }
 
             int retryCount = 1;
             while (retryCount <= 3)
             {
+                var existGroupIds = (await _groupDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellation).ConfigureAwait(false))
+                    .Select(x => x.Id).ToList();
+                var groups = _mapper.Map<List<Group>>(command.AddGroupCommands.Where(x => !existGroupIds.Contains(x.Id)).ToList());
+                var groupCustomProperties = await _groupCustomPropertyDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellation).ConfigureAwait(false);
+                var newGroupCustomProperties = new List<GroupCustomProperty>();
+                var groupUsers = new List<GroupUser>();
+
+                foreach (var group in groups)
+                {
+                    foreach (var customProperty in group.CustomProperties)
+                    {
+                        if (!groupCustomProperties.Any(x => x.Key == customProperty.Key && x.Value == customProperty.Value))
+                        {
+                            newGroupCustomProperties.Add(new GroupCustomProperty
+                            {
+                                GroupId = group.Id,
+                                Key = customProperty.Key,
+                                Value = customProperty.Value,
+                                CreatedBy = command.UserId
+                            });
+                        }
+                    }
+
+                    groupUsers.Add(new GroupUser
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = command.UserId,
+                        GroupId = group.Id,
+                        Role = UserRole.Owner,
+                        CreatedBy = command.UserId,
+                        GroupType = group.Type,
+                        LastSentTime = group.LastSentTime,
+                        CustomProperties = group.CustomProperties
+                    });
+                }
                 using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
                 {
                     try

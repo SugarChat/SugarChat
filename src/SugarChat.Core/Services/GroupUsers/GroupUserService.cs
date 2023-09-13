@@ -17,10 +17,8 @@ using SugarChat.Message.Responses.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Paging;
 using Serilog;
 using SugarChat.Core.Services.GroupCustomProperties;
-using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -331,6 +329,53 @@ namespace SugarChat.Core.Services.GroupUsers
             }
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
+        }
+
+        public async Task BatchAddGroupMembersAsync(BatchAddGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.AddGroupMemberCommands.Select(x => x.GroupId).ToList();
+            var groups = await _groupDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+            var insertGroupUsers = new List<GroupUser>();
+            foreach (var addGroupMemberCommand in command.AddGroupMemberCommands)
+            {
+                var group = groups.Where(x => x.Id == addGroupMemberCommand.GroupId).SingleOrDefault();
+                if (group == null)
+                    continue;
+
+                var groupUser_CustomProperties = new Dictionary<string, string>();
+                if (group.CustomProperties != null)
+                {
+                    foreach (var customProperty in group.CustomProperties)
+                    {
+                        if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+                if (addGroupMemberCommand.CustomProperties != null)
+                {
+                    foreach (var customProperty in addGroupMemberCommand.CustomProperties)
+                    {
+                        if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+                foreach (var groupUserId in addGroupMemberCommand.GroupUserIds)
+                {
+                    var newGroupUser = new GroupUser
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = groupUserId,
+                        GroupId = addGroupMemberCommand.GroupId,
+                        Role = addGroupMemberCommand.Role,
+                        CreatedBy = command.UserId,
+                        GroupType = group.Type,
+                        LastSentTime = group.LastSentTime,
+                        CustomProperties = groupUser_CustomProperties,
+                    };
+                    insertGroupUsers.Add(newGroupUser);
+                }
+            }
+            await _groupUserDataProvider.AddRangeAsync(insertGroupUsers, cancellationToken);
         }
 
         public async Task<GroupMemberRemovedEvent> RemoveGroupMembersAsync(RemoveGroupMemberCommand command,

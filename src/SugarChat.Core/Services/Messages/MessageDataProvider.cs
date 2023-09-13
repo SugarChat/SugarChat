@@ -8,9 +8,7 @@ using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Text;
 using AutoMapper;
 using SugarChat.Core.Services.GroupUsers;
 using System.Diagnostics;
@@ -44,6 +42,11 @@ namespace SugarChat.Core.Services.Messages
             {
                 throw new BusinessWarningException(Prompt.AddMessageFailed.WithParams(message.Id));
             }
+        }
+
+        public async Task AddRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)
+        {
+            await _repository.AddRangeAsync(messages, cancellationToken);
         }
 
         public async Task UpdateAsync(Domain.Message message, CancellationToken cancellationToken = default)

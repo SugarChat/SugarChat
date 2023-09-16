@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Message.Commands.GroupUsers;
 using SugarChat.Message.Events.GroupUsers;
@@ -49,7 +50,10 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task UpdateGroupUserDataAsync(UpdateGroupUserDataCommand command, CancellationToken cancellationToken = default);
 
+        [Obsolete("user CheckUserIdsInGroupAsync")]
         Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default);
+
+        Task<bool> CheckUserIdsInGroupAsync(CheckUserIdsInGroupCommand command, CancellationToken cancellation = default);
 
         Task MigrateGroupCustomPropertyAsyncToGroupUser(int pageSize, CancellationToken cancellation = default);
     }

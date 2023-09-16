@@ -8,6 +8,7 @@ using SugarChat.Message.Dtos.GroupUsers;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SugarChat.Message.Basic;
+using System;
 
 namespace SugarChat.WebApi.Controllers
 {
@@ -143,11 +144,20 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Obsolete("user CheckUserIdsInGroup")]
         [Route("CheckUserIsInGroup"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]
         public async Task<IActionResult> CheckUserIsInGroup(CheckUserIsInGroupCommand command)
         {
             var response = await _mediator.SendAsync<CheckUserIsInGroupCommand, SugarChatResponse<bool>>(command);
+            return Ok(response);
+        }
+
+        [Route("CheckUserIdsInGroup"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]
+        public async Task<IActionResult> CheckUserIdsInGroup(CheckUserIdsInGroupCommand command)
+        {
+            var response = await _mediator.SendAsync<CheckUserIdsInGroupCommand, SugarChatResponse<bool>>(command);
             return Ok(response);
         }
     }

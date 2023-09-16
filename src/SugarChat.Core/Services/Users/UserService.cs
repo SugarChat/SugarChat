@@ -23,7 +23,6 @@ namespace SugarChat.Core.Services.Users
         private readonly IUserDataProvider _userDataProvider;
         private readonly IFriendDataProvider _friendDataProvider;
         private readonly ITransactionManager _transactionManagement;
-        private readonly IGroupUserDataProvider _groupUserDataProvider;
 
         public UserService(IMapper mapper,
             IUserDataProvider userDataProvider,
@@ -35,7 +34,6 @@ namespace SugarChat.Core.Services.Users
             _userDataProvider = userDataProvider;
             _friendDataProvider = friendDataProvider;
             _transactionManagement = transactionManagement;
-            _groupUserDataProvider = groupUserDataProvider;
         }
 
         public async Task<UserAddedEvent> AddUserAsync(AddUserCommand command,
@@ -145,6 +143,11 @@ namespace SugarChat.Core.Services.Users
             }
 
             return _mapper.Map<UsersBatchAddedEvent>(command);
+        }
+
+        public async Task<bool> CheckUserExistAsync(CheckUserExistCommand command, CancellationToken cancellationToken = default)
+        {
+            return (await _userDataProvider.GetByIdAsync(command.UserId,cancellationToken).ConfigureAwait(false)) is not null;
         }
     }
 }

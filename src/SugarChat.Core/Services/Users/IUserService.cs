@@ -23,5 +23,7 @@ namespace SugarChat.Core.Services.Users
             CancellationToken cancellationToken = default);
 
         Task<UsersBatchAddedEvent> BatchAddUsersAsync(BatchAddUsersCommand command, CancellationToken cancellationToken = default);
+
+        Task<bool> CheckUserExistAsync(CheckUserExistCommand command, CancellationToken cancellationToken = default);
     }
 }

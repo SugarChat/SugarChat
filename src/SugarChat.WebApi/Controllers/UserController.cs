@@ -95,5 +95,13 @@ namespace SugarChat.WebApi.Controllers
             var response = await _mediator.SendAsync<BatchAddUsersCommand, SugarChatResponse>(command);
             return Ok(response);
         }
+
+        [Route("CheckUserExist"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]
+        public async Task<IActionResult> CheckUserExist(CheckUserExistCommand command)
+        {
+            var response = await _mediator.SendAsync<CheckUserExistCommand, SugarChatResponse<bool>>(command);
+            return Ok(response);
+        }
     }
 }

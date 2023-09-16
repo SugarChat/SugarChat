@@ -144,18 +144,6 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// 迁移数据使用，一次性代码
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        [Route("MigrateCustomPropertyWhenRoleEqual0"), HttpPost]
-        public async Task<IActionResult> MigrateCustomPropertyWhenRoleEqual0(MigrateGroupUserCustomPropertyCommand command)
-        {
-            var response = await _mediator.SendAsync<MigrateGroupUserCustomPropertyCommand, SugarChatResponse>(command);
-            return Ok(response);
-        }
-
         [Obsolete("user CheckUserIdsInGroup")]
         [Route("CheckUserIsInGroup"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse<bool>))]

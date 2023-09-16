@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Dtos.GroupUsers;
 using System.Linq;
 using System.Linq.Expressions;
 using SugarChat.Message.Paging;
 using System.Diagnostics;
 using Serilog;
+using System.Text;
+using System.Linq.Dynamic.Core;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -208,6 +209,40 @@ namespace SugarChat.Core.Services.GroupUsers
         public async Task RemoveRangeAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             await _repository.RemoveRangeAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<string>> FilterGroupUserByCustomProperties(IEnumerable<string> groupUserIds, Dictionary<string, List<string>> customProperties, CancellationToken cancellationToken = default)
+        {
+            if (customProperties == null || !customProperties.Any())
+            {
+                return groupUserIds;
+            }
+            var sb = new StringBuilder();
+            foreach (var dic in customProperties)
+            {
+                foreach (var value in dic.Value)
+                {
+                    var value1 = value.Replace("\\", "\\\\");
+                    var key1 = dic.Key.Replace("\\", "\\\\");
+                    if (value1.Contains(","))
+                    {
+                        var values = value1.Split(',');
+                        foreach (var value2 in values)
+                        {
+                            sb.Append($" || (CustomProperties.\"{key1}\"==\"{value2}\")");
+                        }
+                    }
+                    else
+                        sb.Append($" || (CustomProperties.{key1}==\"{value1}\")");
+                }
+            }
+            var query = _repository.Query<GroupUser>();
+            if (groupUserIds != null && groupUserIds.Any())
+            {
+                query = query.Where(x => groupUserIds.Contains(x.Id));
+            }
+            var groupUsers = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+            return groupUsers.Select(x => x.Id).ToList();
         }
     }
 }

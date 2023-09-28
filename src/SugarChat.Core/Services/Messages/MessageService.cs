@@ -362,10 +362,20 @@ namespace SugarChat.Core.Services.Messages
             foreach (var messagesGroup in messagesGroups)
             {
                 var group = groups.Single(x => x.Id == messagesGroup.Key);
-                var _groupUsers = groupUsers.Where(x => x.GroupId == messagesGroup.Key).ToList();
-                foreach (var groupUser in _groupUsers)
+                var groupUsersByGroupId = groupUsers.Where(x => x.GroupId == messagesGroup.Key).ToList();
+                var sendMessageCommands = messagesGroup.ToList();
+                foreach (var sendMessageCommand in sendMessageCommands)
                 {
-                    groupUser.UnreadCount += messagesGroup.Where(x => x.SentBy != groupUser.UserId).Count();
+                    var filterGroupUserIds = _groupUserDataProvider.FilterGroupUserByCustomProperties(groupUsersByGroupId, sendMessageCommand.IgnoreUnreadCountByGroupUserCustomProperties);
+                    var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                    foreach (var groupUser in groupUserForUpdate)
+                    {
+                        if (sendMessageCommand.SentBy!= groupUser.UserId)
+                            groupUser.UnreadCount += 1;
+                    }
+                }
+                foreach (var groupUser in groupUsersByGroupId)
+                {
                     groupUser.LastSentTime = group.LastSentTime;
                 }
             }

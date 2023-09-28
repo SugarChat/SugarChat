@@ -292,7 +292,8 @@ namespace SugarChat.IntegrationTest.Services
                         SentBy = userIds.ElementAt(j),
                         IsSystem = true,
                         Payload = i.ToString() + j,
-                        CustomProperties = new Dictionary<string, string> { { "MessageCustomProperties" + i, i.ToString() + j } }
+                        CustomProperties = new Dictionary<string, string> { { "MessageCustomProperties" + i, i.ToString() + j } },
+                        IgnoreUnreadCountByGroupUserCustomProperties = new Dictionary<string, List<string>> { { "CustomProperties0", new List<string> { "AAA" } } }
                     });
                 }
             }

@@ -12,6 +12,8 @@ using System.Diagnostics;
 using Serilog;
 using System.Text;
 using System.Linq.Dynamic.Core;
+using SugarChat.Core.Utils;
+using AutoMapper.Internal;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -242,6 +244,40 @@ namespace SugarChat.Core.Services.GroupUsers
                 query = query.Where(x => groupUserIds.Contains(x.Id));
             }
             var groupUsers = await _repository.ToListAsync(query.Where(sb.ToString().Substring(4)), cancellationToken).ConfigureAwait(false);
+            return groupUsers.Select(x => x.Id).ToList();
+        }
+
+        public IEnumerable<string> FilterGroupUserByCustomProperties(IEnumerable<GroupUser> groupUsers, Dictionary<string, List<string>> customProperties)
+        {
+            if (customProperties == null || !customProperties.Any())
+            {
+                return new List<string>();
+            }
+            var predicate = PredicateBuilder.False<GroupUser>();
+            var sb = new StringBuilder();
+            foreach (var dic in customProperties)
+            {
+                foreach (var value in dic.Value)
+                {
+                    var value1 = value.Replace("\\", "\\\\");
+                    var key1 = dic.Key.Replace("\\", "\\\\");
+                    if (value1.Contains(","))
+                    {
+                        var values = value1.Split(',');
+                        foreach (var value2 in values)
+                        {
+                            if (groupUsers.Select(x => x.CustomProperties).Any(x => x.GetOrDefault(key1) != null))
+                                predicate = predicate.Or(x => x.CustomProperties[key1] == value2);
+                        }
+                    }
+                    else
+                    {
+                        if (groupUsers.Select(x => x.CustomProperties).Any(x => x.GetOrDefault(key1) != null))
+                            predicate = predicate.Or(x => x.CustomProperties[key1] == value1);
+                    }
+                }
+            }
+            groupUsers = groupUsers.AsQueryable().Where(predicate).ToList();
             return groupUsers.Select(x => x.Id).ToList();
         }
     }

@@ -12,6 +12,7 @@ namespace SugarChat.Core.Services.Messages
     {
         Task<Domain.Message> GetByIdAsync(string id, CancellationToken cancellationToken = default);
         Task AddAsync(Domain.Message message, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default);
         Task UpdateAsync(Domain.Message message, CancellationToken cancellationToken = default);
         Task UpdateRangeAsync(IEnumerable<Domain.Message> message, CancellationToken cancellationToken = default);
         Task RemoveAsync(Domain.Message message, CancellationToken cancellationToken = default);

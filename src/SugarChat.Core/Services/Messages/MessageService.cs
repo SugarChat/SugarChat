@@ -432,14 +432,21 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
-        public async Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        public async Task<GetMessagesByGroupIdsResponse> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);
             user.CheckExist(request.UserId);
 
-            var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, cancellationToken);
-            var messageDtos = messages.Select(x => _mapper.Map<MessageDto>(x)).ToList();
-            return messageDtos;
+            var messages = await _messageDataProvider.GetMessagesByGroupIdsAsync(request.GroupIds, request.PageSettings, request.FromDate, cancellationToken);
+            var messageDtos = _mapper.Map<IEnumerable<MessageDto>>(messages.Result);
+            return new()
+            {
+                Messages = new PagedResult<MessageDto>
+                {
+                    Result = messageDtos,
+                    Total = messages.Total
+                }
+            };
         }
 
         public async Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default)

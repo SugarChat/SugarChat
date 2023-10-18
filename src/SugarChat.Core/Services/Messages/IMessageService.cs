@@ -49,7 +49,7 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<MessageDto>> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
+        Task<GetMessagesByGroupIdsResponse> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
 
         Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
 

@@ -190,6 +190,9 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 var groupUser = groupUsers.FirstOrDefault(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId
                     && x.UserId == setGroupMemberCustomFieldCommand.UserId);
+                if (groupUser is null)
+                    continue;
+
                 var groupCustomProperties = allGroupCustomProperties.Where(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId).ToList();
                 var groupUser_CustomProperties = new Dictionary<string, string>();
                 foreach (var customProperty in groupCustomProperties)

@@ -271,14 +271,12 @@ namespace SugarChat.Core.Services.GroupUsers
                         var values = value1.Split(',');
                         foreach (var value2 in values)
                         {
-                            if (groupUsers.Select(x => x.CustomProperties).Any(x => x.GetOrDefault(key1) != null))
-                                predicate = predicate.Or(x => x.CustomProperties[key1] == value2);
+                            predicate = predicate.Or(x => x.CustomProperties.GetOrDefault(key1) != null && x.CustomProperties[key1] == value2);
                         }
                     }
                     else
                     {
-                        if (groupUsers.Select(x => x.CustomProperties).Any(x => x.GetOrDefault(key1) != null))
-                            predicate = predicate.Or(x => x.CustomProperties[key1] == value1);
+                        predicate = predicate.Or(x => x.CustomProperties.GetOrDefault(key1) != null && x.CustomProperties[key1] == value1);
                     }
                 }
             }

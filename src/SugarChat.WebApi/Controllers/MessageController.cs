@@ -117,7 +117,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("getMessagesByGroupIds"), HttpPost]
         public async Task<IActionResult> GetMessagesByGroupIdsForPost(GetMessagesByGroupIdsRequest request)
         {
-            var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
+            var response = await _mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<PagedResult<MessageDto>>>(request);
             return Ok(response);
         }
 

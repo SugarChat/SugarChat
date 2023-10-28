@@ -120,6 +120,69 @@ namespace SugarChat.Core.Services.Groups
                     throw;
                 }
             }
+
+            if (command.GroupUsers == null || !command.GroupUsers.Any())
+                return _mapper.Map<GroupAddedEvent>(command);
+
+            var time = 0;
+            while (time < 3)
+            {
+                var groupUserIds = command.GroupUsers.Select(x => x.Id).ToList();
+                var userIds = command.GroupUsers.Select(x => x.UserId).ToList();
+                var users = await _userDataProvider.GetListAsync(x => userIds.Contains(x.Id), cancellation).ConfigureAwait(false);
+                IEnumerable<string> existGroupUserIds = (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.Id, groupUserIds, cancellation)).Select(x => x.UserId);
+                var needAddGroupUserIds = groupUserIds.Where(x => !existGroupUserIds.Contains(x)).Distinct().ToList();
+                if (!needAddGroupUserIds.Any())
+                {
+                    break;
+                }
+
+                var needAddGroupUsers = new List<GroupUser>();
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        foreach (var groupUser in command.GroupUsers)
+                        {
+                            if (!users.Any(x => x.Id == groupUser.UserId))
+                                continue;
+
+                            if (groupUser.CustomProperties == null)
+                                groupUser.CustomProperties = group.CustomProperties;
+                            else
+                            {
+                                foreach (var customProperty in group.CustomProperties)
+                                {
+                                    if (!groupUser.CustomProperties.ContainsKey(customProperty.Key))
+                                        groupUser.CustomProperties.Add(customProperty.Key, customProperty.Value);
+                                }
+                            }
+                            needAddGroupUsers.Add(new GroupUser
+                            {
+                                Id = groupUser.Id,
+                                UserId = groupUser.UserId,
+                                GroupId = command.Id,
+                                Role = groupUser.Role,
+                                GroupType = group.Type,
+                                CustomProperties = groupUser.CustomProperties
+                            });
+                        }
+                        await _groupUserDataProvider.AddRangeAsync(needAddGroupUsers, cancellation);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                        time++;
+                        Log.Warning(ex, "AddGroupAsync.AddGroupMembers retry by " + time);
+                        if (time > 2)
+                        {
+                            throw;
+                        }
+                    }
+                }
+            }
             return _mapper.Map<GroupAddedEvent>(command);
         }
 

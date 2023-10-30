@@ -3,7 +3,7 @@ using SugarChat.Core.IRepositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +36,11 @@ namespace SugarChat.Core.Services.GroupCustomProperties
         public async Task RemoveRangeAsync(IEnumerable<GroupCustomProperty> groupCustomProperties, CancellationToken cancellationToken = default)
         {
             await _repository.RemoveRangeAsync(groupCustomProperties, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<GroupCustomProperty>> GetListAsync(Expression<Func<GroupCustomProperty, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

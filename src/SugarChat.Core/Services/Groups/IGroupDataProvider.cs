@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using SugarChat.Core.Domain;
-using SugarChat.Message.Dtos;
 using SugarChat.Message.Paging;
 
 namespace SugarChat.Core.Services.Groups
@@ -17,6 +16,7 @@ namespace SugarChat.Core.Services.Groups
             CancellationToken cancellationToken = default);
 
         Task AddAsync(Group group, CancellationToken cancellationToken = default);
+        Task AddRangeAsync(IEnumerable<Group> groups, CancellationToken cancellationToken = default);
         Task UpdateAsync(Group group, CancellationToken cancellationToken = default);
         Task RemoveAsync(Group group, CancellationToken cancellationToken = default);
 

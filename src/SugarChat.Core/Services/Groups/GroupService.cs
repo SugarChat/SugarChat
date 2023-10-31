@@ -159,7 +159,7 @@ namespace SugarChat.Core.Services.Groups
                             }
                             needAddGroupUsers.Add(new GroupUser
                             {
-                                Id = groupUser.Id,
+                                Id = string.IsNullOrWhiteSpace(groupUser.Id) ? Guid.NewGuid().ToString() : groupUser.Id,
                                 UserId = groupUser.UserId,
                                 GroupId = command.Id,
                                 Role = groupUser.Role,

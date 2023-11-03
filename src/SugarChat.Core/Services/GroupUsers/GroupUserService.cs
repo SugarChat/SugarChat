@@ -17,10 +17,8 @@ using SugarChat.Message.Responses.GroupUsers;
 using SugarChat.Message.Requests.GroupUsers;
 using SugarChat.Message.Dtos.GroupUsers;
 using SugarChat.Core.IRepositories;
-using SugarChat.Message.Paging;
 using Serilog;
 using SugarChat.Core.Services.GroupCustomProperties;
-using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.GroupUsers
 {
@@ -182,6 +180,39 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);
         }
 
+        public async Task BatchSetGroupMemberCustomPropertiesAsync(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.GroupId).ToList();
+            var userIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.UserId).ToList();
+            var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId) && userIds.Contains(x.UserId), cancellationToken).ConfigureAwait(false);
+            var allGroupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var setGroupMemberCustomFieldCommand in command.SetGroupMemberCustomFieldCommands)
+            {
+                var groupUser = groupUsers.FirstOrDefault(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId
+                    && x.UserId == setGroupMemberCustomFieldCommand.UserId);
+                if (groupUser is null)
+                    continue;
+
+                var groupCustomProperties = allGroupCustomProperties.Where(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId).ToList();
+                var groupUser_CustomProperties = new Dictionary<string, string>();
+                foreach (var customProperty in groupCustomProperties)
+                {
+                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                }
+                if (setGroupMemberCustomFieldCommand.CustomProperties != null && setGroupMemberCustomFieldCommand.CustomProperties.Any())
+                {
+                    foreach (var customProperty in setGroupMemberCustomFieldCommand.CustomProperties)
+                    {
+                        if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+                groupUser.CustomProperties = groupUser_CustomProperties;
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command,
             CancellationToken cancellationToken = default)
         {
@@ -331,6 +362,75 @@ namespace SugarChat.Core.Services.GroupUsers
             }
 
             return _mapper.Map<GroupMemberAddedEvent>(command);
+        }
+
+        public async Task BatchAddGroupMembersAsync(BatchAddGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.AddGroupMemberCommands.Select(x => x.GroupId).ToList();
+            var groups = await _groupDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+
+            int retryCount = 1;
+            while (retryCount <= 3)
+            {
+                var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+                var insertGroupUsers = new List<GroupUser>();
+                foreach (var addGroupMemberCommand in command.AddGroupMemberCommands)
+                {
+                    var group = groups.Where(x => x.Id == addGroupMemberCommand.GroupId).SingleOrDefault();
+                    if (group == null)
+                        continue;
+                    var groupUser_CustomProperties = new Dictionary<string, string>();
+                    if (group.CustomProperties != null)
+                    {
+                        foreach (var customProperty in group.CustomProperties)
+                        {
+                            if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                                groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                        }
+                    }
+                    if (addGroupMemberCommand.CustomProperties != null)
+                    {
+                        foreach (var customProperty in addGroupMemberCommand.CustomProperties)
+                        {
+                            if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                                groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                        }
+                    }
+                    foreach (var userId in addGroupMemberCommand.GroupUserIds)
+                    {
+                        if (groupUsers.Any(x => x.GroupId == addGroupMemberCommand.GroupId && x.UserId == userId)) continue;
+
+                        var newGroupUser = new GroupUser
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = userId,
+                            GroupId = addGroupMemberCommand.GroupId,
+                            Role = addGroupMemberCommand.Role,
+                            CreatedBy = command.UserId,
+                            GroupType = group.Type,
+                            LastSentTime = group.LastSentTime,
+                            CustomProperties = groupUser_CustomProperties,
+                        };
+                        insertGroupUsers.Add(newGroupUser);
+                    }
+                }
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        await _groupUserDataProvider.AddRangeAsync(insertGroupUsers, cancellationToken);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        if (retryCount >= 3)
+                            throw;
+                        retryCount++;
+                    }
+                }
+            }
         }
 
         public async Task<GroupMemberRemovedEvent> RemoveGroupMembersAsync(RemoveGroupMemberCommand command,

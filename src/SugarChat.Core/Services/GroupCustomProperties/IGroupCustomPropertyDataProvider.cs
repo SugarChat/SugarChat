@@ -1,8 +1,7 @@
 ﻿using SugarChat.Core.Domain;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,5 +16,7 @@ namespace SugarChat.Core.Services.GroupCustomProperties
         Task<IEnumerable<GroupCustomProperty>> GetPropertiesByGroupId(string groupId, CancellationToken cancellationToken = default);
 
         Task RemoveRangeAsync(IEnumerable<GroupCustomProperty> groupCustomProperties, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<GroupCustomProperty>> GetListAsync(Expression<Func<GroupCustomProperty, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 }

@@ -3,22 +3,19 @@ using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Core.Mediator.CommandHandlers.Groups;
-using SugarChat.Core.Services;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using SugarChat.Core.Services.Messages;
-using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Basic;
 using SugarChat.Message.Common;
 using SugarChat.Message.Commands.Users;
+using SugarChat.Message.Commands.GroupUsers;
+using SugarChat.Message.Commands.Messages;
 using SugarChat.Message.Dtos.GroupUsers;
 
 namespace SugarChat.IntegrationTest.Services
@@ -236,6 +233,137 @@ namespace SugarChat.IntegrationTest.Services
                     });
                     response.Data.Count().ShouldBe(2);
                     response.Data.Count(x => x.Type == 2).ShouldBe(2);
+                }
+            });
+        }
+
+        [Fact]
+        public async Task ShouldBatchAddGroup()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var userIds = new List<string>();
+                for (int i = 0; i < 10; i++)
+                {
+                    string userId = Guid.NewGuid().ToString();
+                    await mediator.SendAsync(new AddUserCommand { Id = userId });
+                    userIds.Add(userId);
+                }
+
+                var addUserCommand = new AddUserCommand { Id = Guid.NewGuid().ToString() };
+                await mediator.SendAsync(addUserCommand);
+                var addGroupCommands = new List<AddGroupCommand>();
+                for (int i = 0; i < 10; i++)
+                {
+                    addGroupCommands.Add(new AddGroupCommand
+                    {
+                        Id = "Id" + i,
+                        Name = "Name" + i,
+                        AvatarUrl = "AvatarUrl" + i,
+                        Description = "Description" + i,
+                        CustomProperties = new Dictionary<string, string> { { "CustomProperties" + i, i.ToString() } },
+                        Type = i
+                    });
+                }
+                await mediator.SendAsync(new BatchAddGroupCommand { UserId = addUserCommand.Id, AddGroupCommands = addGroupCommands });
+                var groups = await repository.ToListAsync<Group>();
+                groups.Count().ShouldBe(10);
+                for (int i = 0; i < 10; i++)
+                {
+                    var group = groups.Single(x => x.Id == "Id" + i);
+                    group.Name.ShouldBe("Name" + i);
+                    group.AvatarUrl.ShouldBe("AvatarUrl" + i);
+                    group.Description.ShouldBe("Description" + i);
+                    group.CustomProperties.ShouldBe(new Dictionary<string, string> { { "CustomProperties" + i, i.ToString() } });
+                    group.Type.ShouldBe(i);
+                }
+                await ShouldBatchAddGroupMember(addUserCommand.Id, userIds, groups.Select(x => x.Id).ToList());
+                await ShouldBatchSaveMessage(addUserCommand.Id, userIds, groups.Select(x => x.Id).ToList());
+            });
+        }
+
+        private async Task ShouldBatchAddGroupMember(string userId, IEnumerable<string> userIds, IEnumerable<string> groupIds)
+        {
+            var addGroupMemberCommands = new List<AddGroupMemberCommand>();
+            for (int i = 0; i < 10; i++)
+            {
+                addGroupMemberCommands.Add(new AddGroupMemberCommand
+                {
+                    GroupId = groupIds.ElementAt(i),
+                    AdminId = userId,
+                    GroupUserIds = userIds,
+                    Role = Message.UserRole.Owner,
+                    CustomProperties = new Dictionary<string, string> { { "GroupUserCustomProperties" + i, i.ToString() } }
+                });
+            }
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await mediator.SendAsync(new BatchAddGroupMemberCommand { UserId = userId, AddGroupMemberCommands = addGroupMemberCommands });
+                var groups = await repository.ToListAsync<Group>();
+                groups.Count().ShouldBe(10);
+                var groupUsers = await repository.ToListAsync<GroupUser>();
+                groupUsers.Count().ShouldBe(110);
+                for (int i = 0; i < 10; i++)
+                {
+                    var _groupUsers = groupUsers.Where(x => x.GroupId == groups[i].Id && x.UserId != userId).ToList();
+                    _groupUsers.Count().ShouldBe(10);
+                    foreach (var groupUser in _groupUsers)
+                    {
+                        groupUser.CustomProperties.Count().ShouldBe(2);
+                        groupUser.CustomProperties.GetValueOrDefault("CustomProperties" + i).ShouldBe(i.ToString());
+                        groupUser.CustomProperties.GetValueOrDefault("GroupUserCustomProperties" + i).ShouldBe(i.ToString());
+                    }
+                }
+            });
+        }
+
+        private async Task ShouldBatchSaveMessage(string userId, IEnumerable<string> userIds, IEnumerable<string> groupIds)
+        {
+            var sendMessageCommands = new List<SendMessageCommand>();
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    sendMessageCommands.Add(new SendMessageCommand
+                    {
+                        Id = "Id" + i + j,
+                        GroupId = groupIds.ElementAt(i),
+                        Content = i.ToString() + j,
+                        Type = i * j,
+                        SentBy = userIds.ElementAt(j),
+                        IsSystem = true,
+                        Payload = i.ToString() + j,
+                        CustomProperties = new Dictionary<string, string> { { "MessageCustomProperties" + i, i.ToString() + j } },
+                        IgnoreUnreadCountByGroupUserCustomProperties = new Dictionary<string, List<string>> { { "CustomProperties0", new List<string> { "AAA" } } }
+                    });
+                }
+            }
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await mediator.SendAsync(new BatchSendMessageCommand { UserId = userId, SendMessageCommands = sendMessageCommands });
+                var messages = await repository.ToListAsync<Core.Domain.Message>();
+                messages.Count().ShouldBe(100);
+                var groupUsers = await repository.ToListAsync<GroupUser>();
+                groupUsers.Count().ShouldBe(110);
+                for (int i = 0; i < 10; i++)
+                {
+                    messages.Count(x => x.GroupId == groupIds.ElementAt(i)).ShouldBe(10);
+                    messages.Select(x => x.SentBy).Distinct().Count().ShouldBe(10);
+                    groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i)).ShouldBe(11);
+                    groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i) && x.UserId == userId && x.UnreadCount == 10).ShouldBe(1);
+                    groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i) && x.UserId != userId && x.UnreadCount == 9).ShouldBe(10);
+                    for (int j = 0; j < 10; j++)
+                    {
+                        var message = messages.Single(x => x.Id == "Id" + i + j);
+                        message.GroupId.ShouldBe(groupIds.ElementAt(i));
+                        message.Content.ShouldBe(i.ToString() + j);
+                        message.Type.ShouldBe(i * j);
+                        message.SentBy.ShouldBe(userIds.ElementAt(j));
+                        message.IsSystem.ShouldBe(true);
+                        message.Payload.ShouldBe(i.ToString() + j);
+                        message.CustomProperties.Count().ShouldBe(1);
+                        message.CustomProperties.GetValueOrDefault("MessageCustomProperties" + i).ShouldBe(i.ToString() + j);
+                    }
                 }
             });
         }

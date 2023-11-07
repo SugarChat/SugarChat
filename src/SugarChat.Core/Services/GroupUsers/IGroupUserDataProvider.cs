@@ -44,5 +44,6 @@ namespace SugarChat.Core.Services.GroupUsers
         Task RemoveRangeAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> FilterGroupUserByCustomProperties(IEnumerable<string> groupUserIds, Dictionary<string, List<string>> customProperties, CancellationToken cancellationToken = default);
+        IEnumerable<string> FilterGroupUserByCustomProperties(IEnumerable<GroupUser> groupUsers, Dictionary<string, List<string>> customProperties);
     }
 }

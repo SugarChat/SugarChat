@@ -47,6 +47,47 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
         }
 
         [Fact]
+        public async Task ShouldBatchSetGroupMemberCustomFieldCommand()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                await mediator.SendAsync<BatchSetGroupMemberCustomFieldCommand, SugarChatResponse>(new BatchSetGroupMemberCustomFieldCommand
+                {
+                    SetGroupMemberCustomFieldCommands = new List<SetGroupMemberCustomFieldCommand>
+                    {
+                        new SetGroupMemberCustomFieldCommand
+                        {
+                            GroupId = conversationId,
+                            UserId = userId,
+                            CustomProperties = new Dictionary<string, string>
+                            {
+                                { "Signature", "The closer you get to the essence, the less confused you will be" }
+                            }
+                        },
+                        new SetGroupMemberCustomFieldCommand
+                        {
+                            GroupId = groupId1,
+                            UserId = userId9,
+                            CustomProperties = new Dictionary<string, string>
+                            {
+                                { "userId9", "The closer you get to the essence, the less confused you will be" }
+                            }
+                        }
+                    }
+                }, default);
+                var reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId, GroupId = conversationId });
+                reponse.Data.First(x => x.UserId == userId).CustomProperties.Count().ShouldBe(3);
+                reponse.Data.First(x => x.UserId == userId).CustomProperties.Count(x => x.Key == "Signature").ShouldBe(1);
+                reponse.Data.First(x => x.UserId == userId).CustomProperties.Count(x => x.Key == "A" && x.Value == "2AB").ShouldBe(1);
+
+                reponse = await mediator.RequestAsync<GetMembersOfGroupRequest, SugarChatResponse<IEnumerable<GroupUserDto>>>(new GetMembersOfGroupRequest { UserId = userId9, GroupId = groupId1 });
+                reponse.Data.First(x => x.UserId == userId9).CustomProperties.Count().ShouldBe(3);
+                reponse.Data.First(x => x.UserId == userId9).CustomProperties.Count(x => x.Key == "userId9").ShouldBe(1);
+                reponse.Data.First(x => x.UserId == userId9).CustomProperties.Count(x => x.Key == "A" && x.Value == "0AB").ShouldBe(1);
+            });
+        }
+
+        [Fact]
         public async Task ShouldGetMembersOfGroup()
         {
             await Run<IMediator, IRepository>(async (mediator, repository) =>

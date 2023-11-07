@@ -10,10 +10,6 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Message.Paging;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-using SugarChat.Message.Dtos;
-using System.Diagnostics;
-using Serilog;
-using SugarChat.Core.Utils;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -58,6 +54,11 @@ namespace SugarChat.Core.Services.Groups
             {
                 throw new BusinessWarningException(Prompt.AddGroupFailed.WithParams(group.Id));
             }
+        }
+
+        public async Task AddRangeAsync(IEnumerable< Group> groups, CancellationToken cancellationToken = default)
+        {
+            await _repository.AddRangeAsync(groups, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task UpdateAsync(Group group, CancellationToken cancellationToken = default)

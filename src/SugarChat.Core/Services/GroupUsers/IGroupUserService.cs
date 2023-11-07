@@ -28,6 +28,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task SetGroupMemberCustomPropertiesAsync2(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default);
 
+        Task BatchSetGroupMemberCustomPropertiesAsync(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default);
+
         Task<GroupQuittedEvent> QuitGroupAsync(QuitGroupCommand command, CancellationToken cancellationToken = default);
 
         Task<GroupOwnerChangedEvent> ChangeGroupOwnerAsync(ChangeGroupOwnerCommand command,
@@ -39,6 +41,8 @@ namespace SugarChat.Core.Services.GroupUsers
             CancellationToken cancellationToken = default);
 
         Task AddGroupMembersAsync2(AddGroupMemberCommand command,CancellationToken cancellationToken = default);
+
+        Task BatchAddGroupMembersAsync(BatchAddGroupMemberCommand command, CancellationToken cancellationToken = default);
 
         Task<GroupMemberRemovedEvent> RemoveGroupMembersAsync(RemoveGroupMemberCommand command,
             CancellationToken cancellationToken = default);

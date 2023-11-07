@@ -8,6 +8,7 @@ using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Responses;
 using SugarChat.Message.Responses.Groups;
 using SugarChat.Message.Dtos;
+using static SugarChat.Core.Services.Groups.GroupService;
 
 namespace SugarChat.Core.Services.Groups
 {
@@ -34,5 +35,7 @@ namespace SugarChat.Core.Services.Groups
         Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken);
 
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
+
+        Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default);
     }
 }

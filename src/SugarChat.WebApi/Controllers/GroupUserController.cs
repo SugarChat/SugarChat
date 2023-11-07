@@ -41,6 +41,14 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("batchSetGroupMemberCustomField"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> BatchSetGroupMemberCustomField(BatchSetGroupMemberCustomFieldCommand command)
+        {
+            var response = await _mediator.SendAsync<BatchSetGroupMemberCustomFieldCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
         [Route("join"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> JoinGroup(JoinGroupCommand command)
@@ -70,6 +78,14 @@ namespace SugarChat.WebApi.Controllers
         public async Task<IActionResult> AddGroupMember(AddGroupMemberCommand command)
         {
             var response = await _mediator.SendAsync<AddGroupMemberCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
+        [Route("batchAddGroupMember"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> BatchAddGroupMember(BatchAddGroupMemberCommand command)
+        {
+            var response = await _mediator.SendAsync<BatchAddGroupMemberCommand, SugarChatResponse>(command);
             return Ok(response);
         }
 

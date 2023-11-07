@@ -192,6 +192,8 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     var groupUser = await repository.FirstOrDefaultAsync<GroupUser>(x => x.UserId == userId && x.GroupId == groups[2].Id);
                     var lastMessage = await repository.FirstOrDefaultAsync<Core.Domain.Message>(x => x.GroupId == groups[2].Id);
                     groupUser.UnreadCount.ShouldBe(0);
+
+                    (await repository.SingleAsync<Group2>(x => x.Id == groups[2].Id)).GroupUsers.Single(x => x.UserId == userId).UnreadCount.ShouldBe(0);
                 }
             });
         }

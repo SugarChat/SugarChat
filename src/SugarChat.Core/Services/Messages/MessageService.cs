@@ -35,12 +35,14 @@ namespace SugarChat.Core.Services.Messages
         private readonly IGroupUserDataProvider _groupUserDataProvider;
         private readonly IConfigurationDataProvider _configurationDataProvider;
         private readonly ITransactionManager _transactionManagement;
+        private readonly IGroup2DataProvider _group2DataProvider;
 
         public MessageService(IMapper mapper, IUserDataProvider userDataProvider,
             IMessageDataProvider messageDataProvider,
             IFriendDataProvider friendDataProvider, IGroupDataProvider groupDataProvider,
             IGroupUserDataProvider groupUserDataProvider, IConfigurationDataProvider configurationDataProvider,
-            ITransactionManager transactionManagement)
+            ITransactionManager transactionManagement,
+            IGroup2DataProvider group2DataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -50,6 +52,7 @@ namespace SugarChat.Core.Services.Messages
             _groupUserDataProvider = groupUserDataProvider;
             _configurationDataProvider = configurationDataProvider;
             _transactionManagement = transactionManagement;
+            _group2DataProvider = group2DataProvider;
         }
 
 
@@ -252,6 +255,26 @@ namespace SugarChat.Core.Services.Messages
             return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
         }
 
+        public async Task SetMessageReadByUserBasedOnGroupIdAsync2(SetMessageReadByUserBasedOnGroupIdCommand command,CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+                if (groupUser != null)
+                {
+                    groupUser.UnreadCount = 0;
+                    groupUser.LastReadTime = DateTime.Now;
+                    await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SetMessageReadByUserBasedOnGroupIdAsync2");
+                throw;
+            }
+        }
+
         public async Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(
             SetMessageReadByUserIdsBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default)
@@ -268,6 +291,29 @@ namespace SugarChat.Core.Services.Messages
             await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
+        }
+
+        public async Task SetMessageReadByUserIdsBasedOnGroupIdAsync2(SetMessageReadByUserIdsBasedOnGroupIdCommand command,CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                var groupUsers = group.GroupUsers.Where(x => command.UserIds.Contains(x.UserId)).ToList();
+                if (groupUsers.Any())
+                {
+                    foreach (var groupUser in groupUsers)
+                    {
+                        groupUser.UnreadCount = 0;
+                        groupUser.LastReadTime = DateTime.Now;
+                    }
+                    await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SetMessageReadByUserIdsBasedOnGroupIdAsync2");
+                throw;
+            }
         }
 
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
@@ -347,6 +393,41 @@ namespace SugarChat.Core.Services.Messages
                 }
             } while (time < 4);
             return _mapper.Map<MessageSavedEvent>(command);
+        }
+
+        public async Task SaveMessageAsync2(SendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                group.CheckExist(command.GroupId);
+
+                var group2 = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                bool needAddGroup2 = false;
+                if (group2 is null)
+                {
+                    group2 = _mapper.Map<Group2>(group);
+                    needAddGroup2 = true;
+                }
+
+                var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                group2.GroupUsers = _mapper.Map<List<GroupUser2>>(groupUsers);
+
+                Message2 message2 = _mapper.Map<Message2>(command);
+                message2.SentTime = DateTime.Now;
+                group2.Messages.Add(message2);
+                group2.LastSentTime = DateTime.Now;
+
+                if (needAddGroup2)
+                    await _group2DataProvider.AddAsync(group2, cancellationToken).ConfigureAwait(false);
+                else
+                    await _group2DataProvider.UpdateAsync(group2, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SaveMessageAsync2");
+                throw;
+            }
         }
 
         public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Memory;
 using SugarChat.Core;
 using SugarChat.Message;
 using SugarChat.Core.Utils;
+using System.Linq.Expressions;
 
 namespace SugarChat.IntegrationTest
 {
@@ -43,7 +44,10 @@ namespace SugarChat.IntegrationTest
                 iSecurityManager.IsSupperAdmin().Returns(false);
                 containerBuilder.RegisterInstance(iSecurityManager);
             });
+            RegisterBackgroundJobClientProvider(containerBuilder);
             containerBuilder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
+
+            Container = containerBuilder.Build().BeginLifetimeScope();
         }
 
         private void LoadThisConfiguration()
@@ -62,7 +66,19 @@ namespace SugarChat.IntegrationTest
             },
             new RunTimeProvider(RunTimeType.Test)));
             extraRegistration(builder);
-            Container = builder.Build().BeginLifetimeScope();
+        }
+
+        private void RegisterBackgroundJobClientProvider(ContainerBuilder builder)
+        {
+            var backgroundJobClientProvider = Substitute.For<IBackgroundJobClientProvider>();
+            backgroundJobClientProvider.Enqueue(Arg.Any<Expression<Func<Task>>>()).Returns(x =>
+            {
+                var call = (Expression<Func<Task>>)x.Args()[0];
+                var func = call.Compile();
+                func().Wait();
+                return default;
+            });
+            builder.RegisterInstance(backgroundJobClientProvider).SingleInstance();
         }
 
         protected void Run<T>(Action<T> action, Action<ContainerBuilder> extraRegistration = null)

@@ -40,6 +40,7 @@ namespace SugarChat.Core.Autofac
             RegisterAutoMapper(builder);
             RegisterDataProvider(builder);
             RegisterTableUtil(builder);
+            RegisterBackgroundJobClientProvider(builder);
         }
 
         private void RegisterMediator(ContainerBuilder builder)
@@ -101,6 +102,11 @@ namespace SugarChat.Core.Autofac
         private void RegisterTableUtil(ContainerBuilder builder)
         {
             builder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
+        }
+
+        private void RegisterBackgroundJobClientProvider(ContainerBuilder builder)
+        {
+            builder.RegisterType<BackgroundJobClientProvider>().As<IBackgroundJobClientProvider>().SingleInstance();
         }
     }
 }

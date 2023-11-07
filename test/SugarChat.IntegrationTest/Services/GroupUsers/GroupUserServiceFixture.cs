@@ -39,6 +39,10 @@ namespace SugarChat.IntegrationTest.Services.GroupUsers
                     reponse.Data.First(x => x.UserId == userId).CustomProperties.Count(x => x.Key == "A" && x.Value == "2AB").ShouldBe(1);
                     var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 }
+
+                var group2 = await repository.SingleAsync<Group2>(x => x.Id == conversationId);
+                group2.GroupUsers.Single(x => x.UserId == userId).CustomProperties.Count().ShouldBe(1);
+                group2.GroupUsers.Single(x => x.UserId == userId).CustomProperties.Count(x => x.Key == "Signature").ShouldBe(1);
             });
         }
 

@@ -3,19 +3,14 @@ using Shouldly;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Exceptions;
 using SugarChat.Core.IRepositories;
-using SugarChat.Core.Mediator.CommandHandlers.Groups;
-using SugarChat.Core.Services;
 using SugarChat.Message.Commands.Groups;
 using SugarChat.Message.Requests.Groups;
 using SugarChat.Message.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
-using SugarChat.Core.Services.Messages;
-using SugarChat.Core.Services.Groups;
 using SugarChat.Message.Basic;
 using SugarChat.Message.Common;
 
@@ -51,6 +46,9 @@ namespace SugarChat.IntegrationTest.Services
                 var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
                 group.Type.ShouldBe(10);
                 (await repository.CountAsync<GroupUser>()).ShouldBe(1);
+
+                var group2 = await repository.SingleAsync<Group2>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
+                group2.GroupUsers.Count.ShouldBe(1);
             });
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {

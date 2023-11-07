@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using SugarChat.Core;
 using SugarChat.Message;
+using Hangfire;
+using Hangfire.MemoryStorage;
 
 namespace SugarChat.WebApi
 {
@@ -79,6 +81,8 @@ namespace SugarChat.WebApi
                 c.IncludeXmlComments(xmlPath, true);
             });
             services.AddHttpContextAccessor();
+            services.AddHangfire(x => x.UseStorage(new MemoryStorage()));
+            services.AddHangfireServer();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)

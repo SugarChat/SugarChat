@@ -25,8 +25,12 @@ namespace SugarChat.Core.Mappings
             CreateMap<RemoveUserFromGroupCommand, UserRemovedFromGroupEvent>();
             CreateMap<GroupCustomProperty, GroupCustomPropertyDto>();
 
-            CreateMap<AddGroupCommand, Group2>();
-            CreateMap<Group, Group2>();
+            CreateMap<AddGroupCommand, Group2>()
+                .ForMember(dest => dest.GroupUsers, opt => opt.Ignore())
+                .ForMember(dest => dest.Messages, opt => opt.Ignore());
+            CreateMap<Group, Group2>()
+                .ForMember(dest => dest.GroupUsers, opt => opt.Ignore())
+                .ForMember(dest => dest.Messages, opt => opt.Ignore());
             CreateMap<GroupUser, GroupUser2>();
             CreateMap<SendMessageCommand, Message2>();
             CreateMap<Domain.Message, Message2>();

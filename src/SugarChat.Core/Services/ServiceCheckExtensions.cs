@@ -64,6 +64,14 @@ namespace SugarChat.Core.Services
             }
         }
 
+        public static void CheckExist(this Group2 group, string groupId)
+        {
+            if (group is null)
+            {
+                throw new BusinessWarningException(Prompt.GroupNoExists.WithParams(groupId));
+            }
+        }
+
         public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
         {
             if (groupUser is null)

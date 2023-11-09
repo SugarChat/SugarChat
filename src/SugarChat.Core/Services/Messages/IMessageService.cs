@@ -36,16 +36,22 @@ namespace SugarChat.Core.Services.Messages
         Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
-        
+
+        Task SetMessageReadByUserBasedOnGroupIdAsync2(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
         Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(
             SetMessageReadByUserIdsBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
-        
+
+        Task SetMessageReadByUserIdsBasedOnGroupIdAsync2(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
         Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default);
 
         Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command,
             CancellationToken cancellationToken = default);
+
+        Task SaveMessageAsync2(SendMessageCommand command, CancellationToken cancellationToken = default);
 
         Task BatchSaveMessageAsync(BatchSendMessageCommand command, CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);

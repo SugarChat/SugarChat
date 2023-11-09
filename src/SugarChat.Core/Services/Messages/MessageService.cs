@@ -400,7 +400,8 @@ namespace SugarChat.Core.Services.Messages
             try
             {
                 Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                group.CheckExist(command.GroupId);
+                if (group == null)
+                    return;
 
                 var group2 = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
                 bool needAddGroup2 = false;

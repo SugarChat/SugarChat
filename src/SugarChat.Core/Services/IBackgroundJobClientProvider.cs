@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SugarChat.Core.Services
 {
-    public interface IBackgroundJobClientProvider : ISingletonService
+    public interface IBackgroundJobClientProvider
     {
         string Enqueue(Expression<Func<Task>> methodCall);
     }

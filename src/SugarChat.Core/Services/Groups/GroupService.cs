@@ -197,6 +197,7 @@ namespace SugarChat.Core.Services.Groups
                 Group2 group = await _group2DataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
                 if (group is not null)
                     return;
+
                 group = _mapper.Map<Group2>(command);
                 group.GroupUsers.Add(new GroupUser2
                 {

@@ -259,7 +259,11 @@ namespace SugarChat.Core.Services.Messages
         {
             try
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                if (group1 is null)
+                    return;
+
+                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
                 var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
                 if (groupUser != null)
                 {
@@ -297,7 +301,11 @@ namespace SugarChat.Core.Services.Messages
         {
             try
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                if (group1 is null)
+                    return;
+
+                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
                 var groupUsers = group.GroupUsers.Where(x => command.UserIds.Contains(x.UserId)).ToList();
                 if (groupUsers.Any())
                 {
@@ -400,16 +408,10 @@ namespace SugarChat.Core.Services.Messages
             try
             {
                 Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group == null)
+                if (group is null)
                     return;
 
-                var group2 = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
-                bool needAddGroup2 = false;
-                if (group2 is null)
-                {
-                    group2 = _mapper.Map<Group2>(group);
-                    needAddGroup2 = true;
-                }
+                var group2 = await _group2DataProvider.GetByIdAsync(group, cancellationToken);
 
                 var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
                 group2.GroupUsers = _mapper.Map<List<GroupUser2>>(groupUsers);
@@ -418,11 +420,7 @@ namespace SugarChat.Core.Services.Messages
                 message2.SentTime = DateTime.Now;
                 group2.Messages.Add(message2);
                 group2.LastSentTime = DateTime.Now;
-
-                if (needAddGroup2)
-                    await _group2DataProvider.AddAsync(group2, cancellationToken).ConfigureAwait(false);
-                else
-                    await _group2DataProvider.UpdateAsync(group2, cancellationToken).ConfigureAwait(false);
+                await _group2DataProvider.UpdateAsync(group2, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

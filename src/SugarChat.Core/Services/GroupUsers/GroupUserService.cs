@@ -187,7 +187,11 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             try
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                if (group1 is null)
+                    return;
+
+                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
                 var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
                 groupUser.CustomProperties = command.CustomProperties;
                 await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
@@ -387,8 +391,11 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             try
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
-                group.CheckExist(command.GroupId);
+                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                if (group1 is null)
+                    return;
+
+                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
 
                 var groupUser2s = group.GroupUsers;
                 foreach (var uerId in command.GroupUserIds)
@@ -559,7 +566,11 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             try
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken);
+                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+                if (group1 is null)
+                    return;
+
+                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
                 var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.MemberId);
                 if (groupUser is not null)
                 {

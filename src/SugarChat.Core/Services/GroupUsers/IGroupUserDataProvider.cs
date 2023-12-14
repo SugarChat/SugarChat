@@ -35,8 +35,6 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<IEnumerable<GroupUser>> GetByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<GroupUser>> GetGroupMemberCountByGroupIdsAsync(IEnumerable<string> groupIds, CancellationToken cancellationToken = default);
-
         Task<IEnumerable<GroupUser>> GetListByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
         Task<int> GetCountAsync(Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);
         Task<IEnumerable<GroupUser>> GetListAsync(PageSettings pageSettings, Expression<Func<GroupUser, bool>> predicate = null, CancellationToken cancellationToken = default);

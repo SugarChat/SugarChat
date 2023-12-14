@@ -11,6 +11,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Core.Domain;
 using System;
 using SugarChat.Message.Basic;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.IntegrationTest.Services.Messages
 {
@@ -236,8 +237,8 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     UserId = userId,
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
-                var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(9);
+                var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<PagedResult<MessageDto>>>(request);
+                response.Data.Total.ShouldBe(9);
             });
         }
 

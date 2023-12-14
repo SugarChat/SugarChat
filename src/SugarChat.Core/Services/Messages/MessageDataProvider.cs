@@ -44,6 +44,11 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
+        public async Task AddRangeAsync(IEnumerable<Domain.Message> messages, CancellationToken cancellationToken = default)
+        {
+            await _repository.AddRangeAsync(messages, cancellationToken);
+        }
+
         public async Task UpdateAsync(Domain.Message message, CancellationToken cancellationToken = default)
         {
             int affectedLineNum = await _repository.UpdateAsync(message, cancellationToken);

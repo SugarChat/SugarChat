@@ -31,6 +31,14 @@ namespace SugarChat.WebApi.Controllers
             return Ok(response);
         }
 
+        [Route("batchSend"), HttpPost]
+        [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
+        public async Task<IActionResult> BatchSendMessage(BatchSendMessageCommand command)
+        {
+            var response = await _mediator.SendAsync<BatchSendMessageCommand, SugarChatResponse>(command);
+            return Ok(response);
+        }
+
         [Route("revoke"), HttpPost]
         [ProducesResponseType(statusCode: StatusCodes.Status200OK, type: typeof(SugarChatResponse))]
         public async Task<IActionResult> RevokeMessage(RevokeMessageCommand command)

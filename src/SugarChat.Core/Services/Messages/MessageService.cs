@@ -349,6 +349,68 @@ namespace SugarChat.Core.Services.Messages
             return _mapper.Map<MessageSavedEvent>(command);
         }
 
+        public async Task BatchSaveMessageAsync(BatchSendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.SendMessageCommands.Select(x => x.GroupId).ToList();
+            var groups = await _groupDataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
+            var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId), cancellationToken).ConfigureAwait(false);
+            foreach (var group in groups)
+            {
+                group.LastSentTime = DateTime.Now;
+            }
+            var messagesGroups = command.SendMessageCommands.GroupBy(x => x.GroupId);
+            foreach (var messagesGroup in messagesGroups)
+            {
+                var group = groups.Single(x => x.Id == messagesGroup.Key);
+                var groupUsersByGroupId = groupUsers.Where(x => x.GroupId == messagesGroup.Key).ToList();
+                var sendMessageCommands = messagesGroup.ToList();
+                foreach (var sendMessageCommand in sendMessageCommands)
+                {
+                    var filterGroupUserIds = _groupUserDataProvider.FilterGroupUserByCustomProperties(groupUsersByGroupId, sendMessageCommand.IgnoreUnreadCountByGroupUserCustomProperties);
+                    var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                    foreach (var groupUser in groupUserForUpdate)
+                    {
+                        if (sendMessageCommand.SentBy!= groupUser.UserId)
+                            groupUser.UnreadCount += 1;
+                    }
+                }
+                foreach (var groupUser in groupUsersByGroupId)
+                {
+                    groupUser.LastSentTime = group.LastSentTime;
+                }
+            }
+            var insertMessages = new List<Domain.Message>();
+            foreach (var message in command.SendMessageCommands)
+            {
+                var newMessage = _mapper.Map<Domain.Message>(message);
+                newMessage.SentTime = DateTime.Now;
+                insertMessages.Add(newMessage);
+            }
+
+            int retryCount = 1;
+            while (retryCount <= 3)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        await _groupDataProvider.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
+                        await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+                        await _messageDataProvider.AddRangeAsync(insertMessages, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        if (retryCount >= 3)
+                            throw;
+                        retryCount++;
+                    }
+                }
+            }
+        }
+
         public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);

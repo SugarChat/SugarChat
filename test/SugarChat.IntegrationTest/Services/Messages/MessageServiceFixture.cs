@@ -11,6 +11,7 @@ using SugarChat.Core.IRepositories;
 using SugarChat.Core.Domain;
 using System;
 using SugarChat.Message.Basic;
+using SugarChat.Message.Paging;
 
 namespace SugarChat.IntegrationTest.Services.Messages
 {
@@ -199,6 +200,36 @@ namespace SugarChat.IntegrationTest.Services.Messages
         }
 
         [Fact]
+        public async Task ShouldBatchSetMessageReadByUserIdsBasedOnGroupId()
+        {
+            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            {
+                var command = new BatchSetMessageReadByUserIdsBasedOnGroupIdCommand
+                {
+                    SetMessageReadCommands = new List<SetMessageReadByUserIdsBasedOnGroupIdCommand>
+                    {
+                        new SetMessageReadByUserIdsBasedOnGroupIdCommand
+                        {
+                            GroupId = conversationId,
+                            UserIds = new [] { userId, userId9 }
+                        },
+                        new SetMessageReadByUserIdsBasedOnGroupIdCommand
+                        {
+                            GroupId = groupId4,
+                            UserIds = new [] { userId, userId2 }
+                        }
+                    }
+                };
+                await mediator.SendAsync<BatchSetMessageReadByUserIdsBasedOnGroupIdCommand, SugarChatResponse>(command);
+                var groupUsers = await repository.ToListAsync<GroupUser>(x => (new[] { conversationId, groupId4 }).Contains(x.GroupId));
+                groupUsers.Single(x => x.GroupId == conversationId && x.UserId == userId).UnreadCount.ShouldBe(0);
+                groupUsers.Single(x => x.GroupId == conversationId && x.UserId == userId9).UnreadCount.ShouldBe(0);
+                groupUsers.Single(x => x.GroupId == groupId4 && x.UserId == userId).UnreadCount.ShouldBe(0);
+                groupUsers.Single(x => x.GroupId == groupId4 && x.UserId == userId2).UnreadCount.ShouldBe(0);
+            });
+        }
+
+        [Fact]
         public async Task ShouldGetMessagesByGroupIds()
         {
             await Run<IMediator>(async (mediator) =>
@@ -208,8 +239,8 @@ namespace SugarChat.IntegrationTest.Services.Messages
                     UserId = userId,
                     GroupIds = groups.Select(x => x.Id).ToArray()
                 };
-                var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<IEnumerable<MessageDto>>>(request);
-                response.Data.Count().ShouldBe(9);
+                var response = await mediator.RequestAsync<GetMessagesByGroupIdsRequest, SugarChatResponse<PagedResult<MessageDto>>>(request);
+                response.Data.Total.ShouldBe(9);
             });
         }
 

@@ -324,6 +324,31 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
+        public async Task BatchSetMessageReadByUserIdsBasedOnGroupIdAsync(BatchSetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            if (command.SetMessageReadCommands is null || !command.SetMessageReadCommands.Any())
+                return;
+
+            var groupIds = command.SetMessageReadCommands.Select(x => x.GroupId).ToList();
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var setMessageReadCommand in command.SetMessageReadCommands)
+            {
+                if (setMessageReadCommand.UserIds != null && setMessageReadCommand.UserIds.Any())
+                {
+                    foreach (var userId in setMessageReadCommand.UserIds)
+                    {
+                        var groupUser = groupUsers.SingleOrDefault(x => x.GroupId == setMessageReadCommand.GroupId && x.UserId == userId);
+                        if (groupUser != null)
+                        {
+                            groupUser.UnreadCount = 0;
+                            groupUser.LastReadTime = DateTime.Now;
+                        }
+                    }
+                }
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,
             CancellationToken cancellationToken = default)
         {
@@ -450,7 +475,7 @@ namespace SugarChat.Core.Services.Messages
                     var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
                     foreach (var groupUser in groupUserForUpdate)
                     {
-                        if (sendMessageCommand.SentBy!= groupUser.UserId)
+                        if (sendMessageCommand.SentBy != groupUser.UserId)
                             groupUser.UnreadCount += 1;
                     }
                 }

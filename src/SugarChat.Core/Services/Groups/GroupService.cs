@@ -129,27 +129,19 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task AddGroupAsync2(AddGroupCommand command, CancellationToken cancellation = default)
         {
-            try
-            {
-                Group2 group = await _group2DataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
-                if (group is not null)
-                    return;
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
+            if (group is not null)
+                return;
 
-                group = _mapper.Map<Group2>(command);
-                group.GroupUsers.Add(new GroupUser2
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserId = command.UserId,
-                    Role = UserRole.Owner,
-                    CreatedBy = command.CreatedBy,
-                });
-                await _group2DataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
-            }
-            catch (Exception ex)
+            group = _mapper.Map<Group2>(command);
+            group.GroupUsers.Add(new GroupUser2
             {
-                Log.Error(ex, "AddGroupAsync2");
-                throw;
-            }
+                Id = Guid.NewGuid().ToString(),
+                UserId = command.UserId,
+                Role = UserRole.Owner,
+                CreatedBy = command.CreatedBy,
+            });
+            await _group2DataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
         }
 
         public async Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default)

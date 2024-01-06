@@ -26,8 +26,8 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<SetGroupMemberRoleCommand> context, CancellationToken cancellationToken)
         {
-            var groupMemberRoleSetEvent = await _service.SetGroupMemberRoleAsync(context.Message, cancellationToken).ConfigureAwait(false);
             _backgroundJobClientProvider.Enqueue(() => _service.SetGroupMemberRoleAsync2(context.Message, cancellationToken));
+            var groupMemberRoleSetEvent = await _service.SetGroupMemberRoleAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(groupMemberRoleSetEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

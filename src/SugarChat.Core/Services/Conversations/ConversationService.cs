@@ -121,21 +121,13 @@ namespace SugarChat.Core.Services.Conversations
 
         public async Task RemoveConversationByConversationIdAsync2(RemoveConversationCommand command, CancellationToken cancellationToken = default)
         {
-            try
+            var group = await _group2DataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+            if (groupUser is not null)
             {
-                var group = await _group2DataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
-                var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
-                if (groupUser is not null)
-                {
-                    group.GroupUsers.Remove(groupUser);
-                }
-                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+                group.GroupUsers.Remove(groupUser);
             }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "RemoveConversationByConversationIdAsync2");
-                throw;
-            }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<ConversationDto> GetConversationDto(GroupUser groupUser,

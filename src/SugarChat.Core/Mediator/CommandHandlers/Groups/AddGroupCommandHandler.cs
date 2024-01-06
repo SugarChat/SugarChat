@@ -22,9 +22,9 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Groups
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<AddGroupCommand> context, CancellationToken cancellationToken)
         {
+            _backgroundJobClientProvider.Enqueue(() => _groupService.AddGroupAsync2(context.Message, cancellationToken));
             var groupAddedEvent =
                 await _groupService.AddGroupAsync(context.Message, cancellationToken).ConfigureAwait(false);
-            _backgroundJobClientProvider.Enqueue(() => _groupService.AddGroupAsync2(context.Message, cancellationToken));
             await context.PublishAsync(groupAddedEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

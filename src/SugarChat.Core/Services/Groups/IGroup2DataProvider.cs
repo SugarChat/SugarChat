@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +18,8 @@ namespace SugarChat.Core.Services.Groups
         Task AddAsync(Group2 group, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default);
+
+        int GetUnreadCount(string userId, int groupType);
     }
 
     public class Group2DataProvider : IGroup2DataProvider
@@ -57,6 +62,15 @@ namespace SugarChat.Core.Services.Groups
         public async Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default)
         {
             await _repository.UpdateAsync(group, cancellationToken);
+        }
+
+        public int GetUnreadCount(string userId, int groupType)
+        {
+            var unreadCount = _repository.Query<Group2>().Where(x => x.Type == groupType && x.GroupUsers.Any(y => y.UserId == userId))
+                  .Select(x => x.GroupUsers.Where(y => y.UserId == userId)).ToList()
+                  .SelectMany(x => x)
+                  .Sum(x => x.UnreadCount);
+            return unreadCount;
         }
     }
 }

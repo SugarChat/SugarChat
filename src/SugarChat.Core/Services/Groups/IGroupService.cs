@@ -37,5 +37,7 @@ namespace SugarChat.Core.Services.Groups
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
 
         Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default);
+
+        Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default);
     }
 }

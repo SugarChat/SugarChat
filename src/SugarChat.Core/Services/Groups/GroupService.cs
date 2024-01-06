@@ -367,6 +367,23 @@ namespace SugarChat.Core.Services.Groups
             };
         }
 
+        public async Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default)
+        {
+            var group = await _group2DataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+            {
+                return new GetGroupProfileResponse
+                {
+                    Group = null
+                };
+            }
+
+            return new GetGroupProfileResponse
+            {
+                Group = _mapper.Map<GroupDto>(group)
+            };
+        }
+
         public async Task<GroupProfileUpdatedEvent> UpdateGroupProfileAsync(UpdateGroupProfileCommand command,
             CancellationToken cancellationToken)
         {

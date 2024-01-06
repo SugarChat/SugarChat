@@ -26,8 +26,8 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Conversations
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<SetMessageReadByUserBasedOnGroupIdCommand> context, CancellationToken cancellationToken)
         {
-            var messageReadEvent = await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
             _backgroundJobClientProvider.Enqueue(() => _messageService.SetMessageReadByUserBasedOnGroupIdAsync2(context.Message, cancellationToken));
+            var messageReadEvent = await _messageService.SetMessageReadByUserBasedOnGroupIdAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageReadEvent, cancellationToken).ConfigureAwait(false);
             return new SugarChatResponse();
         }

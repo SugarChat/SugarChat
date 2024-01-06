@@ -22,9 +22,9 @@ namespace SugarChat.Core.Mediator.CommandHandlers.Messages
 
         public async Task<SugarChatResponse> Handle(IReceiveContext<SendMessageCommand> context, CancellationToken cancellationToken)
         {
+            _backgroundJobClientProvider.Enqueue(() => _messageService.SaveMessageAsync2(context.Message, cancellationToken));
             var messageSavedEvent = await _messageService.SaveMessageAsync(context.Message, cancellationToken).ConfigureAwait(false);
             await context.PublishAsync(messageSavedEvent, cancellationToken).ConfigureAwait(false);
-            _backgroundJobClientProvider.Enqueue(() => _messageService.SaveMessageAsync2(context.Message, cancellationToken));
             return new SugarChatResponse();
         }
     }

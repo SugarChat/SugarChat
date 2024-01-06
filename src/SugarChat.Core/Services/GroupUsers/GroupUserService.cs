@@ -185,22 +185,14 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task SetGroupMemberCustomPropertiesAsync2(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group1 is null)
-                    return;
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
 
-                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
-                var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
-                groupUser.CustomProperties = command.CustomProperties;
-                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "SetGroupMemberCustomPropertiesAsync2");
-                throw;
-            }
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+            groupUser.CustomProperties = command.CustomProperties;
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task BatchSetGroupMemberCustomPropertiesAsync(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
@@ -389,36 +381,28 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task AddGroupMembersAsync2(AddGroupMemberCommand command, CancellationToken cancellationToken = default)
         {
-            try
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
+
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+
+            var groupUser2s = group.GroupUsers;
+            foreach (var uerId in command.GroupUserIds)
             {
-                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group1 is null)
-                    return;
-
-                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
-
-                var groupUser2s = group.GroupUsers;
-                foreach (var uerId in command.GroupUserIds)
+                if (!groupUser2s.Any(x => x.UserId == uerId))
                 {
-                    if (!groupUser2s.Any(x => x.UserId == uerId))
+                    groupUser2s.Add(new GroupUser2
                     {
-                        groupUser2s.Add(new GroupUser2
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            UserId = uerId,
-                            Role = command.Role,
-                            CreatedBy = command.CreatedBy,
-                            CustomProperties = command.CustomProperties
-                        });
-                    }
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = uerId,
+                        Role = command.Role,
+                        CreatedBy = command.CreatedBy,
+                        CustomProperties = command.CustomProperties
+                    });
                 }
-                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "AddGroupMembersAsync2");
-                throw;
-            }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task BatchAddGroupMembersAsync(BatchAddGroupMemberCommand command, CancellationToken cancellationToken = default)
@@ -564,25 +548,17 @@ namespace SugarChat.Core.Services.GroupUsers
 
         public async Task SetGroupMemberRoleAsync2(SetGroupMemberRoleCommand command, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group1 is null)
-                    return;
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
 
-                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
-                var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.MemberId);
-                if (groupUser is not null)
-                {
-                    groupUser.Role = command.Role;
-                }
-                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.MemberId);
+            if (groupUser is not null)
             {
-                Log.Error(ex, "SetGroupMemberRoleAsync2");
-                throw;
+                groupUser.Role = command.Role;
             }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         private void CheckProperties(Dictionary<string, string> properties)

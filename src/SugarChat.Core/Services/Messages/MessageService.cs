@@ -255,27 +255,19 @@ namespace SugarChat.Core.Services.Messages
             return _mapper.Map<MessageReadSetByUserBasedOnGroupIdEvent>(command);
         }
 
-        public async Task SetMessageReadByUserBasedOnGroupIdAsync2(SetMessageReadByUserBasedOnGroupIdCommand command,CancellationToken cancellationToken = default)
+        public async Task SetMessageReadByUserBasedOnGroupIdAsync2(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group1 is null)
-                    return;
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
 
-                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
-                var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
-                if (groupUser != null)
-                {
-                    groupUser.UnreadCount = 0;
-                    groupUser.LastReadTime = DateTime.Now;
-                    await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+            if (groupUser != null)
             {
-                Log.Error(ex, "SetMessageReadByUserBasedOnGroupIdAsync2");
-                throw;
+                groupUser.UnreadCount = 0;
+                groupUser.LastReadTime = DateTime.Now;
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -297,30 +289,22 @@ namespace SugarChat.Core.Services.Messages
             return _mapper.Map<MessageReadSetByUserIdsBasedOnGroupIdEvent>(command);
         }
 
-        public async Task SetMessageReadByUserIdsBasedOnGroupIdAsync2(SetMessageReadByUserIdsBasedOnGroupIdCommand command,CancellationToken cancellationToken = default)
+        public async Task SetMessageReadByUserIdsBasedOnGroupIdAsync2(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group1 is null)
-                    return;
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
 
-                var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
-                var groupUsers = group.GroupUsers.Where(x => command.UserIds.Contains(x.UserId)).ToList();
-                if (groupUsers.Any())
-                {
-                    foreach (var groupUser in groupUsers)
-                    {
-                        groupUser.UnreadCount = 0;
-                        groupUser.LastReadTime = DateTime.Now;
-                    }
-                    await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUsers = group.GroupUsers.Where(x => command.UserIds.Contains(x.UserId)).ToList();
+            if (groupUsers.Any())
             {
-                Log.Error(ex, "SetMessageReadByUserIdsBasedOnGroupIdAsync2");
-                throw;
+                foreach (var groupUser in groupUsers)
+                {
+                    groupUser.UnreadCount = 0;
+                    groupUser.LastReadTime = DateTime.Now;
+                }
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -431,28 +415,20 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task SaveMessageAsync2(SendMessageCommand command, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                if (group is null)
-                    return;
+            Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+                return;
 
-                var group2 = await _group2DataProvider.GetByIdAsync(group, cancellationToken);
+            var group2 = await _group2DataProvider.GetByIdAsync(group, cancellationToken);
 
-                var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-                group2.GroupUsers = _mapper.Map<List<GroupUser2>>(groupUsers);
+            var groupUsers = await _groupUserDataProvider.GetByGroupIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group2.GroupUsers = _mapper.Map<List<GroupUser2>>(groupUsers);
 
-                Message2 message2 = _mapper.Map<Message2>(command);
-                message2.SentTime = DateTime.Now;
-                group2.Messages.Add(message2);
-                group2.LastSentTime = DateTime.Now;
-                await _group2DataProvider.UpdateAsync(group2, cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "SaveMessageAsync2");
-                throw;
-            }
+            Message2 message2 = _mapper.Map<Message2>(command);
+            message2.SentTime = DateTime.Now;
+            group2.Messages.Add(message2);
+            group2.LastSentTime = DateTime.Now;
+            await _group2DataProvider.UpdateAsync(group2, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task BatchSaveMessageAsync(BatchSendMessageCommand command, CancellationToken cancellationToken = default)
@@ -536,6 +512,12 @@ namespace SugarChat.Core.Services.Messages
             {
                 Count = unreadCout
             };
+        }
+
+        public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync2(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
+        {
+            var unreadCout = _group2DataProvider.GetUnreadCount(request.UserId, request.GroupType);
+            return new GetUnreadMessageCountResponse { Count = unreadCout };
         }
 
         public async Task<GetMessagesByGroupIdsResponse> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default)

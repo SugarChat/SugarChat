@@ -21,8 +21,8 @@ namespace SugarChat.Core.Mediator.CommandHandlers.GroupUsers
         }
         public async Task<SugarChatResponse> Handle(IReceiveContext<SetGroupMemberCustomFieldCommand> context, CancellationToken cancellationToken)
         {
-            var groupMemberCustomFieldBeSetEvent = await _groupUserService.SetGroupMemberCustomPropertiesAsync(context.Message, cancellationToken);
             _backgroundJobClientProvider.Enqueue(() => _groupUserService.SetGroupMemberCustomPropertiesAsync2(context.Message, cancellationToken));
+            var groupMemberCustomFieldBeSetEvent = await _groupUserService.SetGroupMemberCustomPropertiesAsync(context.Message, cancellationToken);
             await context.PublishAsync(groupMemberCustomFieldBeSetEvent, cancellationToken);
             return new SugarChatResponse();
         }

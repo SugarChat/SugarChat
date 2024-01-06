@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading;
@@ -15,11 +17,15 @@ namespace SugarChat.Core.Services.Groups
 
         Task<Group2> GetByIdAsync(Group group, CancellationToken cancellationToken = default);
 
+        Task<List<Group2>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
+
         Task AddAsync(Group2 group, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default);
 
         int GetUnreadCount(string userId, int groupType);
+
+        Task UpdateRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default);
     }
 
     public class Group2DataProvider : IGroup2DataProvider
@@ -54,6 +60,12 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
+        public async Task<List<Group2>> GetByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync<Group2>(x => ids.Contains(x.Id), cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         public async Task AddAsync(Group2 group, CancellationToken cancellationToken = default)
         {
             await _repository.AddAsync(group, cancellationToken).ConfigureAwait(false);
@@ -62,6 +74,11 @@ namespace SugarChat.Core.Services.Groups
         public async Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default)
         {
             await _repository.UpdateAsync(group, cancellationToken);
+        }
+
+        public async Task UpdateRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default)
+        {
+            await _repository.UpdateRangeAsync(groups, cancellationToken);
         }
 
         public int GetUnreadCount(string userId, int groupType)

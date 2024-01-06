@@ -586,6 +586,13 @@ namespace SugarChat.Core.Services.GroupUsers
             return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
         }
 
+        public async Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync2(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        {
+            var group2s = await _group2DataProvider.GetByIdsAsync(request.GroupIds, cancellationToken).ConfigureAwait(false);
+            var userIds = group2s.SelectMany(x => x.GroupUsers).Select(x => x.UserId).Distinct().ToList();
+            return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
+        }
+
         public async Task UpdateGroupUserDataAsync(UpdateGroupUserDataCommand command, CancellationToken cancellationToken = default)
         {
             var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);

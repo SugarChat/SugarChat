@@ -22,6 +22,7 @@ using SugarChat.Message.Paging;
 using SugarChat.Core.IRepositories;
 using Serilog;
 using System.Diagnostics;
+using Mediator.Net.Contracts;
 
 namespace SugarChat.Core.Services.Messages
 {
@@ -331,6 +332,28 @@ namespace SugarChat.Core.Services.Messages
                 }
             }
             await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task BatchSetMessageReadByUserIdsBasedOnGroupIdAsync2(BatchSetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            if (command.SetMessageReadCommands is null || !command.SetMessageReadCommands.Any())
+                return;
+
+            var groupIds = command.SetMessageReadCommands.Select(x => x.GroupId).ToList();
+            var group2s = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var group2 in group2s)
+            {
+                foreach (var setMessageReadCommand in command.SetMessageReadCommands.Where(x => x.GroupId == group2.Id&&x.UserIds!=null))
+                {
+                    var groupUsers = group2.GroupUsers.Where(x => setMessageReadCommand.UserIds.Contains(x.UserId));
+                    foreach (var groupUser in groupUsers)
+                    {
+                        groupUser.UnreadCount = 0;
+                        groupUser.LastReadTime = DateTime.Now;
+                    }
+                }
+            }
+            await _group2DataProvider.UpdateRangeAsync(group2s, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<MessageRevokedEvent> RevokeMessageAsync(RevokeMessageCommand command,

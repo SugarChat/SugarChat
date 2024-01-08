@@ -33,13 +33,16 @@ namespace SugarChat.Core.Services.Groups
         private readonly IMessageDataProvider _messageDataProvider;
         private readonly ITransactionManager _transactionManagement;
         private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
+        private readonly IGroup2DataProvider _group2DataProvider;
+
         public GroupService(IMapper mapper,
             IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider,
             IMessageDataProvider messageDataProvider,
             ITransactionManager transactionManagement,
-            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider,
+            IGroup2DataProvider group2DataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -48,6 +51,7 @@ namespace SugarChat.Core.Services.Groups
             _messageDataProvider = messageDataProvider;
             _transactionManagement = transactionManagement;
             _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
+            _group2DataProvider = group2DataProvider;
         }
 
         public async Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command,
@@ -121,6 +125,23 @@ namespace SugarChat.Core.Services.Groups
                 }
             }
             return _mapper.Map<GroupAddedEvent>(command);
+        }
+
+        public async Task AddGroupAsync2(AddGroupCommand command, CancellationToken cancellation = default)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
+            if (group is not null)
+                return;
+
+            group = _mapper.Map<Group2>(command);
+            group.GroupUsers.Add(new GroupUser2
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = command.UserId,
+                Role = UserRole.Owner,
+                CreatedBy = command.CreatedBy,
+            });
+            await _group2DataProvider.AddAsync(group, cancellation).ConfigureAwait(false);
         }
 
         public async Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default)
@@ -280,6 +301,23 @@ namespace SugarChat.Core.Services.Groups
             return new GetGroupProfileResponse
             {
                 Group = groupDto
+            };
+        }
+
+        public async Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default)
+        {
+            var group = await _group2DataProvider.GetByIdAsync(request.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+            {
+                return new GetGroupProfileResponse
+                {
+                    Group = null
+                };
+            }
+
+            return new GetGroupProfileResponse
+            {
+                Group = _mapper.Map<GroupDto>(group)
             };
         }
 

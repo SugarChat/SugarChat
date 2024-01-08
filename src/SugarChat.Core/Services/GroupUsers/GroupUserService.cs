@@ -31,13 +31,15 @@ namespace SugarChat.Core.Services.GroupUsers
         private readonly ISecurityManager _securityManager;
         private readonly ITransactionManager _transactionManagement;
         private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
+        private readonly IGroup2DataProvider _group2DataProvider;
 
         public GroupUserService(IMapper mapper, IGroupDataProvider groupDataProvider,
             IUserDataProvider userDataProvider,
             IGroupUserDataProvider groupUserDataProvider,
             ISecurityManager securityManager,
             ITransactionManager transactionManagement,
-            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
+            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider,
+            IGroup2DataProvider group2DataProvider)
         {
             _mapper = mapper;
             _groupDataProvider = groupDataProvider;
@@ -46,6 +48,7 @@ namespace SugarChat.Core.Services.GroupUsers
             _securityManager = securityManager;
             _transactionManagement = transactionManagement;
             _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
+            _group2DataProvider = group2DataProvider;
         }
 
         public async Task<UserAddedToGroupEvent> AddUserToGroupAsync(AddUserToGroupCommand command,
@@ -178,6 +181,18 @@ namespace SugarChat.Core.Services.GroupUsers
             }
 
             return _mapper.Map<GroupMemberCustomFieldSetEvent>(command);
+        }
+
+        public async Task SetGroupMemberCustomPropertiesAsync2(SetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
+        {
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
+
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+            groupUser.CustomProperties = command.CustomProperties;
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task BatchSetGroupMemberCustomPropertiesAsync(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
@@ -364,6 +379,32 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupMemberAddedEvent>(command);
         }
 
+        public async Task AddGroupMembersAsync2(AddGroupMemberCommand command, CancellationToken cancellationToken = default)
+        {
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
+
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+
+            var groupUser2s = group.GroupUsers;
+            foreach (var uerId in command.GroupUserIds)
+            {
+                if (!groupUser2s.Any(x => x.UserId == uerId))
+                {
+                    groupUser2s.Add(new GroupUser2
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = uerId,
+                        Role = command.Role,
+                        CreatedBy = command.CreatedBy,
+                        CustomProperties = command.CustomProperties
+                    });
+                }
+            }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task BatchAddGroupMembersAsync(BatchAddGroupMemberCommand command, CancellationToken cancellationToken = default)
         {
             var groupIds = command.AddGroupMemberCommands.Select(x => x.GroupId).ToList();
@@ -505,6 +546,21 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<GroupMemberRoleSetEvent>(command);
         }
 
+        public async Task SetGroupMemberRoleAsync2(SetGroupMemberRoleCommand command, CancellationToken cancellationToken = default)
+        {
+            Group group1 = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group1 is null)
+                return;
+
+            var group = await _group2DataProvider.GetByIdAsync(group1, cancellationToken);
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.MemberId);
+            if (groupUser is not null)
+            {
+                groupUser.Role = command.Role;
+            }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+        }
+
         private void CheckProperties(Dictionary<string, string> properties)
         {
             if (properties is null || !properties.Any())
@@ -527,6 +583,13 @@ namespace SugarChat.Core.Services.GroupUsers
 
             var userIds = groupUsers.Select(x => x.UserId).Distinct().ToList();
 
+            return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
+        }
+
+        public async Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync2(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default)
+        {
+            var group2s = await _group2DataProvider.GetByIdsAsync(request.GroupIds, cancellationToken).ConfigureAwait(false);
+            var userIds = group2s.SelectMany(x => x.GroupUsers).Select(x => x.UserId).Distinct().ToList();
             return new GetUserIdsByGroupIdsResponse { UserIds = userIds };
         }
 

@@ -49,6 +49,9 @@ namespace SugarChat.IntegrationTest.Services
                 var group = await repository.SingleAsync<Group>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
                 group.Type.ShouldBe(10);
                 (await repository.CountAsync<GroupUser>()).ShouldBe(1);
+
+                var group2 = await repository.SingleAsync<Group2>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
+                group2.GroupUsers.Count.ShouldBe(1);
             });
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {

@@ -173,6 +173,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
                 var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 groupUser.ShouldBeNull();
+
+                (await repository.SingleAsync<Group2>(x => x.Id == conversationId)).GroupUsers.Single().UserId.ShouldBe(userId9);
             });
         }
 

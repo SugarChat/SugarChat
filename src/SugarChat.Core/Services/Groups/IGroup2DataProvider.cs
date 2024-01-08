@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
-using System.Collections;
+using SugarChat.Message.Paging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,6 +26,8 @@ namespace SugarChat.Core.Services.Groups
         int GetUnreadCount(string userId, int groupType);
 
         Task UpdateRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default);
+
+        Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default);
     }
 
     public class Group2DataProvider : IGroup2DataProvider
@@ -88,6 +90,31 @@ namespace SugarChat.Core.Services.Groups
                   .SelectMany(x => x)
                   .Sum(x => x.UnreadCount);
             return unreadCount;
+        }
+
+        public async Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default)
+        {
+            var group =await _repository.Query<Group2>().SingleOrDefaultAsync(x => x.Id == groupId);
+            if (group == null)
+            return new PagedResult<Message2>();
+
+            var messages = group.Messages;
+            if (fromDate is not null)
+            {
+                messages = messages.Where(x =>  x.SentTime >= fromDate).ToList();
+            }
+            messages = messages.OrderByDescending(x => x.SentTime).ToList();
+            var result = new PagedResult<Message2>();
+            if (pageSettings is not null)
+            {
+                result =  _repository.ToPagedListAsync(pageSettings, messages);
+            }
+            else
+            {
+                result.Result = messages;
+                result.Total = messages.Count();
+            }
+            return result;
         }
     }
 }

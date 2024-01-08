@@ -200,6 +200,19 @@ namespace SugarChat.Core.Services.Messages
             };
         }
 
+        public async Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync2(GetMessagesOfGroupRequest request, CancellationToken cancellationToken = default)
+        {
+            var messages = await _group2DataProvider.GetMessages(request.GroupId, request.PageSettings, request.FromDate, cancellationToken);
+            return new()
+            {
+                Messages = new PagedResult<MessageDto>
+                {
+                    Result = _mapper.Map<IEnumerable<MessageDto>>(messages.Result),
+                    Total = messages.Total
+                }
+            };
+        }
+
         public async Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(
             GetMessagesOfGroupBeforeRequest request,
             CancellationToken cancellationToken = default)

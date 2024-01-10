@@ -311,6 +311,7 @@ namespace SugarChat.IntegrationTest.Services
                     groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i)).ShouldBe(11);
                     groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i) && x.UserId == userId && x.UnreadCount == 10).ShouldBe(1);
                     groupUsers.Count(x => x.GroupId == groupIds.ElementAt(i) && x.UserId != userId && x.UnreadCount == 9).ShouldBe(10);
+                    (await repository.FirstOrDefaultAsync<Group>(x => x.Id == groupIds.ElementAt(i))).LastMessageId.ShouldBe(sendMessageCommands[(i + 1) * 10 - 1].Id);
                     for (int j = 0; j < 10; j++)
                     {
                         var message = messages.Single(x => x.Id == "Id" + i + j);

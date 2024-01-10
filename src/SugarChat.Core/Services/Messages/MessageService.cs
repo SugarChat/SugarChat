@@ -408,6 +408,8 @@ namespace SugarChat.Core.Services.Messages
             var insertMessages = new List<Domain.Message>();
             foreach (var message in command.SendMessageCommands)
             {
+                var group = groups.Single(x => x.Id == message.GroupId);
+                group.LastMessageId = message.Id;
                 var newMessage = _mapper.Map<Domain.Message>(message);
                 newMessage.SentTime = DateTime.Now;
                 insertMessages.Add(newMessage);

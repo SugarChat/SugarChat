@@ -396,7 +396,7 @@ namespace SugarChat.Core.Services.GroupUsers
                                 groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
                         }
                     }
-                    foreach (var userId in addGroupMemberCommand.GroupUserIds)
+                    foreach (var userId in addGroupMemberCommand.GroupUserIds.Distinct())
                     {
                         if (groupUsers.Any(x => x.GroupId == addGroupMemberCommand.GroupId && x.UserId == userId)) continue;
 

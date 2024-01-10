@@ -12,5 +12,6 @@ namespace SugarChat.Core.Domain
         public string Description { get; set; }
         public int Type { get; set; }
         public DateTimeOffset LastSentTime { get; set; }
+        public string LastMessageId { get; set; }
     }
 }

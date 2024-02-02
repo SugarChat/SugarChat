@@ -16,7 +16,7 @@ namespace SugarChat.Core.Mappings
             CreateMap<Group, Group2>()
                 .ForMember(dest => dest.GroupUsers, opt => opt.Ignore())
                 .ForMember(dest => dest.Messages, opt => opt.Ignore());
-            CreateMap<GroupUser, GroupUser2>();
+            CreateMap<GroupUser, GroupUser2>().ReverseMap();
             CreateMap<SendMessageCommand, Message2>();
             CreateMap<Domain.Message, Message2>();
             CreateMap<Group2, GroupDto>();

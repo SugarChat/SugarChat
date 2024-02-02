@@ -60,6 +60,7 @@ namespace SugarChat.Core.Services.Messages
         Task SaveMessageAsync2(SendMessageCommand command, CancellationToken cancellationToken = default);
 
         Task BatchSaveMessageAsync(BatchSendMessageCommand command, CancellationToken cancellationToken = default);
+        Task BatchSaveMessageAsync2(BatchSendMessageCommand command, CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
 
         Task<GetMessagesByGroupIdsResponse> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);

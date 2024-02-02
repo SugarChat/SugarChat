@@ -528,6 +528,58 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
+        public async Task BatchSaveMessageAsync2(BatchSendMessageCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.SendMessageCommands.Select(x => x.GroupId).ToList();
+            var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var group in groups)
+            {
+                group.LastSentTime = DateTime.Now;
+            }
+            var messagesGroups = command.SendMessageCommands.GroupBy(x => x.GroupId);
+            foreach (var messagesGroup in messagesGroups)
+            {
+                var group = groups.Single(x => x.Id == messagesGroup.Key);
+                foreach (var message in command.SendMessageCommands)
+                {
+                    group.Messages.Add(_mapper.Map<Message2>(message));
+                }
+                var groupUsersByGroupId = group.GroupUsers;
+                var sendMessageCommands = messagesGroup.ToList();
+                foreach (var sendMessageCommand in sendMessageCommands)
+                {
+                    var filterGroupUserIds = _groupUserDataProvider.FilterGroupUserByCustomProperties(_mapper.Map<List<GroupUser>>(groupUsersByGroupId), sendMessageCommand.IgnoreUnreadCountByGroupUserCustomProperties);
+                    var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                    foreach (var groupUser in groupUserForUpdate)
+                    {
+                        if (sendMessageCommand.SentBy != groupUser.UserId)
+                            groupUser.UnreadCount += 1;
+                    }
+                }
+            }
+
+            int retryCount = 1;
+            while (retryCount <= 3)
+            {
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        await _group2DataProvider.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+                        if (retryCount >= 3)
+                            throw;
+                        retryCount++;
+                    }
+                }
+            }
+        }
+
         public async Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default)
         {
             User user = await GetUserAsync(request.UserId, cancellationToken);

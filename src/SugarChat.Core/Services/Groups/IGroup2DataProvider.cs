@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
+using SugarChat.Message.Exceptions;
 using SugarChat.Message.Paging;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,8 @@ namespace SugarChat.Core.Services.Groups
         Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default);
+
+        Task RemoveAsync(Group2 group, CancellationToken cancellationToken = default);
     }
 
     public class Group2DataProvider : IGroup2DataProvider
@@ -130,6 +133,11 @@ namespace SugarChat.Core.Services.Groups
         public async Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RemoveAsync(Group2 group, CancellationToken cancellationToken = default)
+        {
+            await _repository.RemoveAsync(group, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -6,6 +6,7 @@ using SugarChat.Message.Paging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,6 +22,8 @@ namespace SugarChat.Core.Services.Groups
 
         Task AddAsync(Group2 group, CancellationToken cancellationToken = default);
 
+        Task AddRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default);
+
         Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default);
 
         int GetUnreadCount(string userId, int groupType);
@@ -28,6 +31,8 @@ namespace SugarChat.Core.Services.Groups
         Task UpdateRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default);
 
         Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default);
     }
 
     public class Group2DataProvider : IGroup2DataProvider
@@ -73,6 +78,11 @@ namespace SugarChat.Core.Services.Groups
             await _repository.AddAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task AddRangeAsync(IEnumerable<Group2> groups, CancellationToken cancellationToken = default)
+        {
+            await _repository.AddRangeAsync(groups, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task UpdateAsync(Group2 group, CancellationToken cancellationToken = default)
         {
             await _repository.UpdateAsync(group, cancellationToken);
@@ -115,6 +125,11 @@ namespace SugarChat.Core.Services.Groups
                 result.Total = messages.Count();
             }
             return result;
+        }
+
+        public async Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.ToListAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
     }
 }

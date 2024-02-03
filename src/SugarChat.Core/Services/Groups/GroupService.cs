@@ -273,6 +273,49 @@ namespace SugarChat.Core.Services.Groups
             }
         }
 
+        public async Task BatchAddGroupAsync2(BatchAddGroupCommand command, CancellationToken cancellation = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellation);
+            user.CheckExist(command.UserId);
+
+            var groupIds = command.AddGroupCommands.Select(x => x.Id).ToList();
+
+            int retryCount = 1;
+            while (retryCount <= 3)
+            {
+                var existGroupIds = (await _group2DataProvider.GetListAsync(x => groupIds.Contains(x.Id), cancellation).ConfigureAwait(false))
+                    .Select(x => x.Id).ToList();
+                var groups = _mapper.Map<List<Group2>>(command.AddGroupCommands.Where(x => !existGroupIds.Contains(x.Id)).ToList());
+                foreach (var group in groups)
+                {
+                    group.GroupUsers ??= new List<GroupUser2>();
+                    group.GroupUsers.Add(new GroupUser2
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = command.UserId,
+                        Role = UserRole.Owner,
+                        CreatedBy = command.UserId,
+                    });
+                }
+                using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellation).ConfigureAwait(false))
+                {
+                    try
+                    {
+                        await _group2DataProvider.AddRangeAsync(groups, cancellation).ConfigureAwait(false);
+                        await transaction.CommitAsync(cancellation).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync(cancellation).ConfigureAwait(false);
+                        if (retryCount >= 3)
+                            throw;
+                        retryCount++;
+                    }
+                }
+            }
+        }
+
         public async Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default)
         {

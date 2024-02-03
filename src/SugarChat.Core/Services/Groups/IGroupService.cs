@@ -38,6 +38,8 @@ namespace SugarChat.Core.Services.Groups
 
         Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default);
 
+        Task BatchAddGroupAsync2(BatchAddGroupCommand command, CancellationToken cancellation = default);
+
         Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default);
     }
 }

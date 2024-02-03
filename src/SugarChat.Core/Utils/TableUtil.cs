@@ -252,7 +252,6 @@ namespace SugarChat.Core.Utils
                 if (!string.IsNullOrWhiteSpace(source.GetType().GetProperty(name).GetValue(source)?.ToString())
                     && destination.GetType().GetProperty(name) != null)
                 {
-                    var a = source.GetType().GetProperty(name).GetValue(source);
                     destination.GetType().GetProperty(name).SetValue(destination, source.GetType().GetProperty(name).GetValue(source));
                 }
             }

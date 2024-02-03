@@ -380,6 +380,13 @@ namespace SugarChat.Core.Services.Groups
             return _mapper.Map<GroupRemovedEvent>(command);
         }
 
+        public async Task RemoveGroupAsync2(RemoveGroupCommand command, CancellationToken cancellation = default)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.Id, cancellation).ConfigureAwait(false);
+            group.CheckExist(command.Id);
+            await _group2DataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+        }
+
         public async Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -468,6 +475,16 @@ namespace SugarChat.Core.Services.Groups
             }
 
             return _mapper.Map<GroupProfileUpdatedEvent>(command);
+        }
+
+        public async Task UpdateGroupProfileAsync2(UpdateGroupProfileCommand command, CancellationToken cancellationToken)
+        {
+            var group = await _group2DataProvider.GetByIdAsync(command.Id, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.Id);
+
+            _mapper.MapIgnoreNull(command, group);
+
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command, CancellationToken cancellation)

@@ -23,6 +23,8 @@ namespace SugarChat.Core.Services.Groups
 
         Task<GroupRemovedEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation = default);
 
+        Task RemoveGroupAsync2(RemoveGroupCommand command, CancellationToken cancellation = default);
+
         Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
             CancellationToken cancellationToken = default);
 
@@ -41,5 +43,7 @@ namespace SugarChat.Core.Services.Groups
         Task BatchAddGroupAsync2(BatchAddGroupCommand command, CancellationToken cancellation = default);
 
         Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default);
+
+        Task UpdateGroupProfileAsync2(UpdateGroupProfileCommand command, CancellationToken cancellationToken);
     }
 }

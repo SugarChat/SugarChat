@@ -99,6 +99,20 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<UserRemovedFromGroupEvent>(command);
         }
 
+        public async Task RemoveUserFromGroupAsync2(RemoveUserFromGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            group.CheckExist(command.GroupId);
+            GroupUser2 groupUser = group.GroupUsers.Where(x => x.UserId == command.UserId).FirstOrDefault();
+            if (groupUser != null)
+            {
+                group.GroupUsers.Remove(groupUser);
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         public async Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -205,6 +219,40 @@ namespace SugarChat.Core.Services.GroupUsers
             {
                 var groupUser = groupUsers.FirstOrDefault(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId
                     && x.UserId == setGroupMemberCustomFieldCommand.UserId);
+                if (groupUser is null)
+                    continue;
+
+                var groupCustomProperties = allGroupCustomProperties.Where(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId).ToList();
+                var groupUser_CustomProperties = new Dictionary<string, string>();
+                foreach (var customProperty in groupCustomProperties)
+                {
+                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                }
+                if (setGroupMemberCustomFieldCommand.CustomProperties != null && setGroupMemberCustomFieldCommand.CustomProperties.Any())
+                {
+                    foreach (var customProperty in setGroupMemberCustomFieldCommand.CustomProperties)
+                    {
+                        if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+                groupUser.CustomProperties = groupUser_CustomProperties;
+            }
+            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task BatchSetGroupMemberCustomPropertiesAsync2(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.GroupId).ToList();
+            var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            var userIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.UserId).ToList();
+            var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId) && userIds.Contains(x.UserId), cancellationToken).ConfigureAwait(false);
+            var allGroupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var setGroupMemberCustomFieldCommand in command.SetGroupMemberCustomFieldCommands)
+            {
+                var groupUser = groups.SingleOrDefault(x => x.Id == setGroupMemberCustomFieldCommand.GroupId)?
+                    .GroupUsers?.SingleOrDefault(x => x.UserId == setGroupMemberCustomFieldCommand.UserId);
                 if (groupUser is null)
                     continue;
 

@@ -104,7 +104,8 @@ namespace SugarChat.Core.Services.GroupUsers
             User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
             user.CheckExist(command.UserId);
             Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
-            group.CheckExist(command.GroupId);
+            if (group is null)
+                return;
             GroupUser2 groupUser = group.GroupUsers.Where(x => x.UserId == command.UserId).FirstOrDefault();
             if (groupUser != null)
             {
@@ -246,9 +247,6 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             var groupIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.GroupId).ToList();
             var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
-            var userIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.UserId).ToList();
-            var groupUsers = await _groupUserDataProvider.GetListAsync(x => groupIds.Contains(x.GroupId) && userIds.Contains(x.UserId), cancellationToken).ConfigureAwait(false);
-            var allGroupCustomProperties = await _groupCustomPropertyDataProvider.GetPropertiesByGroupIds(groupIds, cancellationToken).ConfigureAwait(false);
             foreach (var setGroupMemberCustomFieldCommand in command.SetGroupMemberCustomFieldCommands)
             {
                 var groupUser = groups.SingleOrDefault(x => x.Id == setGroupMemberCustomFieldCommand.GroupId)?
@@ -256,24 +254,17 @@ namespace SugarChat.Core.Services.GroupUsers
                 if (groupUser is null)
                     continue;
 
-                var groupCustomProperties = allGroupCustomProperties.Where(x => x.GroupId == setGroupMemberCustomFieldCommand.GroupId).ToList();
-                var groupUser_CustomProperties = new Dictionary<string, string>();
-                foreach (var customProperty in groupCustomProperties)
-                {
-                    if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
-                        groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
-                }
+                groupUser.CustomProperties = new Dictionary<string, string>();
                 if (setGroupMemberCustomFieldCommand.CustomProperties != null && setGroupMemberCustomFieldCommand.CustomProperties.Any())
                 {
                     foreach (var customProperty in setGroupMemberCustomFieldCommand.CustomProperties)
                     {
-                        if (!groupUser_CustomProperties.ContainsKey(customProperty.Key))
-                            groupUser_CustomProperties.Add(customProperty.Key, customProperty.Value);
+                        if (!groupUser.CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser.CustomProperties.Add(customProperty.Key, customProperty.Value);
                     }
                 }
-                groupUser.CustomProperties = groupUser_CustomProperties;
             }
-            await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+            await _group2DataProvider.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command,
@@ -296,6 +287,23 @@ namespace SugarChat.Core.Services.GroupUsers
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
+        }
+
+        public async Task JoinGroupAsync2(JoinGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+                return;
+
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
+            if (!group.GroupUsers.Any(x => x.UserId == command.UserId))
+            {
+                var groupUser= _mapper.Map<GroupUser2>(command);
+                group.GroupUsers.Add(groupUser);
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public async Task<GroupQuittedEvent> QuitGroupAsync(QuitGroupCommand command,

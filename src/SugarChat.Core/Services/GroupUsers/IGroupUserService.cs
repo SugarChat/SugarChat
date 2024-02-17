@@ -41,6 +41,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command, CancellationToken cancellationToken = default);
 
+        Task JoinGroupAsync2(JoinGroupCommand command, CancellationToken cancellationToken = default);
+
         Task<GroupMemberAddedEvent> AddGroupMembersAsync(AddGroupMemberCommand command,
             CancellationToken cancellationToken = default);
 

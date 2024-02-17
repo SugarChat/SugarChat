@@ -99,6 +99,21 @@ namespace SugarChat.Core.Services.GroupUsers
             return _mapper.Map<UserRemovedFromGroupEvent>(command);
         }
 
+        public async Task RemoveUserFromGroupAsync2(RemoveUserFromGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+                return;
+            GroupUser2 groupUser = group.GroupUsers.Where(x => x.UserId == command.UserId).FirstOrDefault();
+            if (groupUser != null)
+            {
+                group.GroupUsers.Remove(groupUser);
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         public async Task<GetGroupMembersResponse> GetGroupMemberIdsAsync(GetGroupMembersRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -228,6 +243,30 @@ namespace SugarChat.Core.Services.GroupUsers
             await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task BatchSetGroupMemberCustomPropertiesAsync2(BatchSetGroupMemberCustomFieldCommand command, CancellationToken cancellationToken = default)
+        {
+            var groupIds = command.SetGroupMemberCustomFieldCommands.Select(x => x.GroupId).ToList();
+            var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+            foreach (var setGroupMemberCustomFieldCommand in command.SetGroupMemberCustomFieldCommands)
+            {
+                var groupUser = groups.SingleOrDefault(x => x.Id == setGroupMemberCustomFieldCommand.GroupId)?
+                    .GroupUsers?.SingleOrDefault(x => x.UserId == setGroupMemberCustomFieldCommand.UserId);
+                if (groupUser is null)
+                    continue;
+
+                groupUser.CustomProperties = new Dictionary<string, string>();
+                if (setGroupMemberCustomFieldCommand.CustomProperties != null && setGroupMemberCustomFieldCommand.CustomProperties.Any())
+                {
+                    foreach (var customProperty in setGroupMemberCustomFieldCommand.CustomProperties)
+                    {
+                        if (!groupUser.CustomProperties.ContainsKey(customProperty.Key))
+                            groupUser.CustomProperties.Add(customProperty.Key, customProperty.Value);
+                    }
+                }
+            }
+            await _group2DataProvider.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<GroupJoinedEvent> JoinGroupAsync(JoinGroupCommand command,
             CancellationToken cancellationToken = default)
         {
@@ -248,6 +287,23 @@ namespace SugarChat.Core.Services.GroupUsers
             await _groupUserDataProvider.AddAsync(groupUser, cancellationToken).ConfigureAwait(false);
 
             return _mapper.Map<GroupJoinedEvent>(command);
+        }
+
+        public async Task JoinGroupAsync2(JoinGroupCommand command, CancellationToken cancellationToken = default)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+                return;
+
+            User user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
+            if (!group.GroupUsers.Any(x => x.UserId == command.UserId))
+            {
+                var groupUser= _mapper.Map<GroupUser2>(command);
+                group.GroupUsers.Add(groupUser);
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public async Task<GroupQuittedEvent> QuitGroupAsync(QuitGroupCommand command,

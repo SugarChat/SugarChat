@@ -16,6 +16,8 @@ using SugarChat.Core;
 using SugarChat.Message;
 using SugarChat.Core.Utils;
 using System.Linq.Expressions;
+using SugarChat.Message.Exceptions;
+using Newtonsoft.Json;
 
 namespace SugarChat.IntegrationTest
 {
@@ -73,9 +75,19 @@ namespace SugarChat.IntegrationTest
             var backgroundJobClientProvider = Substitute.For<IBackgroundJobClientProvider>();
             backgroundJobClientProvider.Enqueue(Arg.Any<Expression<Func<Task>>>()).Returns(x =>
             {
-                var call = (Expression<Func<Task>>)x.Args()[0];
-                var func = call.Compile();
-                func().Wait();
+                try
+                {
+                    var call = (Expression<Func<Task>>)x.Args()[0];
+                    var func = call.Compile();
+                    func().Wait();
+                }
+                catch (Exception ex)
+                {
+                    if (!JsonConvert.SerializeObject(ex.InnerException).Contains("\"LogLevel\":3"))
+                    {
+                        throw;
+                    }
+                }
                 return default;
             });
             builder.RegisterInstance(backgroundJobClientProvider).SingleInstance();

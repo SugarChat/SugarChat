@@ -515,6 +515,13 @@ namespace SugarChat.Core.Services.Groups
             return _mapper.Map<GroupDismissedEvent>(command);
         }
 
+        public async Task DismissGroupAsync2(DismissGroupCommand command, CancellationToken cancellation)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
+            if (group is not null)
+                await _group2DataProvider.RemoveAsync(group, cancellation).ConfigureAwait(false);
+        }
+
         public async Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken)
         {
             var user = await _userDataProvider.GetByIdAsync(request.UserId, cancellationToken).ConfigureAwait(false);

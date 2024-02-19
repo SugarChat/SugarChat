@@ -124,6 +124,14 @@ namespace SugarChat.Core.Services
             }
         }
 
+        public static void CheckIsAdmin(this GroupUser2 groupUser, string userId, string groupId)
+        {
+            if (groupUser?.Role != UserRole.Admin && groupUser?.Role != UserRole.Owner)
+            {
+                throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
+            }
+        }
+
         public static void CheckExist(this Emotion emotion, string id)
         {
             if (emotion is null)

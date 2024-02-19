@@ -34,6 +34,8 @@ namespace SugarChat.Core.Services.Groups
         Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command,
             CancellationToken cancellationToken = default);
 
+        Task DismissGroupAsync2(DismissGroupCommand command, CancellationToken cancellation);
+
         Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken);
 
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);

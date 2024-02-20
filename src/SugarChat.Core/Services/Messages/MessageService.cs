@@ -252,7 +252,14 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task SetMessageReadByUserBasedOnMessageIdAsync2(SetMessageReadByUserBasedOnMessageIdCommand command, CancellationToken cancellationToken = default)
         {
-            var group = await _group2DataProvider.GetListAsync(x => x.Messages.Any(y => y.Id == command.MessageId), cancellationToken).ConfigureAwait(false);
+            var group = await _group2DataProvider.GetAsync(x => x.Messages.Any(y => y.Id == command.MessageId), cancellationToken).ConfigureAwait(false);
+            var groupUser = group?.GroupUsers.SingleOrDefault(x => x.Id == command.UserId);
+            if (groupUser is not null)
+            {
+                groupUser.UnreadCount = 0;
+                groupUser.LastReadTime = DateTime.Now;
+                await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         public async Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(

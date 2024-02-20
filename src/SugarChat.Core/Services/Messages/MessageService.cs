@@ -356,7 +356,7 @@ namespace SugarChat.Core.Services.Messages
             var group2s = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
             foreach (var group2 in group2s)
             {
-                foreach (var setMessageReadCommand in command.SetMessageReadCommands.Where(x => x.GroupId == group2.Id&&x.UserIds!=null))
+                foreach (var setMessageReadCommand in command.SetMessageReadCommands.Where(x => x.GroupId == group2.Id && x.UserIds != null))
                 {
                     var groupUsers = group2.GroupUsers.Where(x => setMessageReadCommand.UserIds.Contains(x.UserId));
                     foreach (var groupUser in groupUsers)
@@ -530,37 +530,36 @@ namespace SugarChat.Core.Services.Messages
 
         public async Task BatchSaveMessageAsync2(BatchSendMessageCommand command, CancellationToken cancellationToken = default)
         {
-            var groupIds = command.SendMessageCommands.Select(x => x.GroupId).ToList();
-            var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
-            foreach (var group in groups)
-            {
-                group.LastSentTime = DateTime.Now;
-            }
-            var messagesGroups = command.SendMessageCommands.GroupBy(x => x.GroupId);
-            foreach (var messagesGroup in messagesGroups)
-            {
-                var group = groups.Single(x => x.Id == messagesGroup.Key);
-                foreach (var message in command.SendMessageCommands)
-                {
-                    group.Messages.Add(_mapper.Map<Message2>(message));
-                }
-                var groupUsersByGroupId = group.GroupUsers;
-                var sendMessageCommands = messagesGroup.ToList();
-                foreach (var sendMessageCommand in sendMessageCommands)
-                {
-                    var filterGroupUserIds = _groupUserDataProvider.FilterGroupUserByCustomProperties(_mapper.Map<List<GroupUser>>(groupUsersByGroupId), sendMessageCommand.IgnoreUnreadCountByGroupUserCustomProperties);
-                    var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
-                    foreach (var groupUser in groupUserForUpdate)
-                    {
-                        if (sendMessageCommand.SentBy != groupUser.UserId)
-                            groupUser.UnreadCount += 1;
-                    }
-                }
-            }
-
             int retryCount = 1;
             while (retryCount <= 3)
             {
+                var groupIds = command.SendMessageCommands.Select(x => x.GroupId).ToList();
+                var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+                foreach (var group in groups)
+                {
+                    group.LastSentTime = DateTime.Now;
+                }
+                var messagesGroups = command.SendMessageCommands.GroupBy(x => x.GroupId);
+                foreach (var messagesGroup in messagesGroups)
+                {
+                    var group = groups.Single(x => x.Id == messagesGroup.Key);
+                    foreach (var message in command.SendMessageCommands)
+                    {
+                        group.Messages.Add(_mapper.Map<Message2>(message));
+                    }
+                    var groupUsersByGroupId = group.GroupUsers;
+                    var sendMessageCommands = messagesGroup.ToList();
+                    foreach (var sendMessageCommand in sendMessageCommands)
+                    {
+                        var filterGroupUserIds = _groupUserDataProvider.FilterGroupUserByCustomProperties(_mapper.Map<List<GroupUser>>(groupUsersByGroupId), sendMessageCommand.IgnoreUnreadCountByGroupUserCustomProperties);
+                        var groupUserForUpdate = groupUsersByGroupId.Where(x => !filterGroupUserIds.Contains(x.Id)).ToList();
+                        foreach (var groupUser in groupUserForUpdate)
+                        {
+                            if (sendMessageCommand.SentBy != groupUser.UserId)
+                                groupUser.UnreadCount += 1;
+                        }
+                    }
+                }
                 using (var transaction = await _transactionManagement.BeginTransactionAsync(cancellationToken).ConfigureAwait(false))
                 {
                     try
@@ -667,6 +666,23 @@ namespace SugarChat.Core.Services.Messages
             }
         }
 
+        public async Task UpdateMessageDataAsync2(UpdateMessageDataCommand command, CancellationToken cancellationToken = default)
+        {
+            var user = await _userDataProvider.GetByIdAsync(command.UserId, cancellationToken).ConfigureAwait(false);
+            user.CheckExist(command.UserId);
+
+            var groupIds = command.Messages.Select(x => x.GroupId).ToList();
+            var groups = await _group2DataProvider.GetByIdsAsync(groupIds, cancellationToken).ConfigureAwait(false);
+
+            foreach (var messageDto in command.Messages)
+            {
+                var message = groups.SingleOrDefault(x => x.Id == messageDto.GroupId)?.Messages.SingleOrDefault(x => x.Id == messageDto.Id);
+                if (message != null)
+                    _mapper.Map(messageDto, message);
+            }
+            await _group2DataProvider.UpdateRangeAsync(groups, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
         {
             Group group = await _groupDataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
@@ -678,6 +694,21 @@ namespace SugarChat.Core.Services.Messages
                     groupUser.UnreadCount = 1;
             }
             await _groupUserDataProvider.UpdateRangeAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync2(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default)
+        {
+            Group2 group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellationToken).ConfigureAwait(false);
+            if (group is null)
+                return;
+
+            foreach (var groupUser in group.GroupUsers)
+            {
+                if (groupUser.UnreadCount == 0)
+                    groupUser.UnreadCount = 1;
+            }
+
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -75,6 +75,8 @@ namespace SugarChat.Core.Services.GroupUsers
 
         Task<bool> CheckUserIsInGroupAsync(CheckUserIsInGroupCommand command, CancellationToken cancellation = default);
 
+        Task<bool> CheckUserIsInGroupAsync2(CheckUserIsInGroupCommand command, CancellationToken cancellation = default);
+
         Task MigrateGroupCustomPropertyAsyncToGroupUser(int pageSize, CancellationToken cancellation = default);
 
         Task<GetUserIdsByGroupIdsResponse> GetUsersByGroupIdsAsync2(GetUserIdsByGroupIdsRequest request, CancellationToken cancellationToken = default);

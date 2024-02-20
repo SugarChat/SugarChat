@@ -850,5 +850,14 @@ namespace SugarChat.Core.Services.GroupUsers
         {
             return (await _groupUserDataProvider.GetByGroupIdAndUsersIdAsync(command.GroupId, command.UserIds, cancellation).ConfigureAwait(false)).Any();
         }
+
+        public async Task<bool> CheckUserIsInGroupAsync2(CheckUserIsInGroupCommand command, CancellationToken cancellation = default)
+        {
+            var group = await _group2DataProvider.GetByIdAsync(command.GroupId, cancellation).ConfigureAwait(false);
+            if (group is null)
+                return false;
+
+            return group.GroupUsers.Any(x => command.UserIds.Contains(x.UserId));
+        }
     }
 }

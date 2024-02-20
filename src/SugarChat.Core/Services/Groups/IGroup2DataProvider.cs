@@ -33,6 +33,8 @@ namespace SugarChat.Core.Services.Groups
 
         Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default);
 
+        Task<Group2> GetAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default);
+
         Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default);
 
         Task RemoveAsync(Group2 group, CancellationToken cancellationToken = default);
@@ -107,20 +109,20 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default)
         {
-            var group =await _repository.Query<Group2>().SingleOrDefaultAsync(x => x.Id == groupId);
+            var group = await _repository.Query<Group2>().SingleOrDefaultAsync(x => x.Id == groupId);
             if (group == null)
-            return new PagedResult<Message2>();
+                return new PagedResult<Message2>();
 
             var messages = group.Messages;
             if (fromDate is not null)
             {
-                messages = messages.Where(x =>  x.SentTime >= fromDate).ToList();
+                messages = messages.Where(x => x.SentTime >= fromDate).ToList();
             }
             messages = messages.OrderByDescending(x => x.SentTime).ToList();
             var result = new PagedResult<Message2>();
             if (pageSettings is not null)
             {
-                result =  _repository.ToPagedListAsync(pageSettings, messages);
+                result = _repository.ToPagedListAsync(pageSettings, messages);
             }
             else
             {
@@ -128,6 +130,11 @@ namespace SugarChat.Core.Services.Groups
                 result.Total = messages.Count();
             }
             return result;
+        }
+
+        public async Task<Group2> GetAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default)
+        {
+            return await _repository.FirstOrDefaultAsync(predicate, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Group2>> GetListAsync(Expression<Func<Group2, bool>> predicate = null, CancellationToken cancellationToken = default)

@@ -50,6 +50,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("getUnreadMessageCount"), HttpGet]
         public async Task<IActionResult> GetUnreadMessageCountForGet([FromQuery] GetUnreadMessageCountRequest request)
         {
+            return Ok(new SugarChatResponse<int>());
             var response =
                  await _mediator
                      .RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);
@@ -60,6 +61,7 @@ namespace SugarChat.WebApi.Controllers
         [Route("getUnreadMessageCount"), HttpPost]
         public async Task<IActionResult> GetUnreadMessageCountForPost(GetUnreadMessageCountRequest request)
         {
+            return Ok(new SugarChatResponse<int>());
             var response =
                  await _mediator
                      .RequestAsync<GetUnreadMessageCountRequest, SugarChatResponse<int>>(request);

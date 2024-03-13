@@ -122,6 +122,9 @@ namespace SugarChat.Core.Services.Conversations
         public async Task RemoveConversationByConversationIdAsync2(RemoveConversationCommand command, CancellationToken cancellationToken = default)
         {
             var group = await _group2DataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            if (group is null)
+                return;
+
             var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
             if (groupUser is not null)
             {

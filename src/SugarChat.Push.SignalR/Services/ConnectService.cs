@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using ServiceStack.Redis;
 using SugarChat.Push.SignalR.Models;
 using SugarChat.Push.SignalR.Services.Caching;
 using System;
@@ -11,14 +10,12 @@ namespace SugarChat.Push.SignalR.Services
 {
     public class ConnectService : IConnectService
     {
-        private readonly IRedisClient _redis;
         private readonly ICacheService _cacheService;
 
-        public ConnectService(IConfiguration configuration, IHostEnvironment environment, IRedisClient redis, ICacheService cacheService)
+        public ConnectService(IConfiguration configuration, IHostEnvironment environment, ICacheService cacheService)
         {
             Configuration = configuration;
             Env = environment;
-            _redis = redis;
             _cacheService = cacheService;
         }
 
@@ -47,7 +44,6 @@ namespace SugarChat.Push.SignalR.Services
             
             var key = Guid.NewGuid().ToString("N");
             await _cacheService.SetRedisByKey("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromDays(1));
-            //_redis.Set("Connectionkey:" + key, new UserInfoModel { Identifier = userIdentifier }, TimeSpan.FromMinutes(5));
             return $"{baseUrl}?connectionkey={key}";
         }
     }

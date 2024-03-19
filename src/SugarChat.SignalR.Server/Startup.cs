@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ServiceStack.Redis;
 using StackExchange.Redis;
 using SugarChat.Push.SignalR.Extensions;
 using SugarChat.Push.SignalR.Hubs;
@@ -24,7 +23,6 @@ namespace SugarChat.SignalR.Server
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IRedisClient, RedisClient>(sp => new RedisClient(Configuration.GetSection("SignalRRedis").Value));
             services.AddHttpContextAccessor();
             services.AddControllers();
             services.AddCors(options => options.AddPolicy("CorsPolicy",

@@ -109,7 +109,7 @@ namespace SugarChat.Core.Services.Groups
 
         public async Task<PagedResult<Message2>> GetMessages(string groupId, PageSettings pageSettings, DateTimeOffset? fromDate, CancellationToken cancellationToken = default)
         {
-            var group = await _repository.Query<Group2>().SingleOrDefaultAsync(x => x.Id == groupId);
+            var group = await _repository.SingleOrDefaultAsync<Group2>(x => x.Id == groupId);
             if (group == null)
                 return new PagedResult<Message2>();
 

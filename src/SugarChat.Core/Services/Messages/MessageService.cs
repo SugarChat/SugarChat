@@ -569,6 +569,7 @@ namespace SugarChat.Core.Services.Messages
                         {
                             if (sendMessageCommand.SentBy != groupUser.UserId)
                                 groupUser.UnreadCount += 1;
+                            groupUser.LastSentTime = DateTime.Now;
                         }
                     }
                 }

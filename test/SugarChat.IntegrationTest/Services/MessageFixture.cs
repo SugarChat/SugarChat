@@ -61,6 +61,7 @@ namespace SugarChat.IntegrationTest.Services
                          && x.CreatedBy == command.CreatedBy)).ShouldBeTrue();
                     var message = await repository.SingleAsync<Core.Domain.Message>(x => x.Id == command.Id);
                     message.CustomProperties.GetValueOrDefault("Number").ShouldBe("1");
+                    repository.Query<Group>().Single(x => x.Id == groupId).LastMessageId.ShouldBe(command.Id);
                 }
                 {
                     for (int i = 0; i < 5; i++)
@@ -77,6 +78,7 @@ namespace SugarChat.IntegrationTest.Services
                             IgnoreUnreadCountByGroupUserCustomProperties = new Dictionary<string, List<string>> { { "UserType", new List<string> { "Customer" } } }
                         };
                         await mediator.SendAsync(command);
+                        repository.Query<Group>().Single(x => x.Id == groupId).LastMessageId.ShouldBe(command.Id);
                     }
                     repository.Query<GroupUser>().First(x => x.UserId == adminId).UnreadCount.ShouldBe(5);
                     repository.Query<GroupUser>().Where(x => userIds.Contains(x.UserId) && x.UnreadCount == 1).Count().ShouldBe(5);

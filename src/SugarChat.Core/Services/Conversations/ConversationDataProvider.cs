@@ -243,15 +243,29 @@ namespace SugarChat.Core.Services.Conversations
 
         private async Task<List<ConversationDto>> GetConversationListByGroupUsersAsync(IEnumerable<GroupUser> groupUsers, CancellationToken cancellationToken)
         {
+            if (groupUsers == null || !groupUsers.Any())
+                return new List<ConversationDto>();
+
             var groupIds = groupUsers.Select(x => x.GroupId).ToList();
-            var messageIds = (from a in _repository.Query<Domain.Message>()
+            var groups = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToList();
+            var messageIds = new List<string>();
+            if (groups.All(x => !string.IsNullOrWhiteSpace(x.LastMessageId)))
+            {
+                messageIds = groups.Select(x => x.LastMessageId).ToList();
+            }
+            else
+            {
+                messageIds = (from a in _repository.Query<Domain.Message>()
                               where groupIds.Contains(a.GroupId)
-                              orderby a.SentTime descending
                               group a by a.GroupId into b
-                              select new { b.First().Id }).ToList().Select(x => x.Id).ToList();
+                              orderby b.Max(x => x.SentTime) descending
+                              select new { b.First().Id })
+                              .ToList()
+                              .Select(x => x.Id)
+                              .ToList();
+            }
             var messages = await _repository.ToListAsync<Domain.Message>(x => messageIds.Contains(x.Id), cancellationToken).ConfigureAwait(false);
 
-            var groups = _repository.Query<Group>().Where(x => groupIds.Contains(x.Id)).ToList();
             var groupDtos = _mapper.Map<List<GroupDto>>(groups);
             var conversationDtos = new List<ConversationDto>();
             foreach (var groupUser in groupUsers)

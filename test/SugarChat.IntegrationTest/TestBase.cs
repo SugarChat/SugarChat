@@ -15,6 +15,9 @@ using Microsoft.Extensions.Caching.Memory;
 using SugarChat.Core;
 using SugarChat.Message;
 using SugarChat.Core.Utils;
+using System.Linq.Expressions;
+using SugarChat.Message.Exceptions;
+using Newtonsoft.Json;
 
 namespace SugarChat.IntegrationTest
 {
@@ -43,7 +46,10 @@ namespace SugarChat.IntegrationTest
                 iSecurityManager.IsSupperAdmin().Returns(false);
                 containerBuilder.RegisterInstance(iSecurityManager);
             });
+            RegisterBackgroundJobClientProvider(containerBuilder);
             containerBuilder.RegisterType<TableUtil>().As<ITableUtil>().InstancePerLifetimeScope();
+
+            Container = containerBuilder.Build().BeginLifetimeScope();
         }
 
         private void LoadThisConfiguration()
@@ -62,7 +68,29 @@ namespace SugarChat.IntegrationTest
             },
             new RunTimeProvider(RunTimeType.Test)));
             extraRegistration(builder);
-            Container = builder.Build().BeginLifetimeScope();
+        }
+
+        private void RegisterBackgroundJobClientProvider(ContainerBuilder builder)
+        {
+            var backgroundJobClientProvider = Substitute.For<IBackgroundJobClientProvider>();
+            backgroundJobClientProvider.Enqueue(Arg.Any<Expression<Func<Task>>>()).Returns(x =>
+            {
+                try
+                {
+                    var call = (Expression<Func<Task>>)x.Args()[0];
+                    var func = call.Compile();
+                    func().Wait();
+                }
+                catch (Exception ex)
+                {
+                    if (!JsonConvert.SerializeObject(ex.InnerException).Contains("\"LogLevel\":3"))
+                    {
+                        throw;
+                    }
+                }
+                return default;
+            });
+            builder.RegisterInstance(backgroundJobClientProvider).SingleInstance();
         }
 
         protected void Run<T>(Action<T> action, Action<ContainerBuilder> extraRegistration = null)

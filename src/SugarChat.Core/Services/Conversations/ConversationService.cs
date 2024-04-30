@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using SugarChat.Core.Domain;
 using SugarChat.Message.Paging;
 using SugarChat.Core.Services.GroupCustomProperties;
+using Serilog;
+using System;
 
 namespace SugarChat.Core.Services.Conversations
 {
@@ -27,7 +29,7 @@ namespace SugarChat.Core.Services.Conversations
         private readonly IConversationDataProvider _conversationDataProvider;
         private readonly IGroupDataProvider _groupDataProvider;
         private readonly IMessageDataProvider _messageDataProvider;
-        private readonly IGroupCustomPropertyDataProvider _groupCustomPropertyDataProvider;
+        private readonly IGroup2DataProvider _group2DataProvider;
 
         public ConversationService(
             IMapper mapper,
@@ -36,7 +38,7 @@ namespace SugarChat.Core.Services.Conversations
             IConversationDataProvider conversationDataProvider,
             IGroupDataProvider groupDataProvider,
             IMessageDataProvider messageDataProvider,
-            IGroupCustomPropertyDataProvider groupCustomPropertyDataProvider)
+            IGroup2DataProvider group2DataProvider)
         {
             _mapper = mapper;
             _userDataProvider = userDataProvider;
@@ -44,7 +46,7 @@ namespace SugarChat.Core.Services.Conversations
             _groupDataProvider = groupDataProvider;
             _groupUserDataProvider = groupUserDataProvider;
             _messageDataProvider = messageDataProvider;
-            _groupCustomPropertyDataProvider = groupCustomPropertyDataProvider;
+            _group2DataProvider = group2DataProvider;
         }
 
         public async Task<PagedResult<ConversationDto>> GetConversationListByUserIdAsync(GetConversationListRequest request, CancellationToken cancellationToken = default)
@@ -115,6 +117,20 @@ namespace SugarChat.Core.Services.Conversations
             await _groupUserDataProvider.RemoveAsync(groupUser, cancellationToken);
 
             return _mapper.Map<ConversationRemovedEvent>(command);
+        }
+
+        public async Task RemoveConversationByConversationIdAsync2(RemoveConversationCommand command, CancellationToken cancellationToken = default)
+        {
+            var group = await _group2DataProvider.GetByIdAsync(command.ConversationId, cancellationToken);
+            if (group is null)
+                return;
+
+            var groupUser = group.GroupUsers.FirstOrDefault(x => x.UserId == command.UserId);
+            if (groupUser is not null)
+            {
+                group.GroupUsers.Remove(groupUser);
+            }
+            await _group2DataProvider.UpdateAsync(group, cancellationToken).ConfigureAwait(false);
         }
 
         private async Task<ConversationDto> GetConversationDto(GroupUser groupUser,

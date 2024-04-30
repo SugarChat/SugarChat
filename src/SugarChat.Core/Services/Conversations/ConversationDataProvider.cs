@@ -143,6 +143,98 @@ namespace SugarChat.Core.Services.Conversations
             };
         }
 
+        public async Task<PagedResult<ConversationDto>> GetConversationList2Async(string userId,
+            IEnumerable<string> filterGroupIds,
+            int groupType,
+            IEnumerable<SearchParamDto> searchParams,
+            IEnumerable<SearchMessageParamDto> searchByKeywordParams,
+            int pageNum,
+            int pageSize,
+            int monthsAgo,
+            CancellationToken cancellationToken = default)
+        {
+            var groupUsers = new List<GroupUser>();
+            var total = 0;
+
+            if (searchByKeywordParams != null && searchByKeywordParams.Any())
+            {
+                var whereByMessage = _tableUtil.GetWhereByMessage2(filterGroupIds, searchByKeywordParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                var queryByMessage = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<Domain.Group2>(), whereByMessage);
+                //if (monthsAgo > 0)
+                //{
+                //    var startTime = DateTime.Now.AddMonths(-monthsAgo);
+                //    queryByMessage = queryByMessage.Where(x => x.SentTime > startTime);
+                //}
+                var groupIdsByMessage = queryByMessage.Select(x => x.Id).ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByMessage run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByMessage, groupIdsByMessage.Count());
+
+                var whereByGroupUser = _tableUtil.GetWhereByGroupUser2(userId, filterGroupIds, groupType, searchParams);
+                stopwatch.Restart();
+                var groupIdsByGroupUser = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), whereByGroupUser)
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .Select(x => x.GroupId)
+                    .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}{@Total}", stopwatch.ElapsedMilliseconds, whereByGroupUser, groupIdsByGroupUser.Count());
+
+                var temepGroups = new List<TemepGroup>();
+                stopwatch.Restart();
+                for (int i = 0; i < groupIdsByGroupUser.Count(); i++)
+                {
+                    temepGroups.Add(new TemepGroup { GroupId = groupIdsByGroupUser[i], Sort = i });
+                }
+                var groupIds = temepGroups.Where(x => groupIdsByMessage.Contains(x.GroupId)).OrderBy(x => x.Sort)
+                    .Select(x => x.GroupId)
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUserAndMessage run {@Ms}{@GroupUserWhere}{@MessageWhere}", stopwatch.ElapsedMilliseconds, whereByGroupUser, whereByMessage);
+
+                var groupUsers2 = _repository.Query<Group2>().Where(x => groupIds.Contains(x.Id))
+                    .SelectMany(x => x.GroupUsers)
+                    .Where(x => x.UserId == userId)
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastReadTime)
+                    .ToList();
+                groupUsers = _repository.Query<GroupUser>().Where(x => x.UserId == userId && groupIds.Contains(x.GroupId))
+                    .OrderByDescending(x => x.UnreadCount)
+                    .ThenByDescending(x => x.LastSentTime)
+                    .ToList();
+                total = temepGroups.Where(x => groupIds.Contains(x.GroupId)).Count();
+            }
+            else
+            {
+                var where = _tableUtil.GetWhereByGroupUser(userId, filterGroupIds, groupType, searchParams);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                groupUsers = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where)
+                   .OrderByDescending(x => x.UnreadCount)
+                   .ThenByDescending(x => x.LastSentTime)
+                   .Skip((pageNum - 1) * pageSize)
+                   .Take(pageSize)
+                   .ToList();
+                stopwatch.Stop();
+                Log.Information("GetGroupIdsByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+                stopwatch.Restart();
+                total = System.Linq.Dynamic.Core.DynamicQueryableExtensions.Where(_repository.Query<GroupUser>(), where).Count();
+                stopwatch.Stop();
+                Log.Information("GetTotalByGroupUser run {@Ms}{@Where}", stopwatch.ElapsedMilliseconds, where);
+            }
+
+            var conversationDtos = await GetConversationListByGroupUsersAsync(groupUsers, cancellationToken).ConfigureAwait(false);
+
+            return new PagedResult<ConversationDto>
+            {
+                Result = conversationDtos,
+                Total = total
+            };
+        }
+
         class TemepGroup
         {
             public string GroupId { get; set; }

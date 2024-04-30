@@ -79,6 +79,13 @@ namespace SugarChat.IntegrationTest.Services
                         GroupId = groupId
                     };
                     await repository.AddAsync(groupUser);
+                    var group2 = await repository.SingleAsync<Group2>(x => x.Id == groupId);
+                    group2.GroupUsers.Add(new GroupUser2
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = userIds[index]
+                    });
+                    await repository.UpdateAsync(group2);
                 });
             }
         }
@@ -86,6 +93,13 @@ namespace SugarChat.IntegrationTest.Services
         private async Task AddGroup(IRepository repository)
         {
             await repository.AddAsync(new Group
+            {
+                Id = groupId,
+                Name = "testGroup",
+                AvatarUrl = "testAvatarUrl",
+                Description = "testDescription"
+            });
+            await repository.AddAsync(new Group2
             {
                 Id = groupId,
                 Name = "testGroup",
@@ -107,6 +121,14 @@ namespace SugarChat.IntegrationTest.Services
                 GroupId = groupId,
                 Role = UserRole.Owner
             });
+            var group2 = await repository.SingleAsync<Group2>(x => x.Id == groupId);
+            group2.GroupUsers.Add(new GroupUser2
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = groupOwnerId,
+                Role = UserRole.Owner
+            });
+            await repository.UpdateAsync(group2);
         }
 
         [Fact]
@@ -273,6 +295,12 @@ namespace SugarChat.IntegrationTest.Services
                     {
                         groupUser.CustomProperties.Count().ShouldBe(2);
                     }
+
+                    var group2 = await repository.SingleAsync<Group2>(x => x.Id == command.GroupId);
+                    foreach (var groupUser in group2.GroupUsers.Where(x => x.CreatedBy == command.CreatedBy))
+                    {
+                        groupUser.CustomProperties.Count().ShouldBe(2);
+                    }
                 }
 
                 command.AdminId = groupOwnerId;
@@ -415,6 +443,8 @@ namespace SugarChat.IntegrationTest.Services
                 (await repository.AnyAsync<GroupUser>(x =>
                         x.GroupId == command.GroupId && x.UserId == command.MemberId && x.Role == command.Role))
                     .ShouldBeTrue();
+
+                (await repository.SingleAsync<Group2>(x => x.Id == command.GroupId)).GroupUsers.Single(x=> x.UserId == command.MemberId).Role.ShouldBe(command.Role);
 
                 {
                     command.Role = UserRole.Owner;

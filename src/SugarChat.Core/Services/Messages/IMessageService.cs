@@ -28,18 +28,29 @@ namespace SugarChat.Core.Services.Messages
             CancellationToken cancellationToken = default);
         Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync(GetMessagesOfGroupRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<GetMessagesOfGroupResponse> GetMessagesOfGroupAsync2(GetMessagesOfGroupRequest request, CancellationToken cancellationToken = default);
+
         Task<GetMessagesOfGroupBeforeResponse> GetMessagesOfGroupBeforeAsync(GetMessagesOfGroupBeforeRequest request,
             CancellationToken cancellationToken = default);
         Task<MessageReadSetByUserBasedOnMessageIdEvent> SetMessageReadByUserBasedOnMessageIdAsync(
             SetMessageReadByUserBasedOnMessageIdCommand command,
             CancellationToken cancellationToken = default);
+
+        Task SetMessageReadByUserBasedOnMessageIdAsync2(SetMessageReadByUserBasedOnMessageIdCommand command, CancellationToken cancellationToken = default);
+
         Task<MessageReadSetByUserBasedOnGroupIdEvent> SetMessageReadByUserBasedOnGroupIdAsync(
             SetMessageReadByUserBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
-        
+
+        Task SetMessageReadByUserBasedOnGroupIdAsync2(SetMessageReadByUserBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
         Task<MessageReadSetByUserIdsBasedOnGroupIdEvent> SetMessageReadByUserIdsBasedOnGroupIdAsync(
             SetMessageReadByUserIdsBasedOnGroupIdCommand command,
             CancellationToken cancellationToken = default);
+
+        Task SetMessageReadByUserIdsBasedOnGroupIdAsync2(SetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
 
         Task BatchSetMessageReadByUserIdsBasedOnGroupIdAsync(BatchSetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
 
@@ -49,13 +60,24 @@ namespace SugarChat.Core.Services.Messages
         Task<MessageSavedEvent> SaveMessageAsync(SendMessageCommand command,
             CancellationToken cancellationToken = default);
 
+        Task SaveMessageAsync2(SendMessageCommand command, CancellationToken cancellationToken = default);
+
         Task BatchSaveMessageAsync(BatchSendMessageCommand command, CancellationToken cancellationToken = default);
+        Task BatchSaveMessageAsync2(BatchSendMessageCommand command, CancellationToken cancellationToken = default);
         Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
 
         Task<GetMessagesByGroupIdsResponse> GetMessagesByGroupIdsAsync(GetMessagesByGroupIdsRequest request, CancellationToken cancellationToken = default);
 
         Task UpdateMessageDataAsync(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
 
+        Task UpdateMessageDataAsync2(UpdateMessageDataCommand command, CancellationToken cancellationToken = default);
+
         Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
+        Task SetMessageUnreadByUserIdsBasedOnGroupIdAsync2(SetMessageUnreadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
+
+        Task<GetUnreadMessageCountResponse> GetUnreadMessageCountAsync2(GetUnreadMessageCountRequest request, CancellationToken cancellationToken = default);
+
+        Task BatchSetMessageReadByUserIdsBasedOnGroupIdAsync2(BatchSetMessageReadByUserIdsBasedOnGroupIdCommand command, CancellationToken cancellationToken = default);
     }
 }

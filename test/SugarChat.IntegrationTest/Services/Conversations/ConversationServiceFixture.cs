@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using Xunit;
 using SugarChat.Core.Services.Messages;
 using SugarChat.Message.Basic;
+using System.Text.RegularExpressions;
+using AutoMapper;
 
 namespace SugarChat.IntegrationTest.Services.Conversations
 {
@@ -65,10 +67,10 @@ namespace SugarChat.IntegrationTest.Services.Conversations
         [Fact]
         public async Task ShouldSetConversationMessagesRead()
         {
-            await Run<IMediator, IRepository>(async (mediator, repository) =>
+            await Run<IMediator, IRepository, IMapper>(async (mediator, repository, mapper) =>
              {
                  var messageId = Guid.NewGuid().ToString();
-                 await repository.AddAsync(new Core.Domain.Message
+                 var message = new Core.Domain.Message
                  {
                      Id = messageId,
                      CreatedBy = Guid.NewGuid().ToString(),
@@ -82,7 +84,11 @@ namespace SugarChat.IntegrationTest.Services.Conversations
                      SentTime = DateTimeOffset.Now,
                      IsSystem = true,
                      Payload = "{\"Text\":\"TestGroupMessageRead\"}"
-                 });
+                 };
+                 await repository.AddAsync(message);
+                 var group2 = await repository.SingleAsync<Group2>(x => x.Id == conversationId);
+                 group2.Messages.Add(mapper.Map<Message2>(message));
+                 await repository.UpdateAsync(group2);
 
                  await mediator.SendAsync<SetMessageReadByUserBasedOnMessageIdCommand, SugarChatResponse>(new SetMessageReadByUserBasedOnMessageIdCommand
                  {
@@ -173,6 +179,8 @@ namespace SugarChat.IntegrationTest.Services.Conversations
 
                 var groupUser = await repository.SingleOrDefaultAsync<GroupUser>(x => x.GroupId == conversationId && x.UserId == userId);
                 groupUser.ShouldBeNull();
+
+                (await repository.SingleAsync<Group2>(x => x.Id == conversationId)).GroupUsers.Single().UserId.ShouldBe(userId9);
             });
         }
 

@@ -13,5 +13,6 @@ namespace SugarChat.UnitTest
             factor.ShouldBe(1);
             return Task.CompletedTask;
         }
+        
     }
 }

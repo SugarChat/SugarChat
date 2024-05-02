@@ -174,10 +174,15 @@ namespace SugarChat.IntegrationTest
             ClearDatabaseRecord();
         }
 
+        private static readonly object databaseLock = new object();
+
         private void ClearDatabaseRecord()
         {
-            var client = new MongoClient(_configuration["MongoDb:ConnectionString"]);
-            client.DropDatabase(_configuration["MongoDb:DatabaseName"]);
+            lock (databaseLock)
+            {
+                var client = new MongoClient(_configuration["MongoDb:ConnectionString"]);
+                client.DropDatabase(_configuration["MongoDb:DatabaseName"]);
+            }
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
-using ServiceStack.Redis;
+using Newtonsoft.Json.Linq;
 using SugarChat.Push.SignalR.Models;
+using SugarChat.Push.SignalR.Services;
+using SugarChat.Push.SignalR.Services.Caching;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -16,15 +19,15 @@ namespace SugarChat.Push.SignalR.Hubs
     public class ChatHub : Hub
     {
         private readonly ILogger Logger;
-        private readonly IRedisClient _redis;
+        private readonly ICacheService _cacheService;
 
-        public ChatHub(ILoggerFactory loggerFactory, IRedisClient redis)
+        public ChatHub(ILoggerFactory loggerFactory, ICacheService cacheService)
         {
             Logger = loggerFactory.CreateLogger<ChatHub>();
-            _redis = redis;
+            _cacheService = cacheService;
         }
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             // todo 
             var connectionkey = Context.GetHttpContext().Request.Query["connectionkey"].ToString();
@@ -32,56 +35,56 @@ namespace SugarChat.Push.SignalR.Hubs
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }
-            var userinfo = _redis.Get<UserInfoModel>("Connectionkey:" + connectionkey);
-            if(userinfo is null)
+
+            var userinfo = await _cacheService.GetByKeyFromRedis<UserInfoModel>("Connectionkey:" + connectionkey);
+            if (userinfo is null)
             {
                 throw new HubException("Unauthorized Access", new UnauthorizedAccessException());
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Online");
-            _redis.Set("Connectionkey:" + connectionkey, userinfo);
-            SetUserConnectionId();
-            return base.OnConnectedAsync();
+            await _cacheService.SetRedisByKey("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromDays(1));
+            await SetUserConnectionId().ConfigureAwait(false);
+            await base.OnConnectedAsync();
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
             // todo 
             var connectionkey = Context.GetHttpContext().Request.Query["connectionkey"].ToString();
             if (string.IsNullOrWhiteSpace(connectionkey))
             {
-                return Task.CompletedTask;
+                return;
             }
-            var userinfo = _redis.Get<UserInfoModel>("Connectionkey:" + connectionkey);
+            var userinfo = await _cacheService.GetByKeyFromRedis<UserInfoModel>("Connectionkey:" + connectionkey);
             if (userinfo is null)
             {
-                return Task.CompletedTask;
+                return;
             }
             Logger.LogInformation(Context.ConnectionId + ":" + Context.UserIdentifier + ":" + "Offline");
-            _redis.Set("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromMinutes(5));
-            RemoveUserConnectionId();
-            return base.OnDisconnectedAsync(exception);
+            await _cacheService.SetRedisByKey("Connectionkey:" + connectionkey, userinfo, TimeSpan.FromDays(1));
+            await RemoveUserConnectionId().ConfigureAwait(false);
+            await base.OnDisconnectedAsync(exception);
         }
 
-        private void SetUserConnectionId()
+        private async Task SetUserConnectionId()
         {
-            var redisValue = _redis.GetValueFromHash("UserConnectionIds", Context.UserIdentifier);
+            var redisValue = await _cacheService.GetHashByKeyFromRedis<string>("UserConnectionIds", Context.UserIdentifier).ConfigureAwait(false);
 
             var connectionIds = new List<string>();
-            if(redisValue is not null)
+            if (redisValue is not null)
             {
                 connectionIds = JsonSerializer.Deserialize<List<string>>(redisValue);
             }
             connectionIds.Add(Context.ConnectionId);
-            _redis.SetEntryInHash("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
+            await _cacheService.SetHashRedisByKey("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
         }
-        private void RemoveUserConnectionId()
+        private async Task RemoveUserConnectionId()
         {
-            var connectionIds = JsonSerializer.Deserialize<List<string>>(_redis.GetValueFromHash("UserConnectionIds", Context.UserIdentifier));
-
+            var connectionIds = JsonSerializer.Deserialize<List<string>>(await _cacheService.GetHashByKeyFromRedis<string>("UserConnectionIds", Context.UserIdentifier));
             connectionIds.Remove(Context.ConnectionId);
-            _redis.SetEntryInHash("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
+            await _cacheService.SetHashRedisByKey("UserConnectionIds", Context.UserIdentifier, JsonSerializer.Serialize(connectionIds));
         }
     }
 
-    
+
 }

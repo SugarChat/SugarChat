@@ -36,6 +36,17 @@ namespace SugarChat.IntegrationTest.Services
                 await repository.AddAsync(new Group { Id = groupId });
                 await repository.AddAsync(new GroupUser { Id = Guid.NewGuid().ToString(), UserId = user.Id, GroupId = groupId });
                 await repository.AddAsync(new Core.Domain.Message { Id = Guid.NewGuid().ToString(), GroupId = groupId });
+                await repository.AddAsync(new Group2
+                {
+                    Id = groupId,
+                    GroupUsers = new List<GroupUser2> { new GroupUser2 {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = user.Id
+                    } },
+                    Messages = new List<Message2> { new Message2 {
+                        Id = Guid.NewGuid().ToString()
+                    } }
+                });
                 if (isExistCache)
                 {
                     memoryCache.Set(CacheService.AllUser, new List<User> { user });

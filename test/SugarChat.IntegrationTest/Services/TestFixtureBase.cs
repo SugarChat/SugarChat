@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using AutoMapper;
 using SugarChat.Core.Domain;
 using SugarChat.Core.IRepositories;
 using SugarChat.Message;
@@ -14,6 +15,7 @@ namespace SugarChat.IntegrationTest.Services
     {
         protected List<User> users = new List<User>();
         protected List<Group> groups = new List<Group>();
+        protected List<Group2> group2s = new List<Group2>();
         protected List<GroupUser> groupUsers = new List<GroupUser>();
         private List<Friend> friends = new List<Friend>();
 
@@ -54,6 +56,7 @@ namespace SugarChat.IntegrationTest.Services
             };
             GenerateGroupCollection(repository, groupDic);
             repository.AddRangeAsync(groups, default(CancellationToken)).Wait();
+            repository.AddRangeAsync(group2s, default(CancellationToken)).Wait();
 
             var userDic = new Dictionary<string, string>
             {
@@ -120,6 +123,19 @@ namespace SugarChat.IntegrationTest.Services
                     Type = 10,
                     CustomProperties = new Dictionary<string, string> { { "A", i.ToString() + "AB" } }
                 });
+                group2s.Add(new Group2
+                {
+                    AvatarUrl = "",
+                    CreatedBy = Guid.NewGuid().ToString(),
+                    CreatedDate = DateTimeOffset.Now,
+                    Description = "A Test Group!",
+                    Id = groupDic.ElementAt(i).Key,
+                    LastModifyDate = DateTimeOffset.Now,
+                    LastModifyBy = Guid.NewGuid().ToString(),
+                    Name = groupDic.ElementAt(i).Value,
+                    Type = 10,
+                    CustomProperties = new Dictionary<string, string> { { "A", i.ToString() + "AB" } }
+                });
                 repository.AddAsync(new GroupCustomProperty
                 {
                     GroupId = groupDic.ElementAt(i).Key,
@@ -132,6 +148,7 @@ namespace SugarChat.IntegrationTest.Services
                     Key = "B",
                     Value = (i % 2).ToString() + "BC"
                 }, default).Wait();
+
             }
         }
         private void GenerateUserCollection(Dictionary<string, string> userDic)
@@ -190,12 +207,17 @@ namespace SugarChat.IntegrationTest.Services
             }
             groupUser.CustomProperties = customProperties;
 
+            var mapper = Container.Resolve<IMapper>();
+            var group2 = repository.Query<Group2>().Where(x => x.Id == groupId).SingleOrDefault();
+            group2.GroupUsers.Add(mapper.Map<GroupUser2>(groupUser));
+            repository.UpdateAsync(group2);
+
             return groupUser;
         }
         private void GenerateMessage(IRepository repository, string groupId, string content, int type, string sentBy, Dictionary<string, string> customProperties, string payload)
         {
             var messageId = Guid.NewGuid().ToString();
-            repository.AddAsync(new Core.Domain.Message
+            var message = new Core.Domain.Message
             {
                 Id = messageId,
                 CreatedBy = Guid.NewGuid().ToString(),
@@ -210,7 +232,13 @@ namespace SugarChat.IntegrationTest.Services
                 IsSystem = true,
                 Payload = payload,
                 CustomProperties = customProperties
-            }, default(CancellationToken)).Wait();
+            };
+            repository.AddAsync(message, default(CancellationToken)).Wait();
+
+            var mapper = Container.Resolve<IMapper>();
+            var group2 = repository.Query<Group2>().Where(x => x.Id == groupId).SingleOrDefault();
+            group2.Messages.Add(mapper.Map<Message2>(message));
+            repository.UpdateAsync(group2);
         }
     }
 }

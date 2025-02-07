@@ -16,10 +16,14 @@ namespace SugarChat.Core.Services.Groups
     {
         Task<GroupAddedEvent> AddGroupAsync(AddGroupCommand command, CancellationToken cancellation = default);
 
+        Task AddGroupAsync2(AddGroupCommand command, CancellationToken cancellation = default);
+
         Task<GetGroupsOfUserResponse> GetGroupsOfUserAsync(GetGroupsOfUserRequest request,
             CancellationToken cancellation = default);
 
         Task<GroupRemovedEvent> RemoveGroupAsync(RemoveGroupCommand command, CancellationToken cancellation = default);
+
+        Task RemoveGroupAsync2(RemoveGroupCommand command, CancellationToken cancellation = default);
 
         Task<GetGroupProfileResponse> GetGroupProfileAsync(GetGroupProfileRequest request,
             CancellationToken cancellationToken = default);
@@ -30,10 +34,18 @@ namespace SugarChat.Core.Services.Groups
         Task<GroupDismissedEvent> DismissGroupAsync(DismissGroupCommand command,
             CancellationToken cancellationToken = default);
 
+        Task DismissGroupAsync2(DismissGroupCommand command, CancellationToken cancellation);
+
         Task<IEnumerable<GroupDto>> GetByCustomProperties(GetGroupByCustomPropertiesRequest request, CancellationToken cancellationToken);
 
         Task MigrateCustomPropertyAsync(CancellationToken cancellation = default);
 
         Task BatchAddGroupAsync(BatchAddGroupCommand command, CancellationToken cancellation = default);
+
+        Task BatchAddGroupAsync2(BatchAddGroupCommand command, CancellationToken cancellation = default);
+
+        Task<GetGroupProfileResponse> GetGroupProfileAsync2(GetGroupProfileRequest request, CancellationToken cancellationToken = default);
+
+        Task UpdateGroupProfileAsync2(UpdateGroupProfileCommand command, CancellationToken cancellationToken);
     }
 }

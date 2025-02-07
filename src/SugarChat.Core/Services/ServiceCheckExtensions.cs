@@ -64,6 +64,14 @@ namespace SugarChat.Core.Services
             }
         }
 
+        public static void CheckExist(this Group2 group, string groupId)
+        {
+            if (group is null)
+            {
+                throw new BusinessWarningException(Prompt.GroupNoExists.WithParams(groupId));
+            }
+        }
+
         public static void CheckExist(this GroupUser groupUser, string userId, string groupId)
         {
             if (groupUser is null)
@@ -111,6 +119,14 @@ namespace SugarChat.Core.Services
             CheckExist(groupUser, userId, groupId);
             //TODO : What's the logic there?
             if (groupUser.Role != UserRole.Admin && groupUser.Role != UserRole.Owner)
+            {
+                throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
+            }
+        }
+
+        public static void CheckIsAdmin(this GroupUser2 groupUser, string userId, string groupId)
+        {
+            if (groupUser?.Role != UserRole.Admin && groupUser?.Role != UserRole.Owner)
             {
                 throw new BusinessWarningException(Prompt.NotAdmin.WithParams(userId, groupId));
             }

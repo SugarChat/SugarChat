@@ -24,6 +24,7 @@ using SugarChat.Message;
 using Hangfire;
 using Hangfire.MemoryStorage;
 
+
 namespace SugarChat.WebApi
 {
     public class Startup

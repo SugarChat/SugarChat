@@ -17,7 +17,7 @@ using Xunit;
 namespace SugarChat.Database.MongoDb.IntegrationTest
 {
     [Collection("DatabaseCollection")]
-    public abstract class TestBase : IAsyncDisposable, IDisposable
+    public abstract class TestBase : IDisposable
     {
         private readonly DatabaseFixture _dbFixture;
         protected readonly IRepository Repository;
@@ -34,24 +34,19 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
             Repository = _dbFixture.Repository;
         }
 
-        public virtual async ValueTask DisposeAsync()
-        {
-            await CleanDatabaseAsync();
-        }
-
         public virtual void Dispose()
         {
             CleanDatabase();
         }
 
+        private static readonly object databaseLock = new object();
+
         protected void CleanDatabase()
         {
-            Client.DropDatabase(Configuration["MongoDb:DatabaseName"]);
-        }
-
-        protected async Task CleanDatabaseAsync()
-        {
-            await Client.DropDatabaseAsync(Configuration["MongoDb:DatabaseName"]);
+            lock (databaseLock)
+            {
+                Client.DropDatabase(Configuration["MongoDb:DatabaseName"]);
+            }
         }
     }
 }

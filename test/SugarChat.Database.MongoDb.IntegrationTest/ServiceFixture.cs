@@ -39,7 +39,6 @@ namespace SugarChat.Database.MongoDb.IntegrationTest
 
         private async Task Stuff()
         {
-            await CleanDatabaseAsync();
             await AddUsers();
             await AddFriends();
             await AddGroups();

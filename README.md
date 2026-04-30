@@ -12,7 +12,7 @@ You can run mongo from anywhere if you want and docker is recommended:
 docker network create --subnet=x.x.x.0/24 mongoDbNetwork
 
 # creat containers
-docker run --name mongo --network mongoDbNetwork --ip x.x.x.2 --restart always -p 27017:27017 -d mongo mongod --replSet "rs"
+docker run --name mongo --network mongoDbNetwork --ip x.x.x.2 --restart always -p 27017:27017 -d mongo:5.0.6 mongod --replSet "rs"
 
 # enter container
 docker exec -it mongo /bin/bash

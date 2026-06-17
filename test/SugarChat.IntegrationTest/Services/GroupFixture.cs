@@ -90,6 +90,9 @@ namespace SugarChat.IntegrationTest.Services
                     dbGroupUser.CustomProperties.Any(x => x.Key == "OrderId" && x.Value == "2").ShouldBeTrue();
                     dbGroupUser.CustomProperties.Any(x => x.Key == "GroupUser" && x.Value == i.ToString()).ShouldBeTrue();
                 }
+
+                var group2 = await repository.SingleAsync<Group2>(x => x.Id == command.Id && x.CreatedBy == command.CreatedBy);
+                group2.GroupUsers.Count.ShouldBe(1);
             });
             await Run<IMediator, IRepository>(async (mediator, repository) =>
             {

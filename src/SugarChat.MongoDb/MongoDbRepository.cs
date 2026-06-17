@@ -13,6 +13,7 @@ using SugarChat.Message.Paging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using Newtonsoft.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SugarChat.Data.MongoDb
 {
@@ -80,6 +81,24 @@ namespace SugarChat.Data.MongoDb
             }
             var total = query?.Count() ?? 0;
             return Task.FromResult(new PagedResult<T> { Result = result, Total = total });
+        }
+
+        public PagedResult<T> ToPagedListAsync<T>(PageSettings pageSettings, IEnumerable<T> entities) where T : class, IEntity
+        {
+            List<T> result = new List<T>();
+            if (pageSettings is not null)
+            {
+                if (pageSettings is not null)
+                {
+                    result = entities.Paging(pageSettings).ToList();
+                }
+                else
+                {
+                    result = entities.ToList();
+                }
+            }
+            var total = entities?.Count() ?? 0;
+            return new PagedResult<T> { Result = result, Total = total };
         }
 
         public async Task<int> CountAsync<T>(Expression<Func<T, bool>> predicate = null,

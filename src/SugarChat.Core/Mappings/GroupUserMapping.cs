@@ -13,6 +13,7 @@ namespace SugarChat.Core.Mappings
         {
             CreateMap<AddUserToGroupCommand, GroupUser>();
             CreateMap<JoinGroupCommand, GroupUser>();
+            CreateMap<JoinGroupCommand, GroupUser2>();
             CreateMap<SetGroupMemberCustomFieldCommand, GroupMemberCustomFieldSetEvent>();
             CreateMap<JoinGroupCommand, GroupJoinedEvent>();
             CreateMap<QuitGroupCommand, GroupQuittedEvent>();
